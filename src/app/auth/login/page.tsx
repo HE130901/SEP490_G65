@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+// Define the validation schema using Zod
 const schema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
@@ -26,6 +27,7 @@ const Login = () => {
     resolver: zodResolver(schema),
   });
 
+  // Handle form submission
   const onSubmit = async (data) => {
     try {
       await login(data.email, data.password);
