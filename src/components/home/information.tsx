@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import React from "react";
-import { CarouselPlugin } from "../ui/carouselPlugin";
+import { CarouselPlugin } from "../ui/carousel-plugin";
 
 const FAQS = [
   {
