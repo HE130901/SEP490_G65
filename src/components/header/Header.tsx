@@ -1,14 +1,9 @@
-"use client";
-
-import { cn } from "@/lib/utils";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   HomeIcon,
-  InformationCircleIcon,
-  StarIcon,
   ShoppingCartIcon,
   UserCircleIcon,
   PowerIcon,
@@ -20,10 +15,9 @@ import {
   UserIcon,
   ClipboardDocumentIcon,
   ArrowRightOnRectangleIcon,
-  UsersIcon,
 } from "@heroicons/react/24/solid";
 import logo from "@/assets/images/logo.png";
-import { useStateContext } from "@/context/StateContext";
+import { useStateContext } from "@/context/state-context";
 import { usePathname } from "next/navigation";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import {
@@ -42,28 +36,31 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 const SidebarLink = ({ label, icon: Icon, href, active }) => (
   <Link href={href}>
     <div
-      className={`flex items-center px-4 py-2 text-gray-800 ${
-        active ? "bg-stone-300 text-white" : "hover:bg-stone-200"
+      className={`flex items-center px-6 py-4 text-lg ${
+        active
+          ? "bg-gray-300 text-gray-900 dark:bg-gray-700 dark:text-white"
+          : "hover:bg-gray-200 text-gray-900 dark:hover:bg-gray-700 dark:text-white"
       } rounded-md transition-colors duration-300`}
     >
-      <Icon className={`h-5 w-5 ${active ? "text-white" : "text-gray-800"}`} />
-      <span
-        className={`ml-2 text-sm font-medium ${
-          active ? "text-white" : "text-gray-800"
+      <Icon
+        className={`h-7 w-7 mr-4 ${
+          active
+            ? "text-gray-900 dark:text-white"
+            : "text-gray-900 dark:text-white"
         }`}
-      >
-        {label}
-      </span>
+      />
+      <span className="font-medium">{label}</span>
     </div>
   </Link>
 );
 
 const Sidebar = ({ currentView, setCurrentView, userRole }) => (
-  <div className="px-4 py-6 space-y-2">
+  <div className="px-6 py-6 space-y-4">
     <SidebarLink
       label="Trang chủ"
       icon={HomeIcon}
@@ -147,6 +144,7 @@ export function Header({ currentView, setCurrentView }) {
         "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quo",
     },
   ];
+
   const ListItem = React.forwardRef<
     React.ElementRef<"a">,
     React.ComponentPropsWithoutRef<"a">
@@ -157,15 +155,13 @@ export function Header({ currentView, setCurrentView }) {
           <a
             ref={ref}
             className={cn(
-              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+              "block select-none space-y-1 rounded-md p-4 text-lg leading-none no-underline outline-none transition-colors hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:bg-gray-700 dark:focus:text-white",
               className
             )}
             {...props}
           >
-            <div className="text-sm font-medium leading-none">{title}</div>
-            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-              {children}
-            </p>
+            <div className="text-lg font-medium">{title}</div>
+            <p className="line-clamp-2 text-lg leading-snug">{children}</p>
           </a>
         </NavigationMenuLink>
       </li>
@@ -177,21 +173,21 @@ export function Header({ currentView, setCurrentView }) {
     <header
       className={`fixed top-0 z-50 w-full transition-colors duration-300 ${
         isScrolling || !isHomePage
-          ? "bg-stone-100 shadow-lg text-black"
-          : "bg-transparent shadow-none text-white"
+          ? "bg-white shadow-lg text-gray-900 dark:bg-gray-950 dark:text-white"
+          : "bg-transparent shadow-none text-gray-900 dark:text-white"
       }`}
     >
-      <div className="container mx-auto flex items-center justify-between px-4 py-2">
+      <div className="container mx-auto flex items-center justify-between py-4">
         <div className="flex items-center">
           <Sheet>
             <SheetTrigger asChild>
-              <button className="mr-4 p-2 bg-stone-400 text-white rounded-md shadow-md">
-                <Bars3Icon className="h-5 w-5" />
+              <button className="mr-4 p-4 bg-gray-300 text-gray-900 rounded-md shadow-md dark:bg-gray-700 dark:text-white">
+                <Bars3Icon className="h-7 w-7" />
               </button>
             </SheetTrigger>
             <SheetContent
               side="left"
-              className={`w-64 bg-slate-100 rounded-md shadow-md`}
+              className="w-72 bg-white rounded-md shadow-md dark:bg-gray-950"
             >
               <Sidebar
                 currentView={currentView}
@@ -205,7 +201,7 @@ export function Header({ currentView, setCurrentView }) {
               whileHover={{ scale: 1.05 }}
               className="rounded-lg overflow-hidden hover:cursor-pointer"
             >
-              <Image alt="logo" src={logo} height={50} width={150} />
+              <Image alt="logo" src={logo} height={60} width={180} />
             </motion.div>
           </Link>
         </div>
@@ -224,7 +220,7 @@ export function Header({ currentView, setCurrentView }) {
                         <div className="mb-2 mt-4 text-lg font-medium">
                           An Bình Viên
                         </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
+                        <p className="text-sm leading-tight">
                           Lorem ipsum dolor sit amet, consectetur adipisicing
                           elit. Quos cumque, quas, quae, quidem dolorum
                           voluptatum quia laborum voluptatem natus doloremque
@@ -248,7 +244,7 @@ export function Header({ currentView, setCurrentView }) {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Dịch vụ</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                   {components.map((component) => (
                     <ListItem
                       key={component.title}
@@ -274,8 +270,8 @@ export function Header({ currentView, setCurrentView }) {
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-transform duration-300 transform rounded-full shadow-lg hover:scale-105 text-black border bg-white">
-                <UserCircleIcon className="h-5 w-5" />
+              <button className="flex items-center gap-2 px-4 py-2 text-lg font-medium transition-transform duration-300 transform rounded-full shadow-lg hover:scale-105 text-gray-900 border bg-white dark:text-white dark:bg-gray-950">
+                <UserCircleIcon className="h-7 w-7" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -283,25 +279,25 @@ export function Header({ currentView, setCurrentView }) {
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile-manager">
-                      <UserIcon className="h-5 w-5 mr-2" />
+                      <UserIcon className="h-7 w-7 mr-2" />
                       Hồ sơ của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/ShoppingCart">
-                      <ShoppingCartIcon className="h-5 w-5 mr-2" />
+                      <ShoppingCartIcon className="h-7 w-7 mr-2" />
                       Giỏ hàng
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/reservation-manager">
-                      <ClipboardDocumentIcon className="h-5 w-5 mr-2" />
+                      <ClipboardDocumentIcon className="h-7 w-7 mr-2" />
                       Đơn của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
-                    <PowerIcon className="h-5 w-5 mr-2" />
+                    <PowerIcon className="h-7 w-7 mr-2" />
                     Đăng xuất
                   </DropdownMenuItem>
                 </>
@@ -309,13 +305,13 @@ export function Header({ currentView, setCurrentView }) {
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/auth/login">
-                      <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2" />
+                      <ArrowRightOnRectangleIcon className="h-7 w-7 mr-2" />
                       Đăng nhập
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/auth/register">
-                      <UserIcon className="h-5 w-5 mr-2" />
+                      <UserIcon className="h-7 w-7 mr-2" />
                       Đăng ký
                     </Link>
                   </DropdownMenuItem>
@@ -323,6 +319,7 @@ export function Header({ currentView, setCurrentView }) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          <ModeToggle />
         </div>
       </div>
     </header>

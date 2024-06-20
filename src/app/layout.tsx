@@ -22,19 +22,19 @@ export default function RootLayout({
     <html lang="en">
       <head />
       <body>
-        <StateProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <StateProvider>
             <Header />
+
             {children}
-            <CallHotline />
-            <Toaster />
-          </ThemeProvider>
-        </StateProvider>
+            <Footer />
+          </StateProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
