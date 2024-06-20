@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider";
 
 import Footer from "@/components/footer/footer";
-import Header from "@/components/header/header";
+import Header from "../components/header/header";
 import { StateProvider } from "@/context/state-context";
 import type { Metadata } from "next";
 import "./globals.css";
