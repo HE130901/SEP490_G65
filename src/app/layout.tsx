@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider";
 
 import Footer from "@/components/footer/footer";
-import Header from "@/components/header/Header";
+import Header from "@/components/header/header";
 import CallHotline from "@/components/home/call-hotline";
 import { Toaster } from "@/components/ui/sonner";
 import { StateProvider } from "@/context/state-context";

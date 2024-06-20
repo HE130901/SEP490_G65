@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,65 +38,10 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { ModeToggle } from "@/components/ui/mode-toggle";
-
-const SidebarLink = ({ label, icon: Icon, href, active }) => (
-  <Link href={href}>
-    <div
-      className={`flex items-center px-6 py-4 text-lg ${
-        active
-          ? "bg-gray-300 text-gray-900 dark:bg-gray-700 dark:text-white"
-          : "hover:bg-gray-200 text-gray-900 dark:hover:bg-gray-700 dark:text-white"
-      } rounded-md transition-colors duration-300`}
-    >
-      <Icon
-        className={`h-7 w-7 mr-4 ${
-          active
-            ? "text-gray-900 dark:text-white"
-            : "text-gray-900 dark:text-white"
-        }`}
-      />
-      <span className="font-medium">{label}</span>
-    </div>
-  </Link>
-);
-
-const Sidebar = ({ currentView, setCurrentView, userRole }) => (
-  <div className="px-6 py-6 space-y-4">
-    <SidebarLink
-      label="Trang chủ"
-      icon={HomeIcon}
-      href="/dashboard"
-      active={currentView === "dashboard"}
-    />
-    <SidebarLink
-      label="Đặt ô chứa"
-      icon={BuildingOfficeIcon}
-      href="/dashboard/niche-reservation"
-      active={currentView === "nicheReservation"}
-    />
-    <SidebarLink
-      label="Đặt lịch viếng"
-      icon={PencilSquareIcon}
-      href="/dashboard/visit-registration"
-      active={currentView === "visitRegistration"}
-    />
-    <SidebarLink
-      label="Đặt dịch vụ"
-      icon={DocumentTextIcon}
-      href="/dashboard/service-order"
-      active={currentView === "serviceOrder"}
-    />
-    {userRole !== "Guest" && (
-      <SidebarLink
-        label="Quản lý hợp đồng"
-        icon={RectangleGroupIcon}
-        href="/dashboard/contract-manager"
-        active={currentView === "contractManager"}
-      />
-    )}
-  </div>
-);
+import { ModeToggle } from "@/components/ui/dark-mode";
+import { cn } from "@/lib/utils";
+import { Button } from "@material-tailwind/react";
+import { Sidebar } from "@/components/header/sidebar";
 
 export function Header({ currentView, setCurrentView }) {
   const [isScrolling, setIsScrolling] = useState(false);
@@ -118,7 +65,7 @@ export function Header({ currentView, setCurrentView }) {
 
   const isHomePage = pathname === "/";
 
-  const components: { title: string; href: string; description: string }[] = [
+  const components = [
     {
       title: "Đặt chỗ trực tuyến",
       href: "/dashboard/niche-reservation",
@@ -148,25 +95,23 @@ export function Header({ currentView, setCurrentView }) {
   const ListItem = React.forwardRef<
     React.ElementRef<"a">,
     React.ComponentPropsWithoutRef<"a">
-  >(({ className, title, children, ...props }, ref) => {
-    return (
-      <li>
-        <NavigationMenuLink asChild>
-          <a
-            ref={ref}
-            className={cn(
-              "block select-none space-y-1 rounded-md p-4 text-lg leading-none no-underline outline-none transition-colors hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:bg-gray-700 dark:focus:text-white",
-              className
-            )}
-            {...props}
-          >
-            <div className="text-lg font-medium">{title}</div>
-            <p className="line-clamp-2 text-lg leading-snug">{children}</p>
-          </a>
-        </NavigationMenuLink>
-      </li>
-    );
-  });
+  >(({ className, title, children, ...props }, ref) => (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-4 text-lg leading-none no-underline outline-none transition-colors hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:bg-gray-700 dark:focus:text-white",
+            className
+          )}
+          {...props}
+        >
+          <div className="text-lg font-medium">{title}</div>
+          <p className="line-clamp-2 text-lg leading-snug">{children}</p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  ));
   ListItem.displayName = "ListItem";
 
   return (
@@ -181,19 +126,15 @@ export function Header({ currentView, setCurrentView }) {
         <div className="flex items-center">
           <Sheet>
             <SheetTrigger asChild>
-              <button className="mr-4 p-4 bg-gray-300 text-gray-900 rounded-md shadow-md dark:bg-gray-700 dark:text-white">
-                <Bars3Icon className="h-7 w-7" />
-              </button>
+              <Button className="mr-4 bg-gray-300 text-gray-900 rounded-md shadow-md dark:bg-gray-700 dark:text-white">
+                <Bars3Icon className="h-5 w-5" />
+              </Button>
             </SheetTrigger>
             <SheetContent
               side="left"
               className="w-72 bg-white rounded-md shadow-md dark:bg-gray-950"
             >
-              <Sidebar
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                userRole={user?.role}
-              />
+              <Sidebar currentView={currentView} userRole={user?.role} />
             </SheetContent>
           </Sheet>
           <Link href="/" passHref>
