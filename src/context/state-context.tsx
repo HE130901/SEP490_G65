@@ -1,4 +1,5 @@
 "use client";
+
 import {
   createContext,
   useContext,
@@ -6,7 +7,13 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import axios from "@/utils/axios-config";
+import AuthAPI from "@/api/authApi";
+import BuildingAPI from "@/api/buildingApi";
+import FloorAPI from "@/api/floorApi";
+import AreaAPI from "@/api/areaApi";
+import NicheAPI from "@/api/nicheApi";
+import ReservationAPI from "@/api/reservationApi";
+import VisitRegistrationAPI from "@/api/visitRegistrationApi";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -47,10 +54,7 @@ export const StateProvider = ({ children }) => {
 
   const fetchCurrentUser = async (token) => {
     try {
-      const response = await axios.get("/api/auth/get-current-user", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const response = await AuthAPI.getCurrentUser(token);
       const { customerId, fullName, citizenId, role, email, phone, address } =
         response.data;
 
@@ -85,7 +89,7 @@ export const StateProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await AuthAPI.login(email, password);
       const { token, role } = response.data;
       localStorage.setItem("token", token);
       await fetchCurrentUser(token);
@@ -101,7 +105,7 @@ export const StateProvider = ({ children }) => {
 
   const register = async (formData) => {
     try {
-      await axios.post("/api/auth/register", formData);
+      await AuthAPI.register(formData);
       router.push("/auth/login");
       toast.success("Registration successful.");
     } catch (error) {
@@ -116,29 +120,11 @@ export const StateProvider = ({ children }) => {
     router.push("/");
   };
 
-  // fetchBuildings setting the state and logging the data.
   const fetchBuildings = useCallback(async () => {
     try {
-      const response = await fetch("https://localhost:7148/api/Buildings");
-      const contentType = response.headers.get("content-type");
-
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Expected JSON response but received " + contentType);
-      }
-
-      const data = await response.json();
-
-      // Extract the building data from the response structure
-      const buildings = data.$values.map((building) => ({
-        buildingId: building.buildingId,
-        buildingName: building.buildingName,
-        buildingDescription: building.buildingDescription,
-        buildingPicture: building.buildingPicture,
-        floors: building.floors.$values,
-      }));
-
-      setBuildings(buildings);
-      console.log("Buildings fetched successfully:", buildings);
+      const response = await BuildingAPI.getAll();
+      setBuildings(response.data.$values);
+      console.log("Buildings fetched successfully:", response.data.$values);
     } catch (error) {
       console.error("Error fetching buildings:", error);
     }
@@ -147,18 +133,9 @@ export const StateProvider = ({ children }) => {
   const fetchFloors = useCallback(async (buildingId) => {
     try {
       console.log("Fetching floors for building ID:", buildingId);
-      const response = await axios.get(`/api/Buildings/${buildingId}/floors`);
-      console.log("Floors response data:", response.data);
-      const floors = response.data.$values.map((floor) => ({
-        floorId: floor.floorId,
-        buildingId: floor.buildingId,
-        floorName: floor.floorName,
-        floorDescription: floor.floorDescription,
-        nichePrice: floor.nichePrice,
-        areas: floor.areas.$values,
-      }));
-      setFloors(floors);
-      console.log("Floors set in state:", floors);
+      const response = await FloorAPI.getAll(buildingId);
+      setFloors(response.data.$values);
+      console.log("Floors fetched successfully:", response.data.$values);
     } catch (error) {
       console.error("Error fetching floors:", error);
     }
@@ -172,19 +149,9 @@ export const StateProvider = ({ children }) => {
         "and floor ID:",
         floorId
       );
-      const response = await axios.get(
-        `/api/Buildings/${buildingId}/floors/${floorId}/areas`
-      );
-      console.log("Areas response data:", response.data);
-      const areas = response.data.$values.map((area) => ({
-        areaId: area.areaId,
-        floorId: area.floorId,
-        areaName: area.areaName,
-        areaDescription: area.areaDescription,
-        niches: area.niches.$values,
-      }));
-      setAreas(areas);
-      console.log("Areas set in state:", areas);
+      const response = await AreaAPI.getAll(buildingId, floorId);
+      setAreas(response.data.$values);
+      console.log("Areas fetched successfully:", response.data.$values);
     } catch (error) {
       console.error("Error fetching areas:", error);
     }
@@ -200,18 +167,9 @@ export const StateProvider = ({ children }) => {
         "and area ID:",
         areaId
       );
-      const response = await axios.get(
-        `/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`
-      );
-      console.log("Niches response data:", response.data);
-      const niches = response.data.$values.map((niche) => ({
-        nicheId: niche.nicheId,
-        areaId: niche.areaId,
-        nicheName: niche.nicheName,
-        status: niche.status,
-      }));
-      setNiches(niches);
-      console.log("Niches set in state:", niches);
+      const response = await NicheAPI.getAll(buildingId, floorId, areaId);
+      setNiches(response.data.$values);
+      console.log("Niches fetched successfully:", response.data.$values);
     } catch (error) {
       console.error("Error fetching niches:", error);
     }
@@ -219,9 +177,7 @@ export const StateProvider = ({ children }) => {
 
   const fetchReservations = async (customerId) => {
     try {
-      const response = await axios.get(
-        `/api/NicheReservations/Customer/${customerId}`
-      );
+      const response = await ReservationAPI.getByCustomerId(customerId);
       setReservations(response.data.$values);
     } catch (error) {
       console.error("Error fetching reservations:", error);
@@ -230,7 +186,7 @@ export const StateProvider = ({ children }) => {
 
   const deleteReservation = async (reservationId) => {
     try {
-      await axios.delete(`/api/NicheReservations/${reservationId}`);
+      await ReservationAPI.delete(reservationId);
       setReservations((prevReservations) =>
         prevReservations.filter(
           (reservation) => reservation.reservationId !== reservationId
@@ -245,9 +201,7 @@ export const StateProvider = ({ children }) => {
 
   const fetchVisitRegistrations = async (customerId) => {
     try {
-      const response = await axios.get(
-        `/api/VisitRegistrations/customer/${customerId}`
-      );
+      const response = await VisitRegistrationAPI.getByCustomerId(customerId);
       setVisitRegistrations(response.data.$values);
     } catch (error) {
       console.error("Error fetching visit registrations:", error);
@@ -256,7 +210,7 @@ export const StateProvider = ({ children }) => {
 
   const deleteVisitRegistration = async (visitId) => {
     try {
-      await axios.delete(`/api/VisitRegistrations/${visitId}`);
+      await VisitRegistrationAPI.delete(visitId);
       setVisitRegistrations((prevRegistrations) =>
         prevRegistrations.filter(
           (registration) => registration.visitId !== visitId

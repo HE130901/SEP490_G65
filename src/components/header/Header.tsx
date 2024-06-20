@@ -151,22 +151,24 @@ export function Header({ currentView, setCurrentView }) {
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button className="mr-4 p-2 bg-stone-400 text-white rounded-md shadow-md">
-                <Bars3Icon className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="left"
-              className={`w-64 bg-slate-100 rounded-md shadow-md`}
-            >
-              <Sidebar
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-              />
-            </SheetContent>
-          </Sheet>
+          {user && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button className="mr-4 p-2 bg-stone-400 text-white rounded-md shadow-md">
+                  <Bars3Icon className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className={`w-64 bg-slate-100 rounded-md shadow-md`}
+              >
+                <Sidebar
+                  currentView={currentView}
+                  setCurrentView={setCurrentView}
+                />
+              </SheetContent>
+            </Sheet>
+          )}
           <Link href="/" passHref>
             <motion.div
               whileHover={{ scale: 1.05 }}
