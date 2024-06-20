@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useStateContext } from "@/context/StateContext";
+import { useStateContext } from "@/context/state-context";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const WithAuth = (props: any) => {
@@ -16,14 +16,14 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
     }, [loading, user, router]);
 
     if (loading) {
-      return <p>Loading...</p>; // or a spinner/loader
+      return <p>Loading...</p>;
     }
 
     if (user) {
       return <WrappedComponent {...props} />;
     }
 
-    return null; // Prevent rendering the component if the user is not authenticated
+    return null;
   };
 
   WithAuth.displayName = `withAuth(${

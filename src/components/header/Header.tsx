@@ -1,33 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  HomeIcon,
-  ShoppingCartIcon,
-  UserCircleIcon,
-  PowerIcon,
-  Bars3Icon,
-  BuildingOfficeIcon,
-  DocumentTextIcon,
-  PencilSquareIcon,
-  RectangleGroupIcon,
-  UserIcon,
-  ClipboardDocumentIcon,
-  ArrowRightOnRectangleIcon,
-} from "@heroicons/react/24/solid";
 import logo from "@/assets/images/logo.png";
-import { useStateContext } from "@/context/state-context";
-import { usePathname } from "next/navigation";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
@@ -38,32 +17,81 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { ModeToggle } from "@/components/ui/dark-mode";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useStateContext } from "@/context/state-context";
 import { cn } from "@/lib/utils";
-import { Button } from "@material-tailwind/react";
-import { Sidebar } from "@/components/header/sidebar";
+import {
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  BuildingOfficeIcon,
+  ClipboardDocumentIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  PencilSquareIcon,
+  PowerIcon,
+  RectangleGroupIcon,
+  ShoppingCartIcon,
+  UserCircleIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/dark-mode";
+
+const SidebarLink = ({ label, icon: Icon, href, active }) => (
+  <Link href={href}>
+    <div
+      className={`flex items-center px-4 py-2 text-gray-800 ${
+        active ? "bg-stone-300 text-white" : "hover:bg-stone-200"
+      } rounded-md transition-colors duration-300`}
+    >
+      <Icon className={`h-5 w-5 ${active ? "text-white" : "text-gray-800"}`} />
+      <span
+        className={`ml-2 text-sm font-medium ${
+          active ? "text-white" : "text-gray-800"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  </Link>
+);
+
+const Sidebar = ({ currentView }) => (
+  <div className="px-4 py-6 space-y-2">
+    <SidebarLink
+      label="Quản lý ô chứa"
+      icon={HomeIcon}
+      href="/dashboard"
+      active={currentView === "dashboard"}
+    />
+    <SidebarLink
+      label="Đặt lịch viếng"
+      icon={PencilSquareIcon}
+      href="/visit-registration"
+      active={currentView === "visitRegistration"}
+    />
+    <SidebarLink
+      label="Đặt dịch vụ"
+      icon={DocumentTextIcon}
+      href="/service-order"
+      active={currentView === "serviceOrder"}
+    />
+    <SidebarLink
+      label="Hợp đồng"
+      icon={RectangleGroupIcon}
+      href="/contract-manager"
+      active={currentView === "contractManager"}
+    />
+  </div>
+);
 
 export function Header({ currentView, setCurrentView }) {
-  const [isScrolling, setIsScrolling] = useState(false);
   const { user, logout } = useStateContext();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    function handleScroll() {
-      if (window.scrollY > 0) {
-        setIsScrolling(true);
-      } else {
-        setIsScrolling(false);
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  const isHomePage = pathname === "/";
 
   const components = [
     {
@@ -92,49 +120,51 @@ export function Header({ currentView, setCurrentView }) {
     },
   ];
 
-  const ListItem = React.forwardRef<
-    React.ElementRef<"a">,
-    React.ComponentPropsWithoutRef<"a">
-  >(({ className, title, children, ...props }, ref) => (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-4 text-lg leading-none no-underline outline-none transition-colors hover:bg-gray-200 hover:text-gray-900 focus:bg-gray-200 focus:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:bg-gray-700 dark:focus:text-white",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-lg font-medium">{title}</div>
-          <p className="line-clamp-2 text-lg leading-snug">{children}</p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  ));
+  const ListItem = React.forwardRef(
+    ({ className, title, children, ...props }, ref) => {
+      return (
+        <li>
+          <NavigationMenuLink asChild>
+            <a
+              ref={ref}
+              className={cn(
+                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                className
+              )}
+              {...props}
+            >
+              <div className="text-sm font-medium leading-none">{title}</div>
+              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                {children}
+              </p>
+            </a>
+          </NavigationMenuLink>
+        </li>
+      );
+    }
+  );
   ListItem.displayName = "ListItem";
 
   return (
     <header
-      className={`fixed top-0 z-50 w-full transition-colors duration-300 ${
-        isScrolling || !isHomePage
-          ? "bg-white shadow-lg text-gray-900 dark:bg-gray-950 dark:text-white"
-          : "bg-transparent shadow-none text-gray-900 dark:text-white"
-      }`}
+      className={`fixed top-0 z-50 w-full transition-colors duration-300 bg-stone-100 shadow-lg text-black`}
     >
-      <div className="container mx-auto flex items-center justify-between py-4">
+      <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center">
           <Sheet>
             <SheetTrigger asChild>
-              <Button className="mr-4 bg-gray-300 text-gray-900 rounded-md shadow-md dark:bg-gray-700 dark:text-white">
+              <Button className="mr-4 p-2 bg-stone-400 text-white rounded-md shadow-md">
                 <Bars3Icon className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-72 bg-white rounded-md shadow-md dark:bg-gray-950"
+              className={`w-64 bg-slate-100 rounded-md shadow-md`}
             >
-              <Sidebar currentView={currentView} userRole={user?.role} />
+              <Sidebar
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+              />
             </SheetContent>
           </Sheet>
           <Link href="/" passHref>
@@ -142,7 +172,7 @@ export function Header({ currentView, setCurrentView }) {
               whileHover={{ scale: 1.05 }}
               className="rounded-lg overflow-hidden hover:cursor-pointer"
             >
-              <Image alt="logo" src={logo} height={60} width={180} />
+              <Image alt="logo" src={logo} height={50} width={150} />
             </motion.div>
           </Link>
         </div>
@@ -161,7 +191,7 @@ export function Header({ currentView, setCurrentView }) {
                         <div className="mb-2 mt-4 text-lg font-medium">
                           An Bình Viên
                         </div>
-                        <p className="text-sm leading-tight">
+                        <p className="text-sm leading-tight text-muted-foreground">
                           Lorem ipsum dolor sit amet, consectetur adipisicing
                           elit. Quos cumque, quas, quae, quidem dolorum
                           voluptatum quia laborum voluptatem natus doloremque
@@ -185,7 +215,7 @@ export function Header({ currentView, setCurrentView }) {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Dịch vụ</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                   {components.map((component) => (
                     <ListItem
                       key={component.title}
@@ -211,34 +241,34 @@ export function Header({ currentView, setCurrentView }) {
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-4 py-2 text-lg font-medium transition-transform duration-300 transform rounded-full shadow-lg hover:scale-105 text-gray-900 border bg-white dark:text-white dark:bg-gray-950">
-                <UserCircleIcon className="h-7 w-7" />
-              </button>
+              <Button className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-transform duration-300 transform rounded-full shadow-lg hover:scale-105 text-black border bg-white">
+                <UserCircleIcon className="h-5 w-5" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {user ? (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/profile-manager">
-                      <UserIcon className="h-7 w-7 mr-2" />
+                      <UserIcon className="h-5 w-5 mr-2" />
                       Hồ sơ của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/ShoppingCart">
-                      <ShoppingCartIcon className="h-7 w-7 mr-2" />
+                      <ShoppingCartIcon className="h-5 w-5 mr-2" />
                       Giỏ hàng
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard/reservation-manager">
-                      <ClipboardDocumentIcon className="h-7 w-7 mr-2" />
+                      <ClipboardDocumentIcon className="h-5 w-5 mr-2" />
                       Đơn của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
-                    <PowerIcon className="h-7 w-7 mr-2" />
+                    <PowerIcon className="h-5 w-5 mr-2" />
                     Đăng xuất
                   </DropdownMenuItem>
                 </>
@@ -246,14 +276,8 @@ export function Header({ currentView, setCurrentView }) {
                 <>
                   <DropdownMenuItem asChild>
                     <Link href="/auth/login">
-                      <ArrowRightOnRectangleIcon className="h-7 w-7 mr-2" />
+                      <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2" />
                       Đăng nhập
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/auth/register">
-                      <UserIcon className="h-7 w-7 mr-2" />
-                      Đăng ký
                     </Link>
                   </DropdownMenuItem>
                 </>

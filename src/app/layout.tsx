@@ -2,11 +2,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 
 import Footer from "@/components/footer/footer";
 import Header from "@/components/header/header";
-import CallHotline from "@/components/home/call-hotline";
-import { Toaster } from "@/components/ui/sonner";
 import { StateProvider } from "@/context/state-context";
-import "./globals.css";
 import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "An Bình Viên",
@@ -19,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head />
       <body>
         <ThemeProvider
@@ -30,7 +28,6 @@ export default function RootLayout({
         >
           <StateProvider>
             <Header />
-
             {children}
             <Footer />
           </StateProvider>
