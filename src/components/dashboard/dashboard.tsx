@@ -19,21 +19,21 @@ export default function CustomerDashboard() {
               title: "Đặt ô chứa",
               image: "/images/booking2.jpg",
               description:
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
+                "Dịch vụ đặt ô chứa trực tuyến giúp việc lưu trữ tro cốt người thân trở nên dễ dàng cũng như đem lại sự an tâm và tiện lợi cho gia đình trong quá trình tưởng nhớ và tri ân người đã khuất.",
               link: "/niche-reservation",
             },
             {
               title: "Đăng ký viếng thăm",
               image: "/images/visit.jpg",
               description:
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
+                "Dịch vụ đăng ký viếng thăm giúp bạn lên kế hoạch tưởng niệm người thân một cách thuận tiện và chu đáo. Thay vì phải đến trực tiếp, bạn có thể đăng ký trước trên website.",
               link: "/visit-registration",
             },
             {
               title: "Đặt các dịch vụ khác",
               image: "/images/service.png",
               description:
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
+                "Nhằm mang đến sự tiện lợi và hỗ trợ tốt nhất cho quý khách đã đặt mua ô chứa tại An Bình Viên, chúng tôi cung cấp các gói lễ theo ngày rằm, lễ tết, giỗ chạp... để gia đình tiện lợi tưởng nhớ người thân",
               link: "/service-order",
             },
           ].map((item, index) => (
