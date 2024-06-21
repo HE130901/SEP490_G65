@@ -26,9 +26,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StateProvider>
-            <Header />
-            {children}
-            <Footer />
+            <div id="root-container">
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </div>
           </StateProvider>
         </ThemeProvider>
       </body>

@@ -1,3 +1,4 @@
+/* app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -64,17 +65,27 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
-}
 
-@layer base {
+  body {
+    @apply bg-background text-foreground;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+  }
+
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  #root-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 }
 
+/* Additional custom properties for hover, active, and shadows */
 :root {
   --color-bg: #f8fafc;
   --color-text: #000;
@@ -91,4 +102,36 @@
   --color-bg-active: #4a5568;
   --color-border: #4a5568;
   --color-shadow: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  background-color: var(--color-bg-hover);
+}
+
+a:active {
+  background-color: var(--color-bg-active);
+}
+
+button {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+button:hover {
+  background-color: var(--color-bg-hover);
+}
+
+button:active {
+  background-color: var(--color-bg-active);
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import logo from "@/assets/images/logo.png";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/dark-mode";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +25,6 @@ import { cn } from "@/lib/utils";
 import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
-  BuildingOfficeIcon,
   ClipboardDocumentIcon,
   DocumentTextIcon,
   HomeIcon,
@@ -32,15 +33,12 @@ import {
   RectangleGroupIcon,
   ShoppingCartIcon,
   UserCircleIcon,
-  UserIcon,
+  UserIcon
 } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/dark-mode";
 
 const SidebarLink = ({ label, icon: Icon, href, active }) => (
   <Link href={href}>
@@ -190,7 +188,7 @@ export function Header({ currentView, setCurrentView }) {
                         className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                         href="/"
                       >
-                        <div className="mb-2 mt-4 text-lg font-medium">
+                        <div className="mb-2 text-lg font-medium">
                           An Bình Viên
                         </div>
                         <p className="text-sm leading-tight text-muted-foreground">

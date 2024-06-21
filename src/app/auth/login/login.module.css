@@ -1,0 +1,24 @@
+/* src/app/auth/login/login.module.css */
+@keyframes bg-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(270deg, #ff7a18, #af002d, #319197, #ff7a18);
+  background-size: 600% 600%;
+  z-index: -1;
+  animation: bg-move 8s ease infinite;
+}
