@@ -3,7 +3,7 @@ import React from 'react';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "An Bình Viên - Đăng nhập",
+  title: "Cập nhật mật khẩu",
   description: "Nơi an nghỉ cuối cùng, bình yên và trang trọng",
 };
 interface LayoutProps {

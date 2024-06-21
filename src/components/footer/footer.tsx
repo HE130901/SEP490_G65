@@ -16,7 +16,7 @@ export default function Footer() {
               <div>
                 <h4 className="font-semibold">Địa chỉ</h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  123 Main St, Anytown USA
+                  123 Hoà Lạc, Hà Nội
                 </p>
               </div>
             </div>
@@ -25,7 +25,7 @@ export default function Footer() {
               <div>
                 <h4 className="font-semibold">Số điện thoại</h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  (555) 555-5555
+                  (+84) 999-999-999
                 </p>
               </div>
             </div>
