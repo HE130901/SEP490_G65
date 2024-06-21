@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useStateContext } from "@/context/state-context";
 import { useForm } from "react-hook-form";
@@ -38,8 +37,8 @@ const Login = () => {
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen">
-      <div className={`${styles["bg-animation"]} absolute`} />
+    <div className={`relative flex items-center justify-center min-h-screen`}>
+      <div className={styles["bg-animation"]} />
       <div className="relative z-10 space-y-6 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Đăng nhập</h1>
