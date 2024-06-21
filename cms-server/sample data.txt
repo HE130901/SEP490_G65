@@ -1,0 +1,87 @@
+-- Thêm dữ liệu mẫu cho bảng Building
+INSERT INTO Building (BuildingName, BuildingDescription)
+VALUES 
+('Building 1', 'First building description'),
+('Building 2', 'Second building description');
+GO
+
+-- Thêm dữ liệu mẫu cho bảng Floor
+DECLARE @BuildingID INT
+DECLARE @FloorName NVARCHAR(255)
+DECLARE @FloorDescription NVARCHAR(MAX)
+DECLARE @NichePrice DECIMAL(18, 2)
+DECLARE @FloorCounter INT = 1
+
+WHILE @FloorCounter <= 14
+BEGIN
+    IF @FloorCounter <= 7
+        SET @BuildingID = 1
+    ELSE
+        SET @BuildingID = 2
+
+    SET @FloorName = 'Floor ' + CAST(((@FloorCounter - 1) % 7 + 1) AS NVARCHAR(10))
+    SET @FloorDescription = 'Description for ' + @FloorName
+    SET @NichePrice = 100.00 * (@FloorCounter % 7 + 1)
+
+    INSERT INTO Floor (BuildingID, FloorName, FloorDescription, NichePrice)
+    VALUES (@BuildingID, @FloorName, @FloorDescription, @NichePrice)
+
+    SET @FloorCounter = @FloorCounter + 1
+END
+GO
+
+-- Thêm dữ liệu mẫu cho bảng Area
+DECLARE @FloorID INT
+DECLARE @AreaCounter INT = 1
+DECLARE @AreaName NVARCHAR(255)
+DECLARE @AreaDescription NVARCHAR(MAX)
+
+SET @FloorID = 1
+
+WHILE @FloorID <= 14
+BEGIN
+    SET @AreaCounter = 1
+
+    WHILE @AreaCounter <= 8
+    BEGIN
+        SET @AreaName = 'Area ' + CAST(@AreaCounter AS NVARCHAR(10))
+        SET @AreaDescription = 'Description for ' + @AreaName
+
+        INSERT INTO Area (FloorID, AreaName, AreaDescription)
+        VALUES (@FloorID, @AreaName, @AreaDescription)
+
+        SET @AreaCounter = @AreaCounter + 1
+    END
+
+    SET @FloorID = @FloorID + 1
+END
+GO
+
+-- Thêm dữ liệu mẫu cho bảng Niche
+DECLARE @AreaID INT
+DECLARE @NicheCounter INT = 1
+DECLARE @NicheName NVARCHAR(255)
+DECLARE @NicheDescription NVARCHAR(MAX)
+DECLARE @Status NVARCHAR(50)
+
+SET @AreaID = 1
+
+WHILE @AreaID <= 112
+BEGIN
+    SET @NicheCounter = 1
+
+    WHILE @NicheCounter <= 100
+    BEGIN
+        SET @NicheName = 'Niche ' + CAST(@NicheCounter AS NVARCHAR(10))
+        SET @NicheDescription = 'Description for ' + @NicheName
+        SET @Status = 'Available'
+
+        INSERT INTO Niche (AreaID, NicheName, Status, NicheDescription)
+        VALUES (@AreaID, @NicheName, @Status, @NicheDescription)
+
+        SET @NicheCounter = @NicheCounter + 1
+    END
+
+    SET @AreaID = @AreaID + 1
+END
+GO
