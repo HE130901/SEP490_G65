@@ -1,5 +1,5 @@
-//src/app/dashboard/niche-reservation/page.tsx
 "use client";
+import VisitRegistration from "@/components/visit-registration/VisitRegistration";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,28 +8,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import withAuth from "@/components/withAuth";
 
-import React, { useState, useEffect } from "react";
-import Loading from "@/components/ui/Loading";
-import Information from "@/components/niche-reservation/Information";
-import NicheReservation from "@/components/niche-reservation/NicheReservation";
-
-const NicheReservationPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <Loading />;
-  }
+const VisitRegistrationPage = () => {
   return (
-    <div className="flex h-auto pt-16 justify-center">
+    <div className="flex h-auto pt-16 justify-center pb-32">
       <div className="flex flex-1 overflow-auto">
         <div className="flex-1">
           <div className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
@@ -44,13 +27,11 @@ const NicheReservationPage = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Đặt ô chứa</BreadcrumbPage>
+                  <BreadcrumbPage>Đăng ký viếng</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            
-            <Information />
-            <NicheReservation/>
+            <VisitRegistration />
           </div>
         </div>
       </div>
@@ -58,4 +39,4 @@ const NicheReservationPage = () => {
   );
 };
 
-export default NicheReservationPage;
+export default VisitRegistrationPage;

@@ -94,19 +94,19 @@ export function Header({ currentView, setCurrentView }) {
   const components = [
     {
       title: "Đặt chỗ trực tuyến",
-      href: "/dashboard/niche-reservation",
+      href: "/niche-reservation",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia laborum voluptatem natus doloremque iusto.",
     },
     {
       title: "Đăng ký viếng thăm",
-      href: "/dashboard/visit-registration",
+      href: "/visit-registration",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia",
     },
     {
       title: "Đặt dịch vụ ",
-      href: "/dashboard/service-order",
+      href: "/service-order",
       description:
         "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia",
     },

@@ -1,54 +1,56 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 
-const Information = () => {
+export default function Component() {
   return (
-    <div className="flex flex-col md:flex-row px-4 md:px-10 lg:px-20 xl:px-32 2xl:px-44 gap-1">
-      <div className="p-4 w-full md:w-1/3 pt-8">
-        {/* Description Section */}
-        <div className="flex-1 p-4 bg-gray-200 rounded-lg mb-4 md:mb-0 md:mr-4">
-          <h2 className="text-xl font-semibold mb-2">Tòa nhà An Lạc</h2>
-          <p className="mb-4">
-            Tòa nhà An Lạc là nơi an nghỉ thanh tịnh và trang trọng dành cho
-            những người đã khuất.
-            <br /> Với lối kiến trúc hiện đại kết hợp hài hòa với không gian
-            xanh mát, tòa nhà mang đến cảm giác bình yên và ấm áp cho mỗi khách
-            viếng thăm.
-          </p>
-          <Button className="bg-gray-500 text-white hover:bg-gray-600">
-            Xem thêm
-          </Button>
+    <section className="w-full pt-4  ">
+      <div className="container grid gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-2">
+        <div>
+          <div className="space-y-3 mr-16">
+            <h2 className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl">Tháp đôi An Bình Viên</h2>
+            <p className="max-w-[700px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
+            An Viên và An Bình là hai tòa tháp được xây dựng với kiến trúc trang trọng và không gian yên tĩnh để lưu trữ tro cốt của những người đã khuất. <br/> Mỗi toà tháp gồm 7 tầng, các tầng được chia làm 8 khu riêng biệt. <br/>Cả hai toà tháp đều là những lựa chọn tốt cho việc lưu trữ tro cốt người thân. Tùy theo sở thích và điều kiện, gia đình có thể lựa chọn nơi phù hợp để tưởng nhớ và tri ân người đã khuất. 
+            </p>
+          </div>
         </div>
+        <div>
+          <Carousel className="w-full max-w-md ml-16" autoSlide>
+            <CarouselContent>
+              <CarouselItem>
+                <img
+                  src="/images/event1.jpg"
+                  width={450}
+                  height={300}
+                  alt="An Viên"
+                  className="aspect-[3/2] rounded-xl object-cover"
+                />
+              </CarouselItem>
+              <CarouselItem>
+                <img
+                  src="/images/tower.webp"
+                  width={450}
+                  height={300}
+                  alt="An Bình"
+                  className="aspect-[3/2] rounded-xl object-cover"
+                />
+              </CarouselItem>
+              <CarouselItem>
+                <img
+                  src="/images/tower.webp"
+                  width={450}
+                  height={300}
+                  alt="Aerial View"
+                  className="aspect-[3/2] rounded-xl object-cover"
+                />
+              </CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>       
       </div>
-      <div className="p-4 w-full md:w-1/3 flex justify-center items-center">
-        {/* Images Section */}
-        <div className="relative w-80 h-80">
-          <Image
-            src="/images/sample1.png" // Correct path
-            alt="An Lac Building"
-            layout="fill"
-            objectFit="cover"
-            className="rounded-lg shadow-md"
-          />
-        </div>
-      </div>
-      <div className="p-4 w-full md:w-1/3 flex justify-center items-center">
-        {/* Images Section */}
-        <div className="relative w-80 h-80">
-          <Image
-             src="/images/sample2.png" // Correct path
-            alt="Tầng 1"
-            layout="fill"
-            objectFit="cover"
-            className="rounded-lg shadow-md"
-          />
-        </div>
-      </div>
-      
-    </div>
-  );
-};
-
-export default Information;
+    </section>
+  )
+}

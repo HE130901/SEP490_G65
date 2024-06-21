@@ -10,7 +10,7 @@ import ReservationForm from "@/components/niche-reservation/ReservationForm";
 import { useStateContext } from "@/context/state-context";
 import Information from "./Information";
 
-const NicheReservation = () => {
+const NicheReservationPage = () => {
   const {
     selectedBuilding,
     selectedFloor,
@@ -79,15 +79,14 @@ const NicheReservation = () => {
 
   return (
     <div>
-      <Information />
       <div className="flex flex-col md:flex-row px-4 md:px-10 lg:px-20 xl:px-32 2xl:px-44">
-        <div className="p-4 w-full md:w-1/6 pt-8">
+        <div className="w-full md:w-1/6 ">
           <h1 className="text-2xl font-bold">Tìm kiếm</h1>
-          <div className="pt-4">
+          <div className="">
             {loading ? <Skeleton height={50} /> : <CombinedSelector />}
           </div>
         </div>
-        <div className="p-4 w-full md:w-5/6">
+        <div className=" w-full md:w-5/6 pt-2">
           <div className="flex justify-center my-6">
             {nicheLoading ? (
               <Skeleton height={200} width="100%" />
@@ -114,4 +113,4 @@ const NicheReservation = () => {
   );
 };
 
-export default NicheReservation;
+export default NicheReservationPage;

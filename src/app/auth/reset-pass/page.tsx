@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import axios from "@/api/axios-config";
-import styles from "./reset-pass.module.css"; // Updated CSS module
+import styles from "./reset-pass.module.css"; 
 
 export default function Component() {
+  // State variables
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
