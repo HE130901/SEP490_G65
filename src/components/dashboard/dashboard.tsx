@@ -6,10 +6,10 @@ import Link from "next/link";
 export default function CustomerDashboard() {
   return (
     <div className="flex flex-col bg-white dark:bg-gray-950 ">
-      <div className="py-12 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">
+      <div className="py-8 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">
         <section className="mb-12 text-center">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Danh mục dịch vụ</h1>
-          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">
+          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300 font-medium ">
             Chào mừng đến với trang dịch vụ của chúng tôi.<br/> Tại đây, bạn có thể đặt các dịch vụ liên quan đến chỗ chứa, đăng ký viếng thăm và đặt các dịch vụ khác.
           </p>
         </section>
@@ -20,21 +20,21 @@ export default function CustomerDashboard() {
               image: "/images/booking2.jpg",
               description:
                 "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
-              link: "/dashboard/niche-reservation",
+              link: "/niche-reservation",
             },
             {
               title: "Đăng ký viếng thăm",
               image: "/images/visit.jpg",
               description:
                 "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
-              link: "/dashboard/visit-registration",
+              link: "/visit-registration",
             },
             {
               title: "Đặt các dịch vụ khác",
               image: "/images/service.png",
               description:
                 "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Recusandae dolores, possimus pariatur animi temporibus nesciunt praesentium dolore sed nulla ipsum eveniet corporis quidem, mollitia itaque minus soluta, voluptates neque explicabo tempora nisi culpa eius atque dignissimos. Molestias explicabo corporis voluptatem?",
-              link: "/dashboard/service-order",
+              link: "/service-order",
             },
           ].map((item, index) => (
             <div key={index} className="flex flex-col items-start space-y-2">

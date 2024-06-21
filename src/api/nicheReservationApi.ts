@@ -1,6 +1,6 @@
 import axiosInstance from "@/api/axios-config";
 
-const ReservationAPI = {
+const NicheReservationAPI = {
   getByCustomerId(customerId: string) {
     const url = `/api/NicheReservations/Customer/${customerId}`;
     return axiosInstance.get(url);
@@ -10,4 +10,4 @@ const ReservationAPI = {
     return axiosInstance.delete(url);
   },
 };
-export default ReservationAPI;
+export default NicheReservationAPI;

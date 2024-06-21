@@ -12,7 +12,7 @@ import BuildingAPI from "@/api/buildingApi";
 import FloorAPI from "@/api/floorApi";
 import AreaAPI from "@/api/areaApi";
 import NicheAPI from "@/api/nicheApi";
-import ReservationAPI from "@/api/reservationApi";
+import NicheReservationAPI from "@/api/nicheReservationApi";
 import VisitRegistrationAPI from "@/api/visitRegistrationApi";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -177,7 +177,7 @@ export const StateProvider = ({ children }) => {
 
   const fetchReservations = async (customerId) => {
     try {
-      const response = await ReservationAPI.getByCustomerId(customerId);
+      const response = await NicheReservationAPI.getByCustomerId(customerId);
       setReservations(response.data.$values);
     } catch (error) {
       console.error("Error fetching reservations:", error);
@@ -186,7 +186,7 @@ export const StateProvider = ({ children }) => {
 
   const deleteReservation = async (reservationId) => {
     try {
-      await ReservationAPI.delete(reservationId);
+      await NicheReservationAPI.delete(reservationId);
       setReservations((prevReservations) =>
         prevReservations.filter(
           (reservation) => reservation.reservationId !== reservationId
