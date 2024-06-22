@@ -11,7 +11,7 @@ import {
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
 
-const CustomerDashboardPage = () => {
+const ServicesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,4 +53,4 @@ const CustomerDashboardPage = () => {
   );
 };
 
-export default CustomerDashboardPage;
+export default ServicesPage;

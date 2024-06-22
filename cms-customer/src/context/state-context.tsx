@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import AuthAPI from "@/api/authApi";
 import BuildingAPI from "@/api/buildingApi";
 import NicheAPI from "@/api/nicheApi";
@@ -68,15 +74,6 @@ export const StateProvider = ({ children }) => {
     }
   };
 
-  const handleRoleBasedRedirection = (role) => {
-    console.log("Redirecting based on role:", role);
-    if (role === "Guest" || role === "Customer") {
-      router.push("/dashboard");
-    } else if (role === "Staff" || role === "Manager") {
-      router.push("/staff-dashboard");
-    }
-  };
-
   const login = async (email, password) => {
     try {
       const response = await AuthAPI.login(email, password);
@@ -85,11 +82,11 @@ export const StateProvider = ({ children }) => {
       await fetchCurrentUser(token);
 
       console.log("User role after login:", role);
-      handleRoleBasedRedirection(role);
-      toast.success("Login successful!");
+      router.push("/dashboard");
+      toast.success("Đăng nhập thành công!");
     } catch (error) {
       console.error("Login failed", error);
-      toast.error("Login failed. Please check your login information.");
+      toast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
     }
   };
 
@@ -114,7 +111,10 @@ export const StateProvider = ({ children }) => {
     try {
       const response = await BuildingAPI.getAllData();
       setBuildings(response.data.buildings.$values);
-      console.log("Buildings, floors, and areas fetched successfully:", response.data.buildings.$values);
+      console.log(
+        "Buildings, floors, and areas fetched successfully:",
+        response.data.buildings.$values
+      );
     } catch (error) {
       console.error("Error fetching buildings, floors, and areas:", error);
     }
@@ -234,7 +234,6 @@ export const StateProvider = ({ children }) => {
         login,
         register,
         logout,
-        handleRoleBasedRedirection,
       }}
     >
       {children}

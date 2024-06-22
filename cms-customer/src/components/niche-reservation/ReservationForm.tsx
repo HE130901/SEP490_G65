@@ -215,14 +215,16 @@ const ReservationForm = ({ isVisible, onClose }) => {
               className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <p className="mb-4 text-sm font-semibold text-red-600">
-            Quý khách vui lòng lưu ý!
-          </p>
+          <div className="flex justify-center ">
+            <p className=" text-sm font-semibold text-red-600 ">
+              Quý khách vui lòng lưu ý!
+            </p>
+          </div>
+
           <p className="mb-4 text-sm text-red-600">
-            Thời gian giữ chỗ ô chứa chỉ có hiệu lực trong vòng 3 ngày kể từ khi
-            đặt chỗ thành công.
-            <br />
-            Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị hủy.
+            Thời gian giữ chỗ chỉ có hiệu lực trong vòng 3 ngày kể từ khi đặt
+            chỗ thành công. Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị
+            hủy.
           </p>
           <div className="flex justify-center">
             <Button

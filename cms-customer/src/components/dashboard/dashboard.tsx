@@ -8,9 +8,13 @@ export default function CustomerDashboard() {
     <div className="flex flex-col bg-white dark:bg-gray-950 ">
       <div className="py-8 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">
         <section className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">Danh mục dịch vụ</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+            Danh mục dịch vụ
+          </h1>
           <p className="mt-4 text-lg text-gray-700 dark:text-gray-300 font-medium ">
-            Chào mừng đến với trang dịch vụ của chúng tôi.<br/> Tại đây, bạn có thể đặt các dịch vụ liên quan đến chỗ chứa, đăng ký viếng thăm và đặt các dịch vụ khác.
+            Chào mừng đến với trang dịch vụ của chúng tôi.
+            <br /> Tại đây, bạn có thể đặt các dịch vụ liên quan đến chỗ chứa,
+            đăng ký viếng thăm và đặt các dịch vụ khác.
           </p>
         </section>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -30,7 +34,7 @@ export default function CustomerDashboard() {
               link: "/visit-registration",
             },
             {
-              title: "Đặt các dịch vụ khác",
+              title: "Các dịch vụ khác",
               image: "/images/service.png",
               description:
                 "Nhằm mang đến sự tiện lợi và hỗ trợ tốt nhất cho quý khách đã đặt mua ô chứa tại An Bình Viên, chúng tôi cung cấp các gói lễ theo ngày rằm, lễ tết, giỗ chạp... để gia đình tiện lợi tưởng nhớ người thân",
@@ -62,8 +66,9 @@ export default function CustomerDashboard() {
           ))}
         </div>
         <p className="mt-4 font-bold text-gray-700 dark:text-gray-300 text-center pt-8">
-           Chúng tôi cam kết mang lại cho bạn trải nghiệm tốt nhất và trang trọng nhất.
-          </p>
+          Chúng tôi cam kết mang lại cho bạn trải nghiệm tốt nhất và trang trọng
+          nhất.
+        </p>
       </div>
     </div>
   );
