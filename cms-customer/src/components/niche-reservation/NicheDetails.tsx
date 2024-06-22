@@ -1,3 +1,4 @@
+//src/components/niche-reservation/NicheDetails.tsx
 import React from "react";
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

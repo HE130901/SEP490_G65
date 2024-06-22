@@ -1,10 +1,11 @@
+
+// src/components/niche-reservation/NicheReservationPage.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
-import NicheDetails from "@/components/niche-reservation/NicheDetails";
 import NicheSelector from "@/components/niche-reservation/NicheSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
 import { useStateContext } from "@/context/state-context";
@@ -23,7 +24,6 @@ const NicheReservationPage = () => {
     user,
   } = useStateContext();
 
-  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [nicheLoading, setNicheLoading] = useState(false);
@@ -48,16 +48,7 @@ const NicheReservationPage = () => {
     }
   }, [selectedBuilding, selectedFloor, selectedArea, fetchNiches]);
 
-  const openDetailsModal = () => {
-    setIsDetailsVisible(true);
-  };
-
-  const closeDetailsModal = () => {
-    setIsDetailsVisible(false);
-  };
-
   const openBookingForm = () => {
-    setIsDetailsVisible(false);
     setIsFormVisible(true);
   };
 
@@ -87,18 +78,9 @@ const NicheReservationPage = () => {
             {nicheLoading ? (
               <Skeleton height={200} width="100%" />
             ) : (
-              <NicheSelector openModal={openDetailsModal} />
+              <NicheSelector openModal={openBookingForm} />
             )}
           </div>
-          <NicheDetails
-            isVisible={isDetailsVisible}
-            onClose={closeDetailsModal}
-            selectedBuilding={selectedBuilding}
-            selectedFloor={selectedFloor}
-            selectedArea={selectedArea}
-            selectedNiche={selectedNiche}
-            onBook={openBookingForm}
-          />
           <ReservationForm
             isVisible={isFormVisible}
             onClose={closeBookingForm}
