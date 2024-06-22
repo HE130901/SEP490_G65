@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export default function CustomerDashboard() {
+export default function ServicesList() {
   return (
     <div className="flex flex-col bg-white dark:bg-gray-950 ">
       <div className="py-8 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">

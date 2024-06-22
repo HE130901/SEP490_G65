@@ -37,15 +37,10 @@ const ServicesPage = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/services">Dịch vụ</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Trang hiện tại</BreadcrumbPage>
+                  <BreadcrumbPage>Khách hàng</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            <ServicesList />
           </div>
         </div>
       </div>
