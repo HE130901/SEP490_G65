@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import AuthAPI from "@/api/authApi";
 import BuildingAPI from "@/api/buildingApi";
-import FloorAPI from "@/api/floorApi";
-import AreaAPI from "@/api/areaApi";
 import NicheAPI from "@/api/nicheApi";
 import NicheReservationAPI from "@/api/nicheReservationApi";
 import VisitRegistrationAPI from "@/api/visitRegistrationApi";
@@ -33,8 +25,6 @@ export const StateProvider = ({ children }) => {
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedNiche, setSelectedNiche] = useState(null);
   const [buildings, setBuildings] = useState([]);
-  const [floors, setFloors] = useState([]);
-  const [areas, setAreas] = useState([]);
   const [niches, setNiches] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [visitRegistrations, setVisitRegistrations] = useState([]);
@@ -120,40 +110,13 @@ export const StateProvider = ({ children }) => {
     router.push("/");
   };
 
-  const fetchBuildings = useCallback(async () => {
+  const fetchBuildingsData = useCallback(async () => {
     try {
-      const response = await BuildingAPI.getAll();
-      setBuildings(response.data.$values);
-      console.log("Buildings fetched successfully:", response.data.$values);
+      const response = await BuildingAPI.getAllData();
+      setBuildings(response.data.buildings.$values);
+      console.log("Buildings, floors, and areas fetched successfully:", response.data.buildings.$values);
     } catch (error) {
-      console.error("Error fetching buildings:", error);
-    }
-  }, []);
-
-  const fetchFloors = useCallback(async (buildingId) => {
-    try {
-      console.log("Fetching floors for building ID:", buildingId);
-      const response = await FloorAPI.getAll(buildingId);
-      setFloors(response.data.$values);
-      console.log("Floors fetched successfully:", response.data.$values);
-    } catch (error) {
-      console.error("Error fetching floors:", error);
-    }
-  }, []);
-
-  const fetchAreas = useCallback(async (buildingId, floorId) => {
-    try {
-      console.log(
-        "Fetching areas for building ID:",
-        buildingId,
-        "and floor ID:",
-        floorId
-      );
-      const response = await AreaAPI.getAll(buildingId, floorId);
-      setAreas(response.data.$values);
-      console.log("Areas fetched successfully:", response.data.$values);
-    } catch (error) {
-      console.error("Error fetching areas:", error);
+      console.error("Error fetching buildings, floors, and areas:", error);
     }
   }, []);
 
@@ -251,19 +214,13 @@ export const StateProvider = ({ children }) => {
         setSelectedNiche,
         buildings,
         setBuildings,
-        floors,
-        setFloors,
-        areas,
-        setAreas,
         niches,
         setNiches,
         reservations,
         setReservations,
         visitRegistrations,
         setVisitRegistrations,
-        fetchBuildings,
-        fetchFloors,
-        fetchAreas,
+        fetchBuildingsData,
         fetchNiches,
         fetchReservations,
         deleteReservation,

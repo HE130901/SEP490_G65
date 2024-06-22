@@ -44,6 +44,7 @@ const VisitRegistration = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset
   } = useForm({
     resolver: zodResolver(visitSchema),
   });
@@ -67,6 +68,7 @@ const VisitRegistration = () => {
       await axios.post("/api/VisitRegistrations", dataToSubmit);
       toast.success("Đăng ký thăm viếng thành công!");
       fetchVisitRegistrations(user.customerId);
+      reset();  // Reset the form
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Đăng ký thăm viếng thất bại!");
@@ -172,7 +174,7 @@ const VisitRegistration = () => {
           </div>
           <Button
             type="submit"
-            className="w-full py-3 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-300"
+            className="w-full py-3 text-white font-bold rounded-lg hover:bg-orange-400 transition duration-300"
             disabled={isSubmitting}
           >
             {isSubmitting ? "Đang gửi..." : "Xác nhận"}

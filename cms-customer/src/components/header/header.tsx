@@ -1,6 +1,6 @@
 "use client";
 
-import logo from "@/assets/images/logo.png";
+import logo from "../../../public/images/logo.png";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/ui/dark-mode";
 import {
@@ -172,7 +172,14 @@ export function Header({ currentView, setCurrentView }) {
               whileHover={{ scale: 1.05 }}
               className="rounded-lg overflow-hidden hover:cursor-pointer"
             >
-              <Image alt="logo" src={logo} height={50} width={150} />
+              <Image
+                alt="logo"
+                src={logo}
+                height={50}
+                width={150}
+                priority
+                style={{ width: "50", height: "150" }}
+              />
             </motion.div>
           </Link>
         </div>

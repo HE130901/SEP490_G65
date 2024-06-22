@@ -70,17 +70,17 @@ const NicheSelector = ({ openModal }) => {
       }, [])
     : createRows(sortedNiches, 20);
 
-  const renderRows = () => {
-    if (loading) {
-      return (
-        <div className="flex flex-wrap justify-center space-x-2">
-          {Array.from({ length: 20 }).map((_, idx) => (
-            <Skeleton key={idx} height={50} width={50} />
-          ))}
-        </div>
-      );
-    }
+  const renderSkeletonRows = () => {
+    return (
+      <div className="flex flex-wrap justify-center space-x-2">
+        {Array.from({ length: 100 }).map((_, idx) => (
+          <Skeleton key={idx} height={50} width={50} />
+        ))}
+      </div>
+    );
+  };
 
+  const renderRows = () => {
     if (isSmallScreen) {
       return rows.reverse().map((floorRows, floorIndex) => (
         <div key={floorIndex} className="flex flex-col space-y-2">
@@ -150,7 +150,9 @@ const NicheSelector = ({ openModal }) => {
         {selectedBuilding?.buildingName} - {selectedFloor?.floorName} -{" "}
         {selectedArea?.areaName}
       </h2>
-      <div className="flex flex-col items-center space-y-4">{renderRows()}</div>
+      <div className="flex flex-col items-center space-y-4">
+        {loading ? renderSkeletonRows() : renderRows()}
+      </div>
       <div className="mt-4 flex justify-center space-x-4">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-black"></div>

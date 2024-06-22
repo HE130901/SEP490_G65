@@ -16,14 +16,10 @@ const NicheReservationPage = () => {
     selectedFloor,
     selectedArea,
     selectedNiche,
-    fetchBuildings,
-    fetchFloors,
-    fetchAreas,
+    fetchBuildingsData,
     fetchNiches,
     fetchReservations,
     buildings,
-    floors,
-    areas,
     user,
   } = useStateContext();
 
@@ -34,12 +30,12 @@ const NicheReservationPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchBuildings();
+      await fetchBuildingsData();
       setLoading(false);
     };
 
     fetchData();
-  }, [fetchBuildings]);
+  }, [fetchBuildingsData]);
 
   useEffect(() => {
     if (selectedBuilding && selectedFloor && selectedArea) {

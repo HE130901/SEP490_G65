@@ -12,10 +12,10 @@ import Image from "next/image";
 
 export default function Component() {
   const images = [
-    "/images/121212.jpg",
-    "/images/tower.webp",
     "/images/visit13.jpg",
     "/images/image.png",
+    "/images/121212.jpg",
+    "/images/tower.webp",
   ];
 
   return (
@@ -46,6 +46,7 @@ export default function Component() {
                       width={800}
                       height={800}
                       className="h-full w-full object-cover rounded-md"
+                      priority={index === 0 || src === "/images/visit13.jpg"}
                     />
                   </SliderMainItem>
                 ))}
@@ -64,6 +65,7 @@ export default function Component() {
                     width={500}
                     height={500}
                     className="h-full w-full object-cover rounded-md cursor-pointer bg-background"
+                    style={{ width: "auto", height: "auto" }}
                   />
                 </SliderThumbItem>
               ))}

@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useStateContext } from "@/context/state-context";
 import { Button } from "@/components/ui/button";
@@ -22,67 +23,62 @@ const CombinedSelector = () => {
   const {
     selectedBuilding,
     setSelectedBuilding,
-    buildings,
-    fetchBuildings,
-    resetSelections,
     selectedFloor,
     setSelectedFloor,
-    floors,
-    fetchFloors,
-    resetSectionAndNiche,
     selectedArea,
     setSelectedArea,
-    areas,
-    fetchAreas,
+    fetchNiches,
+    resetSelections,
+    resetSectionAndNiche,
     resetNiche,
+    buildings,
   } = useStateContext();
 
   const [buildingOpen, setBuildingOpen] = useState(false);
   const [floorOpen, setFloorOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
 
+  const [floors, setFloors] = useState([]);
+  const [areas, setAreas] = useState([]);
   const [buildingValue, setBuildingValue] = useState("");
   const [floorValue, setFloorValue] = useState("");
   const [areaValue, setAreaValue] = useState("");
 
   useEffect(() => {
-    fetchBuildings();
-  }, []);
-
-  useEffect(() => {
-    if (selectedBuilding) {
-      fetchFloors(selectedBuilding.buildingId);
+    if (buildings && buildings.length > 0) {
+      handleSelectBuilding(buildings[0]);
     }
-  }, [selectedBuilding]);
-
-  useEffect(() => {
-    if (selectedBuilding && selectedFloor) {
-      fetchAreas(selectedBuilding.buildingId, selectedFloor.floorId);
-    }
-  }, [selectedBuilding, selectedFloor]);
+  }, [buildings]);
 
   const handleSelectBuilding = (building) => {
     setSelectedBuilding(building);
+    setFloors(building.floors?.$values || []);
     resetSelections();
     setBuildingValue(building.buildingName);
-    setFloorValue("");
-    setAreaValue("");
-    setBuildingOpen(false);
+    setBuildingOpen(false); // Close the building popover
+
+    if (building.floors?.$values && building.floors.$values.length > 0) {
+      handleSelectFloor(building.floors.$values[0]);
+    }
   };
 
   const handleSelectFloor = (floor) => {
     setSelectedFloor(floor);
+    setAreas(floor.areas?.$values || []);
     resetSectionAndNiche();
     setFloorValue(floor.floorName);
-    setAreaValue("");
-    setFloorOpen(false);
+    setFloorOpen(false); // Close the floor popover
+
+    if (floor.areas?.$values && floor.areas.$values.length > 0) {
+      handleSelectArea(floor.areas.$values[0]);
+    }
   };
 
   const handleSelectArea = (area) => {
     setSelectedArea(area);
     resetNiche();
     setAreaValue(area.areaName);
-    setAreaOpen(false);
+    setAreaOpen(false); // Close the area popover
   };
 
   return (
@@ -107,7 +103,7 @@ const CombinedSelector = () => {
               <CommandList>
                 <CommandEmpty>Không tìm thấy tòa nhà.</CommandEmpty>
                 <CommandGroup>
-                  {buildings.map((building) => (
+                  {buildings?.map((building) => (
                     <CommandItem
                       key={building.buildingId}
                       value={building.buildingName}

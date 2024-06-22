@@ -1,7 +1,8 @@
 import React from "react";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CarouselPlugin } from "@/components/ui/carouselPlugin";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const NicheDetails = ({
   isVisible,
@@ -15,6 +16,9 @@ const NicheDetails = ({
   return (
     <Dialog open={isVisible} onOpenChange={onClose}>
       <DialogContent>
+        <DialogTitle asChild>
+          <VisuallyHidden>Thông tin chi tiết ô chứa</VisuallyHidden>
+        </DialogTitle>
         <h2 className="text-xl font-bold mb-4">Thông tin chi tiết ô chứa</h2>
         {selectedNiche && (
           <div className="space-y-4">
