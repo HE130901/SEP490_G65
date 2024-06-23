@@ -33,7 +33,7 @@ import {
   RectangleGroupIcon,
   ShoppingCartIcon,
   UserCircleIcon,
-  UserIcon
+  UserIcon,
 } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -199,19 +199,16 @@ export function Header({ currentView, setCurrentView }) {
                           An Bình Viên
                         </div>
                         <p className="text-sm leading-tight text-muted-foreground">
-                          Lorem ipsum dolor sit amet, consectetur adipisicing
-                          elit. Quos cumque, quas, quae, quidem dolorum
-                          voluptatum quia laborum voluptatem natus doloremque
-                          iusto.
+                          An Bình Viên là một công trình kiến trúc độc đáo gồm
+                          hai tòa tháp đôi hiện đại, được thiết kế đặc biệt để
+                          lưu trữ tro cốt người đã khuất.
                         </p>
                       </a>
                     </NavigationMenuLink>
                   </li>
-                  <ListItem href="/" title="Giới thiệu chung">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                  </ListItem>
+              
                   <ListItem href="/dashboard" title="Dịch vụ">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                  Đặt chỗ các ô chứa, đăng ký viếng thăm và các dịch vụ khác.
                   </ListItem>
                   <ListItem href="/about" title="Thông tin">
                     Lorem ipsum dolor sit amet, consectetur adipisicing elit.
@@ -236,7 +233,7 @@ export function Header({ currentView, setCurrentView }) {
               </NavigationMenuContent>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href="/contact" legacyBehavior passHref>
+              <Link href="/about" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Thông tin
                 </NavigationMenuLink>
@@ -291,7 +288,6 @@ export function Header({ currentView, setCurrentView }) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <ModeToggle />
         </div>
       </div>
     </header>

@@ -1,20 +1,24 @@
+//src/components/niche-reservation/ReservationForm.tsx
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useStateContext } from "@/context/state-context";
 import axios from "@/api/axios-config";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
+import { useStateContext } from "@/context/state-context";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; 
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
 
 const bookingSchema = z.object({
-  customerName: z.string().min(1, "Tên của bạn là bắt buộc"),
-  customerPhone: z.string().min(1, "Số điện thoại của bạn là bắt buộc"),
-  customerAddress: z.string().min(1, "Địa chỉ của bạn là bắt buộc"),
+  name: z.string().min(1, "Tên của bạn là bắt buộc"),
+  phoneNumber: z
+    .string()
+    .min(1, "Số điện thoại của bạn là bắt buộc")
+    .regex(phoneRegex, "Số điện thoại không hợp lệ"),
   contractDate: z.string().refine(
     (val) => {
       const contractDate = new Date(val + "T23:59:00");
@@ -24,11 +28,11 @@ const bookingSchema = z.object({
       return contractDate <= threeDaysLater;
     },
     {
-      message: "Ngày hẹn ký hợp đồng phải trong vòng tối đa 3 ngày kể từ ngày hiện tại.",
+      message:
+        "Ngày hẹn ký hợp đồng phải trong vòng tối đa 3 ngày kể từ ngày hiện tại.",
     }
   ),
   signAddress: z.string().min(1, "Địa chỉ ký hợp đồng là bắt buộc"),
-  phoneNumber: z.string().min(1, "Số điện thoại là bắt buộc"),
   note: z.string().optional(),
 });
 
@@ -39,9 +43,16 @@ const predefinedAddresses = [
 ];
 
 const ReservationForm = ({ isVisible, onClose }) => {
-  const { selectedBuilding, selectedFloor, selectedArea, selectedNiche, user } =
-    useStateContext();
-  const [selectedAddress, setSelectedAddress] = useState(predefinedAddresses[0]);
+  const {
+    selectedBuilding,
+    selectedFloor,
+    selectedArea,
+    selectedNiche,
+    fetchNiches,
+  } = useStateContext();
+  const [selectedAddress, setSelectedAddress] = useState(
+    predefinedAddresses[0]
+  );
 
   const {
     register,
@@ -53,22 +64,16 @@ const ReservationForm = ({ isVisible, onClose }) => {
   });
 
   useEffect(() => {
-    if (user) {
-      setValue("customerName", user.fullName);
-      setValue("customerPhone", user.phone);
-      setValue("customerAddress", user.address);
-      setValue("contractDate", new Date().toISOString().slice(0, 10));
-      setValue("signAddress", selectedAddress);
-      setValue("phoneNumber", user.phone);
-    }
-  }, [setValue, user, selectedAddress]);
+    setValue("contractDate", new Date().toISOString().slice(0, 10));
+    setValue("signAddress", selectedAddress);
+  }, [setValue, selectedAddress]);
 
   const onSubmit = async (data) => {
-    const contractDate = data.contractDate + "T23:59:00"; 
+    const contractDate = data.contractDate + "T23:59:00";
 
     const dataToSubmit = {
-      customerID: user.customerId,
-      nicheID: selectedNiche?.nicheId,
+      nicheId: selectedNiche?.nicheId,
+      name: data.name,
       confirmationDate: contractDate,
       signAddress: selectedAddress,
       phoneNumber: data.phoneNumber,
@@ -78,6 +83,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
     try {
       const response = await axios.post("/api/NicheReservations", dataToSubmit);
       toast.success("Đặt ô chứa thành công!");
+      fetchNiches(); // Call fetchNiches after successful submission
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -88,7 +94,10 @@ const ReservationForm = ({ isVisible, onClose }) => {
             toast.error(`${key}: ${value}`);
           });
         } else {
-          toast.error(error.response.data.error || "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa");
+          toast.error(
+            error.response.data.error ||
+              "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa"
+          );
         }
       } else {
         toast.error("Failed to create reservation.");
@@ -98,28 +107,27 @@ const ReservationForm = ({ isVisible, onClose }) => {
 
   return (
     <Dialog open={isVisible} onOpenChange={onClose}>
-      <DialogTitle asChild>
-        <VisuallyHidden>
-          <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
-        </VisuallyHidden>
-      </DialogTitle>
+      <DialogTitle></DialogTitle>
       <DialogContent>
-        <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-4 bg-white rounded">
+        <div className="flex justify-center">
+          <h2 className="text-xl font-bold">Đăng ký đặt chỗ</h2>
+        </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="p-4 bg-white rounded"
+        >
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
-              Họ và tên
+              Tên của bạn
             </label>
             <input
               type="text"
-              {...register("customerName")}
+              {...register("name")}
               className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
-            {errors.customerName && (
-              <p className="mt-2 text-sm text-red-600">
-                {errors.customerName.message}
-              </p>
+            {errors.name && (
+              <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
             )}
           </div>
           <div className="mb-4">
@@ -139,7 +147,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             )}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 pb-4">
               Địa chỉ ký hợp đồng
             </label>
             <RadioGroup
@@ -147,7 +155,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
               onValueChange={(value) => setSelectedAddress(value)}
             >
               {predefinedAddresses.map((address) => (
-                <div key={address} className="flex items-center mb-2">
+                <div key={address} className="flex items-center ">
                   <RadioGroupItem
                     id={address}
                     value={address}
@@ -207,21 +215,28 @@ const ReservationForm = ({ isVisible, onClose }) => {
               className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <p className="mb-4 text-sm font-semibold text-red-600">
-            Quý khách vui lòng lưu ý!
-          </p>
+          <div className="flex justify-center ">
+            <p className=" text-sm font-semibold text-red-600 ">
+              Quý khách vui lòng lưu ý!
+            </p>
+          </div>
+
           <p className="mb-4 text-sm text-red-600">
-            Thời gian giữ chỗ ô chứa chỉ có hiệu lực trong vòng 3 ngày kể từ khi
-            đặt chỗ thành công.
-            <br />
-            Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị hủy.
+            Thời gian giữ chỗ chỉ có hiệu lực trong vòng 3 ngày kể từ khi đặt
+            chỗ thành công. Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị
+            hủy.
           </p>
-          <div className="flex justify-end">
-            <Button variant="secondary" onClick={onClose}>
+          <div className="flex justify-center">
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              type="button"
+              className="w-full max-w-xs"
+            >
               Quay lại
             </Button>
-            <Button type="submit" className="ml-2">
-              Xác nhận
+            <Button type="submit" className="ml-2 w-full max-w-xs">
+              Đặt chỗ
             </Button>
           </div>
         </form>
@@ -231,3 +246,4 @@ const ReservationForm = ({ isVisible, onClose }) => {
 };
 
 export default ReservationForm;
+``;

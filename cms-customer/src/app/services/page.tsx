@@ -1,5 +1,4 @@
 "use client";
-import VisitRegistration from "@/components/visit-registration/VisitRegistration";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,11 +7,26 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import withAuth from "@/components/withAuth";
+import React, { useState, useEffect } from "react";
+import Loading from "@/components/ui/Loading";
+import ServicesList from "@/components/services/dashboard";
 
-const VisitRegistrationPage = () => {
+const ServicesPage = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
-    <div className="flex h-auto pt-16 justify-center pb-32">
+    <div className="flex h-auto pt-16">
       <div className="flex flex-1 overflow-auto">
         <div className="flex-1">
           <div className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
@@ -23,15 +37,15 @@ const VisitRegistrationPage = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dịch vụ</BreadcrumbLink>
+                  <BreadcrumbLink href="/services">Dịch vụ</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Đăng ký viếng</BreadcrumbPage>
+                  <BreadcrumbPage>Trang hiện tại</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            <VisitRegistration />
+            <ServicesList />
           </div>
         </div>
       </div>
@@ -39,4 +53,4 @@ const VisitRegistrationPage = () => {
   );
 };
 
-export default VisitRegistrationPage;
+export default ServicesPage;

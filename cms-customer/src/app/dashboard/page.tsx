@@ -1,5 +1,4 @@
 "use client";
-import CustomerDashboard from "@/components/dashboard/dashboard";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,8 +9,10 @@ import {
 } from "@/components/ui/breadcrumb";
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
+import ServicesList from "@/components/services/dashboard";
+import Dashboard from "@/components/dashboard/dashboard";
 
-const CustomerDashboardPage = () => {
+const ServicesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -37,15 +38,11 @@ const CustomerDashboardPage = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dịch vụ</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Trang hiện tại</BreadcrumbPage>
+                  <BreadcrumbPage>Khách hàng</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            <CustomerDashboard />
+            <Dashboard />
           </div>
         </div>
       </div>
@@ -53,4 +50,4 @@ const CustomerDashboardPage = () => {
   );
 };
 
-export default CustomerDashboardPage;
+export default ServicesPage;

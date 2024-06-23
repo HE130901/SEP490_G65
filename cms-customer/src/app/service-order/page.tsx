@@ -42,7 +42,7 @@ const ServiceOrderPage: React.FC = () => {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Dịch vụ</BreadcrumbLink>
+                  <BreadcrumbLink href="/dashboard">Khách hàng</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
@@ -59,4 +59,4 @@ const ServiceOrderPage: React.FC = () => {
   );
 };
 
-export default (ServiceOrderPage);
+export default ServiceOrderPage;

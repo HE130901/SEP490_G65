@@ -1,0 +1,24 @@
+/* src/app/auth/reset-pass/reset-pass.module.css */
+.bg-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/images/login-bg.jpg") no-repeat center center/cover;
+  z-index: -2; /* Ensure it is behind everything */
+}
+
+.bg-animation::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+  pointer-events: none;
+  z-index: -1; /* Ensure it is behind the content but above the background image */
+}

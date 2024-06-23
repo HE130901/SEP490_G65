@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import AuthAPI from "@/api/authApi";
 import BuildingAPI from "@/api/buildingApi";
 import NicheAPI from "@/api/nicheApi";
@@ -9,7 +16,7 @@ import VisitRegistrationAPI from "@/api/visitRegistrationApi";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-const StateContext = createContext(null);
+const StateContext = createContext<any | null>(null);
 
 export const useStateContext = () => {
   const context = useContext(StateContext);
@@ -19,19 +26,27 @@ export const useStateContext = () => {
   return context;
 };
 
-export const StateProvider = ({ children }) => {
-  const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [selectedFloor, setSelectedFloor] = useState(null);
-  const [selectedArea, setSelectedArea] = useState(null);
-  const [selectedNiche, setSelectedNiche] = useState(null);
-  const [buildings, setBuildings] = useState([]);
-  const [niches, setNiches] = useState([]);
-  const [reservations, setReservations] = useState([]);
-  const [visitRegistrations, setVisitRegistrations] = useState([]);
-  const [user, setUser] = useState(null);
+export const StateProvider = ({ children }: { children: React.ReactNode }) => {
+  const [selectedBuilding, setSelectedBuilding] = useState<any | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<any | null>(null);
+  const [selectedArea, setSelectedArea] = useState<any | null>(null);
+  const [selectedNiche, setSelectedNiche] = useState<any | null>(null);
+  const [selectedContainer, setSelectedContainer] = useState<any | null>(null);
+  const [isContainerModalOpen, setIsContainerModalOpen] = useState(false);
+  const [isVisitScheduleModalOpen, setIsVisitScheduleModalOpen] =
+    useState(false);
+  const [isContractManagementModalOpen, setIsContractManagementModalOpen] =
+    useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [buildings, setBuildings] = useState<any[]>([]);
+  const [niches, setNiches] = useState<any[]>([]);
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [visitRegistrations, setVisitRegistrations] = useState<any[]>([]);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
+  const isMounted = useRef(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,7 +57,7 @@ export const StateProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchCurrentUser = async (token) => {
+  const fetchCurrentUser = async (token: string) => {
     try {
       const response = await AuthAPI.getCurrentUser(token);
       const { customerId, fullName, citizenId, role, email, phone, address } =
@@ -58,48 +73,32 @@ export const StateProvider = ({ children }) => {
         address: String(address),
         token,
       });
-
-      console.log("User fetched successfully:", response.data);
     } catch (error) {
-      console.error("Error fetching current user:", error);
       setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRoleBasedRedirection = (role) => {
-    console.log("Redirecting based on role:", role);
-    if (role === "Guest" || role === "Customer") {
-      router.push("/dashboard");
-    } else if (role === "Staff" || role === "Manager") {
-      router.push("/staff-dashboard");
-    }
-  };
-
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     try {
       const response = await AuthAPI.login(email, password);
       const { token, role } = response.data;
       localStorage.setItem("token", token);
       await fetchCurrentUser(token);
-
-      console.log("User role after login:", role);
-      handleRoleBasedRedirection(role);
-      toast.success("Login successful!");
+      router.push("/dashboard");
+      toast.success("Đăng nhập thành công!");
     } catch (error) {
-      console.error("Login failed", error);
-      toast.error("Login failed. Please check your login information.");
+      toast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
     }
   };
 
-  const register = async (formData) => {
+  const register = async (formData: any) => {
     try {
       await AuthAPI.register(formData);
       router.push("/auth/login");
       toast.success("Registration successful.");
     } catch (error) {
-      console.error("Registration failed", error);
       toast.error("Registration failed. Please try again later.");
     }
   };
@@ -114,40 +113,36 @@ export const StateProvider = ({ children }) => {
     try {
       const response = await BuildingAPI.getAllData();
       setBuildings(response.data.buildings.$values);
-      console.log("Buildings, floors, and areas fetched successfully:", response.data.buildings.$values);
     } catch (error) {
-      console.error("Error fetching buildings, floors, and areas:", error);
-    }
-  }, []);
-
-  const fetchNiches = useCallback(async (buildingId, floorId, areaId) => {
-    try {
-      console.log(
-        "Fetching niches for building ID:",
-        buildingId,
-        "floor ID:",
-        floorId,
-        "and area ID:",
-        areaId
+      console.error(
+        "[StateProvider] Error fetching buildings, floors, and areas:",
+        error
       );
-      const response = await NicheAPI.getAll(buildingId, floorId, areaId);
-      setNiches(response.data.$values);
-      console.log("Niches fetched successfully:", response.data.$values);
-    } catch (error) {
-      console.error("Error fetching niches:", error);
     }
   }, []);
 
-  const fetchReservations = async (customerId) => {
+  const fetchNiches = useCallback(
+    async (buildingId: number, floorId: number, areaId: number) => {
+      try {
+        const response = await NicheAPI.getAll(buildingId, floorId, areaId);
+        setNiches(response.data.$values);
+      } catch (error) {
+        console.error("[StateProvider] Error fetching niches:", error);
+      }
+    },
+    []
+  );
+
+  const fetchReservations = async (customerId: number) => {
     try {
       const response = await NicheReservationAPI.getByCustomerId(customerId);
       setReservations(response.data.$values);
     } catch (error) {
-      console.error("Error fetching reservations:", error);
+      console.error("[StateProvider] Error fetching reservations:", error);
     }
   };
 
-  const deleteReservation = async (reservationId) => {
+  const deleteReservation = async (reservationId: number) => {
     try {
       await NicheReservationAPI.delete(reservationId);
       setReservations((prevReservations) =>
@@ -157,21 +152,23 @@ export const StateProvider = ({ children }) => {
       );
       toast.success("Reservation deleted successfully!");
     } catch (error) {
-      console.error("Error deleting reservation:", error);
       toast.error("Failed to delete the reservation.");
     }
   };
 
-  const fetchVisitRegistrations = async (customerId) => {
+  const fetchVisitRegistrations = useCallback(async (customerId: number) => {
     try {
       const response = await VisitRegistrationAPI.getByCustomerId(customerId);
       setVisitRegistrations(response.data.$values);
     } catch (error) {
-      console.error("Error fetching visit registrations:", error);
+      console.error(
+        "[StateProvider] Error fetching visit registrations:",
+        error
+      );
     }
-  };
+  }, []);
 
-  const deleteVisitRegistration = async (visitId) => {
+  const deleteVisitRegistration = async (visitId: number) => {
     try {
       await VisitRegistrationAPI.delete(visitId);
       setVisitRegistrations((prevRegistrations) =>
@@ -181,7 +178,6 @@ export const StateProvider = ({ children }) => {
       );
       toast.success("Visit registration deleted successfully!");
     } catch (error) {
-      console.error("Error deleting visit registration:", error);
       toast.error("Failed to delete the visit registration.");
     }
   };
@@ -201,6 +197,14 @@ export const StateProvider = ({ children }) => {
     setSelectedNiche(null);
   };
 
+  useEffect(() => {
+    if (isMounted.current) {
+      fetchBuildingsData();
+    } else {
+      isMounted.current = true;
+    }
+  }, [fetchBuildingsData]);
+
   return (
     <StateContext.Provider
       value={{
@@ -212,6 +216,16 @@ export const StateProvider = ({ children }) => {
         setSelectedArea,
         selectedNiche,
         setSelectedNiche,
+        selectedContainer,
+        setSelectedContainer,
+        isContainerModalOpen,
+        setIsContainerModalOpen,
+        isVisitScheduleModalOpen,
+        setIsVisitScheduleModalOpen,
+        isContractManagementModalOpen,
+        setIsContractManagementModalOpen,
+        isServiceModalOpen,
+        setIsServiceModalOpen,
         buildings,
         setBuildings,
         niches,
@@ -234,7 +248,6 @@ export const StateProvider = ({ children }) => {
         login,
         register,
         logout,
-        handleRoleBasedRedirection,
       }}
     >
       {children}
