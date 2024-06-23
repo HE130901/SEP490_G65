@@ -9,6 +9,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import axiosInstance from "@/api/axios-config";
 
 export default function ContainerDetailsDialog({
@@ -44,43 +46,67 @@ export default function ContainerDetailsDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Chi Tiết Ô Chứa</DialogTitle>
+          <DialogTitle>
+            <div className="grid gap-1">
+              <p className="">
+                Chi tiết Ô Chứa : {containerDetails?.nicheAddress}
+              </p>
+            </div>
+          </DialogTitle>
         </DialogHeader>
+        <Separator />
         {loading ? (
-          <p>Đang tải...</p>
+          <p className="text-center text-gray-600">Đang tải...</p>
         ) : error ? (
-          <p>{error}</p>
+          <p className="text-center text-red-600">{error}</p>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <h4 className="text-md font-bold mb-1">Địa Chỉ Ô Chứa</h4>
-              <p>{containerDetails?.nicheAddress}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Mô Tả Ô Chứa</h4>
-              <p>{containerDetails?.nicheDescription || "Không có mô tả"}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Tên Khách Hàng</h4>
-              <p>{containerDetails?.customerName || "Không có thông tin"}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Tên Người Đã Mất</h4>
-              <p>{containerDetails?.deceasedName || "Không có thông tin"}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Ngày Ký Hợp Đồng</h4>
-              <p>{containerDetails?.startDate || "Không có thông tin"}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Ngày Kết Thúc Hợp Đồng</h4>
-              <p>{containerDetails?.endDate || "Không có thông tin"}</p>
-            </div>
-            <div>
-              <h4 className="text-md font-bold mb-1">Trạng Thái Hợp Đồng</h4>
-              <p>{containerDetails?.contractStatus || "Không có thông tin"}</p>
+          <div className="grid gap-6 p-6">
+            <div className="grid gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Tên Khách Hàng</p>
+                  <p className="text-sm">
+                    {containerDetails?.customerName || "Không có thông tin"}
+                  </p>
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Tên Người Đã Mất</p>
+                  <p className="text-sm">
+                    {containerDetails?.deceasedName || "Không có thông tin"}
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Ngày Ký Hợp Đồng</p>
+                  <p className="text-sm">
+                    {containerDetails?.startDate || "Không có thông tin"}
+                  </p>
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Ngày Kết Thúc Hợp Đồng</p>
+                  <p className="text-sm">
+                    {containerDetails?.endDate || "Không có thông tin"}
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Trạng Thái Hợp Đồng</p>
+                  <Badge
+                    variant={
+                      containerDetails?.contractStatus === "Quá hạn"
+                        ? "destructive"
+                        : "green"
+                    }
+                    className="w-fit px-3 py-1" // Adjust padding and width
+                  >
+                    {containerDetails?.contractStatus || "Không có thông tin"}
+                  </Badge>
+                </div>
+              </div>
             </div>
           </div>
         )}

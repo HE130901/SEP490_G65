@@ -10,7 +10,18 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { mapStatusToVietnamese } from "@/utils/statusMapper";
+
+// Function to determine badge color
+const getStatusVariant = (status) => {
+  switch (status) {
+    case "Quá hạn":
+      return "destructive";
+    case "Trong hạn":
+      return "green";
+    default:
+      return "secondary";
+  }
+};
 
 export default function ContainerList({
   containers = [], // Default to empty array if not provided
@@ -24,7 +35,7 @@ export default function ContainerList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Mã Ô Chứa</TableHead>
+            <TableHead>ID</TableHead>
             <TableHead>Trạng Thái</TableHead>
             <TableHead>Hành Động</TableHead>
           </TableRow>
@@ -35,10 +46,8 @@ export default function ContainerList({
               <TableRow key={container.nicheId}>
                 <TableCell>{container.nicheId}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={container.status === "Active" ? "green" : "red"}
-                  >
-                    {mapStatusToVietnamese(container.status)}
+                  <Badge variant={getStatusVariant(container.contractStatus)}>
+                    {container.contractStatus || "Không có thông tin"}
                   </Badge>
                 </TableCell>
                 <TableCell>

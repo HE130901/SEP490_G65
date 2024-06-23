@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { useStateContext } from "@/context/state-context";
-import ContainerList from "./ContainerList";
-import RegistrationList from "./RegistrationList";
-import ContainerDetailsDialog from "./ContainerDetailsDialog";
-import VisitScheduleDialog from "./VisitScheduleDialog";
-import ContractManagementDialog from "./ContractManagementDialog";
-import ServiceOrderDialog from "./ServiceOrderDialog";
-import axiosInstance from "@/api/axios-config";
+import ContainerList from "@/components/dashboard/ContainerList";
+import RegistrationList from "@/components/dashboard/RegistrationList";
+import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
+import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
+import ContractManagementDialog from "@/components/dashboard/ContractManagementDialog";
+import { useRouter } from "next/navigation";
+import axiosInstance from "@/api/axios-config"; // Ensure this path is correct
 
 export default function Dashboard() {
   const {
@@ -23,15 +23,15 @@ export default function Dashboard() {
     setIsVisitScheduleModalOpen,
     isContractManagementModalOpen,
     setIsContractManagementModalOpen,
-    isServiceModalOpen,
-    setIsServiceModalOpen,
-    visitSchedule,
-    setVisitSchedule,
+    visitRegistrations,
+    setVisitRegistrations,
     contractExtensions,
     setContractExtensions,
     contractTerminations,
     setContractTerminations,
   } = useStateContext();
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchContainers = async () => {
@@ -65,7 +65,7 @@ export default function Dashboard() {
   };
 
   const handleVisitScheduleSubmit = (data: any) => {
-    setVisitSchedule((prev) => [...prev, data]);
+    setVisitRegistrations((prev) => [...prev, data]); // Fix variable name
     setIsVisitScheduleModalOpen(false);
   };
 
@@ -78,6 +78,10 @@ export default function Dashboard() {
     setIsContractManagementModalOpen(false);
   };
 
+  const handleServiceOrder = (container: any) => {
+    router.push(`/service-order?nicheId=${container.nicheId}`);
+  };
+
   return (
     <div className="bg-background text-foreground min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -86,22 +90,22 @@ export default function Dashboard() {
             containers={containers}
             onSelect={handleContainerSelect}
             onVisitSchedule={() => setIsVisitScheduleModalOpen(true)}
-            onServiceOrder={() => setIsServiceModalOpen(true)}
-          />
-          <RegistrationList
-            registrations={[
-              ...(visitSchedule || []),
-              ...(contractExtensions || []),
-              ...(contractTerminations || []),
-            ]}
-            onEdit={(index, data) => {
-              // handle edit
-            }}
-            onDelete={(index) => {
-              // handle delete
-            }}
+            onServiceOrder={handleServiceOrder}
           />
         </div>
+        <RegistrationList
+          registrations={[
+            ...(visitRegistrations || []),
+            ...(contractExtensions || []),
+            ...(contractTerminations || []),
+          ]}
+          onEdit={(index, data) => {
+            // handle edit
+          }}
+          onDelete={(index) => {
+            // handle delete
+          }}
+        />
       </main>
       <ContainerDetailsDialog
         isOpen={isContainerModalOpen}
@@ -122,10 +126,6 @@ export default function Dashboard() {
         }
         container={selectedContainer}
         action={selectedContainer?.action}
-      />
-      <ServiceOrderDialog
-        isOpen={isServiceModalOpen}
-        onClose={() => setIsServiceModalOpen(false)}
       />
     </div>
   );
