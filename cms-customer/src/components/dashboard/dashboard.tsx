@@ -13,8 +13,8 @@ import axiosInstance from "@/api/axios-config";
 export default function Dashboard() {
   const {
     user,
-    niches: containers, // Access `niches` and rename to `containers` for clarity
-    setNiches: setContainers, // Access `setNiches` and rename to `setContainers` for clarity
+    niches: containers,
+    setNiches: setContainers,
     selectedContainer,
     setSelectedContainer,
     isContainerModalOpen,
@@ -35,17 +35,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchContainers = async () => {
+      if (!user) {
+        console.error("User is not logged in.");
+        return;
+      }
+
       try {
-        if (!user) {
-          console.error("User is not logged in.");
-          return;
-        }
         const { customerId } = user;
         const response = await axiosInstance.get(
           `/api/niches/customer/${customerId}`
         );
 
-        // Ensure response.data is an object and has $values property
         if (response.data && Array.isArray(response.data.$values)) {
           setContainers(response.data.$values);
         } else {
@@ -59,21 +59,21 @@ export default function Dashboard() {
     fetchContainers();
   }, [user, setContainers]);
 
-  const handleContainerSelect = (container) => {
+  const handleContainerSelect = (container: any) => {
     setSelectedContainer(container);
     setIsContainerModalOpen(true);
   };
 
-  const handleVisitScheduleSubmit = (data) => {
-    setVisitSchedule([...visitSchedule, data]);
+  const handleVisitScheduleSubmit = (data: any) => {
+    setVisitSchedule((prev) => [...prev, data]);
     setIsVisitScheduleModalOpen(false);
   };
 
-  const handleContractSubmit = (data, action) => {
+  const handleContractSubmit = (data: any, action: string) => {
     if (action === "extend") {
-      setContractExtensions([...contractExtensions, data]);
+      setContractExtensions((prev) => [...prev, data]);
     } else {
-      setContractTerminations([...contractTerminations, data]);
+      setContractTerminations((prev) => [...prev, data]);
     }
     setIsContractManagementModalOpen(false);
   };
@@ -95,10 +95,10 @@ export default function Dashboard() {
               ...(contractTerminations || []),
             ]}
             onEdit={(index, data) => {
-              /* handle edit */
+              // handle edit
             }}
             onDelete={(index) => {
-              /* handle delete */
+              // handle delete
             }}
           />
         </div>
@@ -106,13 +106,13 @@ export default function Dashboard() {
       <ContainerDetailsDialog
         isOpen={isContainerModalOpen}
         onClose={() => setIsContainerModalOpen(false)}
-        container={selectedContainer}
+        containerId={selectedContainer?.nicheId}
       />
       <VisitScheduleDialog
         isOpen={isVisitScheduleModalOpen}
         onClose={() => setIsVisitScheduleModalOpen(false)}
         onSubmit={handleVisitScheduleSubmit}
-        containers={containers} // Ensure containers is passed
+        containers={containers}
       />
       <ContractManagementDialog
         isOpen={isContractManagementModalOpen}

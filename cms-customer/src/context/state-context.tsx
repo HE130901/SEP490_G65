@@ -1,5 +1,3 @@
-// src/context/StateContext.tsx
-
 "use client";
 
 import {
@@ -32,8 +30,15 @@ export const StateProvider = ({ children }) => {
   const [selectedFloor, setSelectedFloor] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedNiche, setSelectedNiche] = useState(null);
+  const [selectedContainer, setSelectedContainer] = useState(null);
+  const [isContainerModalOpen, setIsContainerModalOpen] = useState(false);
+  const [isVisitScheduleModalOpen, setIsVisitScheduleModalOpen] =
+    useState(false);
+  const [isContractManagementModalOpen, setIsContractManagementModalOpen] =
+    useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [buildings, setBuildings] = useState([]);
-  const [niches, setNiches] = useState([]); // Ensure this is defined
+  const [niches, setNiches] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [visitRegistrations, setVisitRegistrations] = useState([]);
   const [user, setUser] = useState(null);
@@ -214,10 +219,20 @@ export const StateProvider = ({ children }) => {
         setSelectedArea,
         selectedNiche,
         setSelectedNiche,
+        selectedContainer,
+        setSelectedContainer,
+        isContainerModalOpen,
+        setIsContainerModalOpen,
+        isVisitScheduleModalOpen,
+        setIsVisitScheduleModalOpen,
+        isContractManagementModalOpen,
+        setIsContractManagementModalOpen,
+        isServiceModalOpen,
+        setIsServiceModalOpen,
         buildings,
         setBuildings,
         niches,
-        setNiches, // Ensure this is passed here
+        setNiches,
         reservations,
         setReservations,
         visitRegistrations,

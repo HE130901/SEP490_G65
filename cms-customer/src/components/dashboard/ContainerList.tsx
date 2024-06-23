@@ -24,7 +24,7 @@ export default function ContainerList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Tên Ô Chứa</TableHead>
+            <TableHead>Mã Ô Chứa</TableHead>
             <TableHead>Trạng Thái</TableHead>
             <TableHead>Hành Động</TableHead>
           </TableRow>
@@ -33,7 +33,7 @@ export default function ContainerList({
           {containers.length > 0 ? (
             containers.map((container) => (
               <TableRow key={container.nicheId}>
-                <TableCell>{container.nicheName}</TableCell>
+                <TableCell>{container.nicheId}</TableCell>
                 <TableCell>
                   <Badge
                     variant={container.status === "Active" ? "green" : "red"}
