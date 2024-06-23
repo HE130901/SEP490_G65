@@ -22,7 +22,7 @@ const products = [
     price: 29.99,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product1.png",
   },
   {
     id: 2,
@@ -30,7 +30,7 @@ const products = [
     price: 49.99,
     category: "Đồ cúng viếng",
     brand: "Vàng mã",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product2.png",
   },
   {
     id: 3,
@@ -38,7 +38,7 @@ const products = [
     price: 79.99,
     category: "Đồ cúng viếng",
     brand: "Rượu, nước",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product3.png",
   },
   {
     id: 4,
@@ -46,7 +46,7 @@ const products = [
     price: 59.99,
     category: "Đồ cúng viếng",
     brand: "Đồ ăn",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product4.png",
   },
   {
     id: 5,
@@ -54,7 +54,7 @@ const products = [
     price: 24.99,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product1.png",
   },
   {
     id: 6,
@@ -62,7 +62,7 @@ const products = [
     price: 59.99,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product2.png",
   },
   {
     id: 7,
@@ -70,7 +70,7 @@ const products = [
     price: 39.99,
     category: "Đồ cúng viếng",
     brand: "Đồ ăn",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product3.png",
   },
   {
     id: 8,
@@ -78,7 +78,7 @@ const products = [
     price: 69.99,
     category: "Đồ cúng viếng",
     brand: "Combo",
-    image: "https://i.ibb.co/ggTp6ZF/service.png",
+    image: "/images/product4.png",
   },
   {
     id: 9,
@@ -86,7 +86,7 @@ const products = [
     price: 69.99,
     category: "Dịch vụ",
     brand: "Combo",
-    image: "https://i.ibb.co/vYHwTcf/Screenshot-2024-06-15-084451.png",
+    image: "/images/product1.png",
   },
   {
     id: 10,
@@ -94,7 +94,7 @@ const products = [
     price: 69.99,
     category: "Dịch vụ",
     brand: "Combo",
-    image: "https://i.ibb.co/DDJkm9c/takecare.jpg",
+    image: "/images/product2.png",
   },
 ];
 

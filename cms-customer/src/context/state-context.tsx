@@ -1,3 +1,5 @@
+// src/context/StateContext.tsx
+
 "use client";
 
 import {
@@ -31,7 +33,7 @@ export const StateProvider = ({ children }) => {
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedNiche, setSelectedNiche] = useState(null);
   const [buildings, setBuildings] = useState([]);
-  const [niches, setNiches] = useState([]);
+  const [niches, setNiches] = useState([]); // Ensure this is defined
   const [reservations, setReservations] = useState([]);
   const [visitRegistrations, setVisitRegistrations] = useState([]);
   const [user, setUser] = useState(null);
@@ -215,7 +217,7 @@ export const StateProvider = ({ children }) => {
         buildings,
         setBuildings,
         niches,
-        setNiches,
+        setNiches, // Ensure this is passed here
         reservations,
         setReservations,
         visitRegistrations,

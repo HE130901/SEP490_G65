@@ -33,7 +33,7 @@ import {
   RectangleGroupIcon,
   ShoppingCartIcon,
   UserCircleIcon,
-  UserIcon
+  UserIcon,
 } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -291,7 +291,6 @@ export function Header({ currentView, setCurrentView }) {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <ModeToggle />
         </div>
       </div>
     </header>

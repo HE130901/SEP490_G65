@@ -10,6 +10,7 @@ import {
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
 import ServicesList from "@/components/services/dashboard";
+import Dashboard from "@/components/dashboard/dashboard";
 
 const ServicesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +42,7 @@ const ServicesPage = () => {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
+            <Dashboard />
           </div>
         </div>
       </div>
