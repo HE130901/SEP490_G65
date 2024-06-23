@@ -33,11 +33,10 @@ namespace CMSApi.Controllers
             var customer = _context.Customers.SingleOrDefault(c => c.Email == loginDto.Email);
             if (customer != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, customer.PasswordHash))
             {
-                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.AccountStatus, customer.Phone, customer.Address);
+                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.Phone, customer.Address);
                 return Ok(new
                 {
                     Token = token,
-                    Role = customer.AccountStatus
                 });
             }
 
@@ -58,7 +57,6 @@ namespace CMSApi.Controllers
                 Address = registerDto.Address,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 CitizenId = registerDto.CitizenId,
-                AccountStatus = "Guest"
             };
 
             _context.Customers.Add(customer);
@@ -72,15 +70,10 @@ namespace CMSApi.Controllers
         public IActionResult GetCurrentUser()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(role))
-            {
-                return Unauthorized("Invalid token.");
-            }
+         
 
-            if (role == "Customer" || role == "Guest")
-            {
+         
                 if (int.TryParse(userId, out int parsedUserId))
                 {
                     var customer = _context.Customers.SingleOrDefault(c => c.CustomerId == parsedUserId);
@@ -94,13 +87,12 @@ namespace CMSApi.Controllers
                         customerId = customer.CustomerId,
                         fullName = customer.FullName,
                         citizenId = customer.CitizenId,
-                        role = customer.AccountStatus,
                         email = customer.Email,
                         phone = customer.Phone,
                         address = customer.Address
                     });
                 }
-            }
+            
 
             return Unauthorized("Invalid user role.");
         }
@@ -125,31 +117,14 @@ namespace CMSApi.Controllers
             return Ok("A new password has been sent to your email.");
         }
 
-        [HttpPost("reset-password")]
-        public IActionResult ResetPassword(ResetPasswordDto resetDto)
-        {
-            var customer = _context.Customers.SingleOrDefault(c => c.PasswordResetToken == resetDto.Token);
-            if (customer == null || customer.PasswordResetTokenExpiration < DateTime.UtcNow)
-            {
-                return BadRequest("Invalid or expired token.");
-            }
 
-            customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetDto.NewPassword);
-            customer.PasswordResetToken = null;
-            customer.PasswordResetTokenExpiration = null;
-            _context.SaveChanges();
-
-            return Ok("Password reset successful.");
-        }
-
-        private string GenerateJwtToken(string userId, string role, string phone, string address)
+        private string GenerateJwtToken(string userId, string phone, string address)
         {
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, role),
                 new Claim("Phone", phone),
                 new Claim("Address", address)
             };

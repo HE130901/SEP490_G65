@@ -18,29 +18,38 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
+
+
+        [HttpGet("all")]
+        public async Task<ActionResult<BuildingsFloorsAreasDto>> GetAllBuildingsFloorsAreas()
         {
-            // Including BuildingPicture in the response
-            return await _context.Buildings.Select(b => new Building
+            var buildings = await _context.Buildings
+                .Include(b => b.Floors)
+                    .ThenInclude(f => f.Areas)
+                .ToListAsync();
+
+            var dto = new BuildingsFloorsAreasDto
             {
-                BuildingId = b.BuildingId,
-                BuildingName = b.BuildingName,
-                BuildingDescription = b.BuildingDescription,
-                BuildingPicture = b.BuildingPicture
-            }).ToListAsync();
-        }
+                Buildings = buildings.Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName,
+                    BuildingDescription = b.BuildingDescription,
+                    BuildingPicture = b.BuildingPicture,
+                    Floors = b.Floors.Select(f => new FloorDto
+                    {
+                        FloorId = f.FloorId,
+                        FloorName = f.FloorName,
+                        Areas = f.Areas.Select(a => new AreaDto
+                        {
+                            AreaId = a.AreaId,
+                            AreaName = a.AreaName
+                        }).ToList()
+                    }).ToList()
+                }).ToList()
+            };
 
-        [HttpGet("{buildingId}/floors")]
-        public async Task<ActionResult<IEnumerable<Floor>>> GetFloors(int buildingId)
-        {
-            return await _context.Floors.Where(f => f.BuildingId == buildingId).ToListAsync();
-        }
-
-        [HttpGet("{buildingId}/floors/{floorId}/areas")]
-        public async Task<ActionResult<IEnumerable<Area>>> GetAreas(int buildingId, int floorId)
-        {
-            return await _context.Areas.Where(a => a.FloorId == floorId && a.Floor.BuildingId == buildingId).ToListAsync();
+            return dto;
         }
 
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
@@ -48,5 +57,32 @@ namespace cms_server.Controllers
         {
             return await _context.Niches.Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId).ToListAsync();
         }
+    }
+
+    public class BuildingsFloorsAreasDto
+    {
+        public List<BuildingDto> Buildings { get; set; }
+    }
+
+    public class BuildingDto
+    {
+        public int BuildingId { get; set; }
+        public string BuildingName { get; set; }
+        public string BuildingDescription { get; set; }
+        public string BuildingPicture { get; set; }
+        public List<FloorDto> Floors { get; set; }
+    }
+
+    public class FloorDto
+    {
+        public int FloorId { get; set; }
+        public string FloorName { get; set; }
+        public List<AreaDto> Areas { get; set; }
+    }
+
+    public class AreaDto
+    {
+        public int AreaId { get; set; }
+        public string AreaName { get; set; }
     }
 }

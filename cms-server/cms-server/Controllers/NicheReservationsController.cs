@@ -75,124 +75,72 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
         {
-            // Bắt đầu một giao dịch
-            using (var transaction = await _context.Database.BeginTransactionAsync())
+            // Check if the phone number already has 3 reservations
+            var existingReservationsCount = await _context.NicheReservations
+                .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Đang giữ chỗ");
+
+            if (existingReservationsCount >= 3)
             {
-                try
-                {
-                    // Tạo NicheReservation mới
-                    var nicheReservation = new NicheReservation
-                    {
-                        CustomerId = createDto.CustomerId,
-                        NicheId = createDto.NicheId,
-                        CreatedDate = DateTime.UtcNow,
-                        ConfirmationDate = createDto.ConfirmationDate,
-                        SignAddress = createDto.SignAddress,
-                        PhoneNumber = createDto.PhoneNumber,
-                        Note = createDto.Note,
-                        Status = "pending",
-                        ConfirmedBy = null
-                    };
-
-                    _context.NicheReservations.Add(nicheReservation);
-                    await _context.SaveChangesAsync();
-
-                    // Lấy Niche tương ứng và cập nhật trạng thái của nó
-                    var niche = await _context.Niches.FindAsync(createDto.NicheId);
-                    if (niche == null)
-                    {
-                        throw new Exception("Niche không tồn tại");
-                    }
-
-                    niche.Status = "Booked";
-                    _context.Entry(niche).State = EntityState.Modified;
-                    await _context.SaveChangesAsync();
-
-                    // Commit giao dịch
-                    await transaction.CommitAsync();
-
-                    return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
-                }
-                catch (Exception)
-                {
-                    // Rollback giao dịch nếu có lỗi xảy ra
-                    await transaction.RollbackAsync();
-                    throw;
-                }
+                return BadRequest(new { error = "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa" });
             }
+
+            var nicheReservation = new NicheReservation
+            {
+                NicheId = createDto.NicheId,
+                Name = createDto.Name,
+                ConfirmationDate = createDto.ConfirmationDate,
+                SignAddress = createDto.SignAddress,
+                PhoneNumber = createDto.PhoneNumber,
+                Note = createDto.Note,
+                CreatedDate = DateTime.UtcNow,
+                Status = "Đang giữ chỗ"
+            };
+
+            _context.NicheReservations.Add(nicheReservation);
+
+            // Update the status of the niche to "Booked"
+            var niche = await _context.Niches.FindAsync(createDto.NicheId);
+            if (niche != null)
+            {
+                niche.Status = "Booked";
+                _context.Entry(niche).State = EntityState.Modified;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
         }
 
         // DELETE: api/NicheReservations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNicheReservation(int id)
         {
-            // Bắt đầu một giao dịch
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
-                {
-                    var nicheReservation = await _context.NicheReservations.FindAsync(id);
-                    if (nicheReservation == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Lấy Niche tương ứng và cập nhật trạng thái của nó
-                    var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
-                    if (niche == null)
-                    {
-                        throw new Exception("Niche không tồn tại");
-                    }
-
-                    niche.Status = "Available";
-                    _context.Entry(niche).State = EntityState.Modified;
-
-                    _context.NicheReservations.Remove(nicheReservation);
-                    await _context.SaveChangesAsync();
-
-                    // Commit giao dịch
-                    await transaction.CommitAsync();
-
-                    return NoContent();
-                }
-                catch (Exception)
-                {
-                    // Rollback giao dịch nếu có lỗi xảy ra
-                    await transaction.RollbackAsync();
-                    throw;
-                }
-            }
-        }
-
-        // GET: api/NicheReservations/Customer/5
-        [HttpGet("Customer/{customerId}")]
-        public async Task<ActionResult<IEnumerable<NicheReservation>>> GetNicheReservationsByCustomerId(int customerId)
-        {
-            var nicheReservations = await _context.NicheReservations
-                .Where(nr => nr.CustomerId == customerId)
-                .ToListAsync();
-
-            if (nicheReservations == null || !nicheReservations.Any())
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+            if (nicheReservation == null)
             {
                 return NotFound();
             }
 
-            return nicheReservations;
+            _context.NicheReservations.Remove(nicheReservation);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         private bool NicheReservationExists(int id)
         {
             return _context.NicheReservations.Any(e => e.ReservationId == id);
         }
+
     }
 
     public class CreateNicheReservationDto
     {
-        public int CustomerId { get; set; }
         public int NicheId { get; set; }
+        public string Name { get; set; }
         public DateTime? ConfirmationDate { get; set; }
-        public String SignAddress { get; set; }
-        public String PhoneNumber { get; set; }
-        public String Note { get; set; }
+        public string SignAddress { get; set; }
+        public string PhoneNumber { get; set; }
+        public string? Note { get; set; }
     }
 }

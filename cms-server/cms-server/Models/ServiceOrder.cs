@@ -17,9 +17,9 @@ public partial class ServiceOrder
 
     public string? Status { get; set; }
 
-    public string? CompletionImage { get; set; }
-
     public int? StaffId { get; set; }
+
+    public string? CompletionImage { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
 

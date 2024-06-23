@@ -122,9 +122,6 @@ public partial class CmsContext : DbContext
             entity.HasIndex(e => e.Email, "UQ__Customer__A9D10534A4A24140").IsUnique();
 
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-            entity.Property(e => e.AccountStatus)
-                .HasMaxLength(50)
-                .HasDefaultValue("Guest");
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CitizenId)
                 .HasMaxLength(50)
@@ -234,18 +231,11 @@ public partial class CmsContext : DbContext
             entity.ToTable("NicheReservation");
 
             entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+            entity.Property(e => e.ConfirmationDate).HasColumnType("datetime");
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
+            entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
-
-            entity.HasOne(d => d.ConfirmedByNavigation).WithMany(p => p.NicheReservations)
-                .HasForeignKey(d => d.ConfirmedBy)
-                .HasConstraintName("FK__NicheRese__Confi__628FA481");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.NicheReservations)
-                .HasForeignKey(d => d.CustomerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__NicheRese__Custo__60A75C0F");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.NicheReservations)
                 .HasForeignKey(d => d.NicheId)
@@ -262,6 +252,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.NotificationId).HasColumnName("NotificationID");
             entity.Property(e => e.ContractId).HasColumnName("ContractID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+            entity.Property(e => e.NotificationDate).HasColumnType("datetime");
             entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
             entity.Property(e => e.VisitId).HasColumnName("VisitID");
@@ -294,6 +285,7 @@ public partial class CmsContext : DbContext
             entity.ToTable("Report");
 
             entity.Property(e => e.ReportId).HasColumnName("ReportID");
+            entity.Property(e => e.GeneratedDate).HasColumnType("datetime");
             entity.Property(e => e.ReportType).HasMaxLength(255);
         });
 
@@ -317,6 +309,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
+            entity.Property(e => e.OrderDate).HasColumnType("datetime");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
             entity.Property(e => e.Status).HasMaxLength(50);
 
@@ -356,9 +349,12 @@ public partial class CmsContext : DbContext
             entity.ToTable("VisitRegistration");
 
             entity.Property(e => e.VisitId).HasColumnName("VisitID");
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
+            entity.Property(e => e.AccompanyingPeople).HasColumnName("AccompanyingPeople");
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.VisitDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.VisitRegistrations)
                 .HasForeignKey(d => d.ApprovedBy)
