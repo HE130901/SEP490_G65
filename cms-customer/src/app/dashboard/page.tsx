@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
-import ServicesList from "@/components/services/dashboard";
+import ServicesList from "@/components/services/service";
 import Dashboard from "@/components/dashboard/dashboard";
 
 const ServicesPage = () => {

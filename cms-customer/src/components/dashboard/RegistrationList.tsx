@@ -340,7 +340,7 @@ export default function RegistrationList({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Previous
+            Trước
           </Button>
           <Button
             variant="outline"
@@ -348,7 +348,7 @@ export default function RegistrationList({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Next
+            Sau
           </Button>
         </div>
       </div>

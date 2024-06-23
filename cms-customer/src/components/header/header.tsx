@@ -96,25 +96,22 @@ export function Header({ currentView, setCurrentView }) {
       title: "Đặt chỗ trực tuyến",
       href: "/niche-reservation",
       description:
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia laborum voluptatem natus doloremque iusto.",
+        "Lựa chọn ô chứa và đặt chỗ trực tuyến, dễ dàng và nhanh chóng.",
     },
     {
       title: "Đăng ký viếng thăm",
       href: "/visit-registration",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia",
+      description: "Lên lịch viếng thăm dễ dàng.",
     },
     {
       title: "Đặt dịch vụ ",
       href: "/service-order",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos cumque, quas, quae, quidem dolorum voluptatum quia",
+      description: "Lựa chọn các dịch vụ chúng tôi cung cấp",
     },
     {
       title: "Các dịch vụ khác",
       href: "/dashboard",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quo",
+      description: "Xem thông tin các dịch vụ khác đang được triển khai.",
     },
   ];
 
@@ -206,12 +203,12 @@ export function Header({ currentView, setCurrentView }) {
                       </a>
                     </NavigationMenuLink>
                   </li>
-              
+
                   <ListItem href="/dashboard" title="Dịch vụ">
-                  Đặt chỗ các ô chứa, đăng ký viếng thăm và các dịch vụ khác.
+                    Đặt chỗ các ô chứa, đăng ký viếng thăm và các dịch vụ khác.
                   </ListItem>
                   <ListItem href="/about" title="Thông tin">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                    Thông tin về An Bình Viên, chính sách và quy định.
                   </ListItem>
                 </ul>
               </NavigationMenuContent>

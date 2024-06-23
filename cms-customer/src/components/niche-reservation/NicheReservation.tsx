@@ -1,15 +1,25 @@
-
-// src/components/niche-reservation/NicheReservationPage.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { motion } from "framer-motion";
 
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import NicheSelector from "@/components/niche-reservation/NicheSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
 import { useStateContext } from "@/context/state-context";
-import Information from "./Information";
+
+const revealVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.3,
+      duration: 0.6,
+    },
+  }),
+};
 
 const NicheReservationPage = () => {
   const {
@@ -67,13 +77,25 @@ const NicheReservationPage = () => {
   return (
     <div>
       <div className="flex flex-col md:flex-row px-4 md:px-10 lg:px-20 xl:px-32 2xl:px-44">
-        <div className="w-full md:w-1/6 ">
+        <motion.div
+          className="w-full md:w-1/6"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={revealVariants}
+          custom={1}
+        >
           <h1 className="text-2xl font-bold">Tìm kiếm</h1>
-          <div className="">
-            {loading ? <Skeleton height={50} /> : <CombinedSelector />}
-          </div>
-        </div>
-        <div className=" w-full md:w-5/6 pt-2">
+          <div>{loading ? <Skeleton height={50} /> : <CombinedSelector />}</div>
+        </motion.div>
+        <motion.div
+          className="w-full md:w-5/6 pt-2"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={revealVariants}
+          custom={2}
+        >
           <div className="flex justify-center my-6">
             {nicheLoading ? (
               <Skeleton height={200} width="100%" />
@@ -85,7 +107,7 @@ const NicheReservationPage = () => {
             isVisible={isFormVisible}
             onClose={closeBookingForm}
           />
-        </div>
+        </motion.div>
       </div>
     </div>
   );

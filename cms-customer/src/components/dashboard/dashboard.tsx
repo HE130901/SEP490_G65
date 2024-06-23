@@ -76,7 +76,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-background text-foreground min-h-screen flex flex-col">
+    <div className=" text-foreground min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <ContainerList

@@ -122,11 +122,7 @@ a:active {
   background-color: var(--color-bg-active);
 }
 
-button {
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 4px var(--color-shadow);
-}
+
 
 button:hover {
   background-color: var(--color-bg-hover);
