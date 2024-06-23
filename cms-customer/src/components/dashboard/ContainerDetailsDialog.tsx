@@ -17,29 +17,33 @@ export default function ContainerDetailsDialog({
   isOpen,
   onClose,
   containerId,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  containerId: number | null;
 }) {
-  const [containerDetails, setContainerDetails] = useState(null);
+  const [containerDetails, setContainerDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && containerId) {
-      setLoading(true);
-      const fetchContainerDetails = async () => {
-        try {
-          const response = await axiosInstance.get(
-            `/api/Niches/${containerId}`
-          );
-          setContainerDetails(response.data);
-          setError(null);
-        } catch (err) {
-          console.error("Error fetching container details:", err);
-          setError("Không thể tải thông tin chi tiết của ô chứa.");
-        } finally {
-          setLoading(false);
-        }
-      };
+    const fetchContainerDetails = async () => {
+      if (!containerId) return;
 
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(`/api/Niches/${containerId}`);
+        setContainerDetails(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching container details:", err);
+        setError("Không thể tải thông tin chi tiết của ô chứa.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
       fetchContainerDetails();
     }
   }, [isOpen, containerId]);
@@ -101,7 +105,7 @@ export default function ContainerDetailsDialog({
                         ? "destructive"
                         : "green"
                     }
-                    className="w-fit px-3 py-1" // Adjust padding and width
+                    className="w-fit px-3 py-1"
                   >
                     {containerDetails?.contractStatus || "Không có thông tin"}
                   </Badge>

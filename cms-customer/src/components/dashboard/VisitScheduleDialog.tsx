@@ -30,21 +30,26 @@ export default function VisitScheduleDialog({
   onClose,
   onSubmit,
   containers = [],
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  containers: any[];
 }) {
   const { user } = useStateContext();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [accompanyingPeople, setAccompanyingPeople] = useState(0);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.target);
+    const formData = new FormData(e.target as HTMLFormElement);
     const data = {
-      customerId: user.customerId, // Use the actual customer ID
+      customerId: user.customerId,
       nicheId: formData.get("containerId"),
       visitDate: selectedDate.toISOString(),
       note: formData.get("note"),
@@ -53,12 +58,12 @@ export default function VisitScheduleDialog({
 
     try {
       await axiosInstance.post("/api/VisitRegistrations", data);
-      setLoading(false);
-      onSubmit(data);
+      onSubmit();
       onClose();
     } catch (err) {
-      console.error("Error registering visit:", err);
+      console.error("[VisitScheduleDialog] Error registering visit:", err);
       setError("Đăng ký lịch viếng thất bại.");
+    } finally {
       setLoading(false);
     }
   };
@@ -101,9 +106,9 @@ export default function VisitScheduleDialog({
               <DatePicker
                 id="visitDateTime"
                 selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)}
+                onChange={(date) => setSelectedDate(date as Date)}
                 showTimeSelect
-                minDate={new Date(new Date().setDate(new Date().getDate() + 1))} // Ensure the date is at least tomorrow
+                minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
                 dateFormat="Pp"
                 className="w-full rounded border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
@@ -116,7 +121,7 @@ export default function VisitScheduleDialog({
               name="accompanyingPeople"
               type="number"
               min="0"
-              max="20" // Validate maximum number of accompanying people
+              max="20"
               value={accompanyingPeople}
               onChange={(e) => setAccompanyingPeople(parseInt(e.target.value))}
               required

@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-// Function to determine badge color
-const getStatusVariant = (status) => {
+const getStatusVariant = (status: string) => {
   switch (status) {
     case "Quá hạn":
       return "destructive";
@@ -24,10 +23,15 @@ const getStatusVariant = (status) => {
 };
 
 export default function ContainerList({
-  containers = [], // Default to empty array if not provided
+  containers = [],
   onSelect,
   onVisitSchedule,
   onServiceOrder,
+}: {
+  containers: any[];
+  onSelect: (container: any) => void;
+  onVisitSchedule: (container: any) => void;
+  onServiceOrder: (container: any) => void;
 }) {
   return (
     <div>

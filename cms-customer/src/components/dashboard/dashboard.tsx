@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useStateContext } from "@/context/state-context";
 import ContainerList from "@/components/dashboard/ContainerList";
 import RegistrationList from "@/components/dashboard/RegistrationList";
 import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
 import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
-import ContractManagementDialog from "@/components/dashboard/ContractManagementDialog";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/api/axios-config"; // Ensure this path is correct
+import axiosInstance from "@/api/axios-config";
 
 export default function Dashboard() {
   const {
@@ -21,61 +20,55 @@ export default function Dashboard() {
     setIsContainerModalOpen,
     isVisitScheduleModalOpen,
     setIsVisitScheduleModalOpen,
-    isContractManagementModalOpen,
-    setIsContractManagementModalOpen,
-    visitRegistrations,
-    setVisitRegistrations,
-    contractExtensions,
-    setContractExtensions,
-    contractTerminations,
-    setContractTerminations,
+    fetchVisitRegistrations,
   } = useStateContext();
 
+  const [reFetchTrigger, setReFetchTrigger] = useState(false);
   const router = useRouter();
+  const isMounted = useRef(false);
+
+  const fetchContainers = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await axiosInstance.get(
+        `/api/niches/customer/${user.customerId}`
+      );
+
+      if (response.data && Array.isArray(response.data.$values)) {
+        setContainers(response.data.$values);
+      } else {
+        console.error("[Dashboard] Unexpected response format:", response.data);
+      }
+    } catch (error) {
+      console.error("[Dashboard] Error fetching niches:", error);
+    }
+  }, [user, setContainers]);
 
   useEffect(() => {
-    const fetchContainers = async () => {
-      if (!user) {
-        console.error("User is not logged in.");
-        return;
-      }
+    if (user) {
+      fetchContainers();
+    }
+  }, [user, fetchContainers]);
 
-      try {
-        const { customerId } = user;
-        const response = await axiosInstance.get(
-          `/api/niches/customer/${customerId}`
-        );
-
-        if (response.data && Array.isArray(response.data.$values)) {
-          setContainers(response.data.$values);
-        } else {
-          console.error("Unexpected response format:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching niches:", error);
-      }
-    };
-
-    fetchContainers();
-  }, [user, setContainers]);
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    if (user && user.customerId) {
+      fetchVisitRegistrations(user.customerId);
+    }
+  }, [user, reFetchTrigger, fetchVisitRegistrations]);
 
   const handleContainerSelect = (container: any) => {
     setSelectedContainer(container);
     setIsContainerModalOpen(true);
   };
 
-  const handleVisitScheduleSubmit = (data: any) => {
-    setVisitRegistrations((prev) => [...prev, data]); // Fix variable name
+  const handleVisitScheduleSubmit = () => {
+    setReFetchTrigger((prev) => !prev);
     setIsVisitScheduleModalOpen(false);
-  };
-
-  const handleContractSubmit = (data: any, action: string) => {
-    if (action === "extend") {
-      setContractExtensions((prev) => [...prev, data]);
-    } else {
-      setContractTerminations((prev) => [...prev, data]);
-    }
-    setIsContractManagementModalOpen(false);
   };
 
   const handleServiceOrder = (container: any) => {
@@ -93,19 +86,7 @@ export default function Dashboard() {
             onServiceOrder={handleServiceOrder}
           />
         </div>
-        <RegistrationList
-          registrations={[
-            ...(visitRegistrations || []),
-            ...(contractExtensions || []),
-            ...(contractTerminations || []),
-          ]}
-          onEdit={(index, data) => {
-            // handle edit
-          }}
-          onDelete={(index) => {
-            // handle delete
-          }}
-        />
+        <RegistrationList reFetchTrigger={reFetchTrigger} />
       </main>
       <ContainerDetailsDialog
         isOpen={isContainerModalOpen}
@@ -117,15 +98,6 @@ export default function Dashboard() {
         onClose={() => setIsVisitScheduleModalOpen(false)}
         onSubmit={handleVisitScheduleSubmit}
         containers={containers}
-      />
-      <ContractManagementDialog
-        isOpen={isContractManagementModalOpen}
-        onClose={() => setIsContractManagementModalOpen(false)}
-        onSubmit={(data) =>
-          handleContractSubmit(data, selectedContainer?.action)
-        }
-        container={selectedContainer}
-        action={selectedContainer?.action}
       />
     </div>
   );
