@@ -6,11 +6,16 @@ const VisitRegistrationAPI = {
     const url = `/api/VisitRegistrations/customer/${customerId}`;
     return axiosInstance.get(url);
   },
-  update(visitId: number, data: any) { // Update visit registration
+  update(visitId: number, data: any) {
     const url = `/api/VisitRegistrations/${visitId}`;
-    return axiosInstance.put(url, data);
+    const updateData = {
+      visitDate: data.visitDate,
+      note: data.note,
+      accompanyingPeople: data.accompanyingPeople,
+    };
+    return axiosInstance.put(url, updateData);
   },
-  delete(visitId: number) { // Delete visit registration
+  delete(visitId: number) {
     const url = `/api/VisitRegistrations/${visitId}`;
     return axiosInstance.delete(url);
   },

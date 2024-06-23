@@ -27,16 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useStateContext } from "@/context/state-context";
-import {
-  DropdownMenuItem,
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import VisitRegistrationAPI from "@/api/visitRegistrationApi"; // Import VisitRegistrationAPI
+import VisitRegistrationAPI from "@/api/visitRegistrationApi";
 
 // Define your VisitRegistration type
 export type VisitRegistration = {
@@ -50,122 +41,7 @@ export type VisitRegistration = {
   note: string;
 };
 
-// Column definitions
-export const columns: ColumnDef<VisitRegistration>[] = [
-  {
-    accessorKey: "nicheId",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Ô Chứa
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("nicheId")}</div>,
-  },
-  {
-    accessorKey: "createdDate",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Ngày Tạo
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>{new Date(row.getValue("createdDate")).toLocaleString()}</div>
-    ),
-  },
-  {
-    accessorKey: "visitDate",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Ngày Hẹn
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <div>{new Date(row.getValue("visitDate")).toLocaleString()}</div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Trạng Thái
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => (
-      <Badge
-        variant={row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"}
-      >
-        {row.getValue("status")}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "accompanyingPeople",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Số Người Đi Cùng
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("accompanyingPeople")}</div>,
-  },
-  {
-    accessorKey: "note",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Ghi Chú
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("note")}</div>,
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-            Chỉnh Sửa
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => handleDelete(row.original.visitId)}>
-            Hủy
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
-
+// RegistrationList component
 export default function RegistrationList({
   reFetchTrigger,
 }: {
@@ -181,7 +57,7 @@ export default function RegistrationList({
   const [rowSelection, setRowSelection] = useState({});
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10, // Show 10 records per page
+    pageSize: 5, // Show custom records per page
   });
 
   const [editingRecord, setEditingRecord] = useState<VisitRegistration | null>(
@@ -201,10 +77,17 @@ export default function RegistrationList({
   const handleDelete = async (visitId: number) => {
     if (confirm("Bạn có chắc muốn xóa đơn đặt chỗ này không?")) {
       try {
+        console.log(
+          "[RegistrationList] Deleting visit registration with ID:",
+          visitId
+        ); // Debugging output
         await VisitRegistrationAPI.delete(visitId);
         fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
       } catch (error) {
-        console.error("Error deleting visit registration:", error);
+        console.error(
+          "Error deleting visit registration:",
+          error.response ?? error
+        );
         alert("Không thể xóa đơn đặt chỗ.");
       }
     }
@@ -212,7 +95,17 @@ export default function RegistrationList({
 
   const handleSave = async (updatedRecord: VisitRegistration) => {
     try {
-      await VisitRegistrationAPI.update(updatedRecord.visitId, updatedRecord);
+      if (!updatedRecord.visitId) {
+        console.error("Invalid visitId:", updatedRecord.visitId);
+        return;
+      }
+      // Create an object with only the required fields
+      const dataToUpdate = {
+        visitDate: updatedRecord.visitDate,
+        note: updatedRecord.note,
+        accompanyingPeople: updatedRecord.accompanyingPeople,
+      };
+      await VisitRegistrationAPI.update(updatedRecord.visitId, dataToUpdate);
       setEditingRecord(null);
       fetchVisitRegistrations(user.customerId); // Refetch the data after updating
     } catch (error) {
@@ -220,6 +113,135 @@ export default function RegistrationList({
       alert("Không thể cập nhật đơn đặt chỗ.");
     }
   };
+
+  // Column definitions with inline handleEdit and handleDelete functions
+  const columns: ColumnDef<VisitRegistration>[] = [
+    {
+      id: "stt", // Add an ID for the STT column
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          STT
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => row.index + 1, // Calculate the row index + 1 for display
+    },
+    {
+      accessorKey: "visitId",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Mã
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("visitId")}</div>,
+    },
+    {
+      accessorKey: "nicheId",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ô
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("nicheId")}</div>,
+    },
+    {
+      accessorKey: "createdDate",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ngày Tạo
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div>{new Date(row.getValue("createdDate")).toLocaleString()}</div>
+      ),
+    },
+    {
+      accessorKey: "visitDate",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ngày Hẹn
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div>{new Date(row.getValue("visitDate")).toLocaleString()}</div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Trạng Thái
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <Badge
+          variant={
+            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
+          }
+        >
+          {row.getValue("status")}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: "note",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ghi Chú
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("note")}</div>,
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => (
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleEdit(row.original)}
+          >
+            Sửa
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDelete(row.original.visitId)}
+          >
+            Xóa
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   const table = useReactTable({
     data: visitRegistrations,
@@ -256,32 +278,6 @@ export default function RegistrationList({
           }
           className="max-w-sm pl-4 ml-auto"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -326,7 +322,7 @@ export default function RegistrationList({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  Bạn chưa có đơn đặt chỗ nào.
                 </TableCell>
               </TableRow>
             )}
@@ -335,8 +331,7 @@ export default function RegistrationList({
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          Tổng số lượng đã đặt: {table.getFilteredRowModel().rows.length} đơn
         </div>
         <div className="space-x-2">
           <Button
