@@ -30,7 +30,7 @@ export default function ServicesList() {
               image: "/images/visit.jpg",
               description:
                 "Dịch vụ đăng ký viếng thăm giúp bạn lên kế hoạch tưởng niệm người thân một cách thuận tiện và chu đáo. Thay vì phải đến trực tiếp, bạn có thể đăng ký trước trên website của chúng tôi.",
-              link: "/visit-registration",
+              link: "/dashboard",
             },
             {
               title: "Các dịch vụ khác",

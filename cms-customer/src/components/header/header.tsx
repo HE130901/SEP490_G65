@@ -100,7 +100,7 @@ export function Header({ currentView, setCurrentView }) {
     },
     {
       title: "Đăng ký viếng thăm",
-      href: "/visit-registration",
+      href: "/dashboard",
       description: "Lên lịch viếng thăm dễ dàng.",
     },
     {
@@ -110,7 +110,7 @@ export function Header({ currentView, setCurrentView }) {
     },
     {
       title: "Các dịch vụ khác",
-      href: "/dashboard",
+      href: "/services",
       description: "Xem thông tin các dịch vụ khác đang được triển khai.",
     },
   ];
@@ -204,8 +204,8 @@ export function Header({ currentView, setCurrentView }) {
                     </NavigationMenuLink>
                   </li>
 
-                  <ListItem href="/dashboard" title="Dịch vụ">
-                    Đặt chỗ các ô chứa, đăng ký viếng thăm và các dịch vụ khác.
+                  <ListItem href="/niche-reservation" title="Đặt ô chứa">
+                    Lựa chọn ô chứa và lên lịch hẹn ký hợp đồng.
                   </ListItem>
                   <ListItem href="/about" title="Thông tin">
                     Thông tin về An Bình Viên, chính sách và quy định.
@@ -255,18 +255,7 @@ export function Header({ currentView, setCurrentView }) {
                       Hồ sơ của tôi
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/ShoppingCart">
-                      <ShoppingCartIcon className="h-5 w-5 mr-2" />
-                      Giỏ hàng
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/reservation-manager">
-                      <ClipboardDocumentIcon className="h-5 w-5 mr-2" />
-                      Đơn của tôi
-                    </Link>
-                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
                     <PowerIcon className="h-5 w-5 mr-2" />

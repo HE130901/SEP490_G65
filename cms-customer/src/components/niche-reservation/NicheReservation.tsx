@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
-
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import NicheSelector from "@/components/niche-reservation/NicheSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
@@ -26,11 +25,9 @@ const NicheReservationPage = () => {
     selectedBuilding,
     selectedFloor,
     selectedArea,
-    selectedNiche,
     fetchBuildingsData,
     fetchNiches,
     fetchReservations,
-    buildings,
     user,
   } = useStateContext();
 
@@ -75,28 +72,29 @@ const NicheReservationPage = () => {
   };
 
   return (
-    <div>
-      <div className="flex flex-col md:flex-row px-4 md:px-10 lg:px-20 xl:px-32 2xl:px-44">
+    <div className="container mx-auto px-4 lg:px-8 py-6">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div
-          className="w-full md:w-1/6"
+          className="lg:col-span-1 bg-white p-4 rounded-md shadow-md"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={revealVariants}
           custom={1}
         >
-          <h1 className="text-2xl font-bold">Tìm kiếm</h1>
-          <div>{loading ? <Skeleton height={50} /> : <CombinedSelector />}</div>
+          <h1 className="text-xl font-bold mb-4">Tìm kiếm</h1>
+          {loading ? <Skeleton height={40} /> : <CombinedSelector />}
         </motion.div>
+
         <motion.div
-          className="w-full md:w-5/6 pt-2"
+          className="lg:col-span-2 bg-white p-4 rounded-md shadow-md"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={revealVariants}
           custom={2}
         >
-          <div className="flex justify-center my-6">
+          <div className="flex justify-center mb-6">
             {nicheLoading ? (
               <Skeleton height={200} width="100%" />
             ) : (
@@ -108,7 +106,7 @@ const NicheReservationPage = () => {
             onClose={closeBookingForm}
           />
         </motion.div>
-      </div>
+      </section>
     </div>
   );
 };

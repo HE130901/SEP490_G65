@@ -84,7 +84,7 @@ const NicheSelector = ({ openModal }) => {
     if (isSmallScreen) {
       return rows.reverse().map((floorRows, floorIndex) => (
         <div key={floorIndex} className="flex flex-col space-y-2">
-          <div className="flex items-center justify-center font-semibold pr-4">
+          <div className="flex items-center justify-center font-semibold pr-4 whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
           {floorRows.map((row, rowIndex) => (
@@ -115,8 +115,8 @@ const NicheSelector = ({ openModal }) => {
       ));
     } else {
       return rows.reverse().map((row, rowIndex) => (
-        <div key={rowIndex} className="flex space-x-2">
-          <div className="flex items-center justify-center font-semibold pr-4">
+        <div key={rowIndex} className="flex space-x-2 items-center">
+          <div className="flex-shrink-0 font-semibold pr-4 whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
           {row.map((niche) => (
