@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +28,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useStateContext } from "@/context/state-context";
 import VisitRegistrationAPI from "@/api/visitRegistrationApi";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 // Define your VisitRegistration type
 export type VisitRegistration = {
@@ -63,6 +71,9 @@ export default function RegistrationList({
   const [editingRecord, setEditingRecord] = useState<VisitRegistration | null>(
     null
   );
+  const [deleteRecord, setDeleteRecord] = useState<VisitRegistration | null>(
+    null
+  );
 
   useEffect(() => {
     if (user && user.customerId) {
@@ -74,22 +85,21 @@ export default function RegistrationList({
     setEditingRecord(record);
   };
 
-  const handleDelete = async (visitId: number) => {
-    if (confirm("Bạn có chắc muốn xóa đơn đặt chỗ này không?")) {
-      try {
-        console.log(
-          "[RegistrationList] Deleting visit registration with ID:",
-          visitId
-        ); // Debugging output
-        await VisitRegistrationAPI.delete(visitId);
-        fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
-      } catch (error) {
-        console.error(
-          "Error deleting visit registration:",
-          error.response ?? error
-        );
-        alert("Không thể xóa đơn đặt chỗ.");
-      }
+  const handleDeleteConfirmation = (record: VisitRegistration) => {
+    setDeleteRecord(record);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteRecord) return;
+
+    try {
+      await VisitRegistrationAPI.delete(deleteRecord.visitId);
+      toast.success("Xóa đơn đăng ký thành công!");
+      fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
+      setDeleteRecord(null); // Close the modal
+    } catch (error) {
+      console.error("Error deleting visit registration:", error);
+      toast.error("Không thể xóa đơn đặt chỗ.");
     }
   };
 
@@ -99,18 +109,18 @@ export default function RegistrationList({
         console.error("Invalid visitId:", updatedRecord.visitId);
         return;
       }
-      // Create an object with only the required fields
       const dataToUpdate = {
         visitDate: updatedRecord.visitDate,
         note: updatedRecord.note,
         accompanyingPeople: updatedRecord.accompanyingPeople,
       };
       await VisitRegistrationAPI.update(updatedRecord.visitId, dataToUpdate);
+      toast.success("Cập nhật đơn đăng ký thành công!");
       setEditingRecord(null);
       fetchVisitRegistrations(user.customerId); // Refetch the data after updating
     } catch (error) {
       console.error("Error updating visit registration:", error);
-      alert("Không thể cập nhật đơn đặt chỗ.");
+      toast.error("Không thể cập nhật đơn đặt chỗ.");
     }
   };
 
@@ -234,7 +244,7 @@ export default function RegistrationList({
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => handleDelete(row.original.visitId)}
+            onClick={() => handleDeleteConfirmation(row.original)}
           >
             Xóa
           </Button>
@@ -269,7 +279,7 @@ export default function RegistrationList({
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Danh sách đơn đăng ký viếng</h2>
+        <h2 className="text-2xl font-bold">Đơn đăng ký viếng</h2>
         <Input
           placeholder="Tìm kiếm..."
           value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
@@ -360,6 +370,26 @@ export default function RegistrationList({
           onSave={handleSave}
           onClose={() => setEditingRecord(null)}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteRecord && (
+        <Dialog open={true} onOpenChange={() => setDeleteRecord(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xác nhận xóa</DialogTitle>
+            </DialogHeader>
+            <p>Bạn có chắc chắn muốn xóa đơn đăng ký này không?</p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteRecord(null)}>
+                Hủy
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Xóa
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

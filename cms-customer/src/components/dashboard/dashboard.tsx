@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/state-context";
 import ContainerList from "@/components/dashboard/ContainerList";
 import RegistrationList from "@/components/dashboard/RegistrationList";
+import ContractRenewalList from "@/components/dashboard/ContractRenewalList"; // Placeholder
+import ServiceRequestList from "@/components/dashboard/ServiceRequestList"; // Placeholder
+import BookingRequestList from "@/components/dashboard/BookingRequestList"; // Placeholder
 import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
 import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
 import ServicesList from "@/components/dashboard/ServicesSection";
 import axiosInstance from "@/api/axios-config";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const {
@@ -78,8 +83,8 @@ export default function Dashboard() {
   return (
     <div className="text-foreground min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
+          <div className="">
             <ContainerList
               containers={containers}
               onSelect={handleContainerSelect}
@@ -89,7 +94,56 @@ export default function Dashboard() {
             <ServicesList containers={containers} />
           </div>
         </div>
-        <RegistrationList reFetchTrigger={reFetchTrigger} />
+        <motion.div
+          className="mt-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Tabs
+            defaultValue="visitRegistrations"
+            className="w-full flex flex-col items-center"
+          >
+            <TabsList className="mb-4 space-x-4 shadow-lg">
+              <TabsTrigger
+                value="visitRegistrations"
+                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
+              >
+                Đơn đăng ký viếng
+              </TabsTrigger>
+              <TabsTrigger
+                value="contractRenewals"
+                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
+              >
+                Đơn đăng ký gia hạn hợp đồng
+              </TabsTrigger>
+              <TabsTrigger
+                value="serviceRequests"
+                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
+              >
+                Đơn đăng ký sử dụng dịch vụ
+              </TabsTrigger>
+              <TabsTrigger
+                value="bookingRequests"
+                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
+              >
+                Đơn đăng ký đặt chỗ
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="visitRegistrations" className="w-full">
+              <RegistrationList reFetchTrigger={reFetchTrigger} />
+            </TabsContent>
+            <TabsContent value="contractRenewals" className="w-full">
+              <ContractRenewalList />
+            </TabsContent>
+            <TabsContent value="serviceRequests" className="w-full">
+              <ServiceRequestList />
+            </TabsContent>
+            <TabsContent value="bookingRequests" className="w-full">
+              <BookingRequestList />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </main>
       <ContainerDetailsDialog
         isOpen={isContainerModalOpen}

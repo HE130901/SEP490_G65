@@ -31,7 +31,7 @@ export default function ContainerList({
 }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Danh sách ô chứa và hợp đồng</h2>
+      <h2 className="text-2xl font-bold mb-4 ">Danh sách ô chứa và hợp đồng</h2>
       <Table>
         <TableHeader>
           <TableRow>
@@ -43,7 +43,7 @@ export default function ContainerList({
             <TableHead>Hành Động</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="shadow-lg">
           {containers.length > 0 ? (
             containers.map((container, index) => (
               <TableRow key={container.nicheId}>

@@ -21,7 +21,7 @@ export default function ServicesList({ containers }) {
     },
     {
       title: "Đặt dịch vụ",
-      imageSrc: "/images/service.png",
+      imageSrc: "/images/servicee.png",
       href: "/service-order",
     },
   ];

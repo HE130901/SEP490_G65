@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import axios from "@/api/axios-config";
-import styles from "./reset-pass.module.css"; 
+import styles from "./reset-pass.module.css";
 
 export default function Component() {
   // State variables
