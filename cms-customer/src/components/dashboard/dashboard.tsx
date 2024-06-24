@@ -3,11 +3,11 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/state-context";
-import ContainerList from "@/components/dashboard/ContainerList";
-import RegistrationList from "@/components/dashboard/RegistrationList";
-import ContractRenewalList from "@/components/dashboard/ContractRenewalList"; // Placeholder
-import ServiceRequestList from "@/components/dashboard/ServiceRequestList"; // Placeholder
-import BookingRequestList from "@/components/dashboard/BookingRequestList"; // Placeholder
+import ContainerList from "@/components/dashboard/CustomerContractList";
+import RegistrationList from "@/components/dashboard/VisitRegistrationList";
+import ContractRenewalList from "@/components/dashboard/ContractRenewalList";
+import ServiceRequestList from "@/components/dashboard/ServiceRequestList";
+import BookingRequestList from "@/components/dashboard/BookingRequestList";
 import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
 import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
 import ServicesList from "@/components/dashboard/ServicesSection";

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
-import Dashboard from "@/components/dashboard/dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 const ServicesPage = () => {
   const [isLoading, setIsLoading] = useState(true);

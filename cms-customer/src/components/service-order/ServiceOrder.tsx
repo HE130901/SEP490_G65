@@ -14,12 +14,22 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
+import { formatVND } from "@/utils/formatCurrency";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 const products = [
   {
     id: 1,
     name: "Combo Hoa Quả",
-    price: 29.99,
+    price: 299900,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
     image: "/images/product1.png",
@@ -27,7 +37,7 @@ const products = [
   {
     id: 2,
     name: "Tiền Vàng",
-    price: 49.99,
+    price: 499900,
     category: "Đồ cúng viếng",
     brand: "Vàng mã",
     image: "/images/product2.png",
@@ -35,7 +45,7 @@ const products = [
   {
     id: 3,
     name: "Rượu Lễ",
-    price: 79.99,
+    price: 799900,
     category: "Đồ cúng viếng",
     brand: "Rượu, nước",
     image: "/images/product3.png",
@@ -43,7 +53,7 @@ const products = [
   {
     id: 4,
     name: "Xôi Lễ",
-    price: 59.99,
+    price: 599900,
     category: "Đồ cúng viếng",
     brand: "Đồ ăn",
     image: "/images/product4.png",
@@ -51,7 +61,7 @@ const products = [
   {
     id: 5,
     name: "Hoa Lễ",
-    price: 24.99,
+    price: 249900,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
     image: "/images/product1.png",
@@ -59,7 +69,7 @@ const products = [
   {
     id: 6,
     name: "Trái Cây",
-    price: 59.99,
+    price: 599900,
     category: "Đồ cúng viếng",
     brand: "Hoa quả",
     image: "/images/product2.png",
@@ -67,7 +77,7 @@ const products = [
   {
     id: 7,
     name: "Bánh Kẹo",
-    price: 39.99,
+    price: 399900,
     category: "Đồ cúng viếng",
     brand: "Đồ ăn",
     image: "/images/product3.png",
@@ -75,7 +85,7 @@ const products = [
   {
     id: 8,
     name: "Combo Đầy Đủ",
-    price: 69.99,
+    price: 699900,
     category: "Đồ cúng viếng",
     brand: "Combo",
     image: "/images/product4.png",
@@ -83,7 +93,7 @@ const products = [
   {
     id: 9,
     name: "Combo dọn dẹp, lau chùi",
-    price: 69.99,
+    price: 699900,
     category: "Dịch vụ",
     brand: "Combo",
     image: "/images/product1.png",
@@ -91,7 +101,7 @@ const products = [
   {
     id: 10,
     name: "Dịch vụ thắp hương hộ",
-    price: 69.99,
+    price: 699900,
     category: "Dịch vụ",
     brand: "Combo",
     image: "/images/product2.png",
@@ -99,11 +109,13 @@ const products = [
 ];
 
 export default function ServiceOrder() {
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState("grid");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const filteredProducts = useMemo(() => {
     return products
@@ -129,6 +141,13 @@ export default function ServiceOrder() {
       });
   }, [priceRange, selectedCategories, selectedBrands, sortBy]);
 
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredProducts, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
   const categoryCount = useMemo(() => {
     return products.reduce((acc, product) => {
       if (!acc[product.category]) {
@@ -151,7 +170,7 @@ export default function ServiceOrder() {
 
   return (
     <div className="grid md:grid-cols-[280px_1fr] gap-8 p-4 md:p-8">
-      <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-950 rounded-lg shadow-sm p-6 self-start">
         <h2 className="text-lg font-semibold mb-4">Bộ Lọc</h2>
         <div className="mb-6">
           <h3 className="text-base font-semibold mb-2">Khoảng giá</h3>
@@ -161,13 +180,13 @@ export default function ServiceOrder() {
               setPriceRange([Math.min(...values), Math.max(...values)])
             }
             min={0}
-            max={100}
-            step={1}
+            max={1000000}
+            step={10000}
             className="w-full"
           />
           <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 pt-2">
-            <span>${priceRange[0]}</span>
-            <span>${priceRange[1]}</span>
+            <span>{formatVND(priceRange[0])}</span>
+            <span>{formatVND(priceRange[1])}</span>
           </div>
         </div>
         <div className="mb-6">
@@ -217,6 +236,7 @@ export default function ServiceOrder() {
           </div>
         </div>
       </div>
+
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -267,8 +287,8 @@ export default function ServiceOrder() {
               : "grid-cols-1"
           } gap-6`}
         >
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+          {paginatedProducts.length > 0 ? (
+            paginatedProducts.map((product) => (
               <div
                 key={product.id}
                 className={`bg-white dark:bg-gray-950 rounded-lg shadow-sm overflow-hidden ${
@@ -295,7 +315,7 @@ export default function ServiceOrder() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">
-                      {product.price.toFixed(2)} USD
+                      {formatVND(product.price)}
                     </span>
                     <Button size="sm">Thêm vào giỏ</Button>
                   </div>
@@ -306,6 +326,46 @@ export default function ServiceOrder() {
             <p>Không tìm thấy sản phẩm</p>
           )}
         </div>
+        <Pagination className="mt-8">
+          <PaginationContent>
+            {currentPage > 1 && (
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage((prev) => prev - 1);
+                  }}
+                />
+              </PaginationItem>
+            )}
+            {Array.from({ length: totalPages }, (_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === index + 1}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(index + 1);
+                  }}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            {currentPage < totalPages && (
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage((prev) => prev + 1);
+                  }}
+                />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );

@@ -175,7 +175,7 @@ export function Header({ currentView, setCurrentView }) {
                 height={50}
                 width={150}
                 priority
-                style={{ width: "50", height: "150" }}
+                style={{ width: "150px", height: "auto" }}
               />
             </motion.div>
           </Link>

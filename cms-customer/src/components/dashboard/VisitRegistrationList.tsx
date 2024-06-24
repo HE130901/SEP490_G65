@@ -50,7 +50,7 @@ export type VisitRegistration = {
 };
 
 // RegistrationList component
-export default function RegistrationList({
+export default function VisitRegistrationList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;

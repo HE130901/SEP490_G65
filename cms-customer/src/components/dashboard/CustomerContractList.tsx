@@ -22,7 +22,7 @@ const getStatusVariant = (status: string) => {
   }
 };
 
-export default function ContainerList({
+export default function CustomerContractList({
   containers = [],
   onSelect,
 }: {
