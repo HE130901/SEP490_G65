@@ -24,12 +24,18 @@ namespace cms_server.Services
                 {
                     NicheId = n.NicheId,
                     NicheName = n.NicheName,
-                    NicheDescription = n.NicheDescription,
-                    // Retrieve the latest contract status
                     ContractStatus = n.Contracts
                         .OrderByDescending(c => c.StartDate)
                         .Select(c => c.Status)
-                        .FirstOrDefault() ?? "Không xác định"
+                        .FirstOrDefault() ?? "Không xác định",
+                    ContractId = n.Contracts
+                        .OrderByDescending(c => c.StartDate)
+                        .Select(c => c.ContractId)
+                        .FirstOrDefault(),
+                    DeceasedName = n.Deceaseds
+                        .OrderByDescending(d => d.DateOfDeath)
+                        .Select(d => d.FullName)
+                        .FirstOrDefault() ?? "Không có thông tin" // Thêm DeceasedName
                 })
                 .ToListAsync();
         }

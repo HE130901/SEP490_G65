@@ -6,6 +6,8 @@
         public string NicheName { get; set; } = null!;
         public string? ContractStatus { get; set; }
         public string? NicheDescription { get; set; }
+        public int? ContractId { get; set; }
+        public string DeceasedName { get; set; }
     }
 
 
