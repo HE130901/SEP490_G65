@@ -160,6 +160,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const response = await VisitRegistrationAPI.getByCustomerId(customerId);
       setVisitRegistrations(response.data.$values);
+      console.log("[useStateContext] Fetching visit registrations");
     } catch (error) {
       console.error(
         "[StateProvider] Error fetching visit registrations:",

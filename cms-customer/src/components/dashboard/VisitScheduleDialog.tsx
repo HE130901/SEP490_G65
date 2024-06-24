@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
@@ -36,7 +35,7 @@ export default function VisitScheduleDialog({
   onSubmit: () => void;
   containers: any[];
 }) {
-  const { user } = useStateContext();
+  const { user, fetchVisitRegistrations } = useStateContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -56,8 +55,19 @@ export default function VisitScheduleDialog({
       accompanyingPeople: accompanyingPeople,
     };
 
+    console.log("[VisitScheduleDialog] Submitting visit schedule:", data);
+
     try {
       await axiosInstance.post("/api/VisitRegistrations", data);
+      console.log(
+        "[VisitScheduleDialog] Visit schedule submitted successfully"
+      );
+      if (user && user.customerId) {
+        await fetchVisitRegistrations(user.customerId);
+        console.log(
+          "[VisitScheduleDialog] Fetching updated visit registrations"
+        );
+      }
       onSubmit();
       onClose();
     } catch (err) {

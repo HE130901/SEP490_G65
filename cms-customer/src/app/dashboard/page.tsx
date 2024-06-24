@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
-import ServicesList from "@/components/services/service";
 import Dashboard from "@/components/dashboard/dashboard";
 
 const ServicesPage = () => {
@@ -31,7 +30,7 @@ const ServicesPage = () => {
       <div className="flex flex-1 overflow-auto">
         <div className="flex-1">
           <div className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
-            <Breadcrumb className="pl-60">
+            <Breadcrumb className="">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>

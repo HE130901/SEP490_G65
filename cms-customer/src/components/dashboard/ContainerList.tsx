@@ -25,13 +25,9 @@ const getStatusVariant = (status: string) => {
 export default function ContainerList({
   containers = [],
   onSelect,
-  onVisitSchedule,
-  onServiceOrder,
 }: {
   containers: any[];
   onSelect: (container: any) => void;
-  onVisitSchedule: (container: any) => void;
-  onServiceOrder: (container: any) => void;
 }) {
   return (
     <div>
@@ -42,7 +38,7 @@ export default function ContainerList({
             <TableHead>STT</TableHead>
             <TableHead>Mã ô</TableHead>
             <TableHead>Mã HĐ</TableHead>
-            <TableHead>Tên người mất</TableHead> {/* Thêm cột Tên người mất */}
+            <TableHead>Tên người mất</TableHead>
             <TableHead>Trạng Thái</TableHead>
             <TableHead>Hành Động</TableHead>
           </TableRow>
@@ -58,34 +54,16 @@ export default function ContainerList({
                 </TableCell>
                 <TableCell>
                   {container.deceasedName || "Không có thông tin"}
-                </TableCell>{" "}
-                {/* Hiển thị Tên người mất */}
+                </TableCell>
                 <TableCell>
                   <Badge variant={getStatusVariant(container.contractStatus)}>
                     {container.contractStatus || "Không có thông tin"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => onSelect(container)}
-                    >
-                      Xem Chi Tiết
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => onVisitSchedule(container)}
-                    >
-                      Đặt Lịch Viếng
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => onServiceOrder(container)}
-                    >
-                      Đặt Dịch Vụ
-                    </Button>
-                  </div>
+                  <Button variant="outline" onClick={() => onSelect(container)}>
+                    Xem Chi Tiết
+                  </Button>
                 </TableCell>
               </TableRow>
             ))

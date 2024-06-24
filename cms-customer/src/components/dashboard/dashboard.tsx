@@ -6,7 +6,7 @@ import ContainerList from "@/components/dashboard/ContainerList";
 import RegistrationList from "@/components/dashboard/RegistrationList";
 import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
 import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
-import { useRouter } from "next/navigation";
+import ServicesList from "@/components/dashboard/ServicesSection";
 import axiosInstance from "@/api/axios-config";
 
 export default function Dashboard() {
@@ -24,7 +24,6 @@ export default function Dashboard() {
   } = useStateContext();
 
   const [reFetchTrigger, setReFetchTrigger] = useState(false);
-  const router = useRouter();
   const isMounted = useRef(false);
 
   const fetchContainers = useCallback(async () => {
@@ -57,6 +56,7 @@ export default function Dashboard() {
       return;
     }
     if (user && user.customerId) {
+      console.log("[Dashboard] Fetching visit registrations");
       fetchVisitRegistrations(user.customerId);
     }
   }, [user, reFetchTrigger, fetchVisitRegistrations]);
@@ -67,24 +67,27 @@ export default function Dashboard() {
   };
 
   const handleVisitScheduleSubmit = () => {
+    console.log("[Dashboard] Visit schedule submitted");
     setReFetchTrigger((prev) => !prev);
     setIsVisitScheduleModalOpen(false);
-  };
-
-  const handleServiceOrder = (container: any) => {
-    router.push(`/service-order?nicheId=${container.nicheId}`);
+    if (user && user.customerId) {
+      fetchVisitRegistrations(user.customerId);
+    }
   };
 
   return (
-    <div className=" text-foreground min-h-screen flex flex-col">
+    <div className="text-foreground min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid">
-          <ContainerList
-            containers={containers}
-            onSelect={handleContainerSelect}
-            onVisitSchedule={() => setIsVisitScheduleModalOpen(true)}
-            onServiceOrder={handleServiceOrder}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <ContainerList
+              containers={containers}
+              onSelect={handleContainerSelect}
+            />
+          </div>
+          <div>
+            <ServicesList containers={containers} />
+          </div>
         </div>
         <RegistrationList reFetchTrigger={reFetchTrigger} />
       </main>
