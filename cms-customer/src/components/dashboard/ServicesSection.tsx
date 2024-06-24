@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import ServiceCard from "@/components/ui/ServiceCard";
-import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog"; // Import VisitScheduleDialog
+import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
 
 export default function ServicesList({ containers }) {
   const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);
@@ -17,7 +17,7 @@ export default function ServicesList({ containers }) {
       title: "Đặt lịch viếng",
       imageSrc: "/images/visit.jpg",
       href: "#",
-      onClick: () => setIsVisitDialogOpen(true), // Mở dialog khi nhấp vào
+      onClick: () => setIsVisitDialogOpen(true),
     },
     {
       title: "Đặt dịch vụ",
@@ -27,7 +27,7 @@ export default function ServicesList({ containers }) {
   ];
 
   return (
-    <div>
+    <div className="bg-white p-4 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Danh sách dịch vụ</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {services.map((item, index) => (
@@ -36,7 +36,7 @@ export default function ServicesList({ containers }) {
             href={item.href}
             imageSrc={item.imageSrc}
             title={item.title}
-            onClick={item.onClick} // Truyền hàm onClick nếu có
+            onClick={item.onClick}
           />
         ))}
       </div>
@@ -44,7 +44,7 @@ export default function ServicesList({ containers }) {
         isOpen={isVisitDialogOpen}
         onClose={() => setIsVisitDialogOpen(false)}
         onSubmit={() => setIsVisitDialogOpen(false)}
-        containers={containers} // Truyền danh sách containers vào đây
+        containers={containers}
       />
     </div>
   );

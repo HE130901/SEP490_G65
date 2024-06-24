@@ -277,7 +277,7 @@ export default function RegistrationList({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
         <h2 className="text-2xl font-bold">Đơn đăng ký viếng</h2>
         <Input
