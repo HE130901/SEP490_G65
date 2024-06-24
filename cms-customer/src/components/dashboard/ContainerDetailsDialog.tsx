@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import axiosInstance from "@/api/axios-config";
+import ExtendContractDialog from "./ExtendContractDialog"; // Import the new dialog
 
 export default function ContainerDetailsDialog({
   isOpen,
@@ -25,6 +26,7 @@ export default function ContainerDetailsDialog({
   const [containerDetails, setContainerDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchContainerDetails = async () => {
@@ -118,8 +120,20 @@ export default function ContainerDetailsDialog({
           <Button variant="outline" onClick={onClose}>
             Đóng
           </Button>
+          <Button
+            variant="primary"
+            onClick={() => setExtendDialogOpen(true)}
+            disabled={loading}
+          >
+            Gia hạn hợp đồng
+          </Button>
         </DialogFooter>
       </DialogContent>
+      <ExtendContractDialog
+        isOpen={isExtendDialogOpen}
+        onClose={() => setExtendDialogOpen(false)}
+        containerId={containerId}
+      />
     </Dialog>
   );
 }

@@ -35,20 +35,31 @@ export default function ContainerList({
 }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Danh Sách Ô Chứa</h2>
+      <h2 className="text-2xl font-bold mb-4">Danh sách ô chứa và hợp đồng</h2>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>ID</TableHead>
+            <TableHead>STT</TableHead>
+            <TableHead>Mã ô</TableHead>
+            <TableHead>Mã HĐ</TableHead>
+            <TableHead>Tên người mất</TableHead> {/* Thêm cột Tên người mất */}
             <TableHead>Trạng Thái</TableHead>
             <TableHead>Hành Động</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {containers.length > 0 ? (
-            containers.map((container) => (
+            containers.map((container, index) => (
               <TableRow key={container.nicheId}>
+                <TableCell>{index + 1}</TableCell> {/* STT */}
                 <TableCell>{container.nicheId}</TableCell>
+                <TableCell>
+                  {container.contractId || "Không có mã HĐ"}
+                </TableCell>
+                <TableCell>
+                  {container.deceasedName || "Không có thông tin"}
+                </TableCell>{" "}
+                {/* Hiển thị Tên người mất */}
                 <TableCell>
                   <Badge variant={getStatusVariant(container.contractStatus)}>
                     {container.contractStatus || "Không có thông tin"}
@@ -80,7 +91,8 @@ export default function ContainerList({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={3}>Không có dữ liệu</TableCell>
+              <TableCell colSpan={6}>Không có dữ liệu</TableCell>{" "}
+              {/* Điều chỉnh colSpan để phù hợp với số cột mới */}
             </TableRow>
           )}
         </TableBody>

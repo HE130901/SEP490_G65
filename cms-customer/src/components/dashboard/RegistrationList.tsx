@@ -136,7 +136,7 @@ export default function RegistrationList({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Mã
+          Mã đơn
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -149,7 +149,7 @@ export default function RegistrationList({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Ô
+          Mã Ô
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -269,7 +269,7 @@ export default function RegistrationList({
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Danh sách đơn</h2>
+        <h2 className="text-2xl font-bold">Danh sách đơn đăng ký viếng</h2>
         <Input
           placeholder="Tìm kiếm..."
           value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
