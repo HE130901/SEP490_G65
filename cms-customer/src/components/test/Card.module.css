@@ -1,0 +1,29 @@
+.card {
+    font-weight: bold;
+    width: 300px;
+    height: 400px;
+    border-radius: 10px;
+    background-image: url(https://images.unsplash.com/photo-1557672199-6e8c8b2b8fff?ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80);
+    background-size: cover;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.6);
+    position: relative;
+    transition-duration: 300ms;
+    transition-property: transform, box-shadow;
+    transition-timing-function: ease-out;
+    transform: rotate3d(0);
+  }
+  
+  .card:hover {
+    transition-duration: 150ms;
+    box-shadow: 0 5px 20px 5px rgba(0, 0, 0, 0.27);
+  }
+  
+  .glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-image: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.13), rgba(0, 0, 0, 0.06));
+  }
+  

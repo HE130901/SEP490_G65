@@ -34,7 +34,7 @@ export default function ContainerList({
       <h2 className="text-2xl font-bold mb-4">Danh sách ô chứa và hợp đồng</h2>
       <div className="overflow-x-auto">
         <Table className="w-full border border-gray-200 shadow-md rounded-md">
-          <TableHeader className="bg-gray-100">
+          <TableHeader className="bg-gray-100 ">
             <TableRow>
               <TableHead className="border-b border-gray-200 p-4">
                 STT

@@ -1,9 +1,9 @@
-import { ThemeProvider } from "../components/theme-provider";
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
 import { StateProvider } from "@/context/state-context";
 import type { Metadata } from "next";
 import "./globals.css";
+
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -19,13 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body>     
-          <StateProvider>
-            <Header />
-            {children}
-            <Toaster />
-            <Footer />
-          </StateProvider>
+      <body>
+        <StateProvider>
+          <Header />
+          {children}
+          <Toaster />
+          <Footer />
+        </StateProvider>
       </body>
     </html>
   );

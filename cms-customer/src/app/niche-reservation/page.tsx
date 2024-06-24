@@ -13,6 +13,7 @@ import React, { useState, useEffect } from "react";
 import Loading from "@/components/ui/Loading";
 import Information from "@/components/niche-reservation/Information";
 import NicheReservation from "@/components/niche-reservation/NicheReservation";
+import Card from "@/components/test/card";
 
 const NicheReservationPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -32,8 +33,8 @@ const NicheReservationPage = () => {
     <div className="flex h-auto pt-16 justify-center">
       <div className="flex flex-1 overflow-auto">
         <div className="flex-1">
-          <div className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
-            <Breadcrumb className="">
+          <div className=" py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
+            <Breadcrumb className="pl-4">
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
@@ -48,9 +49,9 @@ const NicheReservationPage = () => {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-            
+
             <Information />
-            <NicheReservation/>
+            <NicheReservation />
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-//src/components/niche-reservation/ReservationForm.tsx
+// src/components/niche-reservation/ReservationForm.tsx
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -8,8 +8,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useStateContext } from "@/context/state-context";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useMediaQuery } from "react-responsive";
 
 const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
 
@@ -63,6 +63,8 @@ const ReservationForm = ({ isVisible, onClose }) => {
     resolver: zodResolver(bookingSchema),
   });
 
+  const isSmallScreen = useMediaQuery({ query: "(max-width: 768px)" });
+
   useEffect(() => {
     setValue("contractDate", new Date().toISOString().slice(0, 10));
     setValue("signAddress", selectedAddress);
@@ -108,13 +110,13 @@ const ReservationForm = ({ isVisible, onClose }) => {
   return (
     <Dialog open={isVisible} onOpenChange={onClose}>
       <DialogTitle></DialogTitle>
-      <DialogContent>
+      <DialogContent className={isSmallScreen ? "dialog-content" : ""}>
         <div className="flex justify-center">
           <h2 className="text-xl font-bold">Đăng ký đặt chỗ</h2>
         </div>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="p-4 bg-white rounded"
+          className={isSmallScreen ? "form-container" : "p-4 bg-white rounded"}
         >
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -123,7 +125,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             <input
               type="text"
               {...register("name")}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
             {errors.name && (
@@ -137,7 +139,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             <input
               type="text"
               {...register("phoneNumber")}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
             {errors.phoneNumber && (
@@ -155,7 +157,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
               onValueChange={(value) => setSelectedAddress(value)}
             >
               {predefinedAddresses.map((address) => (
-                <div key={address} className="flex items-center ">
+                <div key={address} className="flex items-center">
                   <RadioGroupItem
                     id={address}
                     value={address}
@@ -185,7 +187,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             <input
               type="text"
               value={`${selectedBuilding?.buildingName} - ${selectedFloor?.floorName} - ${selectedArea?.areaName} - Ô số ${selectedNiche?.nicheName}`}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               readOnly
             />
           </div>
@@ -196,7 +198,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             <input
               type="date"
               {...register("contractDate")}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
             />
             {errors.contractDate && (
@@ -212,11 +214,11 @@ const ReservationForm = ({ isVisible, onClose }) => {
             </label>
             <textarea
               {...register("note")}
-              className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <div className="flex justify-center ">
-            <p className=" text-sm font-semibold text-red-600 ">
+          <div className="flex justify-center">
+            <p className="text-sm font-semibold text-red-600">
               Quý khách vui lòng lưu ý!
             </p>
           </div>
@@ -226,7 +228,11 @@ const ReservationForm = ({ isVisible, onClose }) => {
             chỗ thành công. Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị
             hủy.
           </p>
-          <div className="flex justify-center">
+          <div
+            className={`button-container flex justify-center ${
+              isSmallScreen ? "flex-col" : ""
+            }`}
+          >
             <Button
               variant="secondary"
               onClick={onClose}
@@ -246,4 +252,3 @@ const ReservationForm = ({ isVisible, onClose }) => {
 };
 
 export default ReservationForm;
-``;
