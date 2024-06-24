@@ -1,107 +1,69 @@
 "use client";
 
+import { useState, forwardRef, useImperativeHandle } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { useCart } from "@/context/CartContext";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { ShoppingCartIcon } from "lucide-react";
 
-const CartModal: React.FC = () => {
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+export const CartModal = forwardRef((_, ref) => {
+  const { items, removeFromCart } = useCart();
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    const handleOpenCartModal = () => setIsOpen(true);
-    document.addEventListener("open-cart-modal", handleOpenCartModal);
-    return () => {
-      document.removeEventListener("open-cart-modal", handleOpenCartModal);
-    };
-  }, []);
-
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  useImperativeHandle(ref, () => ({
+    open: () => setIsOpen(true),
+    close: () => setIsOpen(false),
+  }));
 
   return (
-    <div className="relative">
-      <Button
-        onClick={() => setIsOpen(true)}
-        variant="ghost"
-        className="absolute top-0 right-0 mt-2 mr-2"
-      >
-        <ShoppingCartIcon className="w-6 h-6" />
-        {cart.length > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {cart.length}
-          </span>
-        )}
-      </Button>
-
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <Button className="hidden">Open Cart</Button>
-        </DialogTrigger>
-        <DialogContent className="fixed top-10 right-10 max-w-sm w-full bg-white dark:bg-gray-950 rounded-lg shadow-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">Giỏ hàng</h2>
-          {cart.length === 0 ? (
-            <p>Giỏ hàng của bạn đang trống.</p>
-          ) : (
-            <>
-              <ul>
-                {cart.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex justify-between items-center mb-4"
-                  >
-                    <div>
-                      <h3 className="text-lg">{item.name}</h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        {item.price.toLocaleString("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateQuantity(item.id, parseInt(e.target.value))
-                        }
-                        className="w-16 border border-gray-300 rounded-md"
-                      />
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="ml-4 text-red-500"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div className="text-right mt-4">
-                <h3 className="text-xl font-semibold">
-                  Tổng cộng:{" "}
-                  {total.toLocaleString("vi-VN", {
-                    style: "currency",
-                    currency: "VND",
-                  })}
-                </h3>
-                <Button
-                  variant="destructive"
-                  onClick={clearCart}
-                  className="mt-2"
-                >
-                  Xóa tất cả
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="fixed top-4 right-4" onClick={() => setIsOpen(true)}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M3 3h2l.09.27a5 5 0 004.69 3.46l1.35 1.92M13 5.27l1.35-1.92M3 3l5 14a5 5 0 004.69 3.46L19 20m0 0a5 5 0 00-4.69-3.46L13 10.73M5 17a2 2 0 104 0M3 3a2 2 0 104 0"
+            />
+          </svg>
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <h2 className="text-lg font-semibold">Your Cart</h2>
+        <ul>
+          {items.map((item) => (
+            <li key={item.id} className="flex justify-between py-2">
+              <div className="flex items-center gap-2">
+                <img src={item.image} alt={item.name} className="w-10 h-10" />
+                <span>{item.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>{item.price} VND</span>
+                <Button onClick={() => removeFromCart(item.id)} size="sm">
+                  Remove
                 </Button>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+            </li>
+          ))}
+        </ul>
+        {items.length === 0 && <p>Your cart is empty.</p>}
+        <DialogClose asChild>
+          <Button className="mt-4" onClick={() => setIsOpen(false)}>
+            Close
+          </Button>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
   );
-};
-
-export default CartModal;
+});

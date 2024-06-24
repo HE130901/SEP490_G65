@@ -1,6 +1,7 @@
 import React from "react";
 
 import type { Metadata } from "next";
+import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: "Sản phẩm & Dịch vụ",
@@ -9,7 +10,11 @@ export const metadata: Metadata = {
 interface LayoutProps {}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  return <div>{children}</div>;
+  return (
+    <div>
+      <CartProvider>{children}</CartProvider>
+    </div>
+  );
 };
 
 export default Layout;

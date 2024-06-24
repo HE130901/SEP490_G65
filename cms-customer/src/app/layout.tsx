@@ -1,12 +1,10 @@
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
 import { StateProvider } from "@/context/state-context";
-import type { Metadata } from "next";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-import { Toaster } from "@/components/ui/sonner";
-
-export const metadata: Metadata = {
+export const metadata = {
   title: "An Bình Viên",
   description: "Nơi an nghỉ cuối cùng, bình yên và trang trọng",
 };
