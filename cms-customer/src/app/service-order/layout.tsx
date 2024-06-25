@@ -1,3 +1,4 @@
+//src/app/service-order/layout.tsx
 import React from "react";
 
 import type { Metadata } from "next";
@@ -10,11 +11,7 @@ export const metadata: Metadata = {
 interface LayoutProps {}
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  return (
-    <div>
-      <CartProvider>{children}</CartProvider>
-    </div>
-  );
+  return <div>{children}</div>;
 };
 
 export default Layout;

@@ -3,6 +3,7 @@ import Header from "../components/header/header";
 import { StateProvider } from "@/context/state-context";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+import { CartProvider } from "@/context/CartContext";
 
 export const metadata = {
   title: "An Bình Viên",
@@ -19,10 +20,12 @@ export default function RootLayout({
       <head />
       <body>
         <StateProvider>
-          <Header />
-          {children}
-          <Toaster />
-          <Footer />
+          <CartProvider>
+            <Header />
+            {children}
+            <Toaster />
+            <Footer />
+          </CartProvider>
         </StateProvider>
       </body>
     </html>

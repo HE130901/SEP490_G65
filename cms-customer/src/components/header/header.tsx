@@ -40,80 +40,8 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const SidebarLink = ({ label, icon: Icon, href, active }) => (
-  <Link href={href}>
-    <div
-      className={`flex items-center px-4 py-2 text-gray-800 ${
-        active ? "bg-stone-300 text-white" : "hover:bg-stone-200"
-      } rounded-md transition-colors duration-300`}
-    >
-      <Icon className={`h-5 w-5 ${active ? "text-white" : "text-gray-800"}`} />
-      <span
-        className={`ml-2 text-sm font-medium ${
-          active ? "text-white" : "text-gray-800"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-  </Link>
-);
-
-const Sidebar = ({ currentView }) => (
-  <div className="px-4 py-6 space-y-2">
-    <SidebarLink
-      label="Quản lý ô chứa"
-      icon={HomeIcon}
-      href="/dashboard"
-      active={currentView === "dashboard"}
-    />
-    <SidebarLink
-      label="Đặt lịch viếng"
-      icon={PencilSquareIcon}
-      href="/visit-registration"
-      active={currentView === "visitRegistration"}
-    />
-    <SidebarLink
-      label="Đặt dịch vụ"
-      icon={DocumentTextIcon}
-      href="/service-order"
-      active={currentView === "serviceOrder"}
-    />
-    <SidebarLink
-      label="Hợp đồng"
-      icon={RectangleGroupIcon}
-      href="/contract-manager"
-      active={currentView === "contractManager"}
-    />
-  </div>
-);
-
 export function Header({ currentView, setCurrentView }) {
   const { user, logout } = useStateContext();
-
-  const components = [
-    {
-      title: "Đặt chỗ trực tuyến",
-      href: "/niche-reservation",
-      description:
-        "Lựa chọn ô chứa và đặt chỗ trực tuyến, dễ dàng và nhanh chóng.",
-    },
-    {
-      title: "Đăng ký viếng thăm",
-      href: "/dashboard",
-      description: "Lên lịch viếng thăm dễ dàng.",
-    },
-    {
-      title: "Đặt dịch vụ ",
-      href: "/service-order",
-      description: "Lựa chọn các dịch vụ chúng tôi cung cấp",
-    },
-    {
-      title: "Các dịch vụ khác",
-      href: "/services",
-      description: "Xem thông tin các dịch vụ khác đang được triển khai.",
-    },
-  ];
 
   const ListItem = React.forwardRef(
     ({ className, title, children, ...props }, ref) => {
@@ -146,24 +74,6 @@ export function Header({ currentView, setCurrentView }) {
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center">
-          {user && (
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button className="mr-4 p-2 bg-stone-400 text-white rounded-md shadow-md">
-                  <Bars3Icon className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className={`w-64 bg-slate-100 rounded-md shadow-md`}
-              >
-                <Sidebar
-                  currentView={currentView}
-                  setCurrentView={setCurrentView}
-                />
-              </SheetContent>
-            </Sheet>
-          )}
           <Link href="/" passHref>
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -180,59 +90,58 @@ export function Header({ currentView, setCurrentView }) {
             </motion.div>
           </Link>
         </div>
-        <NavigationMenu>
+        <NavigationMenu className=" lg:pr-24">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuTrigger>Trang chủ</NavigationMenuTrigger>
+              <Link href="/" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Trang chủ
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Dịch vụ</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                   <li className="row-span-3">
                     <NavigationMenuLink asChild>
                       <a
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/"
+                        className="flex h-full w-full select-none flex-col justify-start  rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                        href="/services"
                       >
-                        <div className="mb-2 text-lg font-medium">
-                          An Bình Viên
-                        </div>
+                        <div className="mb-2 text-lg font-medium">Dịch vụ</div>
                         <p className="text-sm leading-tight text-muted-foreground">
-                          An Bình Viên là một công trình kiến trúc độc đáo gồm
-                          hai tòa tháp đôi hiện đại, được thiết kế đặc biệt để
-                          lưu trữ tro cốt người đã khuất.
+                          An Bình Viên cung cấp các dịch vụ tiện ích cho khách
+                          hàng sở hữu ô chứa.
                         </p>
                       </a>
                     </NavigationMenuLink>
                   </li>
 
                   <ListItem href="/niche-reservation" title="Đặt ô chứa">
-                    Lựa chọn ô chứa và lên lịch hẹn ký hợp đồng.
+                    Lựa chọn ô và lên lịch ký hợp đồng.
                   </ListItem>
-                  <ListItem href="/about" title="Thông tin">
-                    Thông tin về An Bình Viên, chính sách và quy định.
+                  <ListItem href="/dashboard" title="Đăng ký viếng thăm">
+                    Lên lịch viếng thăm dễ dàng.
+                  </ListItem>
+                  <ListItem href="/service-order" title="Đặt dịch vụ">
+                    Lựa chọn các dịch vụ của chúng tôi.
                   </ListItem>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuTrigger>Dịch vụ</NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                  {components.map((component) => (
-                    <ListItem
-                      key={component.title}
-                      title={component.title}
-                      href={component.href}
-                    >
-                      {component.description}
-                    </ListItem>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+
             <NavigationMenuItem>
               <Link href="/about" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Thông tin
+                  Tin tức
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/contact" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Liên hệ
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

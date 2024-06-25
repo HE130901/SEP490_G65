@@ -8,7 +8,6 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { CartButton } from "../CartButton";
 
 interface SortAndViewControlsProps {
   sortBy: string;
@@ -36,18 +35,15 @@ export default function SortAndViewControls({
           <DropdownMenuContent className="w-[200px]" align="end">
             <DropdownMenuRadioGroup
               value={sortBy}
-              onValueChange={(value) => {
-                setSortBy(value);
-                console.log("Sort by:", value);
-              }}
+              onValueChange={(value) => setSortBy(value)}
             >
-              <DropdownMenuRadioItem value="relevance">
-                Mức độ liên quan
+              <DropdownMenuRadioItem value="Mặc định">
+                Mặc định
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="price-asc">
+              <DropdownMenuRadioItem value="Tăng dần">
                 Giá: Từ thấp đến cao
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="price-desc">
+              <DropdownMenuRadioItem value="Giảm dần">
                 Giá: Từ cao đến thấp
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
@@ -56,25 +52,18 @@ export default function SortAndViewControls({
         <Button
           variant={viewMode === "grid" ? "outline" : "ghost"}
           size="icon"
-          onClick={() => {
-            setViewMode("grid");
-            console.log("View mode: grid");
-          }}
+          onClick={() => setViewMode("grid")}
         >
           <LayoutGridIcon className="w-5 h-5" />
         </Button>
         <Button
           variant={viewMode === "list" ? "outline" : "ghost"}
           size="icon"
-          onClick={() => {
-            setViewMode("list");
-            console.log("View mode: list");
-          }}
+          onClick={() => setViewMode("list")}
         >
           <ListIcon className="w-5 h-5" />
         </Button>
       </div>
-      <CartButton />
     </div>
   );
 }

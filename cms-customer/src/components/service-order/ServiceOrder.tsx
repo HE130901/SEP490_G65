@@ -5,6 +5,7 @@ import FilterPanel from "./FilterPanel";
 import ProductList from "./ProductList";
 import PaginationControls from "./PaginationControls";
 import SortAndViewControls from "./SortAndViewControls";
+import { CartButton } from "@/components/service-order/CartButton";
 
 const products = [
   {
@@ -93,7 +94,7 @@ export default function ServiceOrder() {
   const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("relevance");
+  const [sortBy, setSortBy] = useState("Mặc định");
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -112,9 +113,9 @@ export default function ServiceOrder() {
       })
       .sort((a, b) => {
         switch (sortBy) {
-          case "price-asc":
+          case "Tăng dần":
             return a.price - b.price;
-          case "price-desc":
+          case "Giảm dần":
             return b.price - a.price;
           default:
             return 0;
@@ -141,12 +142,14 @@ export default function ServiceOrder() {
         products={products}
       />
       <div>
-        <SortAndViewControls
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-        />
+        <div className="flex items-center justify-between mb-4">
+          <SortAndViewControls
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+          />
+        </div>
         <ProductList products={paginatedProducts} viewMode={viewMode} />
         <PaginationControls
           currentPage={currentPage}

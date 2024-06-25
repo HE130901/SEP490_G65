@@ -1,4 +1,4 @@
-// src/context/CartContext.tsx
+// CartContext.tsx
 "use client";
 
 import React, { createContext, useState, useContext, ReactNode } from "react";
@@ -8,12 +8,14 @@ interface CartItem {
   name: string;
   price: number;
   image: string;
+  quantity: number;
 }
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -21,16 +23,37 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const addToCart = (item: CartItem) => {
-    setItems((prevItems) => [...prevItems, item]);
+  const addToCart = (newItem: CartItem) => {
+    setItems((prevItems) => {
+      const existingItem = prevItems.find((item) => item.id === newItem.id);
+      if (existingItem) {
+        return prevItems.map((item) =>
+          item.id === newItem.id
+            ? { ...item, quantity: item.quantity + newItem.quantity }
+            : item
+        );
+      } else {
+        return [...prevItems, newItem];
+      }
+    });
   };
 
   const removeFromCart = (id: number) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
+  const updateQuantity = (id: number, quantity: number) => {
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, quantity: quantity } : item
+      )
+    );
+  };
+
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart }}>
+    <CartContext.Provider
+      value={{ items, addToCart, removeFromCart, updateQuantity }}
+    >
       {children}
     </CartContext.Provider>
   );

@@ -8,19 +8,17 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import { CartProvider } from "@/context/CartContext";
 export default function Home() {
   return (
-    <CartProvider>
-      <main className="flex min-h-screen flex-col items-center justify-between bg-stone-200">
-        <Hero />
-        <ScrollReveal delay={0.5}>
-          <Information />
-        </ScrollReveal>
-        <ScrollReveal delay={0.5}>
-          <ServiceList />
-        </ScrollReveal>
-        <ScrollReveal delay={0.6}>
-          <ClientFeedback />
-        </ScrollReveal>
-      </main>
-    </CartProvider>
+    <main className="flex min-h-screen flex-col items-center justify-between bg-stone-200">
+      <Hero />
+      <ScrollReveal delay={0.5}>
+        <Information />
+      </ScrollReveal>
+      <ScrollReveal delay={0.5}>
+        <ServiceList />
+      </ScrollReveal>
+      <ScrollReveal delay={0.6}>
+        <ClientFeedback />
+      </ScrollReveal>
+    </main>
   );
 }
