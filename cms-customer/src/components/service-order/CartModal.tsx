@@ -61,7 +61,8 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                       <div className="flex items-center mt-2">
                         <Button
                           variant="outline"
-                          size="icon"
+                          size="sm"
+                          className="bg-red-400 w-8 h-8 hover:bg-red-500"
                           onClick={() => handleDecreaseQuantity(item)}
                         >
                           -
@@ -69,7 +70,8 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                         <span className="mx-2">{item.quantity}</span>
                         <Button
                           variant="outline"
-                          size="icon"
+                          size="sm"
+                          className="bg-green-400 w-8 h-8 hover:bg-green-500"
                           onClick={() => handleIncreaseQuantity(item)}
                         >
                           +

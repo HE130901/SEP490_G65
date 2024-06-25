@@ -21,7 +21,7 @@ export default function PaginationControls({
   setCurrentPage,
 }: PaginationControlsProps) {
   return (
-    <Pagination className="mt-8">
+    <Pagination className="mt-8 justify-end">
       <PaginationContent>
         {currentPage > 1 && (
           <PaginationItem>

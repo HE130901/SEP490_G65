@@ -14,7 +14,7 @@ import NicheAPI from "@/api/nicheApi";
 import NicheReservationAPI from "@/api/nicheReservationApi";
 import VisitRegistrationAPI from "@/api/visitRegistrationApi";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
 const StateContext = createContext<any | null>(null);
 
@@ -87,9 +87,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("token", token);
       await fetchCurrentUser(token);
       router.push("/dashboard");
-      toast.success("Đăng nhập thành công!");
+      sonnerToast.success("Đăng nhập thành công!");
     } catch (error) {
-      toast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
+      sonnerToast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
     }
   };
 
@@ -97,9 +97,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await AuthAPI.register(formData);
       router.push("/auth/login");
-      toast.success("Registration successful.");
+      sonnerToast.success("Registration successful.");
     } catch (error) {
-      toast.error("Registration failed. Please try again later.");
+      sonnerToast.error("Registration failed. Please try again later.");
     }
   };
 
@@ -150,9 +150,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
           (reservation) => reservation.reservationId !== reservationId
         )
       );
-      toast.success("Reservation deleted successfully!");
+      sonnerToast.success("Reservation deleted successfully!");
     } catch (error) {
-      toast.error("Failed to delete the reservation.");
+      sonnerToast.error("Failed to delete the reservation.");
     }
   };
 
@@ -177,9 +177,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
           (registration) => registration.visitId !== visitId
         )
       );
-      toast.success("Visit registration deleted successfully!");
+      sonnerToast.success("Visit registration deleted successfully!");
     } catch (error) {
-      toast.error("Failed to delete the visit registration.");
+      sonnerToast.error("Failed to delete the visit registration.");
     }
   };
 

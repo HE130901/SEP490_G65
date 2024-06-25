@@ -1,7 +1,12 @@
-// CartContext.tsx
 "use client";
 
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface CartItem {
   id: number;
@@ -22,6 +27,28 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    try {
+      const storedItems = localStorage.getItem("cartItems");
+      if (storedItems) {
+        const parsedItems = JSON.parse(storedItems);
+        setItems(parsedItems);
+        console.log("Loaded items from localStorage:", parsedItems);
+      }
+    } catch (error) {
+      console.error("Failed to load items from localStorage", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("cartItems", JSON.stringify(items));
+      console.log("Stored items in localStorage:", items);
+    } catch (error) {
+      console.error("Failed to store items in localStorage", error);
+    }
+  }, [items]);
 
   const addToCart = (newItem: CartItem) => {
     setItems((prevItems) => {

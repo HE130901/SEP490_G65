@@ -3,9 +3,6 @@
 import { useState, useMemo } from "react";
 import FilterPanel from "./FilterPanel";
 import ProductList from "./ProductList";
-import PaginationControls from "./PaginationControls";
-import SortAndViewControls from "./SortAndViewControls";
-import { CartButton } from "@/components/service-order/CartButton";
 
 const products = [
   {
@@ -94,41 +91,18 @@ export default function ServiceOrder() {
   const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("Mặc định");
-  const [viewMode, setViewMode] = useState("grid");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
 
   const filteredProducts = useMemo(() => {
-    return products
-      .filter((product) => {
-        return (
-          product.price >= priceRange[0] &&
-          product.price <= priceRange[1] &&
-          (selectedCategories.length === 0 ||
-            selectedCategories.includes(product.category)) &&
-          (selectedBrands.length === 0 ||
-            selectedBrands.includes(product.brand))
-        );
-      })
-      .sort((a, b) => {
-        switch (sortBy) {
-          case "Tăng dần":
-            return a.price - b.price;
-          case "Giảm dần":
-            return b.price - a.price;
-          default:
-            return 0;
-        }
-      });
-  }, [priceRange, selectedCategories, selectedBrands, sortBy]);
-
-  const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredProducts, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    return products.filter((product) => {
+      return (
+        product.price >= priceRange[0] &&
+        product.price <= priceRange[1] &&
+        (selectedCategories.length === 0 ||
+          selectedCategories.includes(product.category)) &&
+        (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
+      );
+    });
+  }, [priceRange, selectedCategories, selectedBrands]);
 
   return (
     <div className="grid md:grid-cols-[280px_1fr] gap-8 p-4 md:p-8">
@@ -141,22 +115,7 @@ export default function ServiceOrder() {
         setSelectedBrands={setSelectedBrands}
         products={products}
       />
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <SortAndViewControls
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-          />
-        </div>
-        <ProductList products={paginatedProducts} viewMode={viewMode} />
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      <ProductList products={filteredProducts} />
     </div>
   );
 }

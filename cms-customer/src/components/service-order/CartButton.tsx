@@ -15,18 +15,19 @@ export const CartButton = forwardRef<HTMLDivElement>((props, ref) => {
       <Button variant="outline" size="icon" onClick={() => setIsOpen(true)}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
           fill="none"
           viewBox="0 0 24 24"
+          stroke-width="1.5"
           stroke="currentColor"
+          class="size-6"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M3 3h2l.09.27a5 5 0 004.69 3.46l1.35 1.92M13 5.27l1.35-1.92M3 3l5 14a5 5 0 004.69 3.46L19 20m0 0a5 5 0 00-4.69-3.46L13 10.73M5 17a2 2 0 104 0M3 3a2 2 0 104 0"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
           />
         </svg>
+
         {items.length > 0 && (
           <span className="absolute -top-2 -right-2 block h-5 w-5 rounded-full bg-red-600 text-white text-xs leading-tight text-center">
             {items.length}

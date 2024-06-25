@@ -1,4 +1,3 @@
-// Toaster.tsx
 "use client";
 
 import { useTheme } from "next-themes";
@@ -26,9 +25,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
         },
         success: {
           className: "bg-green-600 text-white",
+          descriptionClassName: "text-green-200",
         },
         error: {
           className: "bg-red-600 text-white",
+          descriptionClassName: "text-red-200",
         },
       }}
       {...props}
