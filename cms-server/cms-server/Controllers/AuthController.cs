@@ -33,10 +33,22 @@ namespace CMSApi.Controllers
             var customer = _context.Customers.SingleOrDefault(c => c.Email == loginDto.Email);
             if (customer != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, customer.PasswordHash))
             {
-                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.Phone, customer.Address);
+                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.Phone, customer.Address, "Customer");
                 return Ok(new
                 {
                     Token = token,
+                    Role = "Customer"
+                });
+            }
+
+            var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
+            if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
+            {
+                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Role);
+                return Ok(new
+                {
+                    Token = token,
+                    Role = staff.Role
                 });
             }
 
@@ -71,17 +83,11 @@ namespace CMSApi.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-         
-
-         
-                if (int.TryParse(userId, out int parsedUserId))
+            if (int.TryParse(userId, out int parsedUserId))
+            {
+                var customer = _context.Customers.SingleOrDefault(c => c.CustomerId == parsedUserId);
+                if (customer != null)
                 {
-                    var customer = _context.Customers.SingleOrDefault(c => c.CustomerId == parsedUserId);
-                    if (customer == null)
-                    {
-                        return NotFound("Customer not found.");
-                    }
-
                     return Ok(new
                     {
                         customerId = customer.CustomerId,
@@ -92,7 +98,20 @@ namespace CMSApi.Controllers
                         address = customer.Address
                     });
                 }
-            
+
+                var staff = _context.Staff.SingleOrDefault(s => s.StaffId == parsedUserId);
+                if (staff != null)
+                {
+                    return Ok(new
+                    {
+                        staffId = staff.StaffId,
+                        fullName = staff.FullName,
+                        email = staff.Email,
+                        phone = staff.Phone,
+                        role = staff.Role
+                    });
+                }
+            }
 
             return Unauthorized("Invalid user role.");
         }
@@ -103,31 +122,50 @@ namespace CMSApi.Controllers
             var customer = _context.Customers.SingleOrDefault(c => c.Email == requestDto.Email);
             if (customer == null)
             {
-                return NotFound("Email not found.");
+                var staff = _context.Staff.SingleOrDefault(s => s.Email == requestDto.Email);
+                if (staff == null)
+                {
+                    return NotFound("Email not found.");
+                }
+                var newPassword = GenerateRandomPassword();
+                staff.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.SaveChanges();
+
+                var message = $"Your new password is: {newPassword}";
+
+                SendEmail(staff.Email, "Your New Password", message);
+
+                return Ok("A new password has been sent to your email.");
             }
+            else
+            {
+                var newPassword = GenerateRandomPassword();
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.SaveChanges();
 
-            var newPassword = GenerateRandomPassword();
-            customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-            _context.SaveChanges();
+                var message = $"Your new password is: {newPassword}";
 
-            var message = $"Your new password is: {newPassword}";
+                SendEmail(customer.Email, "Your New Password", message);
 
-            SendEmail(customer.Email, "Your New Password", message);
-
-            return Ok("A new password has been sent to your email.");
+                return Ok("A new password has been sent to your email.");
+            }
         }
 
-
-        private string GenerateJwtToken(string userId, string phone, string address)
+        private string GenerateJwtToken(string userId, string phone, string role, string address = null)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim("Phone", phone),
-                new Claim("Address", address)
+                new Claim(ClaimTypes.Role, role)
             };
+
+            if (address != null)
+            {
+                claims.Add(new Claim("Address", address));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
