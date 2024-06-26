@@ -82,7 +82,7 @@ const CombinedSelector = () => {
   };
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4   rounded-md ">
       <div>
         {/* Building Selector */}
         <Popover open={buildingOpen} onOpenChange={setBuildingOpen}>

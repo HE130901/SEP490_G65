@@ -61,7 +61,7 @@ function Hero() {
               transition={{ duration: 0.5, delay: 0.7 }}
               className="mt-4 mb-4 w-full text-white text-lg leading-snug tracking-wide text-shadow-md"
             >
-              <span className="font-bold">
+              <span className="font-bold text-white">
                 &quot;Nơi an nghỉ cuối cùng
                 <br /> bình yên và trang trọng&quot;
               </span>
@@ -70,7 +70,7 @@ function Hero() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.9 }}
-              className="mt-2 mb-8 w-full text-white text-base leading-relaxed tracking-wide text-shadow-md"
+              className="mt-2 mb-8 w-full  text-base leading-relaxed tracking-wide text-shadow-md text-gray-300"
             >
               Con người ai cũng phải trải qua sinh-lão-bệnh-tử. <br /> An Bình
               Viên được xây nên không như là điểm đến cuối cùng của một đời
@@ -87,12 +87,10 @@ function Hero() {
                 <motion.div
                   whileHover={{
                     scale: 1.05,
-                    backgroundColor: "#FFF",
-                    color: "#1E293B",
                     boxShadow: "0px 4px 15px rgba(255, 255, 255, 0.3)",
                   }}
                   transition={{ duration: 0.2 }}
-                  className="rounded-md px-8 py-4 text-sm md:text-base lg:text-lg shadow-lg bg-white text-black"
+                  className="rounded-md px-8 py-4 text-sm md:text-base lg:text-lg shadow-lg bg-gradient-to-b from-orange-200 to-orange-600 text-white"
                 >
                   <p className="font-bold">Xem chi tiết</p>
                 </motion.div>

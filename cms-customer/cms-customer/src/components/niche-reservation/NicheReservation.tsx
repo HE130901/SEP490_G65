@@ -173,11 +173,11 @@ const NicheReservationPage = () => {
                   openBookingForm();
                 }
               }}
-              className={`p-2 border rounded-md cursor-pointer transform transition-transform ${
+              className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                 niche.status === "unavailable"
                   ? "bg-black text-white cursor-not-allowed"
                   : niche.status === "Booked"
-                  ? "bg-gray-400 cursor-not-allowed"
+                  ? "bg-orange-400 cursor-not-allowed text-white"
                   : "bg-white border hover:bg-orange-300 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform  hover:duration-300"
               }`}
             >
@@ -190,11 +190,11 @@ const NicheReservationPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <section className="flex flex-col lg:flex-row gap-4">
+    <div className="container mx-auto px-1 py-6 ">
+      <section className="flex flex-col lg:flex-row gap-2 ">
         {/* Search Section */}
         <motion.div
-          className="lg:w-1/6 bg-white p-6 rounded-md shadow-md"
+          className="lg:w-1/6 p-6 shadow-md bg-slate-300 bg-opacity-85 rounded-md bg-gradient-to-b from-slate-100 to-stone-400"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -207,7 +207,7 @@ const NicheReservationPage = () => {
 
         {/* Niche Selector Section */}
         <motion.div
-          className="lg:w-5/6 bg-white p-6 rounded-md shadow-md"
+          className="lg:w-5/6  p-6  shadow-md bg-slate-300 bg-opacity-85 rounded-md bg-gradient-to-b from-slate-100 to-stone-400"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -221,18 +221,18 @@ const NicheReservationPage = () => {
           <div className="flex flex-col items-center mb-6">
             {nicheLoading ? renderSkeletonRows() : renderRows()}
           </div>
-          <div className="mt-4 flex justify-center space-x-4">
+          <div className="mt-4 flex justify-center space-x-4 ">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-black"></div>
-              <span>Không thể chọn</span>
+              <div className="w-4 h-4 bg-black rounded-sm "></div>
+              <span className="font-semibold text-white">Không thể chọn</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-white border"></div>
-              <span>Có thể chọn</span>
+              <div className="w-4 h-4 bg-white border rounded-sm"></div>
+              <span className="font-semibold ">Có thể chọn</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-gray-400"></div>
-              <span>Đang được đặt</span>
+            <div className="flex items-center space-x-2 ">
+              <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
+              <span className="font-semibold text-white">Đang được đặt</span>
             </div>
           </div>
           <ReservationForm

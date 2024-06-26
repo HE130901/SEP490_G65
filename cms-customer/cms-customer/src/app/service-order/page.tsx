@@ -34,7 +34,7 @@ const ServiceOrderPage: React.FC = () => {
     <div className="flex h-auto pt-16 justify-center">
       <div className="flex flex-1 overflow-auto">
         <div className="flex-1">
-          <main className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md">
+          <main className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md bg-gradient-to-b from-slate-100 to-stone-400">
             <Breadcrumb className="">
               <BreadcrumbList>
                 <BreadcrumbItem>

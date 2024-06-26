@@ -63,7 +63,7 @@ const ClientFeedback: FC = () => {
     <div>
       {/* Testimonials Section */}
       <motion.section
-        className="py-16 bg-white"
+        className="py-16"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
@@ -73,19 +73,11 @@ const ClientFeedback: FC = () => {
         <div className="max-w-7xl mx-auto text-center px-4">
           <Typography
             variant="h2"
-            className="text-3xl font-semibold mb-6 text-blue-gray-900"
+            className="text-3xl font-semibold mb-6 text-blue-gray-900 pb-12"
           >
             Khách hàng nói gì về chúng tôi
           </Typography>
-          <Typography
-            variant="lead"
-            className="text-lg mb-12 text-gray-600 mx-auto max-w-2xl"
-          >
-            Khám phá những gì khách hàng của chúng tôi nói về trải nghiệm của họ
-            với dịch vụ của chúng tôi. <br />
-            Chúng tôi tự hào mang lại kết quả xuất sắc và xây dựng các mối quan
-            hệ đối tác lâu dài.
-          </Typography>
+
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((testimonial, index) => (
               <motion.div
@@ -124,7 +116,7 @@ const ClientFeedback: FC = () => {
 
       {/* Stats Section */}
       <motion.section
-        className="mx-auto grid gap-10 px-8 py-16 lg:grid-cols-2 xl:gap-20 bg-gray-50"
+        className="mx-auto grid gap-10 px-8 py-16 lg:grid-cols-2 xl:gap-20 "
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}

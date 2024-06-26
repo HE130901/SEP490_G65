@@ -46,7 +46,7 @@ export default function Information() {
   const handleOpen = (value: number) => setOpen(open === value ? 0 : value);
 
   return (
-    <section className="container mx-auto flex flex-col items-center px-4 py-10 h-auto pt-20">
+    <div className="container mx-auto flex flex-col items-center px-4 py-10 ">
       <motion.div
         className="w-full"
         initial="hidden"
@@ -57,7 +57,7 @@ export default function Information() {
       >
         <Typography
           variant="h2"
-          className="text-3xl font-semibold mb-4"
+          className="text-3xl font-bold mb-4 text-center text-zinc-50"
           color="blue-gray"
         >
           Giới thiệu tổng quan
@@ -65,25 +65,25 @@ export default function Information() {
       </motion.div>
 
       <motion.div
-        className="mt-8 w-full grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="mt-8 w-full grid grid-cols-1 md:grid-cols-2 gap-8"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={revealVariants}
         custom={2}
       >
-        <div className="mx-auto lg:px-20 flex flex-col">
+        <div className="mx-auto flex flex-col space-y-4">
           {FAQS.map(({ title, desc }, key) => (
             <motion.div key={key} variants={revealVariants} custom={key + 3}>
               <Accordion
                 open={open === key + 1}
                 onClick={() => handleOpen(key + 1)}
-                className="mb-4 border-none bg-transparent shadow-none"
+                className="border border-gray-300 rounded-lg shadow-sm"
               >
-                <AccordionHeader className="text-left text-gray-900 bg-transparent p-0">
+                <AccordionHeader className="text-left text-gray-900 bg-white p-4">
                   {title}
                 </AccordionHeader>
-                <AccordionBody>
+                <AccordionBody className="bg-gray-50 p-4">
                   <Typography
                     color="blue-gray"
                     className="font-normal text-gray-500"
@@ -96,13 +96,13 @@ export default function Information() {
           ))}
         </div>
         <motion.div
-          className="mx-auto lg:px-20 h-96 flex items-center"
+          className="mx-auto flex items-center justify-center h-96 w-full"
           variants={revealVariants}
           custom={7}
         >
           <CarouselPlugin />
         </motion.div>
       </motion.div>
-    </section>
+    </div>
   );
 }

@@ -25,9 +25,9 @@ const revealVariants = {
 
 export default function Component() {
   const images = [
-    "/images/visit13.jpg",
+    "/images/bg5.jpg",
     "/images/image.png",
-    "/images/121212.jpg",
+    "/images/visit13.jpg",
     "/images/tower.webp",
   ];
 
@@ -35,7 +35,7 @@ export default function Component() {
     <section className="w-full pt-4">
       <div className="container grid gap-6 px-4 md:px-6 lg:grid-cols-2 lg:gap-2">
         <motion.div
-          className="space-y-3 mr-16"
+          className="space-y-3 mr-16  "
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -43,14 +43,14 @@ export default function Component() {
           custom={1}
         >
           <motion.h2
-            className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl"
+            className="text-2xl font-bold tracking-tighter sm:text-3xl md:text-4xl justify-center text-center pt-4"
             variants={revealVariants}
             custom={2}
           >
             Tháp đôi An Bình Viên
           </motion.h2>
           <motion.p
-            className="max-w-[700px] text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed"
+            className="max-w-[700px]  md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed text-black"
             variants={revealVariants}
             custom={3}
           >

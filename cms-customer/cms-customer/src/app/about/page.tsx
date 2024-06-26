@@ -23,7 +23,7 @@ export default function Component() {
     <div className="flex flex-col min-h-[100dvh] pt-18">
       <main className="flex-1">
         <motion.section
-          className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground"
+          className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-primary/80 text-primary-foreground bg-red-200"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -163,14 +163,14 @@ export default function Component() {
           </div>
         </motion.section>
         <motion.section
-          className="w-full py-12 md:py-24 lg:py-32"
+          className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-primary/80"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={revealVariants}
           custom={7}
         >
-          <div className="container px-4 md:px-6">
+          <div className="container px-4 md:px-6 ">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
               <motion.div
                 className="space-y-4"
@@ -188,7 +188,7 @@ export default function Component() {
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
                 >
                   Đội ngũ của chúng tôi bao gồm những chuyên gia hàng đầu trong
                   lĩnh vực quản lý nhà chứa tro cốt, với kinh nghiệm và chuyên
@@ -197,7 +197,7 @@ export default function Component() {
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px]  md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
                 >
                   Với sự đam mê và tận tâm, chúng tôi luôn nỗ lực để mang đến
                   những giải pháp tốt nhất, đáp ứng nhu cầu lưu giữ tro cốt của
@@ -253,16 +253,10 @@ export default function Component() {
                       <Typography variant="h3" className="text-lg font-bold">
                         {member.name}
                       </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        className="text-muted-foreground"
-                      >
+                      <Typography variant="subtitle2" className="">
                         {member.role}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        className="text-muted-foreground"
-                      >
+                      <Typography variant="body2" className="">
                         {member.description}
                       </Typography>
                     </div>

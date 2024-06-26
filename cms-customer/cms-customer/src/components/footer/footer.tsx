@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <div className="flex flex-col">
-      <footer className="bg-stone-100 py-8 dark:bg-gray-800 mt-auto">
+      <footer className="bg-stone-400 py-8 dark:bg-gray-800 mt-auto">
         <div className="container mx-auto flex flex-col items-center justify-between gap-6 px-4 md:flex-row">
           <Link href="#" className="flex items-center gap-2" prefetch={false}>
             <MountainIcon className="h-6 w-6" />
@@ -12,35 +12,35 @@ export default function Footer() {
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex items-center gap-4">
-              <LocateIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+              <LocateIcon className="h-6 w-6 text-black dark:text-gray-400" />
               <div>
                 <h4 className="font-semibold">Địa chỉ</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-black dark:text-gray-400">
                   123 Hoà Lạc, Hà Nội
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <PhoneIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+              <PhoneIcon className="h-6 w-6 text-black dark:text-gray-400" />
               <div>
                 <h4 className="font-semibold">Số điện thoại</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-black dark:text-gray-400">
                   (+84) 999-999-999
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <MailIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+              <MailIcon className="h-6 w-6 text-black dark:text-gray-400" />
               <div>
                 <h4 className="font-semibold">Email</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-black dark:text-gray-400">
                   info@abv.com
                 </p>
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; 2024 ABV Inc. All rights reserved.
+          <p className="text-sm text-black dark:text-gray-400">
+            &copy; 2024 An Bình Viên. SEP490_G65
           </p>
         </div>
       </footer>

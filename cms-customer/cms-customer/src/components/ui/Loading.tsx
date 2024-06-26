@@ -18,7 +18,7 @@ const Loading: React.FC = () => {
   return (
     <div
       className={cn(
-        "flex flex-col justify-center items-center h-screen bg-gray-100 dark:bg-gray-900"
+        "flex flex-col justify-center items-center h-screen bg-gradient-to-b from-slate-100 to-stone-400 dark:bg-gray-900"
       )}
     >
       <div className="flex flex-col items-center space-y-2">
