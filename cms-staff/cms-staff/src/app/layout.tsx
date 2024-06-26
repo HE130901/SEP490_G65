@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/context";
 import { Toaster } from "@/components/ui/toaster";
+import Head from "next/head";
 
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
@@ -20,13 +21,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
       <body>
         <AppProviders>
           <CssBaseline />
           <Navbar />
           <Box sx={{ display: "flex" }}>
             <Sidebar />
-            <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <Box
+              component="main"
+              sx={{ flexGrow: 1, p: 3, bgcolor: "transparent" }}
+            >
               <Toolbar />
               {children}
             </Box>

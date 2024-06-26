@@ -82,19 +82,6 @@ const RenewalDialog = ({ open, handleClose, contract, handleSave }) => {
       <DialogContent>
         <Grid container spacing={3} paddingTop={1}>
           <Grid item xs={12}>
-            <TextField
-              label="Ngày gia hạn"
-              type="date"
-              fullWidth
-              value={renewalDate}
-              onChange={handleRenewalDateChange}
-              variant="outlined"
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Loại hình hợp đồng</InputLabel>
               <Select
@@ -115,6 +102,19 @@ const RenewalDialog = ({ open, handleClose, contract, handleSave }) => {
               value={duration}
               onChange={handleDurationChange}
               variant="outlined"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Ngày gia hạn"
+              type="date"
+              fullWidth
+              value={renewalDate}
+              onChange={handleRenewalDateChange}
+              variant="outlined"
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
