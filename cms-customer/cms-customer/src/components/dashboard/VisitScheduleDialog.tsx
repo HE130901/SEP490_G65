@@ -18,7 +18,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import axiosInstance from "@/api/axios-config";
+import axiosInstance from "@/utils/axiosInstance";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Input } from "@/components/ui/input";

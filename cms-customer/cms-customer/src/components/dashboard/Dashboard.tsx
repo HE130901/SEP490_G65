@@ -11,7 +11,7 @@ import BookingRequestList from "@/components/dashboard/BookingRequestList";
 import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
 import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
 import ServicesList from "@/components/dashboard/ServicesSection";
-import axiosInstance from "@/api/axios-config";
+import axiosInstance from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {

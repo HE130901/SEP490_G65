@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import axiosInstance from "@/api/axios-config";
+import axiosInstance from "@/utils/axiosInstance";
 import ExtendContractDialog from "./ExtendContractDialog"; // Import the new dialog
 
 export default function ContainerDetailsDialog({

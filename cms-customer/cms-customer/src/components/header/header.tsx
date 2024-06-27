@@ -2,7 +2,6 @@
 
 import logo from "../../../public/images/logo.png";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/dark-mode";
 import {
   DropdownMenu,
   DropdownMenuContent,
