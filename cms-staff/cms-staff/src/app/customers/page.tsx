@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -25,35 +25,47 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import CustomerAPI from "@/services/customerService";
+import { useToast } from "@/components/ui/use-toast";
 
 const CustomerPage = () => {
-  const [customers, setCustomers] = useState([
-    { id: 1, code: "KH001", name: "Nguyễn Văn A", phone: "0901234567" },
-    { id: 2, code: "KH002", name: "Trần Thị B", phone: "0907654321" },
-    // Thêm dữ liệu khách hàng ở đây
-  ]);
+  const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("name");
+  const [searchColumn, setSearchColumn] = useState("fullName");
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("name");
+  const [orderBy, setOrderBy] = useState("customerId");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const response = await CustomerAPI.getAllCustomers();
+        setCustomers(response.data.$values);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Không thể tải danh sách khách hàng",
+        });
+      }
+    };
+
+    fetchCustomers();
+  }, [toast]);
 
   const handleAddCustomer = () => {
-    // Logic để thêm mới khách hàng
     alert("Thêm mới khách hàng");
   };
 
   const handleViewCustomer = (id) => {
-    // Logic để xem chi tiết khách hàng
     alert(`Xem chi tiết khách hàng với ID: ${id}`);
   };
 
   const handleEditCustomer = (id) => {
-    // Logic để sửa khách hàng
     alert(`Sửa khách hàng với ID: ${id}`);
   };
 
   const handleDeleteCustomer = (id) => {
-    // Logic để xóa khách hàng
     alert(`Xóa khách hàng với ID: ${id}`);
   };
 
@@ -68,18 +80,16 @@ const CustomerPage = () => {
   };
 
   const sortedCustomers = customers.sort((a, b) => {
-    if (orderBy === "name") {
+    if (orderBy === "fullName") {
       if (order === "asc") {
-        return a.name.localeCompare(b.name);
+        return a.fullName.localeCompare(b.fullName);
       } else {
-        return b.name.localeCompare(a.name);
+        return b.fullName.localeCompare(a.fullName);
       }
-    } else if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
+    } else if (orderBy === "customerId") {
+      return order === "asc"
+        ? a.customerId - b.customerId
+        : b.customerId - a.customerId;
     } else if (orderBy === "phone") {
       if (order === "asc") {
         return a.phone.localeCompare(b.phone);
@@ -91,10 +101,12 @@ const CustomerPage = () => {
   });
 
   const filteredCustomers = sortedCustomers.filter((customer) => {
-    if (searchColumn === "name") {
-      return customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "code") {
-      return customer.code.toLowerCase().includes(searchTerm.toLowerCase());
+    if (searchColumn === "fullName") {
+      return customer.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "customerId") {
+      return customer.customerId.toString().includes(searchTerm);
+    } else if (searchColumn === "phone") {
+      return customer.phone.toLowerCase().includes(searchTerm.toLowerCase());
     }
     return true;
   });
@@ -126,8 +138,9 @@ const CustomerPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
-              <MenuItem value="name">Tên</MenuItem>
-              <MenuItem value="code">Mã Khách hàng</MenuItem>
+              <MenuItem value="fullName">Tên khách hàng</MenuItem>
+              <MenuItem value="customerId">Mã khách hàng</MenuItem>
+              <MenuItem value="phone">Số điện thoại</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -144,29 +157,29 @@ const CustomerPage = () => {
             <TableRow>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
-                  onClick={() => handleRequestSort("id")}
-                >
-                  Số thứ tự
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "customerId"}
+                  direction={orderBy === "customerId" ? order : "asc"}
+                  onClick={() => handleRequestSort("customerId")}
                 >
                   Mã Khách hàng
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "name"}
-                  direction={orderBy === "name" ? order : "asc"}
-                  onClick={() => handleRequestSort("name")}
+                  active={orderBy === "fullName"}
+                  direction={orderBy === "fullName" ? order : "asc"}
+                  onClick={() => handleRequestSort("fullName")}
                 >
                   Tên Khách hàng
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === "email"}
+                  direction={orderBy === "email" ? order : "asc"}
+                  onClick={() => handleRequestSort("email")}
+                >
+                  Email
                 </TableSortLabel>
               </TableCell>
               <TableCell>
@@ -178,32 +191,52 @@ const CustomerPage = () => {
                   Số điện thoại
                 </TableSortLabel>
               </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === "address"}
+                  direction={orderBy === "address" ? order : "asc"}
+                  onClick={() => handleRequestSort("address")}
+                >
+                  Địa chỉ
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === "citizenId"}
+                  direction={orderBy === "citizenId" ? order : "asc"}
+                  onClick={() => handleRequestSort("citizenId")}
+                >
+                  CCCD
+                </TableSortLabel>
+              </TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredCustomers.map((customer, index) => (
-              <TableRow key={customer.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{customer.code}</TableCell>
-                <TableCell>{customer.name}</TableCell>
+              <TableRow key={customer.customerId}>
+                <TableCell>{customer.customerId}</TableCell>
+                <TableCell>{customer.fullName}</TableCell>
+                <TableCell>{customer.email}</TableCell>
                 <TableCell>{customer.phone}</TableCell>
+                <TableCell>{customer.address}</TableCell>
+                <TableCell>{customer.citizenId}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewCustomer(customer.id)}
+                    onClick={() => handleViewCustomer(customer.customerId)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditCustomer(customer.id)}
+                    onClick={() => handleEditCustomer(customer.customerId)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteCustomer(customer.id)}
+                    onClick={() => handleDeleteCustomer(customer.customerId)}
                   >
                     <DeleteIcon />
                   </IconButton>

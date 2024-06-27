@@ -22,9 +22,19 @@ namespace cms_server.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
         {
-            return await _context.Customers.ToListAsync();
+            return await _context.Customers
+                .Select(customer => new CustomerDto
+                {
+                    CustomerId = customer.CustomerId,
+                    FullName = customer.FullName,
+                    Email = customer.Email,
+                    Phone = customer.Phone,
+                    Address = customer.Address,
+                    CitizenId = customer.CitizenId
+                })
+                .ToListAsync();
         }
 
         // GET: api/Customers/5
@@ -104,4 +114,15 @@ namespace cms_server.Controllers
             return _context.Customers.Any(e => e.CustomerId == id);
         }
     }
+}
+
+
+public class CustomerDto
+{
+    public int CustomerId { get; set; }
+    public string FullName { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+    public string Address { get; set; }
+    public string CitizenId { get; set; }
 }
