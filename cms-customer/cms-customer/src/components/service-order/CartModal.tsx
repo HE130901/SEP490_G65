@@ -1,9 +1,9 @@
-// CartModal.tsx
 "use client";
 
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -46,9 +46,11 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
               {items.map((item) => (
                 <li key={item.id} className="flex justify-between items-center">
                   <div className="flex items-center gap-4">
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
                     <div>
