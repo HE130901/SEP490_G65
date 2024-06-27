@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -27,52 +27,60 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import ServiceAPI from "@/services/serviceService";
+import { useToast } from "@/components/ui/use-toast";
+import ServiceDetail from "./ServiceDetail";
+import ServiceEdit from "./ServiceEdit";
+import ServiceDelete from "./ServiceDelete";
+import ServiceAdd from "./ServiceAdd";
 
 const ServiceProductPage = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      code: "SP001",
-      name: "Dịch vụ 1",
-      price: 50000,
-      imageUrl: "/images/service1.jpg",
-      category: "Dịch vụ",
-      status: "Available",
-    },
-    {
-      id: 2,
-      code: "PR001",
-      name: "Sản phẩm 1",
-      price: 100000,
-      imageUrl: "/images/product1.jpg",
-      category: "Sản phẩm",
-      status: "Out of Stock",
-    },
-    // Thêm dữ liệu dịch vụ và sản phẩm ở đây
-  ]);
+  const [items, setItems] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("name");
+  const [searchColumn, setSearchColumn] = useState("serviceName");
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [orderBy, setOrderBy] = useState("serviceId");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await ServiceAPI.getAllServices();
+        setItems(response.data.$values); // Assuming the API response has the data in "$values"
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Không thể tải danh sách dịch vụ",
+        });
+      }
+    };
+
+    fetchServices();
+  }, [toast]);
 
   const handleAddItem = () => {
-    // Logic để thêm mới dịch vụ hoặc sản phẩm
-    alert("Thêm mới dịch vụ hoặc sản phẩm");
+    setAddOpen(true);
   };
 
-  const handleViewItem = (id) => {
-    // Logic để xem chi tiết dịch vụ hoặc sản phẩm
-    alert(`Xem chi tiết dịch vụ hoặc sản phẩm với ID: ${id}`);
+  const handleViewItem = (service) => {
+    setSelectedService(service);
+    setViewOpen(true);
   };
 
-  const handleEditItem = (id) => {
-    // Logic để sửa dịch vụ hoặc sản phẩm
-    alert(`Sửa dịch vụ hoặc sản phẩm với ID: ${id}`);
+  const handleEditItem = (service) => {
+    setSelectedService(service);
+    setEditOpen(true);
   };
 
-  const handleDeleteItem = (id) => {
-    // Logic để xóa dịch vụ hoặc sản phẩm
-    alert(`Xóa dịch vụ hoặc sản phẩm với ID: ${id}`);
+  const handleDeleteItem = (service) => {
+    setSelectedService(service);
+    setDeleteOpen(true);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -86,48 +94,51 @@ const ServiceProductPage = () => {
   };
 
   const sortedItems = items.sort((a, b) => {
-    if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
-    } else if (orderBy === "name") {
-      if (order === "asc") {
-        return a.name.localeCompare(b.name);
-      } else {
-        return b.name.localeCompare(a.name);
-      }
+    if (orderBy === "serviceId") {
+      return order === "asc"
+        ? a.serviceId - b.serviceId
+        : b.serviceId - a.serviceId;
+    } else if (orderBy === "serviceName") {
+      return order === "asc"
+        ? a.serviceName.localeCompare(b.serviceName)
+        : b.serviceName.localeCompare(a.serviceName);
     } else if (orderBy === "price") {
-      if (order === "asc") {
-        return a.price - b.price;
-      } else {
-        return b.price - a.price;
-      }
+      return order === "asc" ? a.price - b.price : b.price - a.price;
     } else if (orderBy === "category") {
-      if (order === "asc") {
-        return a.category.localeCompare(b.category);
-      } else {
-        return b.category.localeCompare(a.category);
-      }
-    } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
+      return order === "asc"
+        ? a.category.localeCompare(b.category)
+        : b.category.localeCompare(a.category);
     }
     return 0;
   });
 
   const filteredItems = sortedItems.filter((item) => {
-    if (searchColumn === "name") {
-      return item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "code") {
-      return item.code.toLowerCase().includes(searchTerm.toLowerCase());
+    if (searchColumn === "serviceName") {
+      return item.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "serviceId") {
+      return item.serviceId.toString().includes(searchTerm);
     }
     return true;
   });
+
+  const handleCloseView = () => {
+    setSelectedService(null);
+    setViewOpen(false);
+  };
+
+  const handleCloseEdit = () => {
+    setSelectedService(null);
+    setEditOpen(false);
+  };
+
+  const handleCloseDelete = () => {
+    setSelectedService(null);
+    setDeleteOpen(false);
+  };
+
+  const handleCloseAdd = () => {
+    setAddOpen(false);
+  };
 
   return (
     <Box p={3}>
@@ -156,8 +167,8 @@ const ServiceProductPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
-              <MenuItem value="name">Tên</MenuItem>
-              <MenuItem value="code">Mã</MenuItem>
+              <MenuItem value="serviceName">Tên</MenuItem>
+              <MenuItem value="serviceId">ID</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -174,27 +185,27 @@ const ServiceProductPage = () => {
             <TableRow>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
-                  onClick={() => handleRequestSort("id")}
+                  active={orderBy === "serviceId"}
+                  direction={orderBy === "serviceId" ? order : "asc"}
+                  onClick={() => handleRequestSort("serviceId")}
                 >
                   STT
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "serviceId"}
+                  direction={orderBy === "serviceId" ? order : "asc"}
+                  onClick={() => handleRequestSort("serviceId")}
                 >
-                  Mã
+                  ID
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "name"}
-                  direction={orderBy === "name" ? order : "asc"}
-                  onClick={() => handleRequestSort("name")}
+                  active={orderBy === "serviceName"}
+                  direction={orderBy === "serviceName" ? order : "asc"}
+                  onClick={() => handleRequestSort("serviceName")}
                 >
                   Tên
                 </TableSortLabel>
@@ -218,53 +229,38 @@ const ServiceProductPage = () => {
                   Phân loại
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "status"}
-                  direction={orderBy === "status" ? order : "asc"}
-                  onClick={() => handleRequestSort("status")}
-                >
-                  Trạng thái
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Thẻ</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredItems.map((item, index) => (
-              <TableRow key={item.id}>
+              <TableRow key={item.serviceId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.code}</TableCell>
-                <TableCell>{item.name}</TableCell>
+                <TableCell>{item.serviceId}</TableCell>
+                <TableCell>{item.serviceName}</TableCell>
                 <TableCell>{item.price.toLocaleString()} VND</TableCell>
                 <TableCell>
-                  <Avatar alt={item.name} src={item.imageUrl} />
+                  <Avatar alt={item.serviceName} src={item.servicePicture} />
                 </TableCell>
                 <TableCell>{item.category}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={
-                      item.status === "Available" ? "Còn hàng" : "Hết hàng"
-                    }
-                    color={item.status === "Available" ? "success" : "error"}
-                  />
-                </TableCell>
+                <TableCell>{item.tag}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewItem(item.id)}
+                    onClick={() => handleViewItem(item)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditItem(item.id)}
+                    onClick={() => handleEditItem(item)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteItem(item.id)}
+                    onClick={() => handleDeleteItem(item)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -274,6 +270,43 @@ const ServiceProductPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <ServiceDetail
+        service={selectedService}
+        onClose={handleCloseView}
+        open={viewOpen}
+      />
+      <ServiceEdit
+        service={selectedService}
+        onClose={handleCloseEdit}
+        open={editOpen}
+        onSave={(updatedService) => {
+          setItems(
+            items.map((item) =>
+              item.serviceId === updatedService.serviceId
+                ? updatedService
+                : item
+            )
+          );
+          handleCloseEdit();
+        }}
+      />
+      <ServiceDelete
+        service={selectedService}
+        onClose={handleCloseDelete}
+        open={deleteOpen}
+        onDelete={(serviceId) => {
+          setItems(items.filter((item) => item.serviceId !== serviceId));
+          handleCloseDelete();
+        }}
+      />
+      <ServiceAdd
+        open={addOpen}
+        onClose={handleCloseAdd}
+        onAdd={(newService) => {
+          setItems([...items, newService]);
+          handleCloseAdd();
+        }}
+      />
     </Box>
   );
 };
