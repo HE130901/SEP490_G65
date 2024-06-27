@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -26,51 +26,47 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import VisitRequestAPI from "@/services/visitRequestService";
+import { useToast } from "@/components/ui/use-toast";
 
 const VisitRequestPage = () => {
-  const [visitRequests, setVisitRequests] = useState([
-    {
-      id: 1,
-      code: "VR001",
-      nicheCode: "N001",
-      customerName: "Nguyễn Văn A",
-      phoneNumber: "0123456789",
-      appointmentTime: "2023-07-01T10:00",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      code: "VR002",
-      nicheCode: "N002",
-      customerName: "Trần Thị B",
-      phoneNumber: "0987654321",
-      appointmentTime: "2023-07-02T11:00",
-      status: "Completed",
-    },
-    // Thêm dữ liệu đơn đăng ký viếng thăm ở đây
-  ]);
+  const [visitRequests, setVisitRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("customerName");
+  const [searchColumn, setSearchColumn] = useState("note");
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [orderBy, setOrderBy] = useState("visitId");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchVisitRequests = async () => {
+      try {
+        const response = await VisitRequestAPI.getAllVisitRequests();
+        setVisitRequests(response.data.$values);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Không thể tải danh sách đơn đăng ký viếng thăm",
+        });
+      }
+    };
+
+    fetchVisitRequests();
+  }, [toast]);
 
   const handleAddVisitRequest = () => {
-    // Logic để thêm mới đơn đăng ký viếng thăm
     alert("Thêm mới đơn đăng ký viếng thăm");
   };
 
   const handleViewVisitRequest = (id) => {
-    // Logic để xem chi tiết đơn đăng ký viếng thăm
     alert(`Xem chi tiết đơn đăng ký viếng thăm với ID: ${id}`);
   };
 
   const handleEditVisitRequest = (id) => {
-    // Logic để sửa đơn đăng ký viếng thăm
     alert(`Sửa đơn đăng ký viếng thăm với ID: ${id}`);
   };
 
   const handleDeleteVisitRequest = (id) => {
-    // Logic để xóa đơn đăng ký viếng thăm
     alert(`Xóa đơn đăng ký viếng thăm với ID: ${id}`);
   };
 
@@ -85,53 +81,37 @@ const VisitRequestPage = () => {
   };
 
   const sortedVisitRequests = visitRequests.sort((a, b) => {
-    if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
-    } else if (orderBy === "nicheCode") {
-      if (order === "asc") {
-        return a.nicheCode.localeCompare(b.nicheCode);
-      } else {
-        return b.nicheCode.localeCompare(a.nicheCode);
-      }
-    } else if (orderBy === "customerName") {
-      if (order === "asc") {
-        return a.customerName.localeCompare(b.customerName);
-      } else {
-        return b.customerName.localeCompare(a.customerName);
-      }
-    } else if (orderBy === "phoneNumber") {
-      if (order === "asc") {
-        return a.phoneNumber.localeCompare(b.phoneNumber);
-      } else {
-        return b.phoneNumber.localeCompare(a.phoneNumber);
-      }
-    } else if (orderBy === "appointmentTime") {
-      if (order === "asc") {
-        return new Date(a.appointmentTime) - new Date(b.appointmentTime);
-      } else {
-        return new Date(b.appointmentTime) - new Date(a.appointmentTime);
-      }
+    if (orderBy === "visitId") {
+      return order === "asc" ? a.visitId - b.visitId : b.visitId - a.visitId;
+    } else if (orderBy === "nicheId") {
+      return order === "asc" ? a.nicheId - b.nicheId : b.nicheId - a.nicheId;
     } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
+      return order === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
+    } else if (orderBy === "createdDate") {
+      return order === "asc"
+        ? new Date(a.createdDate) - new Date(b.createdDate)
+        : new Date(b.createdDate) - new Date(a.createdDate);
+    } else if (orderBy === "visitDate") {
+      return order === "asc"
+        ? new Date(a.visitDate) - new Date(b.visitDate)
+        : new Date(b.visitDate) - new Date(a.visitDate);
+    } else if (orderBy === "note") {
+      return order === "asc"
+        ? a.note.localeCompare(b.note)
+        : b.note.localeCompare(a.note);
     }
     return 0;
   });
 
   const filteredVisitRequests = sortedVisitRequests.filter((visitRequest) => {
-    if (searchColumn === "customerName") {
-      return visitRequest.customerName
+    if (searchColumn === "note") {
+      return visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "status") {
+      return visitRequest.status
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "code") {
-      return visitRequest.code.toLowerCase().includes(searchTerm.toLowerCase());
     }
     return true;
   });
@@ -163,8 +143,8 @@ const VisitRequestPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
-              <MenuItem value="customerName">Tên khách hàng</MenuItem>
-              <MenuItem value="code">Mã đơn</MenuItem>
+              <MenuItem value="note">Ghi chú</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -181,56 +161,47 @@ const VisitRequestPage = () => {
             <TableRow>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
-                  onClick={() => handleRequestSort("id")}
+                  active={orderBy === "visitId"}
+                  direction={orderBy === "visitId" ? order : "asc"}
+                  onClick={() => handleRequestSort("visitId")}
                 >
-                  Số thứ tự
+                  STT
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "visitId"}
+                  direction={orderBy === "visitId" ? order : "asc"}
+                  onClick={() => handleRequestSort("visitId")}
                 >
                   Mã đơn
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "nicheCode"}
-                  direction={orderBy === "nicheCode" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheCode")}
+                  active={orderBy === "nicheId"}
+                  direction={orderBy === "nicheId" ? order : "asc"}
+                  onClick={() => handleRequestSort("nicheId")}
                 >
-                  Mã ô
+                  Mã ô chứa
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "customerName"}
-                  direction={orderBy === "customerName" ? order : "asc"}
-                  onClick={() => handleRequestSort("customerName")}
+                  active={orderBy === "createdDate"}
+                  direction={orderBy === "createdDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("createdDate")}
                 >
-                  Tên Khách hàng
+                  Ngày tạo
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "phoneNumber"}
-                  direction={orderBy === "phoneNumber" ? order : "asc"}
-                  onClick={() => handleRequestSort("phoneNumber")}
+                  active={orderBy === "visitDate"}
+                  direction={orderBy === "visitDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("visitDate")}
                 >
-                  Số điện thoại
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "appointmentTime"}
-                  direction={orderBy === "appointmentTime" ? order : "asc"}
-                  onClick={() => handleRequestSort("appointmentTime")}
-                >
-                  Thời gian hẹn
+                  Ngày viếng thăm
                 </TableSortLabel>
               </TableCell>
               <TableCell>
@@ -242,52 +213,59 @@ const VisitRequestPage = () => {
                   Trạng thái
                 </TableSortLabel>
               </TableCell>
+              <TableCell>Ghi chú</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredVisitRequests.map((visitRequest, index) => (
-              <TableRow key={visitRequest.id}>
+              <TableRow key={visitRequest.visitId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{visitRequest.code}</TableCell>
-                <TableCell>{visitRequest.nicheCode}</TableCell>
-                <TableCell>{visitRequest.customerName}</TableCell>
-                <TableCell>{visitRequest.phoneNumber}</TableCell>
-                <TableCell>{visitRequest.appointmentTime}</TableCell>
+                <TableCell>{visitRequest.visitId}</TableCell>
+                <TableCell>{visitRequest.nicheId}</TableCell>
+                <TableCell>
+                  {new Date(visitRequest.createdDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {new Date(visitRequest.visitDate).toLocaleDateString()}
+                </TableCell>
                 <TableCell>
                   <Chip
                     label={
-                      visitRequest.status === "Pending"
+                      visitRequest.status === "Đang chờ duyệt"
                         ? "Đang chờ"
-                        : visitRequest.status === "Completed"
-                        ? "Hoàn thành"
+                        : visitRequest.status === "Đã duyệt"
+                        ? "Đã duyệt"
                         : "Đã hủy"
                     }
                     color={
-                      visitRequest.status === "Pending"
+                      visitRequest.status === "Đang chờ duyệt"
                         ? "warning"
-                        : visitRequest.status === "Completed"
+                        : visitRequest.status === "Đã duyệt"
                         ? "success"
                         : "error"
                     }
                   />
                 </TableCell>
+                <TableCell>{visitRequest.note}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewVisitRequest(visitRequest.id)}
+                    onClick={() => handleViewVisitRequest(visitRequest.visitId)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditVisitRequest(visitRequest.id)}
+                    onClick={() => handleEditVisitRequest(visitRequest.visitId)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() => handleDeleteVisitRequest(visitRequest.id)}
+                    onClick={() =>
+                      handleDeleteVisitRequest(visitRequest.visitId)
+                    }
                   >
                     <DeleteIcon />
                   </IconButton>

@@ -30,6 +30,7 @@ import ContractDetailDialog from "./ContractDetailDialog";
 import RenewalDialog from "./RenewalDialog";
 import ConfirmDialog from "./ConfirmDialog";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import withAuth from "@/components/withAuth";
 
 const ContractPage = () => {
   const [contracts, setContracts] = useState([
@@ -69,7 +70,6 @@ const ContractPage = () => {
       endDate: "2024-04-01",
       status: "Chờ duyệt thanh lý",
     },
-    // Thêm dữ liệu hợp đồng ở đây
   ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
@@ -421,4 +421,4 @@ const ContractPage = () => {
   );
 };
 
-export default ContractPage;
+export default withAuth(ContractPage);

@@ -21,7 +21,7 @@ public partial class Contract
 
     public string? Status { get; set; }
 
-    public string? ServicePriceList { get; set; }
+    public string? Note { get; set; }
 
     public decimal? TotalAmount { get; set; }
 

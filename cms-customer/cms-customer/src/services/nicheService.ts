@@ -1,4 +1,4 @@
-import axiosInstance from "@/api/axios-config";
+import axiosInstance from "@/utils/axiosInstance";
 
 const NicheAPI = {
   getAll(buildingId: string, floorId: string, areaId: string) {

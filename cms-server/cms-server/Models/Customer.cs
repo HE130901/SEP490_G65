@@ -19,7 +19,6 @@ public partial class Customer
 
     public string? CitizenId { get; set; }
 
-
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
     public virtual ICollection<Deceased> Deceaseds { get; set; } = new List<Deceased>();

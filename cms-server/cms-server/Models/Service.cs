@@ -14,4 +14,8 @@ public partial class Service
     public decimal? Price { get; set; }
 
     public string? ServicePicture { get; set; }
+
+    public string? Category { get; set; }
+
+    public string? Tag { get; set; }
 }

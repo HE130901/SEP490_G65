@@ -27,9 +27,12 @@ import {
   CalendarIcon,
   ClipboardListIcon,
   ClipboardCheckIcon,
+  HomeIcon,
 } from "@heroicons/react/outline";
+import { useAuth } from "@/context/AuthContext"; // Điều chỉnh đường dẫn phù hợp với dự án của bạn
 
 const Sidebar = () => {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
   const drawerWidth = 240;
@@ -39,6 +42,11 @@ const Sidebar = () => {
   };
 
   const menuItems = [
+    {
+      text: "Trang chủ",
+      icon: <HomeIcon className="h-6 w-6" />,
+      path: "/dashboard",
+    },
     {
       text: "Hợp đồng",
       icon: <DocumentTextIcon className="h-6 w-6" />,
@@ -75,6 +83,10 @@ const Sidebar = () => {
       path: "/service-requests",
     },
   ];
+
+  if (!user) {
+    return null; // Không hiển thị Sidebar nếu chưa đăng nhập
+  }
 
   return (
     <Drawer

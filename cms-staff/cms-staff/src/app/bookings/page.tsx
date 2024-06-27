@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -26,53 +26,47 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import BookingAPI from "@/services/bookingService";
+import { useToast } from "@/components/ui/use-toast";
 
 const BookingRequestPage = () => {
-  const [bookingRequests, setBookingRequests] = useState([
-    {
-      id: 1,
-      code: "BR001",
-      nicheCode: "N001",
-      customerName: "Nguyễn Văn A",
-      phoneNumber: "0123456789",
-      appointmentDate: "2023-07-01",
-      contractAddress: "123 Đường A, TP. HCM",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      code: "BR002",
-      nicheCode: "N002",
-      customerName: "Trần Thị B",
-      phoneNumber: "0987654321",
-      appointmentDate: "2023-07-02",
-      contractAddress: "456 Đường B, TP. HCM",
-      status: "Completed",
-    },
-    // Thêm dữ liệu đơn đăng ký đặt chỗ ở đây
-  ]);
+  const [bookingRequests, setBookingRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("customerName");
+  const [searchColumn, setSearchColumn] = useState("signAddress");
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [orderBy, setOrderBy] = useState("reservationId");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchBookingRequests = async () => {
+      try {
+        const response = await BookingAPI.getAllBookings();
+        setBookingRequests(response.data.$values);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Không thể tải danh sách đơn đặt chỗ",
+        });
+      }
+    };
+
+    fetchBookingRequests();
+  }, [toast]);
 
   const handleAddBookingRequest = () => {
-    // Logic để thêm mới đơn đăng ký đặt chỗ
     alert("Thêm mới đơn đăng ký đặt chỗ");
   };
 
   const handleViewBookingRequest = (id) => {
-    // Logic để xem chi tiết đơn đăng ký đặt chỗ
     alert(`Xem chi tiết đơn đăng ký đặt chỗ với ID: ${id}`);
   };
 
   const handleEditBookingRequest = (id) => {
-    // Logic để sửa đơn đăng ký đặt chỗ
     alert(`Sửa đơn đăng ký đặt chỗ với ID: ${id}`);
   };
 
   const handleDeleteBookingRequest = (id) => {
-    // Logic để xóa đơn đăng ký đặt chỗ
     alert(`Xóa đơn đăng ký đặt chỗ với ID: ${id}`);
   };
 
@@ -87,60 +81,44 @@ const BookingRequestPage = () => {
   };
 
   const sortedBookingRequests = bookingRequests.sort((a, b) => {
-    if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
-    } else if (orderBy === "nicheCode") {
-      if (order === "asc") {
-        return a.nicheCode.localeCompare(b.nicheCode);
-      } else {
-        return b.nicheCode.localeCompare(a.nicheCode);
-      }
-    } else if (orderBy === "customerName") {
-      if (order === "asc") {
-        return a.customerName.localeCompare(b.customerName);
-      } else {
-        return b.customerName.localeCompare(a.customerName);
-      }
+    if (orderBy === "reservationId") {
+      return order === "asc"
+        ? a.reservationId - b.reservationId
+        : b.reservationId - a.reservationId;
+    } else if (orderBy === "nicheId") {
+      return order === "asc" ? a.nicheId - b.nicheId : b.nicheId - a.nicheId;
+    } else if (orderBy === "signAddress") {
+      return order === "asc"
+        ? a.signAddress.localeCompare(b.signAddress)
+        : b.signAddress.localeCompare(a.signAddress);
     } else if (orderBy === "phoneNumber") {
-      if (order === "asc") {
-        return a.phoneNumber.localeCompare(b.phoneNumber);
-      } else {
-        return b.phoneNumber.localeCompare(a.phoneNumber);
-      }
-    } else if (orderBy === "appointmentDate") {
-      if (order === "asc") {
-        return new Date(a.appointmentDate) - new Date(b.appointmentDate);
-      } else {
-        return new Date(b.appointmentDate) - new Date(a.appointmentDate);
-      }
-    } else if (orderBy === "contractAddress") {
-      if (order === "asc") {
-        return a.contractAddress.localeCompare(b.contractAddress);
-      } else {
-        return b.contractAddress.localeCompare(a.contractAddress);
-      }
+      return order === "asc"
+        ? a.phoneNumber.localeCompare(b.phoneNumber)
+        : b.phoneNumber.localeCompare(a.phoneNumber);
+    } else if (orderBy === "createdDate") {
+      return order === "asc"
+        ? new Date(a.createdDate) - new Date(b.createdDate)
+        : new Date(b.createdDate) - new Date(a.createdDate);
+    } else if (orderBy === "confirmationDate") {
+      return order === "asc"
+        ? new Date(a.confirmationDate) - new Date(b.confirmationDate)
+        : new Date(b.confirmationDate) - new Date(a.confirmationDate);
     } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
+      return order === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
     }
     return 0;
   });
 
   const filteredBookingRequests = sortedBookingRequests.filter(
     (bookingRequest) => {
-      if (searchColumn === "customerName") {
-        return bookingRequest.customerName
+      if (searchColumn === "signAddress") {
+        return bookingRequest.signAddress
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "code") {
-        return bookingRequest.code
+      } else if (searchColumn === "phoneNumber") {
+        return bookingRequest.phoneNumber
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
       }
@@ -175,8 +153,8 @@ const BookingRequestPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
-              <MenuItem value="customerName">Tên khách hàng</MenuItem>
-              <MenuItem value="code">Mã đơn</MenuItem>
+              <MenuItem value="signAddress">Địa chỉ</MenuItem>
+              <MenuItem value="phoneNumber">Số điện thoại</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -193,38 +171,56 @@ const BookingRequestPage = () => {
             <TableRow>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
-                  onClick={() => handleRequestSort("id")}
+                  active={orderBy === "reservationId"}
+                  direction={orderBy === "reservationId" ? order : "asc"}
+                  onClick={() => handleRequestSort("reservationId")}
                 >
                   STT
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "reservationId"}
+                  direction={orderBy === "reservationId" ? order : "asc"}
+                  onClick={() => handleRequestSort("reservationId")}
                 >
                   Mã đơn
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "nicheCode"}
-                  direction={orderBy === "nicheCode" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheCode")}
+                  active={orderBy === "nicheId"}
+                  direction={orderBy === "nicheId" ? order : "asc"}
+                  onClick={() => handleRequestSort("nicheId")}
                 >
                   Mã ô chứa
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "customerName"}
-                  direction={orderBy === "customerName" ? order : "asc"}
-                  onClick={() => handleRequestSort("customerName")}
+                  active={orderBy === "createdDate"}
+                  direction={orderBy === "createdDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("createdDate")}
                 >
-                  Tên Khách hàng
+                  Ngày tạo
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === "confirmationDate"}
+                  direction={orderBy === "confirmationDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("confirmationDate")}
+                >
+                  Ngày xác nhận
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === "signAddress"}
+                  direction={orderBy === "signAddress" ? order : "asc"}
+                  onClick={() => handleRequestSort("signAddress")}
+                >
+                  Địa chỉ
                 </TableSortLabel>
               </TableCell>
               <TableCell>
@@ -238,24 +234,6 @@ const BookingRequestPage = () => {
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "appointmentDate"}
-                  direction={orderBy === "appointmentDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("appointmentDate")}
-                >
-                  Ngày hẹn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "contractAddress"}
-                  direction={orderBy === "contractAddress" ? order : "asc"}
-                  onClick={() => handleRequestSort("contractAddress")}
-                >
-                  Địa chỉ ký HĐ
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
                   active={orderBy === "status"}
                   direction={orderBy === "status" ? order : "asc"}
                   onClick={() => handleRequestSort("status")}
@@ -263,54 +241,66 @@ const BookingRequestPage = () => {
                   Trạng thái
                 </TableSortLabel>
               </TableCell>
+              <TableCell>Ghi chú</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredBookingRequests.map((bookingRequest, index) => (
-              <TableRow key={bookingRequest.id}>
+              <TableRow key={bookingRequest.reservationId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{bookingRequest.code}</TableCell>
-                <TableCell>{bookingRequest.nicheCode}</TableCell>
-                <TableCell>{bookingRequest.customerName}</TableCell>
+                <TableCell>{bookingRequest.reservationId}</TableCell>
+                <TableCell>{bookingRequest.nicheId}</TableCell>
+                <TableCell>
+                  {new Date(bookingRequest.createdDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {new Date(
+                    bookingRequest.confirmationDate
+                  ).toLocaleDateString()}
+                </TableCell>
+                <TableCell>{bookingRequest.signAddress}</TableCell>
                 <TableCell>{bookingRequest.phoneNumber}</TableCell>
-                <TableCell>{bookingRequest.appointmentDate}</TableCell>
-                <TableCell>{bookingRequest.contractAddress}</TableCell>
                 <TableCell>
                   <Chip
                     label={
-                      bookingRequest.status === "Pending"
+                      bookingRequest.status === "pending"
                         ? "Đang chờ"
-                        : bookingRequest.status === "Completed"
-                        ? "Hoàn thành"
+                        : bookingRequest.status === "confirmed"
+                        ? "Xác nhận"
                         : "Đã hủy"
                     }
                     color={
-                      bookingRequest.status === "Pending"
+                      bookingRequest.status === "pending"
                         ? "warning"
-                        : bookingRequest.status === "Completed"
+                        : bookingRequest.status === "confirmed"
                         ? "success"
                         : "error"
                     }
                   />
                 </TableCell>
+                <TableCell>{bookingRequest.note}</TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewBookingRequest(bookingRequest.id)}
+                    onClick={() =>
+                      handleViewBookingRequest(bookingRequest.reservationId)
+                    }
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditBookingRequest(bookingRequest.id)}
+                    onClick={() =>
+                      handleEditBookingRequest(bookingRequest.reservationId)
+                    }
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
                     onClick={() =>
-                      handleDeleteBookingRequest(bookingRequest.id)
+                      handleDeleteBookingRequest(bookingRequest.reservationId)
                     }
                   >
                     <DeleteIcon />

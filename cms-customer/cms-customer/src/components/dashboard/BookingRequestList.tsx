@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useStateContext } from "@/context/state-context";
-import VisitRegistrationAPI from "@/api/visitRegistrationApi";
+import VisitRegistrationAPI from "@/services/visitService";
 import { toast } from "sonner";
 import {
   Dialog,

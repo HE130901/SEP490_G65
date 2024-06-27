@@ -352,7 +352,6 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
-            entity.Property(e => e.AccompanyingPeople).HasColumnName("AccompanyingPeople");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.VisitDate).HasColumnType("datetime");
 

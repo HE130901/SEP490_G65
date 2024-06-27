@@ -8,11 +8,11 @@ import {
   useCallback,
   useRef,
 } from "react";
-import AuthAPI from "@/api/authApi";
-import BuildingAPI from "@/api/buildingApi";
-import NicheAPI from "@/api/nicheApi";
-import NicheReservationAPI from "@/api/nicheReservationApi";
-import VisitRegistrationAPI from "@/api/visitRegistrationApi";
+import AuthAPI from "@/services/authService";
+import BuildingAPI from "@/services/buildingService";
+import NicheAPI from "@/services/nicheService";
+import NicheReservationAPI from "@/services/nicheReservationService";
+import VisitRegistrationAPI from "@/services/visitService";
 import { useRouter } from "next/navigation";
 import { toast as sonnerToast } from "sonner";
 

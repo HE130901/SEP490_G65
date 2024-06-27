@@ -20,10 +20,34 @@ namespace cms_server.Controllers
 
         // GET: api/VisitRegistrations
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<VisitRegistration>>> GetVisitRegistrations()
+        public async Task<ActionResult<IEnumerable<VisitRegistrationDto>>> GetVisitRegistrations()
         {
-            return await _context.VisitRegistrations.ToListAsync();
+            try
+            {
+                var visitRegistrations = await _context.VisitRegistrations
+                    .Select(vr => new VisitRegistrationDto
+                    {
+                        VisitId = vr.VisitId,
+                        CustomerId = vr.CustomerId,
+                        NicheId = vr.NicheId,
+                        VisitDate = vr.VisitDate,
+                        Status = vr.Status ?? "Không xác định",
+                        ApprovedBy = vr.ApprovedBy,
+                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                        Note = vr.Note ?? string.Empty,
+                        AccompanyingPeople = (int)vr.AccompanyingPeople
+                    })
+                    .ToListAsync();
+
+                return Ok(visitRegistrations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching visit registrations");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
 
         // GET: api/VisitRegistrations/5
         [HttpGet("{id}")]
@@ -54,7 +78,7 @@ namespace cms_server.Controllers
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
                         Status = vr.Status ?? "Không xác định",
-                        AccompanyingPeople = vr.AccompanyingPeople,
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
                         Note = vr.Note ?? string.Empty
                     })
                     .ToListAsync();
@@ -168,4 +192,6 @@ public class VisitRegistrationDto
     public string? Status { get; set; } = "Đang chờ duyệt";
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
+
+    public int? ApprovedBy { get; set; }
 }

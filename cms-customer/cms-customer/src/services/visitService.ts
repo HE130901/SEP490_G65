@@ -1,5 +1,5 @@
 // src/api/VisitRegistrationAPI.ts
-import axiosInstance from "@/api/axios-config";
+import axiosInstance from "@/utils/axiosInstance";
 
 const VisitRegistrationAPI = {
   getByCustomerId(customerId: string) {
