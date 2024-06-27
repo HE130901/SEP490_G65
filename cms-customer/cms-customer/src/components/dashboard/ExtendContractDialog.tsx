@@ -103,7 +103,7 @@ export default function ExtendContractDialog({
           <Button variant="outline" onClick={onClose}>
             Hủy
           </Button>
-          <Button variant="primary" onClick={handleExtend} disabled={loading}>
+          <Button variant="default" onClick={handleExtend} disabled={loading}>
             Gia hạn
           </Button>
         </DialogFooter>

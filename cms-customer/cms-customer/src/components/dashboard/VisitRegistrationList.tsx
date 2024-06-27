@@ -209,7 +209,7 @@ export default function VisitRegistrationList({
       cell: ({ row }) => (
         <Badge
           variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
+            row.getValue("status") === "Đang chờ duyệt" ? "outline" : "green"
           }
         >
           {row.getValue("status")}

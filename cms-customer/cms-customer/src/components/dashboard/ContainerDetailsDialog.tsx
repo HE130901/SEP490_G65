@@ -121,7 +121,7 @@ export default function ContainerDetailsDialog({
             Đóng
           </Button>
           <Button
-            variant="primary"
+            variant="default"
             onClick={() => setExtendDialogOpen(true)}
             disabled={loading}
           >
