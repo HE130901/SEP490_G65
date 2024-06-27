@@ -177,8 +177,8 @@ export default function ProductList({ products }: ProductListProps) {
                       : "/default-image-url.jpg"
                   }
                   alt={product.serviceName}
-                  width={400}
-                  height={300}
+                  width={160}
+                  height={120}
                   className={`w-full ${
                     viewMode === "list"
                       ? "h-24 object-cover"

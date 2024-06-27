@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import ServiceCard from "@/components/ui/ServiceCard";
-import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 
 export default function ServicesList({ containers }) {
   const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);

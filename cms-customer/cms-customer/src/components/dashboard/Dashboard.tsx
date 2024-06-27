@@ -3,14 +3,14 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/state-context";
-import ContainerList from "@/components/dashboard/CustomerContractList";
-import RegistrationList from "@/components/dashboard/VisitRegistrationList";
-import ContractRenewalList from "@/components/dashboard/ContractRenewalList";
-import ServiceRequestList from "@/components/dashboard/ServiceRequestList";
-import BookingRequestList from "@/components/dashboard/BookingRequestList";
-import ContainerDetailsDialog from "@/components/dashboard/ContainerDetailsDialog";
-import VisitScheduleDialog from "@/components/dashboard/VisitScheduleDialog";
-import ServicesList from "@/components/dashboard/ServicesSection";
+import ContainerList from "@/components/dashboard/customer-contracts/CustomerContractList";
+import RegistrationList from "@/components/dashboard/lists/VisitRegistrationList";
+import ContractRenewalList from "@/components/dashboard/lists/ContractRenewalList";
+import ServiceRequestList from "@/components/dashboard/lists/ServiceRequestList";
+import BookingRequestList from "@/components/dashboard/lists/BookingRequestList";
+import ContainerDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
+import ServicesList from "@/components/dashboard/services/ServicesSection";
 import axiosInstance from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
 

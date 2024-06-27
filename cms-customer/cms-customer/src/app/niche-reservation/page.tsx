@@ -13,7 +13,6 @@ import {
 import Loading from "@/components/ui/Loading";
 import Information from "@/components/niche-reservation/Information";
 import NicheReservation from "@/components/niche-reservation/NicheReservation";
-import Card from "@/components/test/card";
 
 const NicheReservationPage = () => {
   const [isLoading, setIsLoading] = useState(true);
