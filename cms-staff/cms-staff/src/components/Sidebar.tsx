@@ -28,8 +28,10 @@ import {
   ClipboardListIcon,
   ClipboardCheckIcon,
 } from "@heroicons/react/outline";
+import { useAuth } from "@/context/AuthContext"; // Điều chỉnh đường dẫn phù hợp với dự án của bạn
 
 const Sidebar = () => {
+  const { user } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
   const drawerWidth = 240;
@@ -75,6 +77,10 @@ const Sidebar = () => {
       path: "/service-requests",
     },
   ];
+
+  if (!user) {
+    return null; // Không hiển thị Sidebar nếu chưa đăng nhập
+  }
 
   return (
     <Drawer

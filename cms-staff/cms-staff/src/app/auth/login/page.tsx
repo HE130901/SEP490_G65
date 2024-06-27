@@ -8,7 +8,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import styles from "./login.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 // Define the validation schema using Zod
@@ -38,22 +37,30 @@ const Login = () => {
         description: "Chào mừng bạn quay trở lại!",
       });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Đăng nhập thất bại",
-        description: "Vui lòng kiểm tra lại thông tin đăng nhập",
-      });
+      if (error.message === "AccessDenied") {
+        toast({
+          variant: "destructive",
+          title: "Đăng nhập thất bại",
+          description: "Bạn không có quyền truy cập vào hệ thống",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Đăng nhập thất bại",
+          description: "Vui lòng kiểm tra lại thông tin đăng nhập",
+        });
+      }
     }
   };
 
   return (
     <div className={`relative flex items-center justify-center min-h-screen`}>
-      <div className={styles["bg-animation"]} />
+      <div />
       <div className="relative z-10 space-y-6 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">Đăng nhập</h1>
           <p className="text-gray-500 dark:text-gray-400 pt-2">
-            Nhập thông tin của bạn để truy cập vào hệ thống
+            Nhập thông tin của bạn để truy cập vào hệ thống quản lý
           </p>
         </div>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
