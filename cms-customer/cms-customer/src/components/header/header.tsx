@@ -19,7 +19,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import { cn } from "@/lib/utils";
 import {
   ArrowRightOnRectangleIcon,

@@ -1,6 +1,9 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 const NicheReservationAPI = {
+  createReservation(data) {
+    return axiosInstance.post("/api/NicheReservations", data);
+  },
   getByPhoneNumber(phoneNumber: string) {
     const url = `/api/NicheReservations/by-phone/${phoneNumber}`;
     return axiosInstance.get(url);

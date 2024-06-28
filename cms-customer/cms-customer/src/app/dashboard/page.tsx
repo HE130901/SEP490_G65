@@ -18,7 +18,7 @@ import RegistrationList from "@/components/dashboard/lists/VisitRegistrationList
 import ServicesList from "@/components/dashboard/services/ServicesSection";
 import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import axiosInstance from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
 

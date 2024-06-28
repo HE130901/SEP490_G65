@@ -6,7 +6,7 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import {
   Tooltip,
   TooltipTrigger,

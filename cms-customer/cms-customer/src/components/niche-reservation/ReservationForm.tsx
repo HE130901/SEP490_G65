@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import axios from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMediaQuery } from "react-responsive";
+import NicheReservationAPI from "@/services/nicheReservationService";
 
 const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
 
@@ -89,7 +89,9 @@ const ReservationForm = ({ isVisible, onClose }) => {
     };
 
     try {
-      const response = await axios.post("/api/NicheReservations", dataToSubmit);
+      const response = await NicheReservationAPI.createReservation(
+        dataToSubmit
+      );
       toast.success("Đặt ô chứa thành công!");
       fetchNiches(); // Call fetchNiches after successful submission
       onClose();

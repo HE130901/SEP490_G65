@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -58,7 +58,9 @@ const Login = () => {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-300 focus:border-orange-300 sm:text-sm"
             />
             {errors.email && (
-              <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+              <p className="mt-2 text-sm text-red-600">
+                {errors.email.message}
+              </p>
             )}
           </div>
           <div className="space-y-2">

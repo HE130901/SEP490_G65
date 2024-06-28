@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
 import { toast } from "sonner";
 import {

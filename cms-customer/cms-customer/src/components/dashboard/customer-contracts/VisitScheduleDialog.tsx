@@ -15,7 +15,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Input } from "@/components/ui/input";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 
 export default function VisitScheduleDialog({
   isOpen,
