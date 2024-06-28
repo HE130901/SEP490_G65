@@ -54,7 +54,7 @@ namespace cms_server.Controllers
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
                         Status = vr.Status ?? "Không xác định",
-                        AccompanyingPeople = vr.AccompanyingPeople,
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
                         Note = vr.Note ?? string.Empty
                     })
                     .ToListAsync();

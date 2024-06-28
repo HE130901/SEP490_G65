@@ -11,8 +11,6 @@ public partial class VisitRegistration
 
     public int NicheId { get; set; }
 
-    public int AccompanyingPeople { get; set; }
-
     public DateTime? VisitDate { get; set; }
 
     public string? Status { get; set; }
@@ -23,12 +21,13 @@ public partial class VisitRegistration
 
     public string? Note { get; set; }
 
+    public int? AccompanyingPeople { get; set; }
+
     public virtual Staff? ApprovedByNavigation { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Niche Niche { get; set; } = null!;
-
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

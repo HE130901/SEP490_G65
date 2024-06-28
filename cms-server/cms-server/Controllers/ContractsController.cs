@@ -100,7 +100,7 @@ namespace cms_server.Controllers
                 DeceasedId = deceased.DeceasedId,
                 StartDate = contractDto.StartDate,
                 EndDate = contractDto.EndDate,
-                ServicePriceList = contractDto.ServicePriceList,
+                /*ServicePriceList = contractDto.ServicePriceList,*/
                 TotalAmount = contractDto.TotalAmount,
                 Status = "Active"
             };

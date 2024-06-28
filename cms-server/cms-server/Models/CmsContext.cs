@@ -41,19 +41,21 @@ public partial class CmsContext : DbContext
 
     public virtual DbSet<ServiceOrder> ServiceOrders { get; set; }
 
+    public virtual DbSet<ServiceOrderDetail> ServiceOrderDetails { get; set; }
+
     public virtual DbSet<Staff> Staff { get; set; }
 
     public virtual DbSet<VisitRegistration> VisitRegistrations { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=trunghieu;Initial Catalog=cms;Integrated Security=True;Trust Server Certificate=True");
+        => optionsBuilder.UseSqlServer("Server=KEVINP;Database=cms;User Id=sa;Password=12345;Trust Server Certificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Area>(entity =>
         {
-            entity.HasKey(e => e.AreaId).HasName("PK__Area__70B8202833967EDF");
+            entity.HasKey(e => e.AreaId).HasName("PK__Area__70B820282FEB4332");
 
             entity.ToTable("Area");
 
@@ -64,12 +66,12 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Floor).WithMany(p => p.Areas)
                 .HasForeignKey(d => d.FloorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Area__FloorID__4316F928");
+                .HasConstraintName("FK__Area__FloorID__5CD6CB2B");
         });
 
         modelBuilder.Entity<Building>(entity =>
         {
-            entity.HasKey(e => e.BuildingId).HasName("PK__Building__5463CDE45A9526A8");
+            entity.HasKey(e => e.BuildingId).HasName("PK__Building__5463CDE47FC5507E");
 
             entity.ToTable("Building");
 
@@ -79,7 +81,7 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<Contract>(entity =>
         {
-            entity.HasKey(e => e.ContractId).HasName("PK__Contract__C90D340913D325C9");
+            entity.HasKey(e => e.ContractId).HasName("PK__Contract__C90D340952B816AC");
 
             entity.ToTable("Contract");
 
@@ -94,38 +96,42 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Customer).WithMany(p => p.Contracts)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Contract__Custom__4F7CD00D");
+                .HasConstraintName("FK__Contract__Custom__5DCAEF64");
 
             entity.HasOne(d => d.Deceased).WithMany(p => p.Contracts)
                 .HasForeignKey(d => d.DeceasedId)
-                .HasConstraintName("FK__Contract__Deceas__52593CB8");
+                .HasConstraintName("FK__Contract__Deceas__5EBF139D");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.Contracts)
                 .HasForeignKey(d => d.NicheId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Contract__NicheI__5165187F");
+                .HasConstraintName("FK__Contract__NicheI__5FB337D6");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.Contracts)
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Contract__StaffI__5070F446");
+                .HasConstraintName("FK__Contract__StaffI__60A75C0F");
         });
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64B8F5A8DB28");
+            entity.HasKey(e => e.CustomerId).HasName("PK__Customer__A4AE64B859788EC1");
 
             entity.ToTable("Customer");
 
-            entity.HasIndex(e => e.CitizenId, "UQ__Customer__6E49FBED6D50E148").IsUnique();
+            entity.HasIndex(e => e.CitizenId, "UQ__Customer__6E49FBEDEF910C9B").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Customer__A9D10534A4A24140").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Customer__A9D10534D6DC3CFC").IsUnique();
 
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.CitizenId)
                 .HasMaxLength(50)
                 .HasColumnName("CitizenID");
+            entity.Property(e => e.CitizenIdissuanceDate).HasColumnName("CitizenIDIssuanceDate");
+            entity.Property(e => e.CitizenIdsupplier)
+                .HasMaxLength(200)
+                .HasColumnName("CitizenIDSupplier");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.FullName).HasMaxLength(255);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
@@ -134,32 +140,34 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<Deceased>(entity =>
         {
-            entity.HasKey(e => e.DeceasedId).HasName("PK__Deceased__E7DB31FDA66CD697");
+            entity.HasKey(e => e.DeceasedId).HasName("PK__Deceased__E7DB31FD16B025FA");
 
             entity.ToTable("Deceased");
 
-            entity.HasIndex(e => e.CitizenId, "UQ__Deceased__6E49FBEDCFA639A5").IsUnique();
+            entity.HasIndex(e => e.CitizenId, "UQ__Deceased__6E49FBED064ED074").IsUnique();
 
             entity.Property(e => e.DeceasedId).HasColumnName("DeceasedID");
             entity.Property(e => e.CitizenId)
                 .HasMaxLength(50)
                 .HasColumnName("CitizenID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+            entity.Property(e => e.DeathCertificateSupplier).HasMaxLength(200);
             entity.Property(e => e.FullName).HasMaxLength(255);
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
+            entity.Property(e => e.RelationshipWithCusomer).HasMaxLength(50);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Deceaseds)
                 .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Deceased__Custom__4AB81AF0");
+                .HasConstraintName("FK__Deceased__Custom__619B8048");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.Deceaseds)
                 .HasForeignKey(d => d.NicheId)
-                .HasConstraintName("FK__Deceased__NicheI__49C3F6B7");
+                .HasConstraintName("FK__Deceased__NicheI__628FA481");
         });
 
         modelBuilder.Entity<Floor>(entity =>
         {
-            entity.HasKey(e => e.FloorId).HasName("PK__Floor__49D1E86B53451A05");
+            entity.HasKey(e => e.FloorId).HasName("PK__Floor__49D1E86B1B8A3F1A");
 
             entity.ToTable("Floor");
 
@@ -171,12 +179,12 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Building).WithMany(p => p.Floors)
                 .HasForeignKey(d => d.BuildingId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Floor__BuildingI__403A8C7D");
+                .HasConstraintName("FK__Floor__BuildingI__6383C8BA");
         });
 
         modelBuilder.Entity<Niche>(entity =>
         {
-            entity.HasKey(e => e.NicheId).HasName("PK__Niche__57FA592268932D67");
+            entity.HasKey(e => e.NicheId).HasName("PK__Niche__57FA59229B329836");
 
             entity.ToTable("Niche");
 
@@ -190,12 +198,12 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Area).WithMany(p => p.Niches)
                 .HasForeignKey(d => d.AreaId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Niche__AreaID__45F365D3");
+                .HasConstraintName("FK__Niche__AreaID__6477ECF3");
         });
 
         modelBuilder.Entity<NicheHistory>(entity =>
         {
-            entity.HasKey(e => e.NicheHistoryId).HasName("PK__NicheHis__0ACA3FC865A6A616");
+            entity.HasKey(e => e.NicheHistoryId).HasName("PK__NicheHis__0ACA3FC8745DB891");
 
             entity.ToTable("NicheHistory");
 
@@ -207,26 +215,26 @@ public partial class CmsContext : DbContext
 
             entity.HasOne(d => d.Contract).WithMany(p => p.NicheHistories)
                 .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK__NicheHist__Contr__6EF57B66");
+                .HasConstraintName("FK__NicheHist__Contr__656C112C");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.NicheHistories)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__NicheHist__Custo__6D0D32F4");
+                .HasConstraintName("FK__NicheHist__Custo__66603565");
 
             entity.HasOne(d => d.Deceased).WithMany(p => p.NicheHistories)
                 .HasForeignKey(d => d.DeceasedId)
-                .HasConstraintName("FK__NicheHist__Decea__6E01572D");
+                .HasConstraintName("FK__NicheHist__Decea__6754599E");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.NicheHistories)
                 .HasForeignKey(d => d.NicheId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__NicheHist__Niche__6C190EBB");
+                .HasConstraintName("FK__NicheHist__Niche__68487DD7");
         });
 
         modelBuilder.Entity<NicheReservation>(entity =>
         {
-            entity.HasKey(e => e.ReservationId).HasName("PK__NicheRes__B7EE5F0480CBA33C");
+            entity.HasKey(e => e.ReservationId).HasName("PK__NicheRes__B7EE5F0404A73A4A");
 
             entity.ToTable("NicheReservation");
 
@@ -240,12 +248,12 @@ public partial class CmsContext : DbContext
             entity.HasOne(d => d.Niche).WithMany(p => p.NicheReservations)
                 .HasForeignKey(d => d.NicheId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__NicheRese__Niche__619B8048");
+                .HasConstraintName("FK__NicheRese__Niche__693CA210");
         });
 
         modelBuilder.Entity<Notification>(entity =>
         {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E32F85F0C9B");
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E321630E339");
 
             entity.ToTable("Notification");
 
@@ -259,28 +267,28 @@ public partial class CmsContext : DbContext
 
             entity.HasOne(d => d.Contract).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK__Notificat__Contr__6754599E");
+                .HasConstraintName("FK__Notificat__Contr__6A30C649");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Notificat__Custo__656C112C");
+                .HasConstraintName("FK__Notificat__Custo__6B24EA82");
 
             entity.HasOne(d => d.ServiceOrder).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.ServiceOrderId)
-                .HasConstraintName("FK__Notificat__Servi__68487DD7");
+                .HasConstraintName("FK__Notificat__Servi__6C190EBB");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__Notificat__Staff__66603565");
+                .HasConstraintName("FK__Notificat__Staff__6D0D32F4");
 
             entity.HasOne(d => d.Visit).WithMany(p => p.Notifications)
                 .HasForeignKey(d => d.VisitId)
-                .HasConstraintName("FK__Notificat__Visit__693CA210");
+                .HasConstraintName("FK__Notificat__Visit__6E01572D");
         });
 
         modelBuilder.Entity<Report>(entity =>
         {
-            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD48E5D34F7A71");
+            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD48E5126CC1D2");
 
             entity.ToTable("Report");
 
@@ -291,7 +299,7 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.HasKey(e => e.ServiceId).HasName("PK__Service__C51BB0EA6C1AD3C3");
+            entity.HasKey(e => e.ServiceId).HasName("PK__Service__C51BB0EA3C1B2E72");
 
             entity.ToTable("Service");
 
@@ -302,37 +310,65 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<ServiceOrder>(entity =>
         {
-            entity.HasKey(e => e.ServiceOrderId).HasName("PK__ServiceO__8E1ABD053E54D013");
+            entity.HasKey(e => e.ServiceOrderId).HasName("PK__ServiceO__8E1ABD0581438783");
 
             entity.ToTable("ServiceOrder");
+
+            entity.HasIndex(e => e.ServiceOrderCode, "UQ_ServiceOrderCode").IsUnique();
 
             entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
+            entity.Property(e => e.ServiceOrderCode)
+                .HasMaxLength(15)
+                .HasDefaultValueSql("(left(CONVERT([nvarchar](36),newid()),(15)))");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.ServiceOrders)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ServiceOr__Custo__5535A963");
+                .HasConstraintName("FK__ServiceOr__Custo__6EF57B66");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.ServiceOrders)
                 .HasForeignKey(d => d.NicheId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__ServiceOr__Niche__5629CD9C");
+                .HasConstraintName("FK__ServiceOr__Niche__6FE99F9F");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.ServiceOrders)
                 .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__ServiceOr__Staff__571DF1D5");
+                .HasConstraintName("FK__ServiceOr__Staff__70DDC3D8");
+        });
+
+        modelBuilder.Entity<ServiceOrderDetail>(entity =>
+        {
+            entity.HasKey(e => e.ServiceOrderDetailId).HasName("PK__ServiceO__92D8F322BE359A85");
+
+            entity.ToTable("ServiceOrderDetail");
+
+            entity.Property(e => e.ServiceOrderDetailId).HasColumnName("ServiceOrderDetailID");
+            entity.Property(e => e.Quantity).HasDefaultValue(1);
+            entity.Property(e => e.ServiceId).HasColumnName("ServiceID");
+            entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
+            entity.Property(e => e.Status).HasMaxLength(50);
+
+            entity.HasOne(d => d.Service).WithMany(p => p.ServiceOrderDetails)
+                .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ServiceOr__Servi__72C60C4A");
+
+            entity.HasOne(d => d.ServiceOrder).WithMany(p => p.ServiceOrderDetails)
+                .HasForeignKey(d => d.ServiceOrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__ServiceOr__Servi__71D1E811");
         });
 
         modelBuilder.Entity<Staff>(entity =>
         {
-            entity.HasKey(e => e.StaffId).HasName("PK__Staff__96D4AAF740AC98F1");
+            entity.HasKey(e => e.StaffId).HasName("PK__Staff__96D4AAF7F7D131D5");
 
-            entity.HasIndex(e => e.Email, "UQ__Staff__A9D105347F9AE145").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Staff__A9D10534F09B9C17").IsUnique();
 
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
             entity.Property(e => e.Email).HasMaxLength(255);
@@ -344,7 +380,7 @@ public partial class CmsContext : DbContext
 
         modelBuilder.Entity<VisitRegistration>(entity =>
         {
-            entity.HasKey(e => e.VisitId).HasName("PK__VisitReg__4D3AA1BE96500404");
+            entity.HasKey(e => e.VisitId).HasName("PK__VisitReg__4D3AA1BE3DB80515");
 
             entity.ToTable("VisitRegistration");
 
@@ -352,23 +388,22 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
-            entity.Property(e => e.AccompanyingPeople).HasColumnName("AccompanyingPeople");
             entity.Property(e => e.Status).HasMaxLength(50);
             entity.Property(e => e.VisitDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.VisitRegistrations)
                 .HasForeignKey(d => d.ApprovedBy)
-                .HasConstraintName("FK__VisitRegi__Appro__5BE2A6F2");
+                .HasConstraintName("FK__VisitRegi__Appro__73BA3083");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.VisitRegistrations)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__VisitRegi__Custo__59FA5E80");
+                .HasConstraintName("FK__VisitRegi__Custo__74AE54BC");
 
             entity.HasOne(d => d.Niche).WithMany(p => p.VisitRegistrations)
                 .HasForeignKey(d => d.NicheId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__VisitRegi__Niche__5AEE82B9");
+                .HasConstraintName("FK__VisitRegi__Niche__75A278F5");
         });
 
         OnModelCreatingPartial(modelBuilder);
