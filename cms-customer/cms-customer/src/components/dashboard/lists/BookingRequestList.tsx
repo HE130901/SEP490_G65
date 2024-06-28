@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -90,15 +90,22 @@ export default function BookingRequestList({
       setNicheReservations(response.data.$values);
     } catch (error) {
       console.error("Error fetching niche reservations:", error);
-      toast.error("Không thể lấy danh sách đơn đặt chỗ.");
     }
   };
 
   const handleEdit = (record: NicheReservation) => {
+    if (record.status === "Approved" || record.status === "Canceled") {
+      toast.error("Không thể sửa đơn đặt chỗ đã được duyệt hoặc hủy");
+      return;
+    }
     setEditingRecord(record);
   };
 
   const handleDeleteConfirmation = (record: NicheReservation) => {
+    if (record.status === "Approved" || record.status === "Canceled") {
+      toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
+      return;
+    }
     setDeleteRecord(record);
   };
 
@@ -107,12 +114,18 @@ export default function BookingRequestList({
 
     try {
       await NicheReservationAPI.delete(deleteRecord.reservationId);
-      toast.success("Xóa đơn đặt chỗ thành công!");
-      fetchNicheReservations(user.phone); // Refetch the data after deletion
+      toast.success("Hủy đơn đặt chỗ thành công!");
+      setNicheReservations((prev) =>
+        prev.map((reservation) =>
+          reservation.reservationId === deleteRecord.reservationId
+            ? { ...reservation, status: "Canceled" }
+            : reservation
+        )
+      );
       setDeleteRecord(null); // Close the modal
     } catch (error) {
-      console.error("Error deleting niche reservation:", error);
-      toast.error("Không thể xóa đơn đặt chỗ.");
+      console.error("Error canceling niche reservation:", error);
+      toast.error("Không thể hủy đơn đặt chỗ.");
     }
   };
 
@@ -123,9 +136,15 @@ export default function BookingRequestList({
         return;
       }
       const dataToUpdate = {
-        confirmationDate: updatedRecord.confirmationDate,
+        reservationId: updatedRecord.reservationId,
+        nicheId: updatedRecord.nicheId,
+        name: updatedRecord.name,
+        confirmationDate: new Date(
+          updatedRecord.confirmationDate
+        ).toISOString(),
         note: updatedRecord.note,
         signAddress: updatedRecord.signAddress,
+        phoneNumber: updatedRecord.phoneNumber,
       };
       await NicheReservationAPI.update(
         updatedRecord.reservationId,
@@ -228,7 +247,13 @@ export default function BookingRequestList({
       ),
       cell: ({ row }) => (
         <Badge
-          variant={row.getValue("status") === "Đang giữ chỗ" ? "gray" : "green"}
+          variant={
+            row.getValue("status") === "Pending"
+              ? "gray"
+              : row.getValue("status") === "Approved"
+              ? "green"
+              : "red"
+          }
         >
           {row.getValue("status")}
         </Badge>
@@ -251,20 +276,28 @@ export default function BookingRequestList({
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => (
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 justify-center">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleEdit(row.original)}
+            disabled={
+              row.original.status === "Approved" ||
+              row.original.status === "Canceled"
+            }
           >
-            Sửa
+            <Edit className="h-4 w-4" />
           </Button>
           <Button
             variant="destructive"
             size="sm"
             onClick={() => handleDeleteConfirmation(row.original)}
+            disabled={
+              row.original.status === "Approved" ||
+              row.original.status === "Canceled"
+            }
           >
-            Xóa
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       ),
@@ -314,7 +347,7 @@ export default function BookingRequestList({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -335,7 +368,7 @@ export default function BookingRequestList({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-center">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -395,15 +428,15 @@ export default function BookingRequestList({
         <Dialog open={true} onOpenChange={() => setDeleteRecord(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Xác nhận xóa</DialogTitle>
+              <DialogTitle>Xác nhận hủy</DialogTitle>
             </DialogHeader>
-            <p>Bạn có chắc chắn muốn xóa đơn đăng ký này không?</p>
+            <p>Bạn có chắc chắn muốn hủy đơn đăng ký này không?</p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteRecord(null)}>
                 Hủy
               </Button>
               <Button variant="destructive" onClick={handleDelete}>
-                Xóa
+                Hủy
               </Button>
             </DialogFooter>
           </DialogContent>

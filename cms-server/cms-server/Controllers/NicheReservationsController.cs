@@ -59,14 +59,33 @@ namespace cms_server.Controllers
 
         // PUT: api/NicheReservations/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutNicheReservation(int id, NicheReservation nicheReservation)
+        public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
         {
-            if (id != nicheReservation.ReservationId)
+            if (id != updateDto.ReservationId)
             {
-                return BadRequest();
+                return BadRequest(new { error = "Reservation ID mismatch" });
             }
 
-            _context.Entry(nicheReservation).State = EntityState.Modified;
+            var existingReservation = await _context.NicheReservations.FindAsync(id);
+            if (existingReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
+
+            if (existingReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Cannot update an approved reservation" });
+            }
+
+            // Update only the specified properties
+            existingReservation.NicheId = updateDto.NicheId;
+            existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
+            existingReservation.Note = updateDto.Note;
+            existingReservation.SignAddress = updateDto.SignAddress;
+            existingReservation.PhoneNumber = updateDto.PhoneNumber;
+            existingReservation.Name = updateDto.Name;
+
+            _context.Entry(existingReservation).State = EntityState.Modified;
 
             try
             {
@@ -76,7 +95,7 @@ namespace cms_server.Controllers
             {
                 if (!NicheReservationExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new { error = "Reservation not found during save" });
                 }
                 else
                 {
@@ -106,7 +125,7 @@ namespace cms_server.Controllers
                     PhoneNumber = createDto.PhoneNumber,
                     Note = createDto.Note,
                     CreatedDate = DateTime.UtcNow,
-                    Status = "Đang giữ chỗ"
+                    Status = "Pending"
                 };
 
                 _context.NicheReservations.Add(nicheReservation);
@@ -127,7 +146,7 @@ namespace cms_server.Controllers
             {
                 // Guest bị giới hạn số lượng chỗ đặt
                 var existingReservationsCount = await _context.NicheReservations
-                    .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Đang giữ chỗ");
+                    .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
 
                 if (existingReservationsCount >= 3)
                 {
@@ -143,7 +162,7 @@ namespace cms_server.Controllers
                     PhoneNumber = createDto.PhoneNumber,
                     Note = createDto.Note,
                     CreatedDate = DateTime.UtcNow,
-                    Status = "Đang giữ chỗ"
+                    Status = "Pending"
                 };
 
                 _context.NicheReservations.Add(nicheReservation);
@@ -172,7 +191,23 @@ namespace cms_server.Controllers
                 return NotFound();
             }
 
-            _context.NicheReservations.Remove(nicheReservation);
+            if (nicheReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Không thể xóa đơn đặt chỗ đã được duyệt" });
+            }
+
+            // Update the status of the reservation to "Canceled"
+            nicheReservation.Status = "Canceled";
+            _context.Entry(nicheReservation).State = EntityState.Modified;
+
+            // Update the status of the niche to "Available"
+            var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
+            if (niche != null)
+            {
+                niche.Status = "Available";
+                _context.Entry(niche).State = EntityState.Modified;
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -186,6 +221,18 @@ namespace cms_server.Controllers
 
     public class CreateNicheReservationDto
     {
+        public int NicheId { get; set; }
+        public string Name { get; set; }
+        public DateTime? ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+        public string PhoneNumber { get; set; }
+        public string? Note { get; set; }
+    }
+
+    // DTO for updating niche reservation
+    public class UpdateNicheReservationDto
+    {
+        public int ReservationId { get; set; }
         public int NicheId { get; set; }
         public string Name { get; set; }
         public DateTime? ConfirmationDate { get; set; }

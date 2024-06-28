@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/state-context";
-import axiosInstance from "@/utils/axiosInstance";
+import NicheAPI from "@/services/nicheService";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -42,9 +42,7 @@ export default function Dashboard() {
     if (!user) return;
 
     try {
-      const response = await axiosInstance.get(
-        `/api/niches/customer/${user.customerId}`
-      );
+      const response = await NicheAPI.getAllByCustomer(user.customerId);
 
       if (response.data && Array.isArray(response.data.$values)) {
         setContainers(response.data.$values);

@@ -22,7 +22,7 @@ import {
 } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import ShoppingCartCheckoutSharpIcon from "@mui/icons-material/ShoppingCartCheckoutSharp";
-import { useRouter } from "next/navigation"; // Ensure correct import path for useRouter
+import { useRouter } from "next/navigation";
 import VisitScheduleDialog from "./VisitScheduleDialog";
 
 const getStatusVariant = (status: string) => {
@@ -45,7 +45,7 @@ export default function CustomerContractList({
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedContainer, setSelectedContainer] = useState(null);
-  const router = useRouter(); // Moved inside the component
+  const router = useRouter();
 
   const handleServiceClick = (container: any) => {
     router.push("/service-order");

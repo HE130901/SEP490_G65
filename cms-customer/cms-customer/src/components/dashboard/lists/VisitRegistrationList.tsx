@@ -55,8 +55,12 @@ export default function VisitRegistrationList({
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { visitRegistrations, fetchVisitRegistrations, user } =
-    useStateContext();
+  const {
+    visitRegistrations,
+    setVisitRegistrations,
+    fetchVisitRegistrations,
+    user,
+  } = useStateContext();
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]); // Default sort
@@ -95,7 +99,11 @@ export default function VisitRegistrationList({
     try {
       await VisitRegistrationAPI.delete(deleteRecord.visitId);
       toast.success("Xóa đơn đăng ký thành công!");
-      fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
+      setVisitRegistrations((prev) =>
+        prev.filter(
+          (registration) => registration.visitId !== deleteRecord.visitId
+        )
+      );
       setDeleteRecord(null); // Close the modal
     } catch (error) {
       console.error("Error deleting visit registration:", error);
@@ -332,7 +340,7 @@ export default function VisitRegistrationList({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Bạn chưa có đơn đặt chỗ nào.
+                  Bạn chưa có đơn đăng ký viếng.
                 </TableCell>
               </TableRow>
             )}
@@ -416,7 +424,7 @@ function EditModal({ record, onSave, onClose }: EditModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn Đặt Chỗ</h2>
+        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn đăng ký viếng</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block mb-2 font-medium">Ngày Hẹn</label>

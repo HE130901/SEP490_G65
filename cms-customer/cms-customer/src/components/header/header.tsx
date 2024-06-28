@@ -158,7 +158,7 @@ export function Header({ currentView, setCurrentView }) {
               {user ? (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile-manager">
+                    <Link href="/user-profile">
                       <UserIcon className="h-5 w-5 mr-2" />
                       Hồ sơ của tôi
                     </Link>
