@@ -135,7 +135,7 @@ const NicheReservationPage = () => {
     if (isSmallScreen) {
       return rows.reverse().map((floorRows, floorIndex) => (
         <div key={floorIndex} className="flex flex-col space-y-2">
-          <div className="flex items-center justify-center font-semibold pr-4 whitespace-nowrap">
+          <div className="flex items-center justify-center font-semibold  whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
           {floorRows.map((row, rowIndex) => (
@@ -182,7 +182,7 @@ const NicheReservationPage = () => {
     } else {
       return rows.reverse().map((row, rowIndex) => (
         <div key={rowIndex} className="flex space-x-2 items-center pt-2">
-          <div className="flex-shrink-0 font-semibold pr-4 whitespace-nowrap">
+          <div className="flex-shrink-0 font-semibold whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
           {row.map((niche) => {
@@ -226,7 +226,7 @@ const NicheReservationPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-1 py-6 ">
+    <div className="">
       <section className="flex flex-col lg:flex-row gap-2 ">
         {/* Search Section */}
         <motion.div
@@ -260,15 +260,15 @@ const NicheReservationPage = () => {
           <div className="mt-4 flex justify-center space-x-4 ">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-black rounded-sm "></div>
-              <span className="font-semibold text-white">Không thể chọn</span>
+              <span className="font-semibold text-white">Đã sử dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>
-              <span className="font-semibold ">Có thể chọn</span>
+              <span className="font-semibold text-white">Còn trống</span>
             </div>
             <div className="flex items-center space-x-2 ">
               <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-              <span className="font-semibold text-white">Đang được đặt</span>
+              <span className="font-semibold text-white">Đã được đặt</span>
             </div>
           </div>
           <ReservationForm

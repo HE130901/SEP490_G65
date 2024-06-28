@@ -13,27 +13,27 @@ export default function ServicesList({ containers }) {
       title: "Đặt ô chứa",
       imageSrc: "/images/booking2.jpg",
       href: "/niche-reservation",
-      priority: true, // Add priority for this image
+      priority: true,
     },
     {
       title: "Đặt lịch viếng",
       imageSrc: "/images/visit.jpg",
       href: "#",
       onClick: () => setIsVisitDialogOpen(true),
-      priority: true, // Add priority for this image
+      priority: true,
     },
     {
       title: "Đặt dịch vụ",
       imageSrc: "/images/servicee.png",
       href: "/service-order",
-      priority: true, // Add priority for this image
+      priority: true,
     },
   ];
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">Dịch vụ dành cho bạn</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <h2 className="text-2xl font-bold mb-6 text-center">Danh mục dịch vụ</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {services.map((item, index) => (
           <div key={index} className="group relative block h-full">
             <Link
@@ -46,7 +46,7 @@ export default function ServicesList({ containers }) {
                 href={item.href}
                 imageSrc={item.imageSrc}
                 title={item.title}
-                priority={item.priority} // Pass priority prop
+                priority={item.priority}
               />
             </Link>
           </div>

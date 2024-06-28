@@ -29,40 +29,26 @@ const NicheReservationPage = () => {
     return <Loading />;
   }
   return (
-    <div className={styles.container}>
-      <div className={styles.background}></div>
-      <div className={`${styles.content} flex h-auto pt-16 justify-center`}>
-        <div className="flex flex-1 overflow-auto">
-          <div className="flex-1">
-            <div className="py-4  mx-4 my-4 h-auto rounded-md pt-12 bg-gradient-to-b from-slate-100 to-stone-400">
-              <Breadcrumb className="ml-36  ">
-                <BreadcrumbList>
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/" className="text-black">
-                      Trang chủ
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="text-black" />
-                  <BreadcrumbItem>
-                    <BreadcrumbLink href="/dashboard" className="text-black">
-                      Dịch vụ
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="text-black" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="text-black font-semibold">
-                      Đặt ô chứa
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
-                </BreadcrumbList>
-              </Breadcrumb>
-
-              <Information />
-              <NicheReservation />
-            </div>
-          </div>
+    <div className="text-foreground min-h-screen flex flex-col py-20 bg-gradient-to-b from-stone-200 to-stone-700">
+      <main className="flex-1 container mx-auto px-4">
+        <div className="grid grid-cols-1 gap-8 pb-4">
+          <Breadcrumb className="flex-1">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Đặt ô chứa</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-      </div>
+        <div className="grid grid-cols-1 gap-8 pb-4">
+          <Information />
+          <NicheReservation />
+        </div>
+      </main>
     </div>
   );
 };

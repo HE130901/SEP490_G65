@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useStateContext } from "@/context/state-context";
-import ContainerList from "@/components/dashboard/customer-contracts/CustomerContractList";
-import RegistrationList from "@/components/dashboard/lists/VisitRegistrationList";
-import ContractRenewalList from "@/components/dashboard/lists/ContractRenewalList";
-import ServiceRequestList from "@/components/dashboard/lists/ServiceRequestList";
-import BookingRequestList from "@/components/dashboard/lists/BookingRequestList";
 import ContainerDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
-import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
+import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
+import BookingRequestList from "@/components/dashboard/lists/BookingRequestList";
+import ServiceRequestList from "@/components/dashboard/lists/ServiceRequestList";
+import RegistrationList from "@/components/dashboard/lists/VisitRegistrationList";
 import ServicesList from "@/components/dashboard/services/ServicesSection";
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useStateContext } from "@/context/state-context";
 import axiosInstance from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Dashboard() {
   const {
@@ -82,68 +89,73 @@ export default function Dashboard() {
 
   return (
     <div className="text-foreground min-h-screen flex flex-col">
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 ">
+      <main className="flex-1 container mx-auto px-4">
+        <div className="grid grid-cols-1 gap-8 pb-4 ">
+          <Breadcrumb className="flex-1">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Khách hàng</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <div className="grid grid-cols-1 gap-8 ">
+          <div>
+            <ServicesList containers={containers} />
+          </div>
           <div className="">
-            <ContainerList
+            <CustomerContractList
               containers={containers}
               onSelect={handleContainerSelect}
             />
           </div>
-          <div>
-            <ServicesList containers={containers} />
-          </div>
-        </div>
-        <motion.div
-          className="mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Tabs
-            defaultValue="visitRegistrations"
-            className="w-full flex flex-col items-center"
+          <motion.div
+            className=""
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <TabsList className="mb-4 space-x-4 shadow-lg">
-              <TabsTrigger
-                value="visitRegistrations"
-                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
-              >
-                Đơn đăng ký viếng
-              </TabsTrigger>
-              <TabsTrigger
-                value="contractRenewals"
-                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
-              >
-                Đơn đăng ký gia hạn hợp đồng
-              </TabsTrigger>
-              <TabsTrigger
-                value="serviceRequests"
-                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
-              >
-                Đơn đăng ký sử dụng dịch vụ
-              </TabsTrigger>
-              <TabsTrigger
-                value="bookingRequests"
-                className="px-4 py-2 rounded-t-md hover:bg-gray-200 transition-all duration-200"
-              >
-                Đơn đăng ký đặt chỗ
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="visitRegistrations" className="w-full">
-              <RegistrationList reFetchTrigger={reFetchTrigger} />
-            </TabsContent>
-            <TabsContent value="contractRenewals" className="w-full">
-              <ContractRenewalList />
-            </TabsContent>
-            <TabsContent value="serviceRequests" className="w-full">
-              <ServiceRequestList />
-            </TabsContent>
-            <TabsContent value="bookingRequests" className="w-full">
-              <BookingRequestList />
-            </TabsContent>
-          </Tabs>
-        </motion.div>
+            <Tabs
+              defaultValue="visitRegistrations"
+              className="w-full flex flex-col items-center"
+            >
+              <TabsList className="flex-wrap w-fit space-x-0 sm:space-x-4 shadow-lg">
+                <TabsTrigger
+                  value="visitRegistrations"
+                  className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
+                >
+                  Đơn đăng ký viếng
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="serviceRequests"
+                  className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
+                >
+                  Đơn đăng ký sử dụng dịch vụ
+                </TabsTrigger>
+                <TabsTrigger
+                  value="bookingRequests"
+                  className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
+                >
+                  Đơn đăng ký đặt chỗ
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="visitRegistrations" className="w-full">
+                <RegistrationList reFetchTrigger={reFetchTrigger} />
+              </TabsContent>
+              <TabsContent value="serviceRequests" className="w-full">
+                <ServiceRequestList />
+              </TabsContent>
+              <TabsContent value="bookingRequests" className="w-full">
+                <BookingRequestList />
+              </TabsContent>
+            </Tabs>
+          </motion.div>
+        </div>
       </main>
       <ContainerDetailsDialog
         isOpen={isContainerModalOpen}

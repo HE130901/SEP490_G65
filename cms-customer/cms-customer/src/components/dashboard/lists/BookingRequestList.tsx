@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useStateContext } from "@/context/state-context";
-import VisitRegistrationAPI from "@/services/visitService";
+import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -37,16 +37,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-// Define your VisitRegistration type
-export type VisitRegistration = {
-  visitId: number;
-  customerId: number;
+// Define your NicheReservation type
+export type NicheReservation = {
+  reservationId: number;
   nicheId: number;
   createdDate: string;
-  visitDate: string;
+  confirmationDate: string;
   status: string;
-  accompanyingPeople: number;
+  signAddress: string;
+  phoneNumber: string;
   note: string;
+  name: string;
 };
 
 // BookingRequest component
@@ -55,8 +56,10 @@ export default function BookingRequestList({
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { visitRegistrations, fetchVisitRegistrations, user } =
-    useStateContext();
+  const { user } = useStateContext();
+  const [nicheReservations, setNicheReservations] = useState<
+    NicheReservation[]
+  >([]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]); // Default sort
@@ -68,24 +71,34 @@ export default function BookingRequestList({
     pageSize: 5, // Show custom records per page
   });
 
-  const [editingRecord, setEditingRecord] = useState<VisitRegistration | null>(
+  const [editingRecord, setEditingRecord] = useState<NicheReservation | null>(
     null
   );
-  const [deleteRecord, setDeleteRecord] = useState<VisitRegistration | null>(
+  const [deleteRecord, setDeleteRecord] = useState<NicheReservation | null>(
     null
   );
 
   useEffect(() => {
-    if (user && user.customerId) {
-      fetchVisitRegistrations(user.customerId);
+    if (user && user.phone) {
+      fetchNicheReservations(user.phone);
     }
-  }, [user, fetchVisitRegistrations, reFetchTrigger]);
+  }, [user, reFetchTrigger]);
 
-  const handleEdit = (record: VisitRegistration) => {
+  const fetchNicheReservations = async (phoneNumber: string) => {
+    try {
+      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
+      setNicheReservations(response.data.$values);
+    } catch (error) {
+      console.error("Error fetching niche reservations:", error);
+      toast.error("Không thể lấy danh sách đơn đặt chỗ.");
+    }
+  };
+
+  const handleEdit = (record: NicheReservation) => {
     setEditingRecord(record);
   };
 
-  const handleDeleteConfirmation = (record: VisitRegistration) => {
+  const handleDeleteConfirmation = (record: NicheReservation) => {
     setDeleteRecord(record);
   };
 
@@ -93,39 +106,42 @@ export default function BookingRequestList({
     if (!deleteRecord) return;
 
     try {
-      await VisitRegistrationAPI.delete(deleteRecord.visitId);
-      toast.success("Xóa đơn đăng ký thành công!");
-      fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
+      await NicheReservationAPI.delete(deleteRecord.reservationId);
+      toast.success("Xóa đơn đặt chỗ thành công!");
+      fetchNicheReservations(user.phone); // Refetch the data after deletion
       setDeleteRecord(null); // Close the modal
     } catch (error) {
-      console.error("Error deleting visit registration:", error);
+      console.error("Error deleting niche reservation:", error);
       toast.error("Không thể xóa đơn đặt chỗ.");
     }
   };
 
-  const handleSave = async (updatedRecord: VisitRegistration) => {
+  const handleSave = async (updatedRecord: NicheReservation) => {
     try {
-      if (!updatedRecord.visitId) {
-        console.error("Invalid visitId:", updatedRecord.visitId);
+      if (!updatedRecord.reservationId) {
+        console.error("Invalid reservationId:", updatedRecord.reservationId);
         return;
       }
       const dataToUpdate = {
-        visitDate: updatedRecord.visitDate,
+        confirmationDate: updatedRecord.confirmationDate,
         note: updatedRecord.note,
-        accompanyingPeople: updatedRecord.accompanyingPeople,
+        signAddress: updatedRecord.signAddress,
       };
-      await VisitRegistrationAPI.update(updatedRecord.visitId, dataToUpdate);
-      toast.success("Cập nhật đơn đăng ký thành công!");
+      await NicheReservationAPI.update(
+        updatedRecord.reservationId,
+        dataToUpdate
+      );
+      toast.success("Cập nhật đơn đặt chỗ thành công!");
       setEditingRecord(null);
-      fetchVisitRegistrations(user.customerId); // Refetch the data after updating
+      fetchNicheReservations(user.phone); // Refetch the data after updating
     } catch (error) {
-      console.error("Error updating visit registration:", error);
+      console.error("Error updating niche reservation:", error);
       toast.error("Không thể cập nhật đơn đặt chỗ.");
     }
   };
 
   // Column definitions with inline handleEdit and handleDelete functions
-  const columns: ColumnDef<VisitRegistration>[] = [
+  const columns: ColumnDef<NicheReservation>[] = [
     {
       id: "stt", // Add an ID for the STT column
       header: ({ column }) => (
@@ -140,7 +156,7 @@ export default function BookingRequestList({
       cell: ({ row }) => row.index + 1, // Calculate the row index + 1 for display
     },
     {
-      accessorKey: "visitId",
+      accessorKey: "reservationId",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -150,7 +166,7 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("visitId")}</div>,
+      cell: ({ row }) => <div>{row.getValue("reservationId")}</div>,
     },
     {
       accessorKey: "nicheId",
@@ -177,22 +193,26 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("createdDate")).toLocaleString()}</div>
+        <div>
+          {new Date(row.getValue("createdDate")).toLocaleString("vi-VN")}
+        </div>
       ),
     },
     {
-      accessorKey: "visitDate",
+      accessorKey: "confirmationDate",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Ngày Hẹn
+          Ngày Xác Nhận
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("visitDate")).toLocaleString()}</div>
+        <div>
+          {new Date(row.getValue("confirmationDate")).toLocaleString("vi-VN")}
+        </div>
       ),
     },
     {
@@ -208,9 +228,7 @@ export default function BookingRequestList({
       ),
       cell: ({ row }) => (
         <Badge
-          variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
-          }
+          variant={row.getValue("status") === "Đang giữ chỗ" ? "gray" : "green"}
         >
           {row.getValue("status")}
         </Badge>
@@ -254,7 +272,7 @@ export default function BookingRequestList({
   ];
 
   const table = useReactTable({
-    data: visitRegistrations,
+    data: nicheReservations,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -273,7 +291,7 @@ export default function BookingRequestList({
     },
     onPaginationChange: setPagination,
     manualPagination: false, // Use automatic pagination
-    pageCount: Math.ceil(visitRegistrations.length / pagination.pageSize),
+    pageCount: Math.ceil(nicheReservations.length / pagination.pageSize),
   });
 
   return (
@@ -396,15 +414,15 @@ export default function BookingRequestList({
 }
 
 type EditModalProps = {
-  record: VisitRegistration;
-  onSave: (updatedRecord: VisitRegistration) => void;
+  record: NicheReservation;
+  onSave: (updatedRecord: NicheReservation) => void;
   onClose: () => void;
 };
 
 function EditModal({ record, onSave, onClose }: EditModalProps) {
   const [updatedRecord, setUpdatedRecord] = useState(record);
 
-  const handleChange = (field: keyof VisitRegistration, value: any) => {
+  const handleChange = (field: keyof NicheReservation, value: any) => {
     setUpdatedRecord({ ...updatedRecord, [field]: value });
   };
 
@@ -419,26 +437,24 @@ function EditModal({ record, onSave, onClose }: EditModalProps) {
         <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn Đặt Chỗ</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Ngày Hẹn</label>
+            <label className="block mb-2 font-medium">Ngày Xác Nhận</label>
             <input
               type="datetime-local"
-              value={new Date(updatedRecord.visitDate)
+              value={new Date(updatedRecord.confirmationDate)
                 .toISOString()
                 .slice(0, 16)}
               onChange={(e) =>
-                handleChange("visitDate", new Date(e.target.value))
+                handleChange("confirmationDate", new Date(e.target.value))
               }
               className="w-full p-2 border rounded"
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Số Người Đi Cùng</label>
+            <label className="block mb-2 font-medium">Địa Chỉ Ký</label>
             <input
-              type="number"
-              value={updatedRecord.accompanyingPeople}
-              onChange={(e) =>
-                handleChange("accompanyingPeople", parseInt(e.target.value))
-              }
+              type="text"
+              value={updatedRecord.signAddress}
+              onChange={(e) => handleChange("signAddress", e.target.value)}
               className="w-full p-2 border rounded"
             />
           </div>
