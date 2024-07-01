@@ -23,6 +23,8 @@ import {
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import buildingService from "@/services/buildingService";
+import NicheViewDialog from "./NicheViewDialog";
+import NicheEditDialog from "./NicheEditDialog";
 
 const NicheManagementPage = () => {
   const [buildings, setBuildings] = useState([]);
@@ -32,6 +34,9 @@ const NicheManagementPage = () => {
   const [niches, setNiches] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
+  const [selectedNiche, setSelectedNiche] = useState(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -79,12 +84,24 @@ const NicheManagementPage = () => {
     }
   };
 
-  const handleViewNiche = (id) => {
-    alert(`Xem chi tiết ô chứa với ID: ${id}`);
+  const handleViewNiche = (niche) => {
+    setSelectedNiche(niche);
+    setViewDialogOpen(true);
   };
 
-  const handleEditNiche = (id) => {
-    alert(`Sửa ô chứa với ID: ${id}`);
+  const handleEditNiche = (niche) => {
+    setSelectedNiche(niche);
+    setEditDialogOpen(true);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedNiche(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedNiche(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -283,13 +300,13 @@ const NicheManagementPage = () => {
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewNiche(niche.nicheId)}
+                    onClick={() => handleViewNiche(niche)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditNiche(niche.nicheId)}
+                    onClick={() => handleEditNiche(niche)}
                   >
                     <EditIcon />
                   </IconButton>
@@ -299,6 +316,16 @@ const NicheManagementPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <NicheViewDialog
+        open={viewDialogOpen}
+        niche={selectedNiche}
+        onClose={handleViewDialogClose}
+      />
+      <NicheEditDialog
+        open={editDialogOpen}
+        niche={selectedNiche}
+        onClose={handleEditDialogClose}
+      />
     </Box>
   );
 };

@@ -28,14 +28,23 @@ import {
 } from "@mui/icons-material";
 import BookingAPI from "@/services/bookingService";
 import { useToast } from "@/components/ui/use-toast";
+import AddBookingRequestDialog from "./AddBookingRequestDialog";
+import ViewBookingRequestDialog from "./ViewBookingRequestDialog";
+import EditBookingRequestDialog from "./EditBookingRequestDialog";
+import DeleteBookingRequestDialog from "./DeleteBookingRequestDialog";
 
 const BookingRequestPage = () => {
   const [bookingRequests, setBookingRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("signAddress");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("reservationId");
   const { toast } = useToast();
+  const [selectedBookingRequest, setSelectedBookingRequest] = useState(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchBookingRequests = async () => {
@@ -55,19 +64,47 @@ const BookingRequestPage = () => {
   }, [toast]);
 
   const handleAddBookingRequest = () => {
-    alert("Thêm mới đơn đăng ký đặt chỗ");
+    setAddDialogOpen(true);
   };
 
-  const handleViewBookingRequest = (id) => {
-    alert(`Xem chi tiết đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleViewBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setViewDialogOpen(true);
   };
 
-  const handleEditBookingRequest = (id) => {
-    alert(`Sửa đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleEditBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setEditDialogOpen(true);
   };
 
-  const handleDeleteBookingRequest = (id) => {
-    alert(`Xóa đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleDeleteBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleAddDialogClose = () => {
+    setAddDialogOpen(false);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleDeleteConfirmed = () => {
+    // Add delete logic here
+    setDeleteDialogOpen(false);
+    setSelectedBookingRequest(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -113,12 +150,39 @@ const BookingRequestPage = () => {
 
   const filteredBookingRequests = sortedBookingRequests.filter(
     (bookingRequest) => {
-      if (searchColumn === "signAddress") {
+      if (searchColumn === "all") {
+        return (
+          bookingRequest.signAddress
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.phoneNumber
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.reservationId
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.nicheId
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
+      } else if (searchColumn === "signAddress") {
         return bookingRequest.signAddress
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
       } else if (searchColumn === "phoneNumber") {
         return bookingRequest.phoneNumber
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      } else if (searchColumn === "reservationId") {
+        return bookingRequest.reservationId
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      } else if (searchColumn === "nicheId") {
+        return bookingRequest.nicheId
+          .toString()
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
       }
@@ -153,8 +217,11 @@ const BookingRequestPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
+              <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="signAddress">Địa chỉ</MenuItem>
               <MenuItem value="phoneNumber">Số điện thoại</MenuItem>
+              <MenuItem value="reservationId">Mã đơn</MenuItem>
+              <MenuItem value="nicheId">Mã ô chứa</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -169,7 +236,7 @@ const BookingRequestPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "reservationId"}
                   direction={orderBy === "reservationId" ? order : "asc"}
@@ -178,7 +245,7 @@ const BookingRequestPage = () => {
                   STT
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "reservationId"}
                   direction={orderBy === "reservationId" ? order : "asc"}
@@ -187,7 +254,7 @@ const BookingRequestPage = () => {
                   Mã đơn
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "nicheId"}
                   direction={orderBy === "nicheId" ? order : "asc"}
@@ -196,7 +263,7 @@ const BookingRequestPage = () => {
                   Mã ô chứa
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "createdDate"}
                   direction={orderBy === "createdDate" ? order : "asc"}
@@ -205,7 +272,7 @@ const BookingRequestPage = () => {
                   Ngày tạo
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "confirmationDate"}
                   direction={orderBy === "confirmationDate" ? order : "asc"}
@@ -214,7 +281,7 @@ const BookingRequestPage = () => {
                   Ngày xác nhận
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "signAddress"}
                   direction={orderBy === "signAddress" ? order : "asc"}
@@ -223,7 +290,7 @@ const BookingRequestPage = () => {
                   Địa chỉ
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "phoneNumber"}
                   direction={orderBy === "phoneNumber" ? order : "asc"}
@@ -232,7 +299,7 @@ const BookingRequestPage = () => {
                   Số điện thoại
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "status"}
                   direction={orderBy === "status" ? order : "asc"}
@@ -241,27 +308,33 @@ const BookingRequestPage = () => {
                   Trạng thái
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Ghi chú</TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center">Ghi chú</TableCell>
+              <TableCell align="center">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredBookingRequests.map((bookingRequest, index) => (
               <TableRow key={bookingRequest.reservationId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{bookingRequest.reservationId}</TableCell>
-                <TableCell>{bookingRequest.nicheId}</TableCell>
-                <TableCell>
+                <TableCell align="center">{index + 1}</TableCell>
+                <TableCell align="center">
+                  {bookingRequest.reservationId}
+                </TableCell>
+                <TableCell align="center">{bookingRequest.nicheId}</TableCell>
+                <TableCell align="center">
                   {new Date(bookingRequest.createdDate).toLocaleDateString()}
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   {new Date(
                     bookingRequest.confirmationDate
                   ).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{bookingRequest.signAddress}</TableCell>
-                <TableCell>{bookingRequest.phoneNumber}</TableCell>
-                <TableCell>
+                <TableCell align="center">
+                  {bookingRequest.signAddress}
+                </TableCell>
+                <TableCell align="center">
+                  {bookingRequest.phoneNumber}
+                </TableCell>
+                <TableCell align="center">
                   <Chip
                     label={
                       bookingRequest.status === "pending"
@@ -279,29 +352,23 @@ const BookingRequestPage = () => {
                     }
                   />
                 </TableCell>
-                <TableCell>{bookingRequest.note}</TableCell>
-                <TableCell>
+                <TableCell align="center">{bookingRequest.note}</TableCell>
+                <TableCell align="center">
                   <IconButton
                     color="primary"
-                    onClick={() =>
-                      handleViewBookingRequest(bookingRequest.reservationId)
-                    }
+                    onClick={() => handleViewBookingRequest(bookingRequest)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() =>
-                      handleEditBookingRequest(bookingRequest.reservationId)
-                    }
+                    onClick={() => handleEditBookingRequest(bookingRequest)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() =>
-                      handleDeleteBookingRequest(bookingRequest.reservationId)
-                    }
+                    onClick={() => handleDeleteBookingRequest(bookingRequest)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -311,6 +378,26 @@ const BookingRequestPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddBookingRequestDialog
+        open={addDialogOpen}
+        onClose={handleAddDialogClose}
+      />
+      <ViewBookingRequestDialog
+        open={viewDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleViewDialogClose}
+      />
+      <EditBookingRequestDialog
+        open={editDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleEditDialogClose}
+      />
+      <DeleteBookingRequestDialog
+        open={deleteDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleDeleteDialogClose}
+        onDelete={handleDeleteConfirmed}
+      />
     </Box>
   );
 };
