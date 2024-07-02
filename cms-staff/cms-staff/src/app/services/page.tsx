@@ -42,7 +42,7 @@ const ServiceProductPage = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("serviceName");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("serviceId");
   const { toast } = useToast();
@@ -113,10 +113,25 @@ const ServiceProductPage = () => {
   });
 
   const filteredItems = sortedItems.filter((item) => {
-    if (searchColumn === "serviceName") {
-      return item.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchTermLower = searchTerm.toLowerCase();
+    if (searchColumn === "all") {
+      return (
+        item.serviceName.toLowerCase().includes(searchTermLower) ||
+        item.serviceId.toString().includes(searchTermLower) ||
+        item.price.toString().includes(searchTermLower) ||
+        item.category.toLowerCase().includes(searchTermLower) ||
+        item.tag.toLowerCase().includes(searchTermLower)
+      );
+    } else if (searchColumn === "serviceName") {
+      return item.serviceName.toLowerCase().includes(searchTermLower);
     } else if (searchColumn === "serviceId") {
-      return item.serviceId.toString().includes(searchTerm);
+      return item.serviceId.toString().includes(searchTermLower);
+    } else if (searchColumn === "price") {
+      return item.price.toString().includes(searchTermLower);
+    } else if (searchColumn === "category") {
+      return item.category.toLowerCase().includes(searchTermLower);
+    } else if (searchColumn === "tag") {
+      return item.tag.toLowerCase().includes(searchTermLower);
     }
     return true;
   });
@@ -167,8 +182,12 @@ const ServiceProductPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
+              <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="serviceName">Tên</MenuItem>
               <MenuItem value="serviceId">ID</MenuItem>
+              <MenuItem value="price">Giá</MenuItem>
+              <MenuItem value="category">Phân loại</MenuItem>
+              <MenuItem value="tag">Thẻ</MenuItem>
             </Select>
           </FormControl>
           <TextField
