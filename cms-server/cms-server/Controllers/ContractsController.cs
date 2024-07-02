@@ -170,7 +170,10 @@ namespace cms_server.Controllers
 
             return contracts;
         }
+
+        
     }
+
 
     public class ContractDto
     {

@@ -19,7 +19,7 @@ public partial class Deceased
 
     public int? CustomerId { get; set; }
 
-    public int? DeathCertificateNumber { get; set; }
+    public string? DeathCertificateNumber { get; set; }
 
     public string? DeathCertificateSupplier { get; set; }
 

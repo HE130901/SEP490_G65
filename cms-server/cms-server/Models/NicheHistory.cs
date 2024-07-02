@@ -19,6 +19,8 @@ public partial class NicheHistory
 
     public DateOnly? EndDate { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Contract? Contract { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;
