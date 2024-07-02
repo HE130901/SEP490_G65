@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/utils/formatCurrency";
 import { useCart } from "@/context/CartContext";
-import { CartButton } from "@/components/service-order/CartButton";
 import { toast } from "sonner";
 import { Toaster } from "../ui/sonner";
 import {
@@ -17,6 +16,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import PaginationControls from "./PaginationControls";
+import { CartButton } from "./CartButton";
 
 interface ProductListProps {
   products: any[];
@@ -54,9 +54,18 @@ export default function ProductList({ products }: ProductListProps) {
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
   const handleAddToCart = (product, event) => {
-    addToCart({ ...product, quantity: 1 });
-    setAddedProductId(product.id);
-    toast.success(`${product.name} đã được thêm vào giỏ hàng`);
+    const item = {
+      id: product.serviceId,
+      name: product.serviceName,
+      price: product.price,
+      image: product.servicePicture.startsWith("http")
+        ? product.servicePicture
+        : "default-image-url",
+      quantity: 1,
+    };
+    addToCart(item);
+    setAddedProductId(product.serviceId);
+    toast.success(`${product.serviceName} đã được thêm vào giỏ hàng`);
 
     const imgToFly = event.target.closest(".product-card").querySelector("img");
     const imgClone = imgToFly.cloneNode(true);
@@ -155,17 +164,21 @@ export default function ProductList({ products }: ProductListProps) {
         {paginatedProducts.length > 0 ? (
           paginatedProducts.map((product) => (
             <div
-              key={product.id}
+              key={product.serviceId}
               className={`product-card bg-white dark:bg-gray-950 rounded-lg shadow-sm overflow-hidden ${
                 viewMode === "list" ? "flex items-center gap-4" : ""
               }`}
             >
               <Link href="#" className="block" prefetch={false}>
                 <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={400}
-                  height={300}
+                  src={
+                    product.servicePicture.startsWith("http")
+                      ? product.servicePicture
+                      : "/default-image-url.jpg"
+                  }
+                  alt={product.serviceName}
+                  width={160}
+                  height={120}
                   className={`w-full ${
                     viewMode === "list"
                       ? "h-24 object-cover"
@@ -174,7 +187,9 @@ export default function ProductList({ products }: ProductListProps) {
                 />
               </Link>
               <div className="p-4 flex-1">
-                <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
+                <h3 className="text-lg font-semibold mb-1">
+                  {product.serviceName}
+                </h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
                   {product.category}
                 </p>
@@ -186,7 +201,9 @@ export default function ProductList({ products }: ProductListProps) {
                     size="sm"
                     onClick={(event) => handleAddToCart(product, event)}
                     className={`${
-                      addedProductId === product.id ? "animate-bounce" : ""
+                      addedProductId === product.serviceId
+                        ? "animate-bounce"
+                        : ""
                     }`}
                   >
                     Thêm vào giỏ

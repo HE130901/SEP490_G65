@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
 import { toast } from "sonner";
 import {
@@ -50,13 +50,17 @@ export type VisitRegistration = {
 };
 
 // RegistrationList component
-export default function RegistrationList({
+export default function VisitRegistrationList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { visitRegistrations, fetchVisitRegistrations, user } =
-    useStateContext();
+  const {
+    visitRegistrations,
+    setVisitRegistrations,
+    fetchVisitRegistrations,
+    user,
+  } = useStateContext();
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]); // Default sort
@@ -95,7 +99,11 @@ export default function RegistrationList({
     try {
       await VisitRegistrationAPI.delete(deleteRecord.visitId);
       toast.success("Xóa đơn đăng ký thành công!");
-      fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
+      setVisitRegistrations((prev) =>
+        prev.filter(
+          (registration) => registration.visitId !== deleteRecord.visitId
+        )
+      );
       setDeleteRecord(null); // Close the modal
     } catch (error) {
       console.error("Error deleting visit registration:", error);
@@ -209,7 +217,7 @@ export default function RegistrationList({
       cell: ({ row }) => (
         <Badge
           variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
+            row.getValue("status") === "Đang chờ duyệt" ? "outline" : "green"
           }
         >
           {row.getValue("status")}
@@ -279,7 +287,7 @@ export default function RegistrationList({
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Đơn đăng ký dịch vụ</h2>
+        <h2 className="text-2xl font-bold text-center">Đơn đăng ký viếng</h2>
         <Input
           placeholder="Tìm kiếm..."
           value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
@@ -332,7 +340,7 @@ export default function RegistrationList({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Bạn chưa có đơn đặt chỗ nào.
+                  Bạn chưa có đơn đăng ký viếng.
                 </TableCell>
               </TableRow>
             )}
@@ -416,7 +424,7 @@ function EditModal({ record, onSave, onClose }: EditModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn Đặt Chỗ</h2>
+        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn đăng ký viếng</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block mb-2 font-medium">Ngày Hẹn</label>

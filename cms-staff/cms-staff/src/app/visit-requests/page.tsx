@@ -19,6 +19,7 @@ import {
   InputLabel,
   TableSortLabel,
   Chip,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -28,14 +29,23 @@ import {
 } from "@mui/icons-material";
 import VisitRequestAPI from "@/services/visitRequestService";
 import { useToast } from "@/components/ui/use-toast";
+import AddVisitRequestDialog from "./AddVisitRequestDialog";
+import ViewVisitRequestDialog from "./ViewVisitRequestDialog";
+import EditVisitRequestDialog from "./EditVisitRequestDialog";
+import DeleteVisitRequestDialog from "./DeleteVisitRequestDialog";
 
 const VisitRequestPage = () => {
   const [visitRequests, setVisitRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("note");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("visitId");
   const { toast } = useToast();
+  const [selectedVisitRequest, setSelectedVisitRequest] = useState(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchVisitRequests = async () => {
@@ -55,19 +65,47 @@ const VisitRequestPage = () => {
   }, [toast]);
 
   const handleAddVisitRequest = () => {
-    alert("Thêm mới đơn đăng ký viếng thăm");
+    setAddDialogOpen(true);
   };
 
-  const handleViewVisitRequest = (id) => {
-    alert(`Xem chi tiết đơn đăng ký viếng thăm với ID: ${id}`);
+  const handleViewVisitRequest = (visitRequest) => {
+    setSelectedVisitRequest(visitRequest);
+    setViewDialogOpen(true);
   };
 
-  const handleEditVisitRequest = (id) => {
-    alert(`Sửa đơn đăng ký viếng thăm với ID: ${id}`);
+  const handleEditVisitRequest = (visitRequest) => {
+    setSelectedVisitRequest(visitRequest);
+    setEditDialogOpen(true);
   };
 
-  const handleDeleteVisitRequest = (id) => {
-    alert(`Xóa đơn đăng ký viếng thăm với ID: ${id}`);
+  const handleDeleteVisitRequest = (visitRequest) => {
+    setSelectedVisitRequest(visitRequest);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleAddDialogClose = () => {
+    setAddDialogOpen(false);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedVisitRequest(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedVisitRequest(null);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setSelectedVisitRequest(null);
+  };
+
+  const handleDeleteConfirmed = () => {
+    // Add delete logic here
+    setDeleteDialogOpen(false);
+    setSelectedVisitRequest(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -106,7 +144,20 @@ const VisitRequestPage = () => {
   });
 
   const filteredVisitRequests = sortedVisitRequests.filter((visitRequest) => {
-    if (searchColumn === "note") {
+    if (searchColumn === "all") {
+      return (
+        visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        visitRequest.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        visitRequest.visitId
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        visitRequest.nicheId
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    } else if (searchColumn === "note") {
       return visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "status") {
       return visitRequest.status
@@ -143,6 +194,7 @@ const VisitRequestPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
+              <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="note">Ghi chú</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
@@ -159,7 +211,7 @@ const VisitRequestPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "visitId"}
                   direction={orderBy === "visitId" ? order : "asc"}
@@ -168,7 +220,7 @@ const VisitRequestPage = () => {
                   STT
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "visitId"}
                   direction={orderBy === "visitId" ? order : "asc"}
@@ -177,7 +229,7 @@ const VisitRequestPage = () => {
                   Mã đơn
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "nicheId"}
                   direction={orderBy === "nicheId" ? order : "asc"}
@@ -186,7 +238,7 @@ const VisitRequestPage = () => {
                   Mã ô chứa
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "createdDate"}
                   direction={orderBy === "createdDate" ? order : "asc"}
@@ -195,7 +247,7 @@ const VisitRequestPage = () => {
                   Ngày tạo
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "visitDate"}
                   direction={orderBy === "visitDate" ? order : "asc"}
@@ -204,7 +256,7 @@ const VisitRequestPage = () => {
                   Ngày viếng thăm
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "status"}
                   direction={orderBy === "status" ? order : "asc"}
@@ -213,23 +265,24 @@ const VisitRequestPage = () => {
                   Trạng thái
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Ghi chú</TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center">Địa chỉ</TableCell>
+              <TableCell align="center">Ghi chú</TableCell>
+              <TableCell align="center">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredVisitRequests.map((visitRequest, index) => (
               <TableRow key={visitRequest.visitId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{visitRequest.visitId}</TableCell>
-                <TableCell>{visitRequest.nicheId}</TableCell>
-                <TableCell>
+                <TableCell align="center">{index + 1}</TableCell>
+                <TableCell align="center">{visitRequest.visitId}</TableCell>
+                <TableCell align="center">{visitRequest.nicheId}</TableCell>
+                <TableCell align="center">
                   {new Date(visitRequest.createdDate).toLocaleDateString()}
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   {new Date(visitRequest.visitDate).toLocaleDateString()}
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">
                   <Chip
                     label={
                       visitRequest.status === "Đang chờ duyệt"
@@ -247,25 +300,32 @@ const VisitRequestPage = () => {
                     }
                   />
                 </TableCell>
-                <TableCell>{visitRequest.note}</TableCell>
-                <TableCell>
+                <TableCell align="center">
+                  <Tooltip title={visitRequest.signAddress}>
+                    <span className="truncate">{visitRequest.signAddress}</span>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip title={visitRequest.note}>
+                    <span className="truncate">{visitRequest.note}</span>
+                  </Tooltip>
+                </TableCell>
+                <TableCell align="center">
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewVisitRequest(visitRequest.visitId)}
+                    onClick={() => handleViewVisitRequest(visitRequest)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditVisitRequest(visitRequest.visitId)}
+                    onClick={() => handleEditVisitRequest(visitRequest)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() =>
-                      handleDeleteVisitRequest(visitRequest.visitId)
-                    }
+                    onClick={() => handleDeleteVisitRequest(visitRequest)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -275,6 +335,26 @@ const VisitRequestPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddVisitRequestDialog
+        open={addDialogOpen}
+        onClose={handleAddDialogClose}
+      />
+      <ViewVisitRequestDialog
+        open={viewDialogOpen}
+        visitRequest={selectedVisitRequest}
+        onClose={handleViewDialogClose}
+      />
+      <EditVisitRequestDialog
+        open={editDialogOpen}
+        visitRequest={selectedVisitRequest}
+        onClose={handleEditDialogClose}
+      />
+      <DeleteVisitRequestDialog
+        open={deleteDialogOpen}
+        visitRequest={selectedVisitRequest}
+        onClose={handleDeleteDialogClose}
+        onDelete={handleDeleteConfirmed}
+      />
     </Box>
   );
 };

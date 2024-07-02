@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import axiosInstance from "@/utils/axiosInstance";
+import {
+  AccessTime as AccessTimeIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 
 const predefinedAddresses = [
   "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
@@ -20,40 +25,40 @@ const predefinedAddresses = [
   "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
 ];
 
-interface ExtendContractDialogProps {
+interface LiquidateContractDialogProps {
   isOpen: boolean;
   onClose: () => void;
   containerId: number | null;
 }
 
-export default function ExtendContractDialog({
+export default function LiquidateContractDialog({
   isOpen,
   onClose,
   containerId,
-}: ExtendContractDialogProps) {
+}: LiquidateContractDialogProps) {
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>(
     predefinedAddresses[0]
   );
   const [loading, setLoading] = useState(false);
 
-  const handleExtend = async () => {
+  const handleLiquidate = async () => {
     if (!appointmentDate || !selectedAddress) {
-      alert("Vui lòng chọn ngày hẹn và địa điểm ký hợp đồng.");
+      alert("Vui lòng chọn ngày hẹn và địa điểm thanh lý hợp đồng.");
       return;
     }
 
     try {
       setLoading(true);
-      await axiosInstance.post(`/api/Niches/${containerId}/extend`, {
+      await axiosInstance.post(`/api/Niches/${containerId}/liquidate`, {
         appointmentDate,
         signAddress: selectedAddress,
       });
-      alert("Hợp đồng đã được gia hạn.");
+      alert("Hợp đồng đã được thanh lý.");
       onClose();
     } catch (err) {
-      console.error("Error extending contract:", err);
-      alert("Không thể gia hạn hợp đồng.");
+      console.error("Error liquidating contract:", err);
+      alert("Không thể thanh lý hợp đồng.");
     } finally {
       setLoading(false);
     }
@@ -61,22 +66,13 @@ export default function ExtendContractDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="">
         <DialogHeader>
-          <DialogTitle>Gia hạn hợp đồng</DialogTitle>
+          <DialogTitle>Thanh lý hợp đồng</DialogTitle>
         </DialogHeader>
         <Separator />
         <div className="grid gap-6 p-6">
           <div className="grid gap-4">
-            <div className="grid gap-1">
-              <p className="text-sm font-medium">Ngày hẹn ký gia hạn</p>
-              <Input
-                type="date"
-                value={appointmentDate}
-                onChange={(e) => setAppointmentDate(e.target.value)}
-                placeholder="Chọn ngày"
-              />
-            </div>
             <div className="grid gap-1">
               <p className="text-sm font-medium">Địa điểm ký hợp đồng</p>
               <RadioGroup
@@ -97,14 +93,28 @@ export default function ExtendContractDialog({
                 ))}
               </RadioGroup>
             </div>
+            <div className="grid gap-1">
+              <p className="text-sm font-medium">Ngày hẹn thanh lý</p>
+              <Input
+                type="date"
+                value={appointmentDate}
+                onChange={(e) => setAppointmentDate(e.target.value)}
+                placeholder="Chọn ngày"
+                className="w-36"
+              />
+            </div>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Hủy
           </Button>
-          <Button variant="primary" onClick={handleExtend} disabled={loading}>
-            Gia hạn
+          <Button
+            variant="destructive"
+            onClick={handleLiquidate}
+            disabled={loading}
+          >
+            <DeleteIcon></DeleteIcon>Thanh lý
           </Button>
         </DialogFooter>
       </DialogContent>

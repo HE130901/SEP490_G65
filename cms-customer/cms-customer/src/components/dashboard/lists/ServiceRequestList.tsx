@@ -26,7 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
 import { toast } from "sonner";
 import {
@@ -49,8 +49,8 @@ export type VisitRegistration = {
   note: string;
 };
 
-// BookingRequest component
-export default function BookingRequestList({
+// RegistrationList component
+export default function RegistrationList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;
@@ -279,7 +279,7 @@ export default function BookingRequestList({
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Đơn đặt ô chứa</h2>
+        <h2 className="text-2xl font-bold">Đơn đăng ký dịch vụ</h2>
         <Input
           placeholder="Tìm kiếm..."
           value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}

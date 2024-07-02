@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Edit, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,8 +26,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useStateContext } from "@/context/state-context";
-import VisitRegistrationAPI from "@/services/visitService";
+import { useStateContext } from "@/context/StateContext";
+import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -37,26 +37,29 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-// Define your VisitRegistration type
-export type VisitRegistration = {
-  visitId: number;
-  customerId: number;
+// Define your NicheReservation type
+export type NicheReservation = {
+  reservationId: number;
   nicheId: number;
   createdDate: string;
-  visitDate: string;
+  confirmationDate: string;
   status: string;
-  accompanyingPeople: number;
+  signAddress: string;
+  phoneNumber: string;
   note: string;
+  name: string;
 };
 
-// ContractRenewalList component
-export default function ContractRenewalList({
+// BookingRequest component
+export default function BookingRequestList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { visitRegistrations, fetchVisitRegistrations, user } =
-    useStateContext();
+  const { user } = useStateContext();
+  const [nicheReservations, setNicheReservations] = useState<
+    NicheReservation[]
+  >([]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]); // Default sort
@@ -68,24 +71,41 @@ export default function ContractRenewalList({
     pageSize: 5, // Show custom records per page
   });
 
-  const [editingRecord, setEditingRecord] = useState<VisitRegistration | null>(
+  const [editingRecord, setEditingRecord] = useState<NicheReservation | null>(
     null
   );
-  const [deleteRecord, setDeleteRecord] = useState<VisitRegistration | null>(
+  const [deleteRecord, setDeleteRecord] = useState<NicheReservation | null>(
     null
   );
 
   useEffect(() => {
-    if (user && user.customerId) {
-      fetchVisitRegistrations(user.customerId);
+    if (user && user.phone) {
+      fetchNicheReservations(user.phone);
     }
-  }, [user, fetchVisitRegistrations, reFetchTrigger]);
+  }, [user, reFetchTrigger]);
 
-  const handleEdit = (record: VisitRegistration) => {
+  const fetchNicheReservations = async (phoneNumber: string) => {
+    try {
+      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
+      setNicheReservations(response.data.$values);
+    } catch (error) {
+      console.error("Error fetching niche reservations:", error);
+    }
+  };
+
+  const handleEdit = (record: NicheReservation) => {
+    if (record.status === "Approved" || record.status === "Canceled") {
+      toast.error("Không thể sửa đơn đặt chỗ đã được duyệt hoặc hủy");
+      return;
+    }
     setEditingRecord(record);
   };
 
-  const handleDeleteConfirmation = (record: VisitRegistration) => {
+  const handleDeleteConfirmation = (record: NicheReservation) => {
+    if (record.status === "Approved" || record.status === "Canceled") {
+      toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
+      return;
+    }
     setDeleteRecord(record);
   };
 
@@ -93,39 +113,54 @@ export default function ContractRenewalList({
     if (!deleteRecord) return;
 
     try {
-      await VisitRegistrationAPI.delete(deleteRecord.visitId);
-      toast.success("Xóa đơn đăng ký thành công!");
-      fetchVisitRegistrations(user.customerId); // Refetch the data after deletion
+      await NicheReservationAPI.delete(deleteRecord.reservationId);
+      toast.success("Hủy đơn đặt chỗ thành công!");
+      setNicheReservations((prev) =>
+        prev.map((reservation) =>
+          reservation.reservationId === deleteRecord.reservationId
+            ? { ...reservation, status: "Canceled" }
+            : reservation
+        )
+      );
       setDeleteRecord(null); // Close the modal
     } catch (error) {
-      console.error("Error deleting visit registration:", error);
-      toast.error("Không thể xóa đơn đặt chỗ.");
+      console.error("Error canceling niche reservation:", error);
+      toast.error("Không thể hủy đơn đặt chỗ.");
     }
   };
 
-  const handleSave = async (updatedRecord: VisitRegistration) => {
+  const handleSave = async (updatedRecord: NicheReservation) => {
     try {
-      if (!updatedRecord.visitId) {
-        console.error("Invalid visitId:", updatedRecord.visitId);
+      if (!updatedRecord.reservationId) {
+        console.error("Invalid reservationId:", updatedRecord.reservationId);
         return;
       }
       const dataToUpdate = {
-        visitDate: updatedRecord.visitDate,
+        reservationId: updatedRecord.reservationId,
+        nicheId: updatedRecord.nicheId,
+        name: updatedRecord.name,
+        confirmationDate: new Date(
+          updatedRecord.confirmationDate
+        ).toISOString(),
         note: updatedRecord.note,
-        accompanyingPeople: updatedRecord.accompanyingPeople,
+        signAddress: updatedRecord.signAddress,
+        phoneNumber: updatedRecord.phoneNumber,
       };
-      await VisitRegistrationAPI.update(updatedRecord.visitId, dataToUpdate);
-      toast.success("Cập nhật đơn đăng ký thành công!");
+      await NicheReservationAPI.update(
+        updatedRecord.reservationId,
+        dataToUpdate
+      );
+      toast.success("Cập nhật đơn đặt chỗ thành công!");
       setEditingRecord(null);
-      fetchVisitRegistrations(user.customerId); // Refetch the data after updating
+      fetchNicheReservations(user.phone); // Refetch the data after updating
     } catch (error) {
-      console.error("Error updating visit registration:", error);
+      console.error("Error updating niche reservation:", error);
       toast.error("Không thể cập nhật đơn đặt chỗ.");
     }
   };
 
   // Column definitions with inline handleEdit and handleDelete functions
-  const columns: ColumnDef<VisitRegistration>[] = [
+  const columns: ColumnDef<NicheReservation>[] = [
     {
       id: "stt", // Add an ID for the STT column
       header: ({ column }) => (
@@ -140,7 +175,7 @@ export default function ContractRenewalList({
       cell: ({ row }) => row.index + 1, // Calculate the row index + 1 for display
     },
     {
-      accessorKey: "visitId",
+      accessorKey: "reservationId",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -150,7 +185,7 @@ export default function ContractRenewalList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("visitId")}</div>,
+      cell: ({ row }) => <div>{row.getValue("reservationId")}</div>,
     },
     {
       accessorKey: "nicheId",
@@ -177,22 +212,26 @@ export default function ContractRenewalList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("createdDate")).toLocaleString()}</div>
+        <div>
+          {new Date(row.getValue("createdDate")).toLocaleString("vi-VN")}
+        </div>
       ),
     },
     {
-      accessorKey: "visitDate",
+      accessorKey: "confirmationDate",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Ngày Hẹn
+          Ngày Xác Nhận
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("visitDate")).toLocaleString()}</div>
+        <div>
+          {new Date(row.getValue("confirmationDate")).toLocaleString("vi-VN")}
+        </div>
       ),
     },
     {
@@ -209,7 +248,11 @@ export default function ContractRenewalList({
       cell: ({ row }) => (
         <Badge
           variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
+            row.getValue("status") === "Pending"
+              ? "gray"
+              : row.getValue("status") === "Approved"
+              ? "green"
+              : "red"
           }
         >
           {row.getValue("status")}
@@ -233,20 +276,28 @@ export default function ContractRenewalList({
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => (
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 justify-center">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleEdit(row.original)}
+            disabled={
+              row.original.status === "Approved" ||
+              row.original.status === "Canceled"
+            }
           >
-            Sửa
+            <Edit className="h-4 w-4" />
           </Button>
           <Button
             variant="destructive"
             size="sm"
             onClick={() => handleDeleteConfirmation(row.original)}
+            disabled={
+              row.original.status === "Approved" ||
+              row.original.status === "Canceled"
+            }
           >
-            Xóa
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       ),
@@ -254,7 +305,7 @@ export default function ContractRenewalList({
   ];
 
   const table = useReactTable({
-    data: visitRegistrations,
+    data: nicheReservations,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -273,13 +324,13 @@ export default function ContractRenewalList({
     },
     onPaginationChange: setPagination,
     manualPagination: false, // Use automatic pagination
-    pageCount: Math.ceil(visitRegistrations.length / pagination.pageSize),
+    pageCount: Math.ceil(nicheReservations.length / pagination.pageSize),
   });
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Đơn đăng ký gia hạn hợp đồng</h2>
+        <h2 className="text-2xl font-bold">Đơn đặt ô chứa</h2>
         <Input
           placeholder="Tìm kiếm..."
           value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
@@ -296,7 +347,7 @@ export default function ContractRenewalList({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -317,7 +368,7 @@ export default function ContractRenewalList({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="text-center">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -377,15 +428,15 @@ export default function ContractRenewalList({
         <Dialog open={true} onOpenChange={() => setDeleteRecord(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Xác nhận xóa</DialogTitle>
+              <DialogTitle>Xác nhận hủy</DialogTitle>
             </DialogHeader>
-            <p>Bạn có chắc chắn muốn xóa đơn đăng ký này không?</p>
+            <p>Bạn có chắc chắn muốn hủy đơn đăng ký này không?</p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteRecord(null)}>
                 Hủy
               </Button>
               <Button variant="destructive" onClick={handleDelete}>
-                Xóa
+                Hủy
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -396,15 +447,15 @@ export default function ContractRenewalList({
 }
 
 type EditModalProps = {
-  record: VisitRegistration;
-  onSave: (updatedRecord: VisitRegistration) => void;
+  record: NicheReservation;
+  onSave: (updatedRecord: NicheReservation) => void;
   onClose: () => void;
 };
 
 function EditModal({ record, onSave, onClose }: EditModalProps) {
   const [updatedRecord, setUpdatedRecord] = useState(record);
 
-  const handleChange = (field: keyof VisitRegistration, value: any) => {
+  const handleChange = (field: keyof NicheReservation, value: any) => {
     setUpdatedRecord({ ...updatedRecord, [field]: value });
   };
 
@@ -419,26 +470,24 @@ function EditModal({ record, onSave, onClose }: EditModalProps) {
         <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn Đặt Chỗ</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Ngày Hẹn</label>
+            <label className="block mb-2 font-medium">Ngày Xác Nhận</label>
             <input
               type="datetime-local"
-              value={new Date(updatedRecord.visitDate)
+              value={new Date(updatedRecord.confirmationDate)
                 .toISOString()
                 .slice(0, 16)}
               onChange={(e) =>
-                handleChange("visitDate", new Date(e.target.value))
+                handleChange("confirmationDate", new Date(e.target.value))
               }
               className="w-full p-2 border rounded"
             />
           </div>
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Số Người Đi Cùng</label>
+            <label className="block mb-2 font-medium">Địa Chỉ Ký</label>
             <input
-              type="number"
-              value={updatedRecord.accompanyingPeople}
-              onChange={(e) =>
-                handleChange("accompanyingPeople", parseInt(e.target.value))
-              }
+              type="text"
+              value={updatedRecord.signAddress}
+              onChange={(e) => handleChange("signAddress", e.target.value)}
               className="w-full p-2 border rounded"
             />
           </div>

@@ -14,30 +14,39 @@ import {
 
 const ServiceDetail = ({ service, onClose, open }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết dịch vụ</DialogTitle>
       <DialogContent dividers>
         {service ? (
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={5}>
               <Avatar
                 src={service.servicePicture}
                 alt={service.serviceName}
+                variant="rounded"
                 style={{ width: "100%", height: "auto" }}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="h6">Tên: {service.serviceName}</Typography>
-              <Typography variant="body1">
-                Mô tả: {service.description}
+            <Grid item xs={12} sm={7}>
+              <Typography variant="h5" gutterBottom>
+                {service.serviceName}
               </Typography>
-              <Typography variant="body1">
+              <Typography
+                variant="subtitle1"
+                color="textSecondary"
+                gutterBottom
+              >
+                {service.description}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
                 Giá: {service.price.toLocaleString()} VND
               </Typography>
-              <Typography variant="body1">
+              <Typography variant="body1" gutterBottom>
                 Phân loại: {service.category}
               </Typography>
-              <Typography variant="body1">Thẻ: {service.tag}</Typography>
+              <Typography variant="body1" gutterBottom>
+                Thẻ: {service.tag}
+              </Typography>
             </Grid>
           </Grid>
         ) : (

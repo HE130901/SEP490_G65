@@ -133,12 +133,25 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
-  const fetchReservations = async (customerId: number) => {
+  const fetchReservations = async (phoneNumber: string) => {
     try {
-      const response = await NicheReservationAPI.getByCustomerId(customerId);
+      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
       setReservations(response.data.$values);
     } catch (error) {
       console.error("[StateProvider] Error fetching reservations:", error);
+    }
+  };
+
+  const createReservation = async (data: any) => {
+    try {
+      const response = await NicheReservationAPI.createReservation(data);
+      setReservations((prevReservations) => [
+        ...prevReservations,
+        response.data,
+      ]);
+      sonnerToast.success("Reservation created successfully!");
+    } catch (error) {
+      sonnerToast.error("Failed to create reservation.");
     }
   };
 
@@ -238,6 +251,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         fetchBuildingsData,
         fetchNiches,
         fetchReservations,
+        createReservation,
         deleteReservation,
         fetchVisitRegistrations,
         deleteVisitRegistration,

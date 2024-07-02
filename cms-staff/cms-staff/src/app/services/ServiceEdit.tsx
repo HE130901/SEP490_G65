@@ -1,3 +1,4 @@
+// components/ServiceEdit.tsx
 "use client";
 
 import React from "react";
@@ -15,10 +16,14 @@ import ServiceAPI from "@/services/serviceService";
 import { useToast } from "@/components/ui/use-toast";
 
 const ServiceEdit = ({ service, onClose, onSave, open }) => {
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     defaultValues: service,
   });
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    reset(service);
+  }, [service, reset]);
 
   const onSubmit = async (data) => {
     try {
@@ -31,6 +36,7 @@ const ServiceEdit = ({ service, onClose, onSave, open }) => {
       onSave({ ...service, ...data });
       onClose();
     } catch (error) {
+      console.error("Error updating service:", error);
       toast({
         variant: "destructive",
         title: "Lỗi",

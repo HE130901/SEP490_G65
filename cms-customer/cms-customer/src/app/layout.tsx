@@ -1,6 +1,6 @@
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
-import { StateProvider } from "@/context/state-context";
+import { StateProvider } from "@/context/StateContext";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";

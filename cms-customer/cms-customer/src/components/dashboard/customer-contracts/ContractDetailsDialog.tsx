@@ -12,7 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import axiosInstance from "@/utils/axiosInstance";
-import ExtendContractDialog from "./ExtendContractDialog"; // Import the new dialog
+import ExtendContractDialog from "./ExtendContractDialog";
+import LiquidateContractDialog from "./LiquidateContractDialog";
+import { useRouter } from "next/navigation";
+import {
+  AccessTime as AccessTimeIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
+import Tooltip from "@mui/material/Tooltip";
+import HistorySharpIcon from "@mui/icons-material/HistorySharp";
 
 export default function ContainerDetailsDialog({
   isOpen,
@@ -27,6 +36,8 @@ export default function ContainerDetailsDialog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
+  const [isLiquidateDialogOpen, setLiquidateDialogOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchContainerDetails = async () => {
@@ -116,22 +127,41 @@ export default function ContainerDetailsDialog({
             </div>
           </div>
         )}
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Đóng
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => setExtendDialogOpen(true)}
-            disabled={loading}
-          >
-            Gia hạn hợp đồng
-          </Button>
+        <DialogFooter className="flex justify-center space-x-2">
+          <Tooltip title="Gia hạn hợp đồng">
+            <Button
+              onClick={() => {
+                setExtendDialogOpen(true);
+                onClose();
+              }}
+              disabled={loading}
+              variant="green"
+            >
+              <HistorySharpIcon /> Gia hạn
+            </Button>
+          </Tooltip>
+          <Tooltip title="Thanh lý hợp đồng">
+            <Button
+              onClick={() => {
+                setLiquidateDialogOpen(true);
+                onClose();
+              }}
+              disabled={loading}
+              variant="destructive"
+            >
+              <DeleteIcon /> Thanh lý
+            </Button>
+          </Tooltip>
         </DialogFooter>
       </DialogContent>
       <ExtendContractDialog
         isOpen={isExtendDialogOpen}
         onClose={() => setExtendDialogOpen(false)}
+        containerId={containerId}
+      />
+      <LiquidateContractDialog
+        isOpen={isLiquidateDialogOpen}
+        onClose={() => setLiquidateDialogOpen(false)}
         containerId={containerId}
       />
     </Dialog>

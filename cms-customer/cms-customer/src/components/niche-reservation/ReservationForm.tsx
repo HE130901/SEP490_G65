@@ -1,15 +1,15 @@
-// src/components/niche-reservation/ReservationForm.tsx
+"use client";
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import axios from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMediaQuery } from "react-responsive";
+import NicheReservationAPI from "@/services/nicheReservationService";
 
 const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
 
@@ -49,6 +49,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
     selectedArea,
     selectedNiche,
     fetchNiches,
+    user,
   } = useStateContext();
   const [selectedAddress, setSelectedAddress] = useState(
     predefinedAddresses[0]
@@ -68,7 +69,11 @@ const ReservationForm = ({ isVisible, onClose }) => {
   useEffect(() => {
     setValue("contractDate", new Date().toISOString().slice(0, 10));
     setValue("signAddress", selectedAddress);
-  }, [setValue, selectedAddress]);
+    if (user) {
+      setValue("name", user.fullName);
+      setValue("phoneNumber", user.phone);
+    }
+  }, [setValue, selectedAddress, user]);
 
   const onSubmit = async (data) => {
     const contractDate = data.contractDate + "T23:59:00";
@@ -80,10 +85,13 @@ const ReservationForm = ({ isVisible, onClose }) => {
       signAddress: selectedAddress,
       phoneNumber: data.phoneNumber,
       note: data.note,
+      isCustomer: !!user, // Check if the user is a customer
     };
 
     try {
-      const response = await axios.post("/api/NicheReservations", dataToSubmit);
+      const response = await NicheReservationAPI.createReservation(
+        dataToSubmit
+      );
       toast.success("Đặt ô chứa thành công!");
       fetchNiches(); // Call fetchNiches after successful submission
       onClose();
@@ -127,6 +135,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
               {...register("name")}
               className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
+              readOnly={!!user}
             />
             {errors.name && (
               <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
@@ -141,6 +150,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
               {...register("phoneNumber")}
               className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               required
+              readOnly={!!user}
             />
             {errors.phoneNumber && (
               <p className="mt-2 text-sm text-red-600">

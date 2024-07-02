@@ -20,13 +20,13 @@ import {
   TableSortLabel,
 } from "@mui/material";
 import {
-  Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import CustomerAPI from "@/services/customerService";
 import { useToast } from "@/components/ui/use-toast";
+import CustomerViewDialog from "./CustomerViewDialog";
+import CustomerEditDialog from "./CustomerEditDialog";
 
 const CustomerPage = () => {
   const [customers, setCustomers] = useState([]);
@@ -34,6 +34,9 @@ const CustomerPage = () => {
   const [searchColumn, setSearchColumn] = useState("fullName");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("customerId");
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,20 +56,24 @@ const CustomerPage = () => {
     fetchCustomers();
   }, [toast]);
 
-  const handleAddCustomer = () => {
-    alert("Thêm mới khách hàng");
+  const handleViewCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setViewDialogOpen(true);
   };
 
-  const handleViewCustomer = (id) => {
-    alert(`Xem chi tiết khách hàng với ID: ${id}`);
+  const handleEditCustomer = (customer) => {
+    setSelectedCustomer(customer);
+    setEditDialogOpen(true);
   };
 
-  const handleEditCustomer = (id) => {
-    alert(`Sửa khách hàng với ID: ${id}`);
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedCustomer(null);
   };
 
-  const handleDeleteCustomer = (id) => {
-    alert(`Xóa khách hàng với ID: ${id}`);
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedCustomer(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -81,21 +88,29 @@ const CustomerPage = () => {
 
   const sortedCustomers = customers.sort((a, b) => {
     if (orderBy === "fullName") {
-      if (order === "asc") {
-        return a.fullName.localeCompare(b.fullName);
-      } else {
-        return b.fullName.localeCompare(a.fullName);
-      }
+      return order === "asc"
+        ? a.fullName.localeCompare(b.fullName)
+        : b.fullName.localeCompare(a.fullName);
     } else if (orderBy === "customerId") {
       return order === "asc"
         ? a.customerId - b.customerId
         : b.customerId - a.customerId;
     } else if (orderBy === "phone") {
-      if (order === "asc") {
-        return a.phone.localeCompare(b.phone);
-      } else {
-        return b.phone.localeCompare(a.phone);
-      }
+      return order === "asc"
+        ? a.phone.localeCompare(b.phone)
+        : b.phone.localeCompare(a.phone);
+    } else if (orderBy === "email") {
+      return order === "asc"
+        ? a.email.localeCompare(b.email)
+        : b.email.localeCompare(a.email);
+    } else if (orderBy === "address") {
+      return order === "asc"
+        ? a.address.localeCompare(b.address)
+        : b.address.localeCompare(a.address);
+    } else if (orderBy === "citizenId") {
+      return order === "asc"
+        ? a.citizenId.localeCompare(b.citizenId)
+        : b.citizenId.localeCompare(a.citizenId);
     }
     return 0;
   });
@@ -107,6 +122,14 @@ const CustomerPage = () => {
       return customer.customerId.toString().includes(searchTerm);
     } else if (searchColumn === "phone") {
       return customer.phone.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "email") {
+      return customer.email.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "address") {
+      return customer.address.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "citizenId") {
+      return customer.citizenId
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     }
     return true;
   });
@@ -119,15 +142,7 @@ const CustomerPage = () => {
         alignItems="center"
         mb={2}
       >
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleAddCustomer}
-        >
-          Thêm mới khách hàng
-        </Button>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" ml="auto">
           <FormControl
             variant="outlined"
             sx={{ minWidth: 120, marginRight: 2 }}
@@ -141,6 +156,9 @@ const CustomerPage = () => {
               <MenuItem value="fullName">Tên khách hàng</MenuItem>
               <MenuItem value="customerId">Mã khách hàng</MenuItem>
               <MenuItem value="phone">Số điện thoại</MenuItem>
+              <MenuItem value="email">Email</MenuItem>
+              <MenuItem value="address">Địa chỉ</MenuItem>
+              <MenuItem value="citizenId">CCCD</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -155,7 +173,7 @@ const CustomerPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "customerId"}
                   direction={orderBy === "customerId" ? order : "asc"}
@@ -164,7 +182,7 @@ const CustomerPage = () => {
                   Mã Khách hàng
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "fullName"}
                   direction={orderBy === "fullName" ? order : "asc"}
@@ -173,7 +191,7 @@ const CustomerPage = () => {
                   Tên Khách hàng
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "email"}
                   direction={orderBy === "email" ? order : "asc"}
@@ -182,7 +200,7 @@ const CustomerPage = () => {
                   Email
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "phone"}
                   direction={orderBy === "phone" ? order : "asc"}
@@ -191,7 +209,7 @@ const CustomerPage = () => {
                   Số điện thoại
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "address"}
                   direction={orderBy === "address" ? order : "asc"}
@@ -200,7 +218,7 @@ const CustomerPage = () => {
                   Địa chỉ
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "citizenId"}
                   direction={orderBy === "citizenId" ? order : "asc"}
@@ -209,36 +227,30 @@ const CustomerPage = () => {
                   CCCD
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredCustomers.map((customer, index) => (
+            {filteredCustomers.map((customer) => (
               <TableRow key={customer.customerId}>
-                <TableCell>{customer.customerId}</TableCell>
-                <TableCell>{customer.fullName}</TableCell>
-                <TableCell>{customer.email}</TableCell>
-                <TableCell>{customer.phone}</TableCell>
-                <TableCell>{customer.address}</TableCell>
-                <TableCell>{customer.citizenId}</TableCell>
-                <TableCell>
+                <TableCell align="center">{customer.customerId}</TableCell>
+                <TableCell align="center">{customer.fullName}</TableCell>
+                <TableCell align="center">{customer.email}</TableCell>
+                <TableCell align="center">{customer.phone}</TableCell>
+                <TableCell align="center">{customer.address}</TableCell>
+                <TableCell align="center">{customer.citizenId}</TableCell>
+                <TableCell align="center">
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewCustomer(customer.customerId)}
+                    onClick={() => handleViewCustomer(customer)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditCustomer(customer.customerId)}
+                    onClick={() => handleEditCustomer(customer)}
                   >
                     <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteCustomer(customer.customerId)}
-                  >
-                    <DeleteIcon />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -246,6 +258,16 @@ const CustomerPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <CustomerViewDialog
+        open={viewDialogOpen}
+        customer={selectedCustomer}
+        onClose={handleViewDialogClose}
+      />
+      <CustomerEditDialog
+        open={editDialogOpen}
+        customer={selectedCustomer}
+        onClose={handleEditDialogClose}
+      />
     </Box>
   );
 };

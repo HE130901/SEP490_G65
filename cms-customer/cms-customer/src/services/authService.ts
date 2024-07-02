@@ -2,7 +2,7 @@ import axiosInstance from "@/utils/axiosInstance";
 
 const AuthAPI = {
   getCurrentUser(token: string) {
-    return axiosInstance.get("/api/auth/me", {
+    return axiosInstance.get("/api/auth/get-current-user", {
       headers: { Authorization: `Bearer ${token}` },
     });
   },

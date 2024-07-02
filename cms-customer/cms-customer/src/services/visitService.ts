@@ -1,4 +1,4 @@
-// src/api/VisitRegistrationAPI.ts
+
 import axiosInstance from "@/utils/axiosInstance";
 
 const VisitRegistrationAPI = {

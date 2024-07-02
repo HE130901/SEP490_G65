@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Table,
@@ -22,134 +22,36 @@ import {
   Edit as EditIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-
-const buildings = [
-  {
-    id: 1,
-    name: "Tòa nhà A",
-    floors: [
-      {
-        id: 1,
-        name: "Tầng 1",
-        zones: [
-          {
-            id: 1,
-            name: "Khu 1",
-            niches: [
-              {
-                id: 1,
-                code: "N001",
-                customer: "Nguyễn Văn A",
-                phone: "0123456789",
-                deceased: "Nguyễn Văn B",
-                status: "Đang sử dụng",
-                history: "Hợp đồng 32323, 12323",
-              },
-              {
-                id: 2,
-                code: "N002",
-                customer: "",
-                phone: "",
-                deceased: "",
-                status: "Còn trống",
-                history: "Không có",
-              },
-              {
-                id: 3,
-                code: "N003",
-                customer: "ABCD",
-                phone: "0987654321",
-                deceased: "",
-                status: "Đang được đặt",
-                history: "Không có",
-              },
-              {
-                id: 4,
-                code: "N004",
-                customer: "Nguyễn Văn C",
-                phone: "0912345678",
-                deceased: "Nguyễn Văn D",
-                status: "Đã quá hạn HĐ",
-                history: "Hợp đồng 23233",
-              },
-            ],
-          },
-          {
-            id: 2,
-            name: "Khu 2",
-            niches: [
-              {
-                id: 5,
-                code: "N005",
-                customer: "Lê Văn E",
-                phone: "0987654321",
-                deceased: "Lê Thị F",
-                status: "Đang được đặt",
-                history: "Hợp đồng 12334",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "Tầng 2",
-        zones: [
-          {
-            id: 6,
-            name: "Khu 3",
-            niches: [
-              {
-                id: 7,
-                code: "N006",
-                customer: "",
-                phone: "",
-                deceased: "",
-                status: "Còn trống",
-                history: "Không có",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Tòa nhà B",
-    floors: [
-      {
-        id: 3,
-        name: "Tầng 1",
-        zones: [
-          {
-            id: 8,
-            name: "Khu 4",
-            niches: [
-              {
-                id: 9,
-                code: "N007",
-                customer: "Hoàng Văn J",
-                phone: "0234567891",
-                deceased: "Hoàng Thị K",
-                status: "Đang sử dụng",
-                history: "Hợp đồng 123321",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-];
+import buildingService from "@/services/buildingService";
+import NicheViewDialog from "./NicheViewDialog";
+import NicheEditDialog from "./NicheEditDialog";
 
 const NicheManagementPage = () => {
+  const [buildings, setBuildings] = useState([]);
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
   const [selectedZone, setSelectedZone] = useState("");
   const [niches, setNiches] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
+  const [selectedNiche, setSelectedNiche] = useState(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchBuildings = async () => {
+      try {
+        const response = await buildingService.getAllBuildingsFloorsAreas();
+        setBuildings(
+          response.data.buildings.$values || response.data.buildings || []
+        );
+      } catch (error) {
+        console.error("Error fetching buildings data:", error);
+      }
+    };
+
+    fetchBuildings();
+  }, []);
 
   const handleBuildingChange = (event) => {
     const buildingId = event.target.value;
@@ -166,22 +68,40 @@ const NicheManagementPage = () => {
     setNiches([]);
   };
 
-  const handleZoneChange = (event) => {
+  const handleZoneChange = async (event) => {
     const zoneId = event.target.value;
     setSelectedZone(zoneId);
 
-    const building = buildings.find((b) => b.id === parseInt(selectedBuilding));
-    const floor = building.floors.find((f) => f.id === parseInt(selectedFloor));
-    const zone = floor.zones.find((z) => z.id === parseInt(zoneId));
-    setNiches(zone.niches);
+    try {
+      const response = await buildingService.getNiches(
+        selectedBuilding,
+        selectedFloor,
+        zoneId
+      );
+      setNiches(response.data.$values || response.data); // Ensure proper data access
+    } catch (error) {
+      console.error("Error fetching niches data:", error);
+    }
   };
 
-  const handleViewNiche = (id) => {
-    alert(`Xem chi tiết ô chứa với ID: ${id}`);
+  const handleViewNiche = (niche) => {
+    setSelectedNiche(niche);
+    setViewDialogOpen(true);
   };
 
-  const handleEditNiche = (id) => {
-    alert(`Sửa ô chứa với ID: ${id}`);
+  const handleEditNiche = (niche) => {
+    setSelectedNiche(niche);
+    setEditDialogOpen(true);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedNiche(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedNiche(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -191,25 +111,31 @@ const NicheManagementPage = () => {
   const filteredNiches = niches.filter((niche) => {
     if (searchColumn === "all") {
       return (
-        niche.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.deceased.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.history.toLowerCase().includes(searchTerm.toLowerCase())
+        niche.nicheName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        "" ||
+        niche.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        "" ||
+        niche.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        "" ||
+        niche.deceased?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        "" ||
+        niche.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        "" ||
+        niche.history?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ""
       );
     } else if (searchColumn === "code") {
-      return niche.code.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.nicheName?.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "customer") {
-      return niche.customer.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.customer?.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "phone") {
-      return niche.phone.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.phone?.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "deceased") {
-      return niche.deceased.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.deceased?.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "status") {
-      return niche.status.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.status?.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "history") {
-      return niche.history.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.history?.toLowerCase().includes(searchTerm.toLowerCase());
     }
     return true;
   });
@@ -233,11 +159,15 @@ const NicheManagementPage = () => {
               onChange={handleBuildingChange}
               label="Tòa nhà"
             >
-              {buildings.map((building) => (
-                <MenuItem key={building.id} value={building.id}>
-                  {building.name}
-                </MenuItem>
-              ))}
+              {Array.isArray(buildings) &&
+                buildings.map((building) => (
+                  <MenuItem
+                    key={building.buildingId}
+                    value={building.buildingId}
+                  >
+                    {building.buildingName}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
           <FormControl
@@ -252,13 +182,15 @@ const NicheManagementPage = () => {
               label="Tầng"
             >
               {selectedBuilding &&
+                Array.isArray(buildings) &&
                 buildings
                   .find(
-                    (building) => building.id === parseInt(selectedBuilding)
+                    (building) =>
+                      building.buildingId === parseInt(selectedBuilding)
                   )
-                  .floors.map((floor) => (
-                    <MenuItem key={floor.id} value={floor.id}>
-                      {floor.name}
+                  ?.floors.$values?.map((floor) => (
+                    <MenuItem key={floor.floorId} value={floor.floorId}>
+                      {floor.floorName}
                     </MenuItem>
                   ))}
             </Select>
@@ -275,14 +207,18 @@ const NicheManagementPage = () => {
               label="Khu"
             >
               {selectedFloor &&
+                Array.isArray(buildings) &&
                 buildings
                   .find(
-                    (building) => building.id === parseInt(selectedBuilding)
+                    (building) =>
+                      building.buildingId === parseInt(selectedBuilding)
                   )
-                  .floors.find((floor) => floor.id === parseInt(selectedFloor))
-                  .zones.map((zone) => (
-                    <MenuItem key={zone.id} value={zone.id}>
-                      {zone.name}
+                  ?.floors.$values.find(
+                    (floor) => floor.floorId === parseInt(selectedFloor)
+                  )
+                  ?.areas.$values?.map((zone) => (
+                    <MenuItem key={zone.areaId} value={zone.areaId}>
+                      {zone.areaName}
                     </MenuItem>
                   ))}
             </Select>
@@ -332,9 +268,9 @@ const NicheManagementPage = () => {
           </TableHead>
           <TableBody>
             {filteredNiches.map((niche, index) => (
-              <TableRow key={niche.id}>
+              <TableRow key={niche.nicheId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{niche.code}</TableCell>
+                <TableCell>{niche.nicheName}</TableCell>
                 <TableCell>{niche.customer}</TableCell>
                 <TableCell>{niche.phone}</TableCell>
                 <TableCell>{niche.deceased}</TableCell>
@@ -364,13 +300,13 @@ const NicheManagementPage = () => {
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewNiche(niche.id)}
+                    onClick={() => handleViewNiche(niche)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditNiche(niche.id)}
+                    onClick={() => handleEditNiche(niche)}
                   >
                     <EditIcon />
                   </IconButton>
@@ -380,6 +316,16 @@ const NicheManagementPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <NicheViewDialog
+        open={viewDialogOpen}
+        niche={selectedNiche}
+        onClose={handleViewDialogClose}
+      />
+      <NicheEditDialog
+        open={editDialogOpen}
+        niche={selectedNiche}
+        onClose={handleEditDialogClose}
+      />
     </Box>
   );
 };
