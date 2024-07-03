@@ -1,7 +1,6 @@
-"use client";
+// src/components/VisitScheduleDialog.tsx
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Input } from "@/components/ui/input";
 import { useStateContext } from "@/context/StateContext";
+import { Button } from "@/components/ui/button";
 
 export default function VisitScheduleDialog({
   isOpen,
@@ -26,7 +26,7 @@ export default function VisitScheduleDialog({
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  selectedContainer: any; // Receive the selected container
+  selectedContainer: any;
 }) {
   const { user, fetchVisitRegistrations } = useStateContext();
   const [loading, setLoading] = useState(false);
@@ -42,29 +42,20 @@ export default function VisitScheduleDialog({
     const formData = new FormData(e.target as HTMLFormElement);
     const data = {
       customerId: user.customerId,
-      nicheId: selectedContainer.nicheId, // Use the selected container ID
+      nicheId: selectedContainer.nicheId,
       visitDate: selectedDate.toISOString(),
       note: formData.get("note"),
       accompanyingPeople: accompanyingPeople,
     };
 
-    console.log("[VisitScheduleDialog] Submitting visit schedule:", data);
-
     try {
       await axiosInstance.post("/api/VisitRegistrations", data);
-      console.log(
-        "[VisitScheduleDialog] Visit schedule submitted successfully"
-      );
       if (user && user.customerId) {
         await fetchVisitRegistrations(user.customerId);
-        console.log(
-          "[VisitScheduleDialog] Fetching updated visit registrations"
-        );
       }
       onSubmit();
       onClose();
     } catch (err) {
-      console.error("[VisitScheduleDialog] Error registering visit:", err);
       setError("Đăng ký lịch viếng thất bại.");
     } finally {
       setLoading(false);
@@ -73,7 +64,7 @@ export default function VisitScheduleDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
           <DialogDescription>

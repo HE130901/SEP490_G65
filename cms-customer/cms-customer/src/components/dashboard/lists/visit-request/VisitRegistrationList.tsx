@@ -4,17 +4,15 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
-  VisibilityState,
-  flexRender,
+  useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  getFilteredRowModel,
+  flexRender,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { Eye, Edit, Trash, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,16 +24,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import EditModal from "./EditModal";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import DetailViewDialog from "./DetailViewDialog";
 
 // Define your VisitRegistration type
 export type VisitRegistration = {
@@ -64,9 +64,8 @@ export default function VisitRegistrationList({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]); // Default sort
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState(visitRegistrations);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5, // Show custom records per page
@@ -78,6 +77,9 @@ export default function VisitRegistrationList({
   const [deleteRecord, setDeleteRecord] = useState<VisitRegistration | null>(
     null
   );
+  const [viewingRecord, setViewingRecord] = useState<VisitRegistration | null>(
+    null
+  );
 
   useEffect(() => {
     if (user && user.customerId) {
@@ -85,12 +87,32 @@ export default function VisitRegistrationList({
     }
   }, [user, fetchVisitRegistrations, reFetchTrigger]);
 
+  useEffect(() => {
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filteredData = visitRegistrations.filter((item) =>
+      Object.keys(item).some((key) =>
+        String(item[key]).toLowerCase().includes(lowercasedFilter)
+      )
+    );
+    setFilteredData(filteredData);
+  }, [searchTerm, visitRegistrations]);
+
   const handleEdit = (record: VisitRegistration) => {
     setEditingRecord(record);
+    setViewingRecord(null);
+    setDeleteRecord(null);
   };
 
   const handleDeleteConfirmation = (record: VisitRegistration) => {
     setDeleteRecord(record);
+    setViewingRecord(null);
+    setEditingRecord(null);
+  };
+
+  const handleView = (record: VisitRegistration) => {
+    setViewingRecord(record);
+    setEditingRecord(null);
+    setDeleteRecord(null);
   };
 
   const handleDelete = async () => {
@@ -145,7 +167,7 @@ export default function VisitRegistrationList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => row.index + 1, // Calculate the row index + 1 for display
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>, // Center align the cell content
     },
     {
       accessorKey: "visitId",
@@ -158,7 +180,9 @@ export default function VisitRegistrationList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("visitId")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("visitId")}</div>
+      ), // Center align the cell content
     },
     {
       accessorKey: "nicheId",
@@ -171,7 +195,9 @@ export default function VisitRegistrationList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("nicheId")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("nicheId")}</div>
+      ), // Center align the cell content
     },
     {
       accessorKey: "createdDate",
@@ -185,7 +211,9 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("createdDate")).toLocaleString()}</div>
+        <div className="text-center">
+          {new Date(row.getValue("createdDate")).toLocaleString()}
+        </div>
       ),
     },
     {
@@ -200,7 +228,9 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{new Date(row.getValue("visitDate")).toLocaleString()}</div>
+        <div className="text-center">
+          {new Date(row.getValue("visitDate")).toLocaleString()}
+        </div>
       ),
     },
     {
@@ -215,13 +245,15 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge
-          variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "outline" : "green"
-          }
-        >
-          {row.getValue("status")}
-        </Badge>
+        <div className="text-center">
+          <Badge
+            variant={
+              row.getValue("status") === "Đang chờ duyệt" ? "outline" : "green"
+            }
+          >
+            {row.getValue("status")}
+          </Badge>
+        </div>
       ),
     },
     {
@@ -235,54 +267,95 @@ export default function VisitRegistrationList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("note")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("note")}</div>
+      ), // Center align the cell content
     },
     {
       id: "actions",
+      header: "Hành Động", // Add a header title for the actions column
       enableHiding: false,
       cell: ({ row }) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEdit(row.original)}
-          >
-            Sửa
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDeleteConfirmation(row.original)}
-          >
-            Xóa
-          </Button>
+        <div className="flex justify-center space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleView(row.original);
+                  }}
+                  className="text-blue-600"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Xem chi tiết</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEdit(row.original);
+                  }}
+                  className="text-orange-600"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Chỉnh sửa</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteConfirmation(row.original);
+                  }}
+                  className="text-red-600"
+                >
+                  <Trash className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Xóa</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       ),
     },
   ];
 
   const table = useReactTable({
-    data: visitRegistrations,
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
       pagination,
     },
     onPaginationChange: setPagination,
     manualPagination: false, // Use automatic pagination
-    pageCount: Math.ceil(visitRegistrations.length / pagination.pageSize),
+    pageCount: Math.ceil(filteredData.length / pagination.pageSize),
   });
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
@@ -290,10 +363,7 @@ export default function VisitRegistrationList({
         <h2 className="text-2xl font-bold text-center">Đơn đăng ký viếng</h2>
         <Input
           placeholder="Tìm kiếm..."
-          value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("nicheId")?.setFilterValue(event.target.value)
-          }
+          onChange={handleSearch}
           className="max-w-sm pl-4 ml-auto"
         />
       </div>
@@ -304,7 +374,10 @@ export default function VisitRegistrationList({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="text-center bg-gray-100"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -320,19 +393,27 @@ export default function VisitRegistrationList({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <TooltipProvider key={row.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TableRow
+                        onClick={() => handleView(row.original)}
+                        className="cursor-pointer"
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="text-center">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TooltipTrigger>
+                    <TooltipContent>Xem chi tiết</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))
             ) : (
               <TableRow>
@@ -382,90 +463,20 @@ export default function VisitRegistrationList({
 
       {/* Delete Confirmation Modal */}
       {deleteRecord && (
-        <Dialog open={true} onOpenChange={() => setDeleteRecord(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Xác nhận xóa</DialogTitle>
-            </DialogHeader>
-            <p>Bạn có chắc chắn muốn xóa đơn đăng ký này không?</p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteRecord(null)}>
-                Hủy
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Xóa
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmationDialog
+          open={true}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteRecord(null)}
+        />
       )}
-    </div>
-  );
-}
 
-type EditModalProps = {
-  record: VisitRegistration;
-  onSave: (updatedRecord: VisitRegistration) => void;
-  onClose: () => void;
-};
-
-function EditModal({ record, onSave, onClose }: EditModalProps) {
-  const [updatedRecord, setUpdatedRecord] = useState(record);
-
-  const handleChange = (field: keyof VisitRegistration, value: any) => {
-    setUpdatedRecord({ ...updatedRecord, [field]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(updatedRecord);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn đăng ký viếng</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Ngày Hẹn</label>
-            <input
-              type="datetime-local"
-              value={new Date(updatedRecord.visitDate)
-                .toISOString()
-                .slice(0, 16)}
-              onChange={(e) =>
-                handleChange("visitDate", new Date(e.target.value))
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Số Người Đi Cùng</label>
-            <input
-              type="number"
-              value={updatedRecord.accompanyingPeople}
-              onChange={(e) =>
-                handleChange("accompanyingPeople", parseInt(e.target.value))
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Ghi Chú</label>
-            <textarea
-              value={updatedRecord.note}
-              onChange={(e) => handleChange("note", e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit">Lưu</Button>
-          </div>
-        </form>
-      </div>
+      {/* Detail View Modal */}
+      {viewingRecord && (
+        <DetailViewDialog
+          record={viewingRecord}
+          onClose={() => setViewingRecord(null)}
+        />
+      )}
     </div>
   );
 }
