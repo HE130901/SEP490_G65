@@ -100,9 +100,9 @@ namespace cms_server.Controllers
                 DeceasedId = deceased.DeceasedId,
                 StartDate = contractDto.StartDate,
                 EndDate = contractDto.EndDate,
-                Note = contractDto.Note,
                 TotalAmount = contractDto.TotalAmount,
-                Status = "Active"
+                Status = "Active" 
+                Note = contractDto.Note,
             };
 
             _context.Contracts.Add(contract);
@@ -170,7 +170,10 @@ namespace cms_server.Controllers
 
             return contracts;
         }
+
+        
     }
+
 
     public class ContractDto
     {

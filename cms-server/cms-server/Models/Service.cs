@@ -18,4 +18,7 @@ public partial class Service
     public string? Category { get; set; }
 
     public string? Tag { get; set; }
+
+    public virtual ICollection<ServiceOrderDetail> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetail>();
+
 }

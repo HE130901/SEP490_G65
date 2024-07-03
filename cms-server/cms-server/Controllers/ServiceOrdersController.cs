@@ -97,10 +97,10 @@ namespace cms_server.Controllers
             {
                 CustomerId = serviceOrderDto.CustomerId,
                 NicheId = serviceOrderDto.NicheId,
-                ServiceList = serviceOrderDto.ServiceList,
+                /*ServiceList = serviceOrderDto.ServiceList,*/
                 OrderDate = DateTime.UtcNow, // Set order date to current date
-                Status = "Pending", // Set status to pending
-                CompletionImage = null, // Set image to null
+/*                Status = "Pending", // Set status to pending
+                CompletionImage = null, // Set image to null*/
                 StaffId = null // Set staffId to null
             };
 
