@@ -2,9 +2,9 @@
 
 import ContainerDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
 import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
-import BookingRequestList from "@/components/dashboard/lists/BookingRequestList";
-import ServiceRequestList from "@/components/dashboard/lists/ServiceRequestList";
-import RegistrationList from "@/components/dashboard/lists/VisitRegistrationList";
+import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
+import ServiceRequestList from "@/components/dashboard/lists/service-request/ServiceRequestList";
+import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
 import ServicesList from "@/components/dashboard/services/ServicesSection";
 import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 import {

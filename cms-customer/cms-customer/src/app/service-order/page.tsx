@@ -31,30 +31,29 @@ const ServiceOrderPage: React.FC = () => {
     return <Loading />;
   }
   return (
-    <div className="flex h-auto pt-16 justify-center">
-      <div className="flex flex-1 overflow-auto">
-        <div className="flex-1">
-          <main className="px-4 py-4 bg-stone-100 mx-4 my-4 h-auto rounded-md bg-gradient-to-b from-slate-100 to-stone-400">
-            <Breadcrumb className="">
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard">Khách hàng</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Đặt dịch vụ</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-
-            <ServiceOrder />
-          </main>
+    <div className="text-foreground min-h-screen flex flex-col py-20 bg-gradient-to-b from-stone-200 to-stone-700">
+      <main className="flex-1 container mx-auto px-4">
+        <div className="grid grid-cols-1 gap-8 pb-4">
+          <Breadcrumb className="">
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/">Trang chủ</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/dashboard">Khách hàng</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-bold">
+                  Sản phẩm & Dịch vụ
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-      </div>
+        <ServiceOrder />
+      </main>
     </div>
   );
 };

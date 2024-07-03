@@ -38,7 +38,9 @@ const NicheReservationPage = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Đặt ô chứa</BreadcrumbPage>
+                <BreadcrumbPage className="font-bold">
+                  Đặt ô chứa
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
