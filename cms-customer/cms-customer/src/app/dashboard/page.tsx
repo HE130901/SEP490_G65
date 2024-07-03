@@ -112,7 +112,9 @@ const DashboardPage = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Khách hàng</BreadcrumbPage>
+                <BreadcrumbPage className="font-bold">
+                  Khách hàng
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

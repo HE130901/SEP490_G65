@@ -5,6 +5,14 @@ import FilterPanel from "./FilterPanel";
 import ProductList from "./ProductList";
 import ServiceAPI from "@/services/serviceService";
 import { toast } from "sonner";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function ServiceOrder() {
   const [services, setServices] = useState([]);
@@ -38,7 +46,7 @@ export default function ServiceOrder() {
   }, [priceRange, selectedCategories, selectedBrands, services]);
 
   return (
-    <div className="grid md:grid-cols-[280px_1fr] gap-8 p-4 md:p-8">
+    <div className="grid md:grid-cols-[280px_1fr] gap-8 ">
       <FilterPanel
         priceRange={priceRange}
         setPriceRange={setPriceRange}
