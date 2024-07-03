@@ -4,17 +4,15 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
-  VisibilityState,
-  flexRender,
+  useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
+  getFilteredRowModel,
+  flexRender,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Edit, Trash } from "lucide-react";
+import { ArrowUpDown, Edit, Trash, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,18 +24,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import DetailViewDialog from "./DetailViewDialog";
+import EditModal from "./EditModal";
 
-// Define your NicheReservation type
 export type NicheReservation = {
   reservationId: number;
   nicheId: number;
@@ -50,7 +49,6 @@ export type NicheReservation = {
   name: string;
 };
 
-// BookingRequest component
 export default function BookingRequestList({
   reFetchTrigger,
 }: {
@@ -62,27 +60,38 @@ export default function BookingRequestList({
   >([]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
-  ]); // Default sort
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 5, // Show custom records per page
-  });
-
+  ]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState(nicheReservations);
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [editingRecord, setEditingRecord] = useState<NicheReservation | null>(
     null
   );
   const [deleteRecord, setDeleteRecord] = useState<NicheReservation | null>(
     null
   );
+  const [viewingRecord, setViewingRecord] = useState<NicheReservation | null>(
+    null
+  );
+  const [currentModal, setCurrentModal] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && user.phone) {
       fetchNicheReservations(user.phone);
     }
   }, [user, reFetchTrigger]);
+
+  useEffect(() => {
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filteredData = nicheReservations.filter((item) =>
+      Object.keys(item).some((key) =>
+        String(item[key as keyof NicheReservation])
+          .toLowerCase()
+          .includes(lowercasedFilter)
+      )
+    );
+    setFilteredData(filteredData);
+  }, [searchTerm, nicheReservations]);
 
   const fetchNicheReservations = async (phoneNumber: string) => {
     try {
@@ -93,20 +102,38 @@ export default function BookingRequestList({
     }
   };
 
-  const handleEdit = (record: NicheReservation) => {
+  const handleEdit = (record: NicheReservation, event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log("handleEdit called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể sửa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setEditingRecord(record);
+    setCurrentModal("edit");
+    console.log("currentModal set to edit");
   };
 
-  const handleDeleteConfirmation = (record: NicheReservation) => {
+  const handleDeleteConfirmation = (
+    record: NicheReservation,
+    event: React.MouseEvent
+  ) => {
+    event.stopPropagation();
+    console.log("handleDeleteConfirmation called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setDeleteRecord(record);
+    setCurrentModal("delete");
+    console.log("currentModal set to delete");
+  };
+
+  const handleView = (record: NicheReservation) => {
+    console.log("handleView called with record:", record);
+    setViewingRecord(record);
+    setCurrentModal("view");
+    console.log("currentModal set to view");
   };
 
   const handleDelete = async () => {
@@ -122,7 +149,7 @@ export default function BookingRequestList({
             : reservation
         )
       );
-      setDeleteRecord(null); // Close the modal
+      setCurrentModal(null); // Close the modal
     } catch (error) {
       console.error("Error canceling niche reservation:", error);
       toast.error("Không thể hủy đơn đặt chỗ.");
@@ -151,7 +178,7 @@ export default function BookingRequestList({
         dataToUpdate
       );
       toast.success("Cập nhật đơn đặt chỗ thành công!");
-      setEditingRecord(null);
+      setCurrentModal(null); // Close the modal
       fetchNicheReservations(user.phone); // Refetch the data after updating
     } catch (error) {
       console.error("Error updating niche reservation:", error);
@@ -159,10 +186,9 @@ export default function BookingRequestList({
     }
   };
 
-  // Column definitions with inline handleEdit and handleDelete functions
   const columns: ColumnDef<NicheReservation>[] = [
     {
-      id: "stt", // Add an ID for the STT column
+      id: "stt",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -172,7 +198,7 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => row.index + 1, // Calculate the row index + 1 for display
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
       accessorKey: "reservationId",
@@ -185,7 +211,9 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("reservationId")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("reservationId")}</div>
+      ),
     },
     {
       accessorKey: "nicheId",
@@ -198,7 +226,9 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("nicheId")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("nicheId")}</div>
+      ),
     },
     {
       accessorKey: "createdDate",
@@ -212,7 +242,7 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>
+        <div className="text-center">
           {new Date(row.getValue("createdDate")).toLocaleString("vi-VN")}
         </div>
       ),
@@ -229,7 +259,7 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>
+        <div className="text-center">
           {new Date(row.getValue("confirmationDate")).toLocaleString("vi-VN")}
         </div>
       ),
@@ -246,17 +276,19 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <Badge
-          variant={
-            row.getValue("status") === "Pending"
-              ? "gray"
-              : row.getValue("status") === "Approved"
-              ? "green"
-              : "red"
-          }
-        >
-          {row.getValue("status")}
-        </Badge>
+        <div className="text-center">
+          <Badge
+            variant={
+              row.getValue("status") === "Pending"
+                ? "outline"
+                : row.getValue("status") === "Approved"
+                ? "green"
+                : "red"
+            }
+          >
+            {row.getValue("status")}
+          </Badge>
+        </div>
       ),
     },
     {
@@ -270,73 +302,100 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("note")}</div>,
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("note")}</div>
+      ),
     },
     {
       id: "actions",
+      header: "Hành Động",
       enableHiding: false,
       cell: ({ row }) => (
-        <div className="flex space-x-2 justify-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleEdit(row.original)}
-            disabled={
-              row.original.status === "Approved" ||
-              row.original.status === "Canceled"
-            }
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDeleteConfirmation(row.original)}
-            disabled={
-              row.original.status === "Approved" ||
-              row.original.status === "Canceled"
-            }
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
+        <div className="flex justify-center space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(event) => handleView(row.original, event)}
+                  className="text-blue-600"
+                >
+                  <Eye className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Xem chi tiết</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(event) => handleEdit(row.original, event)}
+                  disabled={
+                    row.original.status === "Approved" ||
+                    row.original.status === "Canceled"
+                  }
+                  className="text-orange-600"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Chỉnh sửa</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(event) =>
+                    handleDeleteConfirmation(row.original, event)
+                  }
+                  disabled={
+                    row.original.status === "Approved" ||
+                    row.original.status === "Canceled"
+                  }
+                  className="text-red-600"
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Xóa</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       ),
     },
   ];
 
   const table = useReactTable({
-    data: nicheReservations,
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
       pagination,
     },
     onPaginationChange: setPagination,
-    manualPagination: false, // Use automatic pagination
-    pageCount: Math.ceil(nicheReservations.length / pagination.pageSize),
+    manualPagination: false,
+    pageCount: Math.ceil(filteredData.length / pagination.pageSize),
   });
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Đơn đặt ô chứa</h2>
+        <h2 className="text-2xl font-bold text-center">Đơn đặt ô chứa</h2>
         <Input
           placeholder="Tìm kiếm..."
-          value={(table.getColumn("nicheId")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("nicheId")?.setFilterValue(event.target.value)
-          }
+          onChange={handleSearch}
           className="max-w-sm pl-4 ml-auto"
         />
       </div>
@@ -345,37 +404,46 @@ export default function BookingRequestList({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="text-center">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="text-center bg-gray-100"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="text-center">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                <TooltipProvider key={row.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TableRow
+                        onClick={() => handleView(row.original)}
+                        className="cursor-pointer"
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="text-center">
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TooltipTrigger>
+                    <TooltipContent>Xem chi tiết</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))
             ) : (
               <TableRow>
@@ -414,99 +482,29 @@ export default function BookingRequestList({
         </div>
       </div>
 
-      {/* Editing Modal */}
-      {editingRecord && (
+      {currentModal === "edit" && editingRecord && (
         <EditModal
           record={editingRecord}
           onSave={handleSave}
-          onClose={() => setEditingRecord(null)}
+          onClose={() => setCurrentModal(null)}
         />
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteRecord && (
-        <Dialog open={true} onOpenChange={() => setDeleteRecord(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Xác nhận hủy</DialogTitle>
-            </DialogHeader>
-            <p>Bạn có chắc chắn muốn hủy đơn đăng ký này không?</p>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteRecord(null)}>
-                Hủy
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Hủy
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      {currentModal === "delete" && deleteRecord && (
+        <DeleteConfirmationDialog
+          open={true}
+          onConfirm={handleDelete}
+          onCancel={() => setCurrentModal(null)}
+        />
       )}
-    </div>
-  );
-}
 
-type EditModalProps = {
-  record: NicheReservation;
-  onSave: (updatedRecord: NicheReservation) => void;
-  onClose: () => void;
-};
-
-function EditModal({ record, onSave, onClose }: EditModalProps) {
-  const [updatedRecord, setUpdatedRecord] = useState(record);
-
-  const handleChange = (field: keyof NicheReservation, value: any) => {
-    setUpdatedRecord({ ...updatedRecord, [field]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(updatedRecord);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded shadow-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Chỉnh sửa Đơn Đặt Chỗ</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Ngày Xác Nhận</label>
-            <input
-              type="datetime-local"
-              value={new Date(updatedRecord.confirmationDate)
-                .toISOString()
-                .slice(0, 16)}
-              onChange={(e) =>
-                handleChange("confirmationDate", new Date(e.target.value))
-              }
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Địa Chỉ Ký</label>
-            <input
-              type="text"
-              value={updatedRecord.signAddress}
-              onChange={(e) => handleChange("signAddress", e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Ghi Chú</label>
-            <textarea
-              value={updatedRecord.note}
-              onChange={(e) => handleChange("note", e.target.value)}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit">Lưu</Button>
-          </div>
-        </form>
-      </div>
+      {currentModal === "view" && viewingRecord && (
+        <DetailViewDialog
+          open={true}
+          record={viewingRecord}
+          onClose={() => setCurrentModal(null)}
+        />
+      )}
     </div>
   );
 }

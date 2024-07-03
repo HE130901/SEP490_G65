@@ -116,11 +116,12 @@ export default function VisitScheduleDialog({
           </div>
           <div className="mt-4 flex justify-end gap-2">
             {error && <p className="text-red-600 text-sm">{error}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading ? "Đang lưu..." : "Lưu"}
-            </Button>
+
             <Button variant="outline" onClick={onClose} disabled={loading}>
-              Hủy
+              Quay lại
+            </Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Đang lưu..." : "Xác nhận"}
             </Button>
           </div>
         </form>
