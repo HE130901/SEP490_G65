@@ -324,7 +324,6 @@ public partial class CmsContext : DbContext
                 .HasMaxLength(15)
                 .HasDefaultValueSql("(left(CONVERT([nvarchar](36),newid()),(15)))");
             entity.Property(e => e.StaffId).HasColumnName("StaffID");
-            entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.ServiceOrders)
                 .HasForeignKey(d => d.CustomerId)

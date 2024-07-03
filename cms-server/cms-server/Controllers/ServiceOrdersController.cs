@@ -99,8 +99,8 @@ namespace cms_server.Controllers
                 NicheId = serviceOrderDto.NicheId,
                 /*ServiceList = serviceOrderDto.ServiceList,*/
                 OrderDate = DateTime.UtcNow, // Set order date to current date
-                Status = "Pending", // Set status to pending
-                CompletionImage = null, // Set image to null
+/*                Status = "Pending", // Set status to pending
+                CompletionImage = null, // Set image to null*/
                 StaffId = null // Set staffId to null
             };
 
