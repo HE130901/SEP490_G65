@@ -42,14 +42,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await AuthAPI.login(email, password);
-    const data = response.data;
-    localStorage.setItem("token", data.token);
-    setUser(data);
-    if (data.role === "Staff" || data.role === "Manager") {
-      router.push("/staff-dashboard");
-    } else {
-      router.push("/");
+    try {
+      const response = await AuthAPI.login(email, password);
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      setUser(data);
+
+      if (data.role === "Staff" || data.role === "Manager") {
+        router.push("/dashboard");
+      } else {
+        throw new Error("AccessDenied"); // Ném lỗi nếu vai trò không hợp lệ
+      }
+    } catch (error) {
+      logout();
+      throw error;
     }
   };
 

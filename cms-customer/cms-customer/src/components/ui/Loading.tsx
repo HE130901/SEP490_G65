@@ -22,7 +22,7 @@ const Loading: React.FC = () => {
       )}
     >
       <div className="flex flex-col items-center space-y-2">
-        <span className="text-lg font-medium text-orange-400 dark:text-gray-100">
+        <span className="text-lg font-medium text-orange-600 dark:text-gray-100">
           Vui lòng chờ...
         </span>
         <Progress value={progress} className="w-52 h-2 bg-orange-100 " />

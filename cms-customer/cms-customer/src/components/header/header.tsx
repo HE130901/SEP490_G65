@@ -2,7 +2,6 @@
 
 import logo from "../../../public/images/logo.png";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/dark-mode";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +19,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import { cn } from "@/lib/utils";
 import {
   ArrowRightOnRectangleIcon,
@@ -121,8 +120,8 @@ export function Header({ currentView, setCurrentView }) {
                   <ListItem href="/niche-reservation" title="Đặt ô chứa">
                     Lựa chọn ô và lên lịch ký hợp đồng.
                   </ListItem>
-                  <ListItem href="/dashboard" title="Đăng ký viếng thăm">
-                    Lên lịch viếng thăm dễ dàng.
+                  <ListItem href="/dashboard" title="Quản lý ô chứa">
+                    Xem thông tin chi tiết về ô chứa của bạn.
                   </ListItem>
                   <ListItem href="/service-order" title="Đặt dịch vụ">
                     Lựa chọn các dịch vụ của chúng tôi.
@@ -159,7 +158,7 @@ export function Header({ currentView, setCurrentView }) {
               {user ? (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard/profile-manager">
+                    <Link href="/user-profile">
                       <UserIcon className="h-5 w-5 mr-2" />
                       Hồ sơ của tôi
                     </Link>

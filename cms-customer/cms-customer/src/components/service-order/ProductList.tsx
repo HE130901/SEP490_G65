@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/utils/formatCurrency";
 import { useCart } from "@/context/CartContext";
-import { CartButton } from "@/components/service-order/CartButton";
 import { toast } from "sonner";
 import { Toaster } from "../ui/sonner";
 import {
@@ -17,6 +16,20 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import PaginationControls from "./PaginationControls";
+import { CartButton } from "./CartButton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface ProductListProps {
   products: any[];
@@ -28,6 +41,7 @@ export default function ProductList({ products }: ProductListProps) {
   const [sortBy, setSortBy] = useState("Mặc định");
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const cartIconRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
 
@@ -53,50 +67,72 @@ export default function ProductList({ products }: ProductListProps) {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
-  const handleAddToCart = (product, event) => {
-    addToCart({ ...product, quantity: 1 });
-    setAddedProductId(product.id);
-    toast.success(`${product.name} đã được thêm vào giỏ hàng`);
+  const handleAddToCart = (product, event, fromModal = false) => {
+    const item = {
+      id: product.serviceId,
+      name: product.serviceName,
+      price: product.price,
+      image: product.servicePicture.startsWith("http")
+        ? product.servicePicture
+        : "default-image-url",
+      quantity: 1,
+    };
+    addToCart(item);
+    setAddedProductId(product.serviceId);
+    toast.success(`${product.serviceName} đã được thêm vào giỏ hàng`);
 
-    const imgToFly = event.target.closest(".product-card").querySelector("img");
-    const imgClone = imgToFly.cloneNode(true);
-    const cartIcon = cartIconRef.current;
+    const imgToFly = fromModal
+      ? document.querySelector(".product-card img")
+      : event.target.closest(".product-card").querySelector("img");
 
-    if (cartIcon) {
-      imgClone.style.position = "absolute";
-      imgClone.style.zIndex = "999";
-      imgClone.style.top = `${imgToFly.getBoundingClientRect().top}px`;
-      imgClone.style.left = `${imgToFly.getBoundingClientRect().left}px`;
-      imgClone.style.width = `${imgToFly.getBoundingClientRect().width}px`;
-      imgClone.style.height = `${imgToFly.getBoundingClientRect().height}px`;
-      document.body.appendChild(imgClone);
+    if (imgToFly) {
+      const imgClone = imgToFly.cloneNode(true);
+      const cartIcon = cartIconRef.current;
 
-      const moveToCart = () => {
-        imgClone.style.transition = "all 1s ease";
-        imgClone.style.top = `${
-          cartIcon.getBoundingClientRect().top + window.scrollY
-        }px`;
-        imgClone.style.left = `${
-          cartIcon.getBoundingClientRect().left + window.scrollX
-        }px`;
-        imgClone.style.width = "20px";
-        imgClone.style.height = "20px";
-        imgClone.style.opacity = "0";
-      };
+      if (cartIcon) {
+        imgClone.style.position = "absolute";
+        imgClone.style.zIndex = "999";
+        imgClone.style.top = `${imgToFly.getBoundingClientRect().top}px`;
+        imgClone.style.left = `${imgToFly.getBoundingClientRect().left}px`;
+        imgClone.style.width = `${imgToFly.getBoundingClientRect().width}px`;
+        imgClone.style.height = `${imgToFly.getBoundingClientRect().height}px`;
+        document.body.appendChild(imgClone);
 
-      requestAnimationFrame(moveToCart);
+        const moveToCart = () => {
+          imgClone.style.transition = "all 1s ease";
+          imgClone.style.top = `${
+            cartIcon.getBoundingClientRect().top + window.scrollY
+          }px`;
+          imgClone.style.left = `${
+            cartIcon.getBoundingClientRect().left + window.scrollX
+          }px`;
+          imgClone.style.width = "20px";
+          imgClone.style.height = "20px";
+          imgClone.style.opacity = "0";
+        };
 
-      setTimeout(() => {
-        imgClone.remove();
-      }, 1000);
+        requestAnimationFrame(moveToCart);
 
-      setTimeout(() => {
-        setAddedProductId(null);
-      }, 1000);
-    } else {
-      console.error("Cart icon reference is null.");
-      toast.error("Không thể thêm sản phẩm vào giỏ hàng.");
+        setTimeout(() => {
+          imgClone.remove();
+        }, 1000);
+
+        setTimeout(() => {
+          setAddedProductId(null);
+        }, 1000);
+      } else {
+        console.error("Cart icon reference is null.");
+        toast.error("Không thể thêm sản phẩm vào giỏ hàng.");
+      }
     }
+  };
+
+  const handleViewDetails = (product) => {
+    setSelectedProduct(product);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedProduct(null);
   };
 
   return (
@@ -154,46 +190,65 @@ export default function ProductList({ products }: ProductListProps) {
       >
         {paginatedProducts.length > 0 ? (
           paginatedProducts.map((product) => (
-            <div
-              key={product.id}
-              className={`product-card bg-white dark:bg-gray-950 rounded-lg shadow-sm overflow-hidden ${
-                viewMode === "list" ? "flex items-center gap-4" : ""
-              }`}
-            >
-              <Link href="#" className="block" prefetch={false}>
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={400}
-                  height={300}
-                  className={`w-full ${
-                    viewMode === "list"
-                      ? "h-24 object-cover"
-                      : "h-60 object-cover"
-                  }`}
-                />
-              </Link>
-              <div className="p-4 flex-1">
-                <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                  {product.category}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">
-                    {formatVND(product.price)}
-                  </span>
-                  <Button
-                    size="sm"
-                    onClick={(event) => handleAddToCart(product, event)}
-                    className={`${
-                      addedProductId === product.id ? "animate-bounce" : ""
+            <TooltipProvider key={product.serviceId}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`product-card bg-white dark:bg-gray-950 rounded-lg shadow-sm overflow-hidden transition-transform transform hover:scale-105 ${
+                      viewMode === "list" ? "flex items-center gap-4" : ""
                     }`}
                   >
-                    Thêm vào giỏ
-                  </Button>
-                </div>
-              </div>
-            </div>
+                    <Link href="#" className="block" prefetch={false}>
+                      <Image
+                        src={
+                          product.servicePicture.startsWith("http")
+                            ? product.servicePicture
+                            : "/default-image-url.jpg"
+                        }
+                        alt={product.serviceName}
+                        width={160}
+                        height={120}
+                        className={`w-full ${
+                          viewMode === "list"
+                            ? "h-24 object-cover"
+                            : "h-60 object-cover"
+                        }`}
+                        onClick={() => handleViewDetails(product)}
+                      />
+                    </Link>
+                    <div className="p-4 flex-1">
+                      <h3 className="text-lg font-semibold mb-1">
+                        {product.serviceName}
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                        {product.category}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">
+                          {formatVND(product.price)}
+                        </span>
+                        <Button
+                          size="sm"
+                          onClick={(event) =>
+                            handleAddToCart(product, event, false)
+                          }
+                          className={`${
+                            addedProductId === product.serviceId
+                              ? "animate-bounce"
+                              : ""
+                          }`}
+                        >
+                          Thêm vào giỏ
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-orange-500 font-bold text-white">
+                  {product.serviceName}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))
         ) : (
           <p>Không tìm thấy sản phẩm</p>
@@ -204,6 +259,48 @@ export default function ProductList({ products }: ProductListProps) {
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
       />
+
+      {selectedProduct && (
+        <Dialog
+          open={selectedProduct !== null}
+          onOpenChange={handleCloseDetails}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedProduct.serviceName}</DialogTitle>
+              <DialogDescription>{selectedProduct.category}</DialogDescription>
+            </DialogHeader>
+            <Image
+              src={
+                selectedProduct.servicePicture.startsWith("http")
+                  ? selectedProduct.servicePicture
+                  : "/default-image-url.jpg"
+              }
+              alt={selectedProduct.serviceName}
+              width={160}
+              height={120}
+              className="w-full h-auto object-cover rounded-lg mb-4"
+            />
+            <p className="text-gray-700">{selectedProduct.description}</p>
+            <p className="text-lg font-semibold text-gray-900 mt-2">
+              {formatVND(selectedProduct.price)}
+            </p>
+            <Button
+              className="mt-4"
+              onClick={(event) => handleAddToCart(selectedProduct, event, true)}
+            >
+              Thêm vào giỏ hàng
+            </Button>
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={handleCloseDetails}
+            >
+              Đóng
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

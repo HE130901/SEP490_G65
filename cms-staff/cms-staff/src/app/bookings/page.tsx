@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -26,54 +26,85 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import BookingAPI from "@/services/bookingService";
+import { useToast } from "@/components/ui/use-toast";
+import AddBookingRequestDialog from "./AddBookingRequestDialog";
+import ViewBookingRequestDialog from "./ViewBookingRequestDialog";
+import EditBookingRequestDialog from "./EditBookingRequestDialog";
+import DeleteBookingRequestDialog from "./DeleteBookingRequestDialog";
 
 const BookingRequestPage = () => {
-  const [bookingRequests, setBookingRequests] = useState([
-    {
-      id: 1,
-      code: "BR001",
-      nicheCode: "N001",
-      customerName: "Nguyễn Văn A",
-      phoneNumber: "0123456789",
-      appointmentDate: "2023-07-01",
-      contractAddress: "123 Đường A, TP. HCM",
-      status: "Pending",
-    },
-    {
-      id: 2,
-      code: "BR002",
-      nicheCode: "N002",
-      customerName: "Trần Thị B",
-      phoneNumber: "0987654321",
-      appointmentDate: "2023-07-02",
-      contractAddress: "456 Đường B, TP. HCM",
-      status: "Completed",
-    },
-    // Thêm dữ liệu đơn đăng ký đặt chỗ ở đây
-  ]);
+  const [bookingRequests, setBookingRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("customerName");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [orderBy, setOrderBy] = useState("reservationId");
+  const { toast } = useToast();
+  const [selectedBookingRequest, setSelectedBookingRequest] = useState(null);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchBookingRequests = async () => {
+      try {
+        const response = await BookingAPI.getAllBookings();
+        setBookingRequests(response.data.$values);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Lỗi",
+          description: "Không thể tải danh sách đơn đặt chỗ",
+        });
+      }
+    };
+
+    fetchBookingRequests();
+  }, [toast]);
 
   const handleAddBookingRequest = () => {
-    // Logic để thêm mới đơn đăng ký đặt chỗ
-    alert("Thêm mới đơn đăng ký đặt chỗ");
+    setAddDialogOpen(true);
   };
 
-  const handleViewBookingRequest = (id) => {
-    // Logic để xem chi tiết đơn đăng ký đặt chỗ
-    alert(`Xem chi tiết đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleViewBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setViewDialogOpen(true);
   };
 
-  const handleEditBookingRequest = (id) => {
-    // Logic để sửa đơn đăng ký đặt chỗ
-    alert(`Sửa đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleEditBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setEditDialogOpen(true);
   };
 
-  const handleDeleteBookingRequest = (id) => {
-    // Logic để xóa đơn đăng ký đặt chỗ
-    alert(`Xóa đơn đăng ký đặt chỗ với ID: ${id}`);
+  const handleDeleteBookingRequest = (bookingRequest) => {
+    setSelectedBookingRequest(bookingRequest);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleAddDialogClose = () => {
+    setAddDialogOpen(false);
+  };
+
+  const handleViewDialogClose = () => {
+    setViewDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setSelectedBookingRequest(null);
+  };
+
+  const handleDeleteConfirmed = () => {
+    // Add delete logic here
+    setDeleteDialogOpen(false);
+    setSelectedBookingRequest(null);
   };
 
   const handleSearchColumnChange = (event) => {
@@ -87,60 +118,71 @@ const BookingRequestPage = () => {
   };
 
   const sortedBookingRequests = bookingRequests.sort((a, b) => {
-    if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
-    } else if (orderBy === "nicheCode") {
-      if (order === "asc") {
-        return a.nicheCode.localeCompare(b.nicheCode);
-      } else {
-        return b.nicheCode.localeCompare(a.nicheCode);
-      }
-    } else if (orderBy === "customerName") {
-      if (order === "asc") {
-        return a.customerName.localeCompare(b.customerName);
-      } else {
-        return b.customerName.localeCompare(a.customerName);
-      }
+    if (orderBy === "reservationId") {
+      return order === "asc"
+        ? a.reservationId - b.reservationId
+        : b.reservationId - a.reservationId;
+    } else if (orderBy === "nicheId") {
+      return order === "asc" ? a.nicheId - b.nicheId : b.nicheId - a.nicheId;
+    } else if (orderBy === "signAddress") {
+      return order === "asc"
+        ? a.signAddress.localeCompare(b.signAddress)
+        : b.signAddress.localeCompare(a.signAddress);
     } else if (orderBy === "phoneNumber") {
-      if (order === "asc") {
-        return a.phoneNumber.localeCompare(b.phoneNumber);
-      } else {
-        return b.phoneNumber.localeCompare(a.phoneNumber);
-      }
-    } else if (orderBy === "appointmentDate") {
-      if (order === "asc") {
-        return new Date(a.appointmentDate) - new Date(b.appointmentDate);
-      } else {
-        return new Date(b.appointmentDate) - new Date(a.appointmentDate);
-      }
-    } else if (orderBy === "contractAddress") {
-      if (order === "asc") {
-        return a.contractAddress.localeCompare(b.contractAddress);
-      } else {
-        return b.contractAddress.localeCompare(a.contractAddress);
-      }
+      return order === "asc"
+        ? a.phoneNumber.localeCompare(b.phoneNumber)
+        : b.phoneNumber.localeCompare(a.phoneNumber);
+    } else if (orderBy === "createdDate") {
+      return order === "asc"
+        ? new Date(a.createdDate) - new Date(b.createdDate)
+        : new Date(b.createdDate) - new Date(a.createdDate);
+    } else if (orderBy === "confirmationDate") {
+      return order === "asc"
+        ? new Date(a.confirmationDate) - new Date(b.confirmationDate)
+        : new Date(b.confirmationDate) - new Date(a.confirmationDate);
     } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
+      return order === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
     }
     return 0;
   });
 
   const filteredBookingRequests = sortedBookingRequests.filter(
     (bookingRequest) => {
-      if (searchColumn === "customerName") {
-        return bookingRequest.customerName
+      if (searchColumn === "all") {
+        return (
+          bookingRequest.signAddress
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.phoneNumber
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.reservationId
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          bookingRequest.nicheId
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
+        );
+      } else if (searchColumn === "signAddress") {
+        return bookingRequest.signAddress
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "code") {
-        return bookingRequest.code
+      } else if (searchColumn === "phoneNumber") {
+        return bookingRequest.phoneNumber
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      } else if (searchColumn === "reservationId") {
+        return bookingRequest.reservationId
+          .toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      } else if (searchColumn === "nicheId") {
+        return bookingRequest.nicheId
+          .toString()
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
       }
@@ -175,8 +217,11 @@ const BookingRequestPage = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
-              <MenuItem value="customerName">Tên khách hàng</MenuItem>
-              <MenuItem value="code">Mã đơn</MenuItem>
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="signAddress">Địa chỉ</MenuItem>
+              <MenuItem value="phoneNumber">Số điện thoại</MenuItem>
+              <MenuItem value="reservationId">Mã đơn</MenuItem>
+              <MenuItem value="nicheId">Mã ô chứa</MenuItem>
             </Select>
           </FormControl>
           <TextField
@@ -191,43 +236,61 @@ const BookingRequestPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
-                  onClick={() => handleRequestSort("id")}
+                  active={orderBy === "reservationId"}
+                  direction={orderBy === "reservationId" ? order : "asc"}
+                  onClick={() => handleRequestSort("reservationId")}
                 >
                   STT
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "reservationId"}
+                  direction={orderBy === "reservationId" ? order : "asc"}
+                  onClick={() => handleRequestSort("reservationId")}
                 >
                   Mã đơn
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
-                  active={orderBy === "nicheCode"}
-                  direction={orderBy === "nicheCode" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheCode")}
+                  active={orderBy === "nicheId"}
+                  direction={orderBy === "nicheId" ? order : "asc"}
+                  onClick={() => handleRequestSort("nicheId")}
                 >
                   Mã ô chứa
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
-                  active={orderBy === "customerName"}
-                  direction={orderBy === "customerName" ? order : "asc"}
-                  onClick={() => handleRequestSort("customerName")}
+                  active={orderBy === "createdDate"}
+                  direction={orderBy === "createdDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("createdDate")}
                 >
-                  Tên Khách hàng
+                  Ngày tạo
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === "confirmationDate"}
+                  direction={orderBy === "confirmationDate" ? order : "asc"}
+                  onClick={() => handleRequestSort("confirmationDate")}
+                >
+                  Ngày xác nhận
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
+                <TableSortLabel
+                  active={orderBy === "signAddress"}
+                  direction={orderBy === "signAddress" ? order : "asc"}
+                  onClick={() => handleRequestSort("signAddress")}
+                >
+                  Địa chỉ
+                </TableSortLabel>
+              </TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "phoneNumber"}
                   direction={orderBy === "phoneNumber" ? order : "asc"}
@@ -236,25 +299,7 @@ const BookingRequestPage = () => {
                   Số điện thoại
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "appointmentDate"}
-                  direction={orderBy === "appointmentDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("appointmentDate")}
-                >
-                  Ngày hẹn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "contractAddress"}
-                  direction={orderBy === "contractAddress" ? order : "asc"}
-                  onClick={() => handleRequestSort("contractAddress")}
-                >
-                  Địa chỉ ký HĐ
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
+              <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "status"}
                   direction={orderBy === "status" ? order : "asc"}
@@ -263,55 +308,67 @@ const BookingRequestPage = () => {
                   Trạng thái
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell align="center">Ghi chú</TableCell>
+              <TableCell align="center">Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredBookingRequests.map((bookingRequest, index) => (
-              <TableRow key={bookingRequest.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{bookingRequest.code}</TableCell>
-                <TableCell>{bookingRequest.nicheCode}</TableCell>
-                <TableCell>{bookingRequest.customerName}</TableCell>
-                <TableCell>{bookingRequest.phoneNumber}</TableCell>
-                <TableCell>{bookingRequest.appointmentDate}</TableCell>
-                <TableCell>{bookingRequest.contractAddress}</TableCell>
-                <TableCell>
+              <TableRow key={bookingRequest.reservationId}>
+                <TableCell align="center">{index + 1}</TableCell>
+                <TableCell align="center">
+                  {bookingRequest.reservationId}
+                </TableCell>
+                <TableCell align="center">{bookingRequest.nicheId}</TableCell>
+                <TableCell align="center">
+                  {new Date(bookingRequest.createdDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell align="center">
+                  {new Date(
+                    bookingRequest.confirmationDate
+                  ).toLocaleDateString()}
+                </TableCell>
+                <TableCell align="center">
+                  {bookingRequest.signAddress}
+                </TableCell>
+                <TableCell align="center">
+                  {bookingRequest.phoneNumber}
+                </TableCell>
+                <TableCell align="center">
                   <Chip
                     label={
-                      bookingRequest.status === "Pending"
+                      bookingRequest.status === "pending"
                         ? "Đang chờ"
-                        : bookingRequest.status === "Completed"
-                        ? "Hoàn thành"
+                        : bookingRequest.status === "confirmed"
+                        ? "Xác nhận"
                         : "Đã hủy"
                     }
                     color={
-                      bookingRequest.status === "Pending"
+                      bookingRequest.status === "pending"
                         ? "warning"
-                        : bookingRequest.status === "Completed"
+                        : bookingRequest.status === "confirmed"
                         ? "success"
                         : "error"
                     }
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell align="center">{bookingRequest.note}</TableCell>
+                <TableCell align="center">
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewBookingRequest(bookingRequest.id)}
+                    onClick={() => handleViewBookingRequest(bookingRequest)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditBookingRequest(bookingRequest.id)}
+                    onClick={() => handleEditBookingRequest(bookingRequest)}
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() =>
-                      handleDeleteBookingRequest(bookingRequest.id)
-                    }
+                    onClick={() => handleDeleteBookingRequest(bookingRequest)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -321,6 +378,26 @@ const BookingRequestPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddBookingRequestDialog
+        open={addDialogOpen}
+        onClose={handleAddDialogClose}
+      />
+      <ViewBookingRequestDialog
+        open={viewDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleViewDialogClose}
+      />
+      <EditBookingRequestDialog
+        open={editDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleEditDialogClose}
+      />
+      <DeleteBookingRequestDialog
+        open={deleteDialogOpen}
+        bookingRequest={selectedBookingRequest}
+        onClose={handleDeleteDialogClose}
+        onDelete={handleDeleteConfirmed}
+      />
     </Box>
   );
 };

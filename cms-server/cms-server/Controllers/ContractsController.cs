@@ -100,9 +100,9 @@ namespace cms_server.Controllers
                 DeceasedId = deceased.DeceasedId,
                 StartDate = contractDto.StartDate,
                 EndDate = contractDto.EndDate,
-                /*ServicePriceList = contractDto.ServicePriceList,*/
                 TotalAmount = contractDto.TotalAmount,
-                Status = "Active"
+                Status = "Active" 
+                Note = contractDto.Note,
             };
 
             _context.Contracts.Add(contract);
@@ -182,7 +182,7 @@ namespace cms_server.Controllers
         public int NicheId { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
-        public string? ServicePriceList { get; set; }
+        public string? Note { get; set; }
         public decimal? TotalAmount { get; set; }
         public string? CitizenId { get; set; }
         public string FullName { get; set; } = null!;

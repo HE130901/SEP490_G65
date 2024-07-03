@@ -2,7 +2,6 @@
 import React from "react";
 
 import type { Metadata } from "next";
-import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: "Sản phẩm & Dịch vụ",

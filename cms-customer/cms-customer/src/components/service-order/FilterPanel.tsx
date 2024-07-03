@@ -36,10 +36,10 @@ export default function FilterPanel({
 
   const brandCount = useMemo(() => {
     return products.reduce((acc, product) => {
-      if (!acc[product.brand]) {
-        acc[product.brand] = 0;
+      if (!acc[product.tag]) {
+        acc[product.tag] = 0;
       }
-      acc[product.brand]++;
+      acc[product.tag]++;
       return acc;
     }, {} as Record<string, number>);
   }, [products]);
@@ -53,7 +53,6 @@ export default function FilterPanel({
           value={priceRange}
           onValueChange={(values) => {
             setPriceRange([Math.min(...values), Math.max(...values)]);
-            console.log("Price range changed:", values);
           }}
           min={0}
           max={1000000}
@@ -81,7 +80,6 @@ export default function FilterPanel({
                       ? prev.filter((c) => c !== category)
                       : [...prev, category]
                   );
-                  console.log("Selected categories:", selectedCategories);
                 }}
               />
               {category} ({categoryCount[category]})
@@ -102,7 +100,6 @@ export default function FilterPanel({
                       ? prev.filter((b) => b !== brand)
                       : [...prev, brand]
                   );
-                  console.log("Selected brands:", selectedBrands);
                 }}
               />
               {brand} ({brandCount[brand]})

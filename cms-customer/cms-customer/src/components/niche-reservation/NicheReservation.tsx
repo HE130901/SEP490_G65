@@ -6,7 +6,13 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -129,31 +135,46 @@ const NicheReservationPage = () => {
     if (isSmallScreen) {
       return rows.reverse().map((floorRows, floorIndex) => (
         <div key={floorIndex} className="flex flex-col space-y-2">
-          <div className="flex items-center justify-center font-semibold pr-4 whitespace-nowrap">
+          <div className="flex items-center justify-center font-semibold  whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
           {floorRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex space-x-2">
-              {row.map((niche) => (
-                <div
-                  key={niche.nicheId}
-                  onClick={() => {
-                    if (niche.status === "Available") {
-                      setSelectedNiche(niche);
-                      openBookingForm();
-                    }
-                  }}
-                  className={`p-2 border rounded-md cursor-pointer transform transition-transform ${
-                    niche.status === "unavailable"
-                      ? "bg-black text-white cursor-not-allowed"
-                      : niche.status === "Booked"
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-white border hover:bg-orange-300 hover:scale-105"
-                  }`}
-                >
-                  <div>{niche.nicheName}</div>
-                </div>
-              ))}
+              {row.map((niche) => {
+                const tooltipMessage =
+                  niche.status === "Booked"
+                    ? "Ô chứa đã được đặt trước!"
+                    : niche.status === "unavailable"
+                    ? "Ô chứa đã được sử dụng!"
+                    : "Bạn có thể chọn ô chứa này!";
+
+                return (
+                  <TooltipProvider key={niche.nicheId}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={() => {
+                            if (niche.status === "Available") {
+                              setSelectedNiche(niche);
+                              openBookingForm();
+                            }
+                          }}
+                          className={`p-2 border rounded-md cursor-pointer transform transition-transform ${
+                            niche.status === "unavailable"
+                              ? "bg-black text-white cursor-not-allowed"
+                              : niche.status === "Booked"
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-white border hover:bg-orange-300 hover:scale-105"
+                          }`}
+                        >
+                          <div>{niche.nicheName}</div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>{tooltipMessage}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -161,36 +182,51 @@ const NicheReservationPage = () => {
     } else {
       return rows.reverse().map((row, rowIndex) => (
         <div key={rowIndex} className="flex space-x-2 items-center pt-2">
-          <div className="flex-shrink-0 font-semibold pr-4 whitespace-nowrap">
+          <div className="flex-shrink-0 font-semibold whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
-          {row.map((niche) => (
-            <div
-              key={niche.nicheId}
-              onClick={() => {
-                if (niche.status === "Available") {
-                  setSelectedNiche(niche);
-                  openBookingForm();
-                }
-              }}
-              className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                niche.status === "unavailable"
-                  ? "bg-black text-white cursor-not-allowed"
-                  : niche.status === "Booked"
-                  ? "bg-orange-400 cursor-not-allowed text-white"
-                  : "bg-white border hover:bg-orange-300 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform  hover:duration-300"
-              }`}
-            >
-              <div className="">{niche.nicheName}</div>
-            </div>
-          ))}
+          {row.map((niche) => {
+            const tooltipMessage =
+              niche.status === "Booked"
+                ? "Ô chứa đã được đặt trước!"
+                : niche.status === "unavailable"
+                ? "Ô chứa đã được sử dụng!"
+                : "Bạn có thể chọn ô chứa này!";
+
+            return (
+              <TooltipProvider key={niche.nicheId}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      onClick={() => {
+                        if (niche.status === "Available") {
+                          setSelectedNiche(niche);
+                          openBookingForm();
+                        }
+                      }}
+                      className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
+                        niche.status === "unavailable"
+                          ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed "
+                          : niche.status === "Booked"
+                          ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
+                          : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform  hover:duration-300"
+                      }`}
+                    >
+                      <div className="">{niche.nicheName}</div>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{tooltipMessage}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            );
+          })}
         </div>
       ));
     }
   };
 
   return (
-    <div className="container mx-auto px-1 py-6 ">
+    <div className="">
       <section className="flex flex-col lg:flex-row gap-2 ">
         {/* Search Section */}
         <motion.div
@@ -224,15 +260,15 @@ const NicheReservationPage = () => {
           <div className="mt-4 flex justify-center space-x-4 ">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-black rounded-sm "></div>
-              <span className="font-semibold text-white">Không thể chọn</span>
+              <span className="font-semibold text-white">Đã sử dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>
-              <span className="font-semibold ">Có thể chọn</span>
+              <span className="font-semibold text-white">Còn trống</span>
             </div>
             <div className="flex items-center space-x-2 ">
               <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-              <span className="font-semibold text-white">Đang được đặt</span>
+              <span className="font-semibold text-white">Đã được đặt</span>
             </div>
           </div>
           <ReservationForm
