@@ -41,7 +41,7 @@ const Sidebar = () => {
     setOpen(!open);
   };
 
-  const menuItems = [
+  const staffMenuItems = [
     {
       text: "Trang chủ",
       icon: <HomeIcon className="h-6 w-6" />,
@@ -83,6 +83,27 @@ const Sidebar = () => {
       path: "/service-requests",
     },
   ];
+
+  const managerMenuItems = [
+    {
+      text: "Trang chủ",
+      icon: <HomeIcon className="h-6 w-6" />,
+      path: "/manager-dashboard",
+    },
+    {
+      text: "Quản lý nhân viên",
+      icon: <DocumentTextIcon className="h-6 w-6" />,
+      path: "/staffs",
+    },
+    {
+      text: "Báo cáo",
+      icon: <UserIcon className="h-6 w-6" />,
+      path: "/reports",
+    },
+  ];
+
+  const menuItems =
+    user?.role === "Manager" ? managerMenuItems : staffMenuItems;
 
   if (!user) {
     return null; // Không hiển thị Sidebar nếu chưa đăng nhập
