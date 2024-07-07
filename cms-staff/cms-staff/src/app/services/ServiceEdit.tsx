@@ -1,4 +1,3 @@
-// components/ServiceEdit.tsx
 "use client";
 
 import React from "react";
@@ -11,13 +10,34 @@ import {
   TextField,
   Grid,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
 import { useToast } from "@/components/ui/use-toast";
+import { Service } from "./interfaces";
 
-const ServiceEdit = ({ service, onClose, onSave, open }) => {
-  const { control, handleSubmit, reset } = useForm({
-    defaultValues: service,
+interface ServiceEditProps {
+  service: Service | null;
+  onClose: () => void;
+  onSave: (service: Service) => void;
+  open: boolean;
+}
+
+const ServiceEdit: React.FC<ServiceEditProps> = ({
+  service,
+  onClose,
+  onSave,
+  open,
+}) => {
+  const { control, handleSubmit, reset } = useForm<Service>({
+    defaultValues: service || {
+      serviceId: 0,
+      serviceName: "",
+      description: "",
+      price: 0,
+      category: "",
+      tag: "",
+      servicePicture: "",
+    },
   });
   const { toast } = useToast();
 
@@ -25,7 +45,8 @@ const ServiceEdit = ({ service, onClose, onSave, open }) => {
     reset(service);
   }, [service, reset]);
 
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<Service> = async (data) => {
+    if (!service) return;
     try {
       await ServiceAPI.updateService(service.serviceId, data);
       toast({

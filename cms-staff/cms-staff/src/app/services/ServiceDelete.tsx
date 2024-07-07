@@ -11,11 +11,25 @@ import {
 } from "@mui/material";
 import ServiceAPI from "@/services/serviceService";
 import { useToast } from "@/components/ui/use-toast";
+import { Service } from "./interfaces";
 
-const ServiceDelete = ({ service, onClose, onDelete, open }) => {
+interface ServiceDeleteProps {
+  service: Service | null;
+  onClose: () => void;
+  onDelete: (serviceId: number) => void;
+  open: boolean;
+}
+
+const ServiceDelete: React.FC<ServiceDeleteProps> = ({
+  service,
+  onClose,
+  onDelete,
+  open,
+}) => {
   const { toast } = useToast();
 
   const handleDelete = async () => {
+    if (!service) return;
     try {
       await ServiceAPI.deleteService(service.serviceId);
       toast({

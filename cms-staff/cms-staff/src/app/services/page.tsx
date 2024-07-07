@@ -20,6 +20,7 @@ import {
   TableSortLabel,
   Chip,
   Avatar,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -33,18 +34,19 @@ import ServiceDetail from "./ServiceDetail";
 import ServiceEdit from "./ServiceEdit";
 import ServiceDelete from "./ServiceDelete";
 import ServiceAdd from "./ServiceAdd";
+import { Service } from "./interfaces";
 
-const ServiceProductPage = () => {
-  const [items, setItems] = useState([]);
-  const [selectedService, setSelectedService] = useState(null);
-  const [viewOpen, setViewOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("all");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("serviceId");
+const ServiceProductPage: React.FC = () => {
+  const [items, setItems] = useState<Service[]>([]);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [viewOpen, setViewOpen] = useState<boolean>(false);
+  const [editOpen, setEditOpen] = useState<boolean>(false);
+  const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
+  const [addOpen, setAddOpen] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchColumn, setSearchColumn] = useState<string>("all");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Service>("serviceId");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,26 +70,26 @@ const ServiceProductPage = () => {
     setAddOpen(true);
   };
 
-  const handleViewItem = (service) => {
+  const handleViewItem = (service: Service) => {
     setSelectedService(service);
     setViewOpen(true);
   };
 
-  const handleEditItem = (service) => {
+  const handleEditItem = (service: Service) => {
     setSelectedService(service);
     setEditOpen(true);
   };
 
-  const handleDeleteItem = (service) => {
+  const handleDeleteItem = (service: Service) => {
     setSelectedService(service);
     setDeleteOpen(true);
   };
 
-  const handleSearchColumnChange = (event) => {
-    setSearchColumn(event.target.value);
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value as string);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: keyof Service) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);

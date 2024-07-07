@@ -75,7 +75,7 @@ const Sidebar = () => {
     {
       text: "Đơn đăng ký viếng",
       icon: <ClipboardListIcon className="h-6 w-6" />,
-      path: "/visit-requests",
+      path: "/visit-registrations",
     },
     {
       text: "Đơn đặt dịch vụ",

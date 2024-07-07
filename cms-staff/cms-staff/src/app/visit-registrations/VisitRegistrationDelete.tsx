@@ -9,8 +9,16 @@ import {
   Button,
   Typography,
 } from "@mui/material";
+import { VisitRequest } from "./interfaces";
 
-const DeleteVisitRequestDialog = ({
+interface VisitDeleteProps {
+  open: boolean;
+  visitRequest: VisitRequest | null;
+  onClose: () => void;
+  onDelete: () => void;
+}
+
+const VisitDelete: React.FC<VisitDeleteProps> = ({
   open,
   visitRequest,
   onClose,
@@ -37,4 +45,4 @@ const DeleteVisitRequestDialog = ({
   );
 };
 
-export default DeleteVisitRequestDialog;
+export default VisitDelete;

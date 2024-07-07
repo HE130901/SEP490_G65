@@ -9,8 +9,19 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { VisitRequest } from "./interfaces";
 
-const ViewVisitRequestDialog = ({ open, visitRequest, onClose }) => {
+interface VisitDetailProps {
+  open: boolean;
+  visitRequest: VisitRequest | null;
+  onClose: () => void;
+}
+
+const VisitDetail: React.FC<VisitDetailProps> = ({
+  open,
+  visitRequest,
+  onClose,
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Xem chi tiết đơn đăng ký viếng thăm</DialogTitle>
@@ -77,4 +88,4 @@ const ViewVisitRequestDialog = ({ open, visitRequest, onClose }) => {
   );
 };
 
-export default ViewVisitRequestDialog;
+export default VisitDetail;

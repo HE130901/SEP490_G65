@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,7 +10,12 @@ import {
   Button,
 } from "@mui/material";
 
-const AddVisitRequestDialog = ({ open, onClose }) => {
+interface VisitAddProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const VisitAdd: React.FC<VisitAddProps> = ({ open, onClose }) => {
   const [formData, setFormData] = useState({
     nicheId: "",
     visitDate: "",
@@ -18,7 +23,7 @@ const AddVisitRequestDialog = ({ open, onClose }) => {
     note: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
@@ -88,4 +93,4 @@ const AddVisitRequestDialog = ({ open, onClose }) => {
   );
 };
 
-export default AddVisitRequestDialog;
+export default VisitAdd;

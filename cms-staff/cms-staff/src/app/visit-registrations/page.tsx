@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   Box,
   Button,
@@ -20,6 +20,7 @@ import {
   TableSortLabel,
   Chip,
   Tooltip,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -27,30 +28,32 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import VisitRequestAPI from "@/services/visitRequestService";
+import VisitRegistrationAPI from "@/services/visitRegistrationService";
 import { useToast } from "@/components/ui/use-toast";
-import AddVisitRequestDialog from "./AddVisitRequestDialog";
-import ViewVisitRequestDialog from "./ViewVisitRequestDialog";
-import EditVisitRequestDialog from "./EditVisitRequestDialog";
-import DeleteVisitRequestDialog from "./DeleteVisitRequestDialog";
+import AddVisitRequestDialog from "./VisitRegistrationAdd";
+import ViewVisitRequestDialog from "./VisitRegistrationDetail";
+import EditVisitRequestDialog from "./VisitRegistrationEdit";
+import DeleteVisitRequestDialog from "./VisitRegistrationDelete";
+import { VisitRequest } from "./interfaces";
 
-const VisitRequestPage = () => {
-  const [visitRequests, setVisitRequests] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("all");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("visitId");
+const VisitRegistrationPage: React.FC = () => {
+  const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchColumn, setSearchColumn] = useState<string>("all");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string>("visitId");
   const { toast } = useToast();
-  const [selectedVisitRequest, setSelectedVisitRequest] = useState(null);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedVisitRequest, setSelectedVisitRequest] =
+    useState<VisitRequest | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchVisitRequests = async () => {
       try {
-        const response = await VisitRequestAPI.getAllVisitRequests();
+        const response = await VisitRegistrationAPI.getAllVisitRegistrations();
         setVisitRequests(response.data.$values);
       } catch (error) {
         toast({
@@ -68,17 +71,17 @@ const VisitRequestPage = () => {
     setAddDialogOpen(true);
   };
 
-  const handleViewVisitRequest = (visitRequest) => {
+  const handleViewVisitRequest = (visitRequest: VisitRequest) => {
     setSelectedVisitRequest(visitRequest);
     setViewDialogOpen(true);
   };
 
-  const handleEditVisitRequest = (visitRequest) => {
+  const handleEditVisitRequest = (visitRequest: VisitRequest) => {
     setSelectedVisitRequest(visitRequest);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteVisitRequest = (visitRequest) => {
+  const handleDeleteVisitRequest = (visitRequest: VisitRequest) => {
     setSelectedVisitRequest(visitRequest);
     setDeleteDialogOpen(true);
   };
@@ -108,11 +111,11 @@ const VisitRequestPage = () => {
     setSelectedVisitRequest(null);
   };
 
-  const handleSearchColumnChange = (event) => {
-    setSearchColumn(event.target.value);
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value as string);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: string) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);
@@ -120,21 +123,30 @@ const VisitRequestPage = () => {
 
   const sortedVisitRequests = visitRequests.sort((a, b) => {
     if (orderBy === "visitId") {
-      return order === "asc" ? a.visitId - b.visitId : b.visitId - a.visitId;
+      return order === "asc"
+        ? Number(a.visitId) - Number(b.visitId)
+        : Number(b.visitId) - Number(a.visitId);
     } else if (orderBy === "nicheId") {
-      return order === "asc" ? a.nicheId - b.nicheId : b.nicheId - a.nicheId;
+      return order === "asc"
+        ? Number(a.nicheId) - Number(b.nicheId)
+        : Number(b.nicheId) - Number(a.nicheId);
     } else if (orderBy === "status") {
       return order === "asc"
         ? a.status.localeCompare(b.status)
         : b.status.localeCompare(a.status);
     } else if (orderBy === "createdDate") {
       return order === "asc"
-        ? new Date(a.createdDate) - new Date(b.createdDate)
-        : new Date(b.createdDate) - new Date(a.createdDate);
+        ? a.createdDate && b.createdDate
+          ? new Date(a.createdDate).getTime() -
+            new Date(b.createdDate).getTime()
+          : 0
+        : a.createdDate && b.createdDate
+        ? new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+        : 0;
     } else if (orderBy === "visitDate") {
       return order === "asc"
-        ? new Date(a.visitDate) - new Date(b.visitDate)
-        : new Date(b.visitDate) - new Date(a.visitDate);
+        ? new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime()
+        : new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime();
     } else if (orderBy === "note") {
       return order === "asc"
         ? a.note.localeCompare(b.note)
@@ -191,7 +203,9 @@ const VisitRequestPage = () => {
             <InputLabel>Tìm theo</InputLabel>
             <Select
               value={searchColumn}
-              onChange={handleSearchColumnChange}
+              onChange={(event: SelectChangeEvent<string>) =>
+                handleSearchColumnChange(event)
+              }
               label="Tìm theo"
             >
               <MenuItem value="all">Tất cả</MenuItem>
@@ -277,7 +291,9 @@ const VisitRequestPage = () => {
                 <TableCell align="center">{visitRequest.visitId}</TableCell>
                 <TableCell align="center">{visitRequest.nicheId}</TableCell>
                 <TableCell align="center">
-                  {new Date(visitRequest.createdDate).toLocaleDateString()}
+                  {new Date(
+                    visitRequest.createdDate ?? ""
+                  ).toLocaleDateString()}
                 </TableCell>
                 <TableCell align="center">
                   {new Date(visitRequest.visitDate).toLocaleDateString()}
@@ -359,4 +375,4 @@ const VisitRequestPage = () => {
   );
 };
 
-export default VisitRequestPage;
+export default VisitRegistrationPage;

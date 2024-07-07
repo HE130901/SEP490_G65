@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,9 +9,20 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { VisitRequest } from "./interfaces";
 
-const EditVisitRequestDialog = ({ open, visitRequest, onClose }) => {
-  const [formData, setFormData] = useState({
+interface VisitEditProps {
+  open: boolean;
+  visitRequest: VisitRequest | null;
+  onClose: () => void;
+}
+
+const VisitEdit: React.FC<VisitEditProps> = ({
+  open,
+  visitRequest,
+  onClose,
+}) => {
+  const [formData, setFormData] = useState<VisitRequest>({
     visitId: "",
     nicheId: "",
     visitDate: "",
@@ -25,7 +36,7 @@ const EditVisitRequestDialog = ({ open, visitRequest, onClose }) => {
     }
   }, [visitRequest]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
@@ -109,4 +120,4 @@ const EditVisitRequestDialog = ({ open, visitRequest, onClose }) => {
   );
 };
 
-export default EditVisitRequestDialog;
+export default VisitEdit;
