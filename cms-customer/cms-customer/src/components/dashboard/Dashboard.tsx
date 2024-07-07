@@ -16,7 +16,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useStateContext } from "@/context/state-context";
+import { useStateContext } from "@/context/StateContext";
 import NicheAPI from "@/services/nicheService";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -146,10 +146,10 @@ export default function Dashboard() {
                 <RegistrationList reFetchTrigger={reFetchTrigger} />
               </TabsContent>
               <TabsContent value="serviceRequests" className="w-full">
-                <ServiceRequestList />
+                <ServiceRequestList reFetchTrigger={false} />
               </TabsContent>
               <TabsContent value="bookingRequests" className="w-full">
-                <BookingRequestList />
+                <BookingRequestList reFetchTrigger={false} />
               </TabsContent>
             </Tabs>
           </motion.div>

@@ -21,7 +21,7 @@ export default function RootLayout({
       <body>
         <StateProvider>
           <CartProvider>
-            <Header />
+            <Header currentView={undefined} setCurrentView={undefined} />
             {children}
             <Toaster />
             <Footer />

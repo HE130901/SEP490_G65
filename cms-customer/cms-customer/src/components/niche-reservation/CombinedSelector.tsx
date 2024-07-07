@@ -38,8 +38,8 @@ const CombinedSelector = () => {
   const [floorOpen, setFloorOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
 
-  const [floors, setFloors] = useState([]);
-  const [areas, setAreas] = useState([]);
+  const [floors, setFloors] = useState<Floor[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [buildingValue, setBuildingValue] = useState("");
   const [floorValue, setFloorValue] = useState("");
   const [areaValue, setAreaValue] = useState("");
@@ -50,7 +50,28 @@ const CombinedSelector = () => {
     }
   }, [buildings]);
 
-  const handleSelectBuilding = (building) => {
+  interface Building {
+    buildingId: string;
+    buildingName: string;
+    floors?: {
+      $values: Floor[];
+    };
+  }
+
+  interface Floor {
+    floorId: string;
+    floorName: string;
+    areas?: {
+      $values: Area[];
+    };
+  }
+
+  interface Area {
+    areaId: string;
+    areaName: string;
+  }
+
+  const handleSelectBuilding = (building: Building) => {
     setSelectedBuilding(building);
     setFloors(building.floors?.$values || []);
     resetSelections();
@@ -62,7 +83,7 @@ const CombinedSelector = () => {
     }
   };
 
-  const handleSelectFloor = (floor) => {
+  const handleSelectFloor = (floor: Floor) => {
     setSelectedFloor(floor);
     setAreas(floor.areas?.$values || []);
     resetSectionAndNiche();
@@ -74,7 +95,7 @@ const CombinedSelector = () => {
     }
   };
 
-  const handleSelectArea = (area) => {
+  const handleSelectArea = (area: Area) => {
     setSelectedArea(area);
     resetNiche();
     setAreaValue(area.areaName);
@@ -103,7 +124,7 @@ const CombinedSelector = () => {
               <CommandList>
                 <CommandEmpty>Không tìm thấy tòa nhà.</CommandEmpty>
                 <CommandGroup>
-                  {buildings?.map((building) => (
+                  {buildings?.map((building: Building) => (
                     <CommandItem
                       key={building.buildingId}
                       value={building.buildingName}

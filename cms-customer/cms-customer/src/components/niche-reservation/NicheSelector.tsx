@@ -5,7 +5,7 @@ import { useStateContext } from "@/context/StateContext";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-const NicheSelector = ({ openModal }) => {
+const NicheSelector = ({ openModal }: { openModal: any }) => {
   const {
     selectedBuilding,
     selectedFloor,
@@ -46,7 +46,7 @@ const NicheSelector = ({ openModal }) => {
     return aName - bName;
   });
 
-  const createRows = (items, itemsPerRow) => {
+  const createRows = (items: any[], itemsPerRow: number) => {
     const rows = [];
     for (let i = 0; i < items.length; i += itemsPerRow) {
       rows.push(items.slice(i, i + itemsPerRow));
@@ -54,7 +54,7 @@ const NicheSelector = ({ openModal }) => {
     return rows;
   };
 
-  const floorLabels = {
+  const floorLabels: { [key: number]: string } = {
     0: "Tầng 5",
     1: "Tầng 4",
     2: "Tầng 3",
@@ -87,9 +87,9 @@ const NicheSelector = ({ openModal }) => {
           <div className="flex items-center justify-center font-semibold pr-4 whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
-          {floorRows.map((row, rowIndex) => (
+          {floorRows.map((row: any[], rowIndex: number) => (
             <div key={rowIndex} className="flex space-x-2">
-              {row.map((niche) => (
+              {row.map((niche: any) => (
                 <div
                   key={niche.nicheId}
                   onClick={() => {
@@ -119,7 +119,7 @@ const NicheSelector = ({ openModal }) => {
           <div className="flex-shrink-0 font-semibold pr-4 whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
-          {row.map((niche) => (
+          {row.map((niche: any) => (
             <div
               key={niche.nicheId}
               onClick={() => {

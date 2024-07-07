@@ -124,7 +124,11 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchNiches = useCallback(
     async (buildingId: number, floorId: number, areaId: number) => {
       try {
-        const response = await NicheAPI.getAll(buildingId, floorId, areaId);
+        const response = await NicheAPI.getAll(
+          String(buildingId),
+          String(floorId),
+          String(areaId)
+        );
         setNiches(response.data.$values);
       } catch (error) {
         console.error("[StateProvider] Error fetching niches:", error);
@@ -171,7 +175,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchVisitRegistrations = useCallback(async (customerId: number) => {
     try {
-      const response = await VisitRegistrationAPI.getByCustomerId(customerId);
+      const response = await VisitRegistrationAPI.getByCustomerId(
+        String(customerId)
+      );
       setVisitRegistrations(response.data.$values);
       console.log("[useStateContext] Fetching visit registrations");
     } catch (error) {

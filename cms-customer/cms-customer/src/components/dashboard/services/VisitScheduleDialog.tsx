@@ -91,25 +91,44 @@ export default function VisitScheduleDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="containerId">Ô Chứa</Label>
-              <Select id="containerId" name="containerId" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn ô chứa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {containers.length > 0 ? (
-                    containers.map((container) => (
-                      <SelectItem
-                        key={container.nicheId}
-                        value={container.nicheId.toString()}
-                      >
-                        {container.nicheName}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled>Không có dữ liệu</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn ô chứa" />
+              </SelectTrigger>
+              <SelectContent>
+                {containers.length > 0 ? (
+                  containers.map((container) => (
+                    <SelectItem
+                      key={container.nicheId}
+                      value={container.nicheId.toString()}
+                    >
+                      {container.nicheName}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem disabled value={""}>
+                    Không có dữ liệu
+                  </SelectItem>
+                )}
+              </SelectContent>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn ô chứa" />
+              </SelectTrigger>
+              <SelectContent>
+                {containers.length > 0 ? (
+                  containers.map((container) => (
+                    <SelectItem
+                      key={container.nicheId}
+                      value={container.nicheId.toString()}
+                    >
+                      {container.nicheName}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem disabled value={""}>
+                    Không có dữ liệu
+                  </SelectItem>
+                )}
+              </SelectContent>
             </div>
             <div>
               <Label htmlFor="visitDateTime">Ngày Giờ Viếng Thăm</Label>

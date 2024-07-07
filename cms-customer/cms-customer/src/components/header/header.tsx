@@ -1,6 +1,5 @@
 "use client";
 
-import logo from "../../../public/images/logo.png";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,19 +17,11 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useStateContext } from "@/context/StateContext";
 import { cn } from "@/lib/utils";
 import {
   ArrowRightOnRectangleIcon,
-  Bars3Icon,
-  ClipboardDocumentIcon,
-  DocumentTextIcon,
-  HomeIcon,
-  PencilSquareIcon,
   PowerIcon,
-  RectangleGroupIcon,
-  ShoppingCartIcon,
   UserCircleIcon,
   UserIcon,
 } from "@heroicons/react/24/solid";
@@ -38,33 +29,47 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import logo from "../../../public/images/logo.png";
 
-export function Header({ currentView, setCurrentView }) {
+export function Header({
+  currentView,
+  setCurrentView,
+}: {
+  currentView: any;
+  setCurrentView: any;
+}) {
   const { user, logout } = useStateContext();
 
-  const ListItem = React.forwardRef(
-    ({ className, title, children, ...props }, ref) => {
-      return (
-        <li>
-          <NavigationMenuLink asChild>
-            <a
-              ref={ref}
-              className={cn(
-                "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                className
-              )}
-              {...props}
-            >
-              <div className="text-sm font-medium leading-none">{title}</div>
-              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                {children}
-              </p>
-            </a>
-          </NavigationMenuLink>
-        </li>
-      );
+  const ListItem = React.forwardRef<
+    HTMLAnchorElement,
+    {
+      className?: string;
+      title: string;
+      children: React.ReactNode;
+      href: string;
     }
-  );
+  >(({ className, title, children, href, ...props }, ref) => {
+    return (
+      <li>
+        <NavigationMenuLink asChild>
+          <Link
+            ref={ref}
+            href={href}
+            className={cn(
+              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+              className
+            )}
+            {...props}
+          >
+            <div className="text-sm font-medium leading-none">{title}</div>
+            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+              {children}
+            </p>
+          </Link>
+        </NavigationMenuLink>
+      </li>
+    );
+  });
   ListItem.displayName = "ListItem";
 
   return (
@@ -104,7 +109,7 @@ export function Header({ currentView, setCurrentView }) {
                 <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                   <li className="row-span-3">
                     <NavigationMenuLink asChild>
-                      <a
+                      <Link
                         className="flex h-full w-full select-none flex-col justify-start  rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                         href="/services"
                       >
@@ -113,7 +118,7 @@ export function Header({ currentView, setCurrentView }) {
                           An Bình Viên cung cấp các dịch vụ tiện ích cho khách
                           hàng sở hữu ô chứa.
                         </p>
-                      </a>
+                      </Link>
                     </NavigationMenuLink>
                   </li>
 

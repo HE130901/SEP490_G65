@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { JSX, SVGProps } from "react";
 
 export default function Footer() {
   return (
@@ -48,7 +49,7 @@ export default function Footer() {
   );
 }
 
-function LocateIcon(props) {
+function LocateIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -71,7 +72,7 @@ function LocateIcon(props) {
   );
 }
 
-function MailIcon(props) {
+function MailIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -91,7 +92,9 @@ function MailIcon(props) {
   );
 }
 
-function MountainIcon(props) {
+function MountainIcon(
+  props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>
+) {
   return (
     <svg
       {...props}
@@ -110,7 +113,7 @@ function MountainIcon(props) {
   );
 }
 
-function PhoneIcon(props) {
+function PhoneIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

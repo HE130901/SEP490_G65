@@ -67,7 +67,7 @@ export default function ProductList({ products }: ProductListProps) {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
-  const handleAddToCart = (product, event, fromModal = false) => {
+  const handleAddToCart = (product: any, event: any, fromModal = false) => {
     const item = {
       id: product.serviceId,
       name: product.serviceName,
@@ -127,7 +127,7 @@ export default function ProductList({ products }: ProductListProps) {
     }
   };
 
-  const handleViewDetails = (product) => {
+  const handleViewDetails = (product: any) => {
     setSelectedProduct(product);
   };
 
@@ -305,7 +305,7 @@ export default function ProductList({ products }: ProductListProps) {
   );
 }
 
-function LayoutGridIcon(props) {
+function LayoutGridIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -327,7 +327,7 @@ function LayoutGridIcon(props) {
   );
 }
 
-function ListIcon(props) {
+function ListIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
@@ -351,7 +351,7 @@ function ListIcon(props) {
   );
 }
 
-function ListOrderedIcon(props) {
+function ListOrderedIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

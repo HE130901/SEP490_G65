@@ -55,24 +55,36 @@ export const PaymentModal = ({
           <h2 className="text-xl font-semibold">Thông tin thanh toán</h2>
         </div>
         <div className="space-y-4">
-          <Input
-            label="Tên"
-            placeholder="Nhập tên của bạn"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Input
-            label="Email"
-            placeholder="Nhập email của bạn"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            label="Số điện thoại"
-            placeholder="Nhập số điện thoại của bạn"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Tên
+            </label>
+            <Input
+              placeholder="Nhập tên của bạn"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <Input
+              placeholder="Nhập email của bạn"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Số điện thoại
+            </label>
+            <Input
+              placeholder="Nhập số điện thoại của bạn"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
           <div className="flex justify-between items-center mt-4">
             <span className="text-lg font-semibold text-gray-900">
               Tổng cộng

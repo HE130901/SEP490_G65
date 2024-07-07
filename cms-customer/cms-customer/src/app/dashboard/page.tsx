@@ -163,10 +163,10 @@ const DashboardPage = () => {
                 <RegistrationList reFetchTrigger={reFetchTrigger} />
               </TabsContent>
               <TabsContent value="serviceRequests" className="w-full">
-                <ServiceRequestList />
+                <ServiceRequestList reFetchTrigger={false} />
               </TabsContent>
               <TabsContent value="bookingRequests" className="w-full">
-                <BookingRequestList />
+                <BookingRequestList reFetchTrigger={false} />
               </TabsContent>
             </Tabs>
           </motion.div>

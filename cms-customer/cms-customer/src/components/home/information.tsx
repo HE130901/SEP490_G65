@@ -2,10 +2,11 @@
 
 import {
   Accordion,
-  AccordionBody,
-  AccordionHeader,
+  AccordionSummary,
+  AccordionDetails,
   Typography,
-} from "@material-tailwind/react";
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import { motion } from "framer-motion";
 import { CarouselPlugin } from "../ui/carouselPlugin";
@@ -42,8 +43,12 @@ const revealVariants = {
 };
 
 export default function Information() {
-  const [open, setOpen] = React.useState(0);
-  const handleOpen = (value: number) => setOpen(open === value ? 0 : value);
+  const [expanded, setExpanded] = React.useState<number | false>(false);
+
+  const handleChange =
+    (panel: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      setExpanded(isExpanded ? panel : false);
+    };
 
   return (
     <div className="container mx-auto flex flex-col items-center px-4 py-10 ">
@@ -58,7 +63,7 @@ export default function Information() {
         <Typography
           variant="h2"
           className="text-3xl font-bold mb-4 text-center text-zinc-50"
-          color="blue-gray"
+          color="textPrimary"
         >
           Giới thiệu tổng quan
         </Typography>
@@ -76,21 +81,20 @@ export default function Information() {
           {FAQS.map(({ title, desc }, key) => (
             <motion.div key={key} variants={revealVariants} custom={key + 3}>
               <Accordion
-                open={open === key + 1}
-                onClick={() => handleOpen(key + 1)}
-                className="border border-gray-300 rounded-lg shadow-sm"
+                expanded={expanded === key}
+                onChange={handleChange(key)}
               >
-                <AccordionHeader className="text-left text-gray-900 bg-white p-4">
-                  {title}
-                </AccordionHeader>
-                <AccordionBody className="bg-gray-50 p-4">
-                  <Typography
-                    color="blue-gray"
-                    className="font-normal text-gray-500"
-                  >
-                    {desc}
-                  </Typography>
-                </AccordionBody>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls={`panel${key}bh-content`}
+                  id={`panel${key}bh-header`}
+                  className="text-left text-gray-900 bg-white p-4"
+                >
+                  <Typography>{title}</Typography>
+                </AccordionSummary>
+                <AccordionDetails className="bg-gray-50 p-4">
+                  <Typography color="textSecondary">{desc}</Typography>
+                </AccordionDetails>
               </Accordion>
             </motion.div>
           ))}

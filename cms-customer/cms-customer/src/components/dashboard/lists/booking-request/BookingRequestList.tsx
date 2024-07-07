@@ -129,7 +129,10 @@ export default function BookingRequestList({
     console.log("currentModal set to delete");
   };
 
-  const handleView = (record: NicheReservation) => {
+  const handleView = (
+    record: NicheReservation,
+    event?: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     console.log("handleView called with record:", record);
     setViewingRecord(record);
     setCurrentModal("view");

@@ -42,7 +42,13 @@ const predefinedAddresses = [
   "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
 ];
 
-const ReservationForm = ({ isVisible, onClose }) => {
+const ReservationForm = ({
+  isVisible,
+  onClose,
+}: {
+  isVisible: boolean;
+  onClose: () => void;
+}) => {
   const {
     selectedBuilding,
     selectedFloor,
@@ -75,7 +81,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
     }
   }, [setValue, selectedAddress, user]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     const contractDate = data.contractDate + "T23:59:00";
 
     const dataToSubmit = {
@@ -97,15 +103,17 @@ const ReservationForm = ({ isVisible, onClose }) => {
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
-      if (error.response) {
-        console.error("Server responded with:", error.response.data);
-        if (error.response.data.errors) {
-          Object.entries(error.response.data.errors).forEach(([key, value]) => {
-            toast.error(`${key}: ${value}`);
-          });
+      if ((error as any).response) {
+        console.error("Server responded with:", (error as any).response.data);
+        if ((error as any).response.data.errors) {
+          Object.entries((error as any).response.data.errors).forEach(
+            ([key, value]) => {
+              toast.error(`${key}: ${value}`);
+            }
+          );
         } else {
           toast.error(
-            error.response.data.error ||
+            (error as any).response.data.error ||
               "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa"
           );
         }
@@ -138,7 +146,9 @@ const ReservationForm = ({ isVisible, onClose }) => {
               readOnly={!!user}
             />
             {errors.name && (
-              <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
+              <p className="mt-2 text-sm text-red-600">
+                {errors.name.message?.toString()}
+              </p>
             )}
           </div>
           <div className="mb-4">
@@ -154,7 +164,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             />
             {errors.phoneNumber && (
               <p className="mt-2 text-sm text-red-600">
-                {errors.phoneNumber.message}
+                {errors.phoneNumber.message?.toString()}
               </p>
             )}
           </div>
@@ -186,7 +196,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             />
             {errors.signAddress && (
               <p className="mt-2 text-sm text-red-600">
-                {errors.signAddress.message}
+                {errors.signAddress.message?.toString()}
               </p>
             )}
           </div>
@@ -213,7 +223,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
             />
             {errors.contractDate && (
               <p className="mt-2 text-sm text-red-600">
-                {errors.contractDate.message}
+                {errors.contractDate.message?.toString()}
               </p>
             )}
           </div>

@@ -77,7 +77,9 @@ export default function CustomerContractList({
     const lowercasedFilter = searchTerm.toLowerCase();
     const filteredData = containers.filter((item) =>
       Object.keys(item).some((key) =>
-        String(item[key]).toLowerCase().includes(lowercasedFilter)
+        String(item[key as keyof Container])
+          .toLowerCase()
+          .includes(lowercasedFilter)
       )
     );
     setFilteredData(filteredData);

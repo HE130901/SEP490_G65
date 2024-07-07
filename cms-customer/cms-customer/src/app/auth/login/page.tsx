@@ -17,21 +17,24 @@ const schema = z.object({
   password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
 });
 
+// Define the type using the schema
+type FormData = z.infer<typeof schema>;
+
 const Login = () => {
   const { login } = useStateContext();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormData) => {
     try {
       await login(data.email, data.password);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.response?.data.message || "Đăng nhập thất bại");
     }
   };
