@@ -42,7 +42,17 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
   const { toast } = useToast();
 
   React.useEffect(() => {
-    reset(service);
+    return reset(
+      service || {
+        serviceId: 0,
+        serviceName: "",
+        description: "",
+        price: 0,
+        category: "",
+        tag: "",
+        servicePicture: "",
+      }
+    );
   }, [service, reset]);
 
   const onSubmit: SubmitHandler<Service> = async (data) => {
