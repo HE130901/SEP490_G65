@@ -91,44 +91,27 @@ export default function VisitScheduleDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="containerId">Ô Chứa</Label>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn ô chứa" />
-              </SelectTrigger>
-              <SelectContent>
-                {containers.length > 0 ? (
-                  containers.map((container) => (
-                    <SelectItem
-                      key={container.nicheId}
-                      value={container.nicheId.toString()}
-                    >
-                      {container.nicheName}
+              <Select name="containerId">
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn ô chứa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {containers.length > 0 ? (
+                    containers.map((container) => (
+                      <SelectItem
+                        key={container.nicheId}
+                        value={container.nicheId.toString()}
+                      >
+                        {container.nicheName}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem disabled value={""}>
+                      Không có dữ liệu
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem disabled value={""}>
-                    Không có dữ liệu
-                  </SelectItem>
-                )}
-              </SelectContent>
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn ô chứa" />
-              </SelectTrigger>
-              <SelectContent>
-                {containers.length > 0 ? (
-                  containers.map((container) => (
-                    <SelectItem
-                      key={container.nicheId}
-                      value={container.nicheId.toString()}
-                    >
-                      {container.nicheName}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem disabled value={""}>
-                    Không có dữ liệu
-                  </SelectItem>
-                )}
-              </SelectContent>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="visitDateTime">Ngày Giờ Viếng Thăm</Label>
