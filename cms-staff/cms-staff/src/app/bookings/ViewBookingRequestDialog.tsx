@@ -10,7 +10,17 @@ import {
   Button,
 } from "@mui/material";
 
-const ViewBookingRequestDialog = ({ open, bookingRequest, onClose }) => {
+interface ViewBookingRequestDialogProps {
+  open: boolean;
+  bookingRequest: any;
+  onClose: () => void;
+}
+
+const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
+  open,
+  bookingRequest,
+  onClose,
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Xem chi tiết đơn đăng ký đặt chỗ</DialogTitle>

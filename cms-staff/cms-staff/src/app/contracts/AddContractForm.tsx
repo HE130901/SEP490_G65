@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, ChangeEvent } from "react";
 import {
   Dialog,
   DialogActions,
@@ -15,15 +13,24 @@ import {
   Grid,
   Box,
   Typography,
-  IconButton,
+  SelectChangeEvent,
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
 import SearchIcon from "@mui/icons-material/Search";
 import PrintIcon from "@mui/icons-material/Print";
 import { useReactToPrint } from "react-to-print";
+import {
+  FormData,
+  Building,
+  AddContractFormProps,
+  ContractDocumentProps,
+  SearchDialogProps,
+} from "./types";
 
-const initialFormData = {
+import "./styles.css"; // Import the external CSS file
+
+const initialFormData: FormData = {
   customerName: "",
   relationship: "",
   phone: "",
@@ -48,7 +55,7 @@ const initialFormData = {
   status: "Còn hiệu lực",
 };
 
-const buildings = [
+const buildings: Building[] = [
   {
     id: 1,
     name: "Tòa nhà A",
@@ -71,7 +78,7 @@ const buildings = [
   },
 ];
 
-const calculateCost = (type, duration) => {
+const calculateCost = (type: string, duration: number): number => {
   if (type === "Gửi theo tháng") {
     return duration * 200000;
   } else if (type === "Gửi theo năm") {
@@ -83,21 +90,29 @@ const calculateCost = (type, duration) => {
   return 0;
 };
 
-const calculateEndDate = (startDate, type, duration) => {
+const calculateEndDate = (
+  startDate: string,
+  type: string,
+  duration: number
+): string => {
   if (!startDate) return "";
   const date = new Date(startDate);
   if (type === "Gửi theo tháng") {
-    date.setMonth(date.getMonth() + parseInt(duration, 10));
+    date.setMonth(date.getMonth() + duration);
   } else if (type === "Gửi theo năm") {
-    date.setFullYear(date.getFullYear() + parseInt(duration, 10));
+    date.setFullYear(date.getFullYear() + duration);
   }
   return date.toISOString().split("T")[0];
 };
 
-const AddContractForm = ({ open, handleClose, handleSave }) => {
-  const [formData, setFormData] = useState(initialFormData);
+const AddContractForm: React.FC<AddContractFormProps> = ({
+  open,
+  handleClose,
+  handleSave,
+}) => {
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [searchOpen, setSearchOpen] = useState(false);
-  const contractRef = useRef();
+  const contractRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
     content: () => contractRef.current,
@@ -117,22 +132,32 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
     }
   }, [formData.startDate, formData.type, formData.duration]);
 
-  const handleChange = (event) => {
+  const handleChange = (
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }
+    >
+  ) => {
     const { name, value } = event.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name as string]: value,
       cost: calculateCost(formData.type, formData.duration),
     });
   };
 
-  const handleImport = (importedData) => {
+  const handleImport = (importedData: Partial<FormData>) => {
     setFormData({ ...formData, ...importedData });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    handleSave(formData);
+    // Convert FormData to plain object
+    const newContract = {
+      ...formData,
+      id: 0, // Placeholder for id, which will be set in parent component
+      code: "", // Placeholder for code, which will be set in parent component
+    };
+    handleSave(newContract);
   };
 
   const handleSearchOpen = () => {
@@ -143,22 +168,24 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
     setSearchOpen(false);
   };
 
-  const handleTypeChange = (event) => {
+  const handleTypeChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: value,
+      [name as string]: value,
       duration: 0,
       cost: 0,
     }));
   };
 
-  const handleDurationChange = (event) => {
+  const handleDurationChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = event.target;
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: value,
-      cost: calculateCost(prevFormData.type, value),
+      [name as string]: value,
+      cost: calculateCost(prevFormData.type, parseInt(value as string, 10)),
     }));
   };
 
@@ -166,17 +193,13 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
     (building) => building.id === parseInt(formData.nicheBuilding, 10)
   );
 
-  const selectedFloor =
-    selectedBuilding &&
-    selectedBuilding.floors.find(
-      (floor) => floor.id === parseInt(formData.nicheFloor, 10)
-    );
+  const selectedFloor = selectedBuilding?.floors.find(
+    (floor) => floor.id === parseInt(formData.nicheFloor, 10)
+  );
 
-  const selectedZone =
-    selectedFloor &&
-    selectedFloor.zones.find(
-      (zone) => zone.id === parseInt(formData.nicheZone, 10)
-    );
+  const selectedZone = selectedFloor?.zones.find(
+    (zone) => zone.id === parseInt(formData.nicheZone, 10)
+  );
 
   return (
     <>
@@ -186,7 +209,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
           <Button
             onClick={handleSearchOpen}
             color="primary"
-            style={{ float: "right", marginLeft: 8 }}
+            className="searchButton"
           >
             <SearchIcon />
             Nhập từ mã đơn đăng ký
@@ -214,7 +237,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
                   <Select
                     name="relationship"
                     value={formData.relationship}
-                    onChange={handleChange}
+                    onChange={handleTypeChange}
                     label="Quan hệ với người chết"
                   >
                     <MenuItem value="Cha/Mẹ">Cha/Mẹ</MenuItem>
@@ -350,7 +373,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
                   <Select
                     name="nicheBuilding"
                     value={formData.nicheBuilding}
-                    onChange={handleChange}
+                    onChange={handleTypeChange}
                     label="Nhà"
                   >
                     {buildings.map((building) => (
@@ -367,7 +390,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
                   <Select
                     name="nicheFloor"
                     value={formData.nicheFloor}
-                    onChange={handleChange}
+                    onChange={handleTypeChange}
                     label="Tầng"
                   >
                     {selectedBuilding &&
@@ -385,7 +408,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
                   <Select
                     name="nicheZone"
                     value={formData.nicheZone}
-                    onChange={handleChange}
+                    onChange={handleTypeChange}
                     label="Khu"
                   >
                     {selectedFloor &&
@@ -403,7 +426,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
                   <Select
                     name="nicheCode"
                     value={formData.nicheCode}
-                    onChange={handleChange}
+                    onChange={handleTypeChange}
                     label="Ô"
                   >
                     {selectedZone &&
@@ -509,7 +532,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
             onClick={handleClose}
             variant="contained"
             startIcon={<CancelIcon />}
-            style={{ backgroundColor: "#f44336", color: "#fff" }}
+            className="cancelButton"
           >
             Hủy
           </Button>
@@ -517,7 +540,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
             onClick={handleSubmit}
             variant="contained"
             startIcon={<SaveIcon />}
-            style={{ backgroundColor: "#4caf50", color: "#fff" }}
+            className="saveButton"
           >
             Lưu
           </Button>
@@ -525,11 +548,7 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
             onClick={handlePrint}
             variant="contained"
             startIcon={<PrintIcon />}
-            style={{
-              backgroundColor: "#2196f3",
-              color: "#fff",
-              float: "right",
-            }}
+            className="printButton"
           >
             In hợp đồng
           </Button>
@@ -547,12 +566,16 @@ const AddContractForm = ({ open, handleClose, handleSave }) => {
   );
 };
 
-const SearchDialog = ({ open, handleClose, handleImport }) => {
+const SearchDialog: React.FC<SearchDialogProps> = ({
+  open,
+  handleClose,
+  handleImport,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleSearch = () => {
     // Logic tìm kiếm mã đơn đăng ký
-    const importedData = {
+    const importedData: Partial<FormData> = {
       customerName: "Nguyễn Văn A",
       phone: "0123456789",
       nicheBuilding: "Tòa nhà A",
@@ -593,7 +616,10 @@ const SearchDialog = ({ open, handleClose, handleImport }) => {
   );
 };
 
-const ContractDocument = React.forwardRef(({ formData }, ref) => (
+const ContractDocument = React.forwardRef<
+  HTMLDivElement,
+  ContractDocumentProps
+>(({ formData }, ref) => (
   <div ref={ref} style={{ padding: "20px" }}>
     <Typography variant="h4" align="center" gutterBottom>
       HỢP ĐỒNG GỬI GIỮ TRO CỐT
@@ -700,5 +726,7 @@ const ContractDocument = React.forwardRef(({ formData }, ref) => (
     </Box>
   </div>
 ));
+
+ContractDocument.displayName = "ContractDocument";
 
 export default AddContractForm;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
@@ -23,12 +23,14 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<{ email: string; password: string }>({
     resolver: zodResolver(schema),
   });
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<{ email: string; password: string }> = async (
+    data
+  ) => {
     try {
       await login(data.email, data.password);
       toast({
@@ -37,7 +39,7 @@ const Login = () => {
         description: "Chào mừng bạn quay trở lại!",
       });
     } catch (error) {
-      if (error.message === "AccessDenied") {
+      if ((error as Error).message === "AccessDenied") {
         toast({
           variant: "destructive",
           title: "Đăng nhập thất bại",

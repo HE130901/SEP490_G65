@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -19,6 +17,7 @@ import {
   InputLabel,
   TableSortLabel,
   Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -33,8 +32,8 @@ import ViewBookingRequestDialog from "./ViewBookingRequestDialog";
 import EditBookingRequestDialog from "./EditBookingRequestDialog";
 import DeleteBookingRequestDialog from "./DeleteBookingRequestDialog";
 
-const BookingRequestPage = () => {
-  const [bookingRequests, setBookingRequests] = useState([]);
+const BookingRequestPage = (props: any) => {
+  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState("asc");
@@ -67,17 +66,17 @@ const BookingRequestPage = () => {
     setAddDialogOpen(true);
   };
 
-  const handleViewBookingRequest = (bookingRequest) => {
+  const handleViewBookingRequest = (bookingRequest: any) => {
     setSelectedBookingRequest(bookingRequest);
     setViewDialogOpen(true);
   };
 
-  const handleEditBookingRequest = (bookingRequest) => {
+  const handleEditBookingRequest = (bookingRequest: any) => {
     setSelectedBookingRequest(bookingRequest);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteBookingRequest = (bookingRequest) => {
+  const handleDeleteBookingRequest = (bookingRequest: any) => {
     setSelectedBookingRequest(bookingRequest);
     setDeleteDialogOpen(true);
   };
@@ -107,11 +106,11 @@ const BookingRequestPage = () => {
     setSelectedBookingRequest(null);
   };
 
-  const handleSearchColumnChange = (event) => {
-    setSearchColumn(event.target.value);
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value as string);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: string) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);
@@ -134,12 +133,14 @@ const BookingRequestPage = () => {
         : b.phoneNumber.localeCompare(a.phoneNumber);
     } else if (orderBy === "createdDate") {
       return order === "asc"
-        ? new Date(a.createdDate) - new Date(b.createdDate)
-        : new Date(b.createdDate) - new Date(a.createdDate);
+        ? new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
+        : new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
     } else if (orderBy === "confirmationDate") {
       return order === "asc"
-        ? new Date(a.confirmationDate) - new Date(b.confirmationDate)
-        : new Date(b.confirmationDate) - new Date(a.confirmationDate);
+        ? new Date(a.confirmationDate).getTime() -
+            new Date(b.confirmationDate).getTime()
+        : new Date(b.confirmationDate).getTime() -
+            new Date(a.confirmationDate).getTime();
     } else if (orderBy === "status") {
       return order === "asc"
         ? a.status.localeCompare(b.status)
@@ -239,7 +240,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "reservationId"}
-                  direction={orderBy === "reservationId" ? order : "asc"}
+                  direction={
+                    orderBy === "reservationId"
+                      ? (order as "desc" | "asc")
+                      : "asc"
+                  }
                   onClick={() => handleRequestSort("reservationId")}
                 >
                   STT
@@ -248,7 +253,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "reservationId"}
-                  direction={orderBy === "reservationId" ? order : "asc"}
+                  direction={
+                    orderBy === "reservationId"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("reservationId")}
                 >
                   Mã đơn
@@ -257,7 +266,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "nicheId"}
-                  direction={orderBy === "nicheId" ? order : "asc"}
+                  direction={
+                    orderBy === "nicheId"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("nicheId")}
                 >
                   Mã ô chứa
@@ -266,7 +279,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "createdDate"}
-                  direction={orderBy === "createdDate" ? order : "asc"}
+                  direction={
+                    orderBy === "createdDate"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("createdDate")}
                 >
                   Ngày tạo
@@ -275,7 +292,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "confirmationDate"}
-                  direction={orderBy === "confirmationDate" ? order : "asc"}
+                  direction={
+                    orderBy === "confirmationDate"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("confirmationDate")}
                 >
                   Ngày xác nhận
@@ -284,7 +305,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "signAddress"}
-                  direction={orderBy === "signAddress" ? order : "asc"}
+                  direction={
+                    orderBy === "signAddress"
+                      ? (order as "asc" | "desc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("signAddress")}
                 >
                   Địa chỉ
@@ -293,7 +318,11 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "phoneNumber"}
-                  direction={orderBy === "phoneNumber" ? order : "asc"}
+                  direction={
+                    orderBy === "phoneNumber"
+                      ? (order as "asc" | "desc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("phoneNumber")}
                 >
                   Số điện thoại
@@ -302,7 +331,9 @@ const BookingRequestPage = () => {
               <TableCell align="center">
                 <TableSortLabel
                   active={orderBy === "status"}
-                  direction={orderBy === "status" ? order : "asc"}
+                  direction={
+                    orderBy === "status" ? (order as "desc" | "asc") : undefined
+                  }
                   onClick={() => handleRequestSort("status")}
                 >
                   Trạng thái
@@ -378,10 +409,7 @@ const BookingRequestPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <AddBookingRequestDialog
-        open={addDialogOpen}
-        onClose={handleAddDialogClose}
-      />
+      <AddBookingRequestDialog open={addDialogOpen} />
       <ViewBookingRequestDialog
         open={viewDialogOpen}
         bookingRequest={selectedBookingRequest}

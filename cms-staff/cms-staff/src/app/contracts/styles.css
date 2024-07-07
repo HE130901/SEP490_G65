@@ -1,0 +1,17 @@
+/* styles.css */
+.cancelButton {
+    background-color: #f44336;
+    color: #fff;
+  }
+  
+  .saveButton {
+    background-color: #4caf50;
+    color: #fff;
+  }
+  
+  .printButton {
+    background-color: #2196f3;
+    color: #fff;
+    float: right;
+  }
+  

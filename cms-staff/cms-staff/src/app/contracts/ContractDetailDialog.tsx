@@ -1,3 +1,4 @@
+// ContractDetailDialog.tsx
 import React from "react";
 import {
   Dialog,
@@ -9,8 +10,13 @@ import {
   Box,
   Grid,
 } from "@mui/material";
+import { ContractDetailDialogProps } from "./types";
 
-const ContractDetailDialog = ({ open, handleClose, contract }) => {
+const ContractDetailDialog: React.FC<ContractDetailDialogProps> = ({
+  open,
+  handleClose,
+  contract,
+}) => {
   if (!contract) return null;
 
   return (
@@ -130,7 +136,7 @@ const ContractDetailDialog = ({ open, handleClose, contract }) => {
             Ghi chú
           </Typography>
           {contract.notes && contract.notes.length > 0 ? (
-            contract.notes.map((note, index) => (
+            contract.notes.map((note: string, index: number) => (
               <Typography key={index} variant="body2" gutterBottom>
                 - {note}
               </Typography>

@@ -10,7 +10,10 @@ import {
   Button,
 } from "@mui/material";
 
-const AddBookingRequestDialog = ({ open, onClose }) => {
+const AddBookingRequestDialog = (
+  { open }: { open: boolean },
+  onClose: () => void
+) => {
   const [formData, setFormData] = useState({
     nicheId: "",
     signAddress: "",
@@ -19,7 +22,7 @@ const AddBookingRequestDialog = ({ open, onClose }) => {
     note: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };

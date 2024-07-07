@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// RenewalDialog.tsx
+import React, { useState, ChangeEvent } from "react";
 import {
   Dialog,
   DialogActions,
@@ -14,9 +15,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
+import { RenewalDialogProps, Contract } from "./types";
 
-const calculateNewEndDate = (startDate, duration, type) => {
+const calculateNewEndDate = (
+  startDate: string,
+  duration: string,
+  type: string
+): string => {
   if (!startDate) return "";
   const date = new Date(startDate);
   if (type === "Gửi theo tháng") {
@@ -27,49 +34,56 @@ const calculateNewEndDate = (startDate, duration, type) => {
   return date.toISOString().split("T")[0];
 };
 
-const RenewalDialog = ({ open, handleClose, contract, handleSave }) => {
-  const [duration, setDuration] = useState("");
-  const [renewalDate, setRenewalDate] = useState("");
-  const [type, setType] = useState("");
-  const [newEndDate, setNewEndDate] = useState("");
+const RenewalDialog: React.FC<RenewalDialogProps> = ({
+  open,
+  handleClose,
+  contract,
+  handleSave,
+}) => {
+  const [duration, setDuration] = useState<string>("");
+  const [renewalDate, setRenewalDate] = useState<string>("");
+  const [type, setType] = useState<string>("");
+  const [newEndDate, setNewEndDate] = useState<string>("");
 
-  const handleDurationChange = (event) => {
-    const value = event.target.value;
+  const handleDurationChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const value = event.target.value as string;
     setDuration(value);
     setNewEndDate(calculateNewEndDate(renewalDate, value, type));
   };
 
-  const handleTypeChange = (event) => {
+  const handleTypeChange = (event: SelectChangeEvent<string>) => {
     const value = event.target.value;
     setType(value);
     setNewEndDate(calculateNewEndDate(renewalDate, duration, value));
   };
 
-  const handleRenewalDateChange = (event) => {
+  const handleRenewalDateChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setRenewalDate(value);
     setNewEndDate(calculateNewEndDate(value, duration, type));
   };
 
   const handleSubmit = () => {
-    const updatedContract = {
-      ...contract,
-      endDate: newEndDate,
-      notes: contract.notes
-        ? [
-            ...contract.notes,
-            `Gia hạn thêm ${duration} ${
-              type === "Gửi theo tháng" ? "tháng" : "năm"
-            } đến ${newEndDate}`,
-          ]
-        : [
-            `Gia hạn thêm ${duration} ${
-              type === "Gửi theo tháng" ? "tháng" : "năm"
-            } đến ${newEndDate}`,
-          ],
-      status: "Còn hiệu lực",
-    };
-    handleSave(updatedContract);
+    if (contract) {
+      const updatedContract: Contract = {
+        ...contract,
+        endDate: newEndDate,
+        notes: contract.notes
+          ? [
+              ...contract.notes,
+              `Gia hạn thêm ${duration} ${
+                type === "Gửi theo tháng" ? "tháng" : "năm"
+              } đến ${newEndDate}`,
+            ]
+          : [
+              `Gia hạn thêm ${duration} ${
+                type === "Gửi theo tháng" ? "tháng" : "năm"
+              } đến ${newEndDate}`,
+            ],
+        status: "Còn hiệu lực",
+      };
+      handleSave(updatedContract);
+    }
   };
 
   if (!contract) {

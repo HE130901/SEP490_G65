@@ -10,12 +10,19 @@ import {
   Typography,
 } from "@mui/material";
 
+interface DeleteBookingRequestDialogProps {
+  open: boolean;
+  bookingRequest: any; // Replace 'any' with the appropriate type
+  onClose: () => void;
+  onDelete: () => void;
+}
+
 const DeleteBookingRequestDialog = ({
   open,
   bookingRequest,
   onClose,
   onDelete,
-}) => {
+}: DeleteBookingRequestDialogProps) => {
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Xóa đơn đăng ký đặt chỗ</DialogTitle>
