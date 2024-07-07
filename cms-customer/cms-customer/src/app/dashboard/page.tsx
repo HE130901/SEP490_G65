@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/StateContext";
 import axiosInstance from "@/utils/axiosInstance";
 import { motion } from "framer-motion";
+import withAuth from "@/components/withAuth";
 
 const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -187,4 +188,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default withAuth(DashboardPage);

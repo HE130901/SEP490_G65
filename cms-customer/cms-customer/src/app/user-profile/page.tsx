@@ -59,4 +59,4 @@ const ServiceOrderPage: React.FC = () => {
   );
 };
 
-export default ServiceOrderPage;
+export default withAuth(ServiceOrderPage);

@@ -31,7 +31,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import VisitScheduleDialog from "./VisitScheduleDialog"; // Ensure this path is correct
+import VisitScheduleDialog from "./VisitScheduleDialog";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
