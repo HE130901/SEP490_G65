@@ -12,7 +12,7 @@ import {
 
 interface DeleteBookingRequestDialogProps {
   open: boolean;
-  bookingRequest: any; // Replace 'any' with the appropriate type
+  bookingRequest: any;
   onClose: () => void;
   onDelete: () => void;
 }

@@ -17,7 +17,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
-import { RenewalDialogProps, Contract } from "./types";
+import { RenewalDialogProps, Contract } from "./interfaces";
 
 const calculateNewEndDate = (
   startDate: string,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,38 +9,18 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { CustomerViewDialogProps } from "./interfaces";
 
-const CustomerEditDialog = ({ open, customer, onClose }) => {
-  const [formData, setFormData] = useState({
-    customerId: "",
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    citizenId: "",
-  });
-
-  useEffect(() => {
-    if (customer) {
-      setFormData({ ...customer });
-    }
-  }, [customer]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleSave = () => {
-    // Add your save logic here
-    onClose();
-  };
-
+const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
+  open,
+  customer,
+  onClose,
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Sửa thông tin khách hàng</DialogTitle>
+      <DialogTitle>Xem thông tin khách hàng</DialogTitle>
       <DialogContent>
-        {formData && (
+        {customer && (
           <>
             <TextField
               margin="dense"
@@ -48,7 +28,7 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              value={formData.customerId}
+              value={customer.customerId}
               disabled
             />
             <TextField
@@ -57,9 +37,8 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
+              value={customer.fullName}
+              disabled
             />
             <TextField
               margin="dense"
@@ -67,9 +46,8 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="email"
               fullWidth
               variant="outlined"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={customer.email}
+              disabled
             />
             <TextField
               margin="dense"
@@ -77,9 +55,8 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
+              value={customer.phone}
+              disabled
             />
             <TextField
               margin="dense"
@@ -87,9 +64,8 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
+              value={customer.address}
+              disabled
             />
             <TextField
               margin="dense"
@@ -97,9 +73,8 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              name="citizenId"
-              value={formData.citizenId}
-              onChange={handleChange}
+              value={customer.citizenId}
+              disabled
             />
           </>
         )}
@@ -108,12 +83,9 @@ const CustomerEditDialog = ({ open, customer, onClose }) => {
         <Button onClick={onClose} color="primary">
           Đóng
         </Button>
-        <Button onClick={handleSave} color="primary">
-          Lưu
-        </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default CustomerEditDialog;
+export default CustomerViewDialog;

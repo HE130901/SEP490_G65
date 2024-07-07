@@ -25,14 +25,14 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import BookingAPI from "@/services/bookingService";
+import NicheReservationAPI from "@/services/nicheReservationService";
 import { useToast } from "@/components/ui/use-toast";
-import AddBookingRequestDialog from "./AddBookingRequestDialog";
-import ViewBookingRequestDialog from "./ViewBookingRequestDialog";
-import EditBookingRequestDialog from "./EditBookingRequestDialog";
-import DeleteBookingRequestDialog from "./DeleteBookingRequestDialog";
+import AddBookingRequestDialog from "./NicheReservationAdd";
+import ViewBookingRequestDialog from "./NicheReservationDetail";
+import EditBookingRequestDialog from "./NicheReservationEdit";
+import DeleteBookingRequestDialog from "./NicheReservationDelete";
 
-const BookingRequestPage = (props: any) => {
+const NicheReservationPage = (props: any) => {
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
@@ -48,7 +48,7 @@ const BookingRequestPage = (props: any) => {
   useEffect(() => {
     const fetchBookingRequests = async () => {
       try {
-        const response = await BookingAPI.getAllBookings();
+        const response = await NicheReservationAPI.getAllNicheReservations();
         setBookingRequests(response.data.$values);
       } catch (error) {
         toast({
@@ -430,4 +430,4 @@ const BookingRequestPage = (props: any) => {
   );
 };
 
-export default BookingRequestPage;
+export default NicheReservationPage;

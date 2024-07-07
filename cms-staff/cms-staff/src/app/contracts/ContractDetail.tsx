@@ -10,7 +10,7 @@ import {
   Box,
   Grid,
 } from "@mui/material";
-import { ContractDetailDialogProps } from "./types";
+import { ContractDetailDialogProps } from "./interfaces";
 
 const ContractDetailDialog: React.FC<ContractDetailDialogProps> = ({
   open,

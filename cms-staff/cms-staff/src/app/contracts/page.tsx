@@ -26,13 +26,13 @@ import {
   RestorePage as RestorePageIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import AddContractForm from "./AddContractForm";
-import ContractDetailDialog from "./ContractDetailDialog";
-import RenewalDialog from "./RenewalDialog";
-import ConfirmDialog from "./ConfirmDialog";
+import AddContractForm from "./ContractAdd";
+import ContractDetailDialog from "./ContractDetail";
+import RenewalDialog from "./ContractRenewal";
+import ConfirmDialog from "./ContractDelete";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import withAuth from "@/components/withAuth";
-import { Contract, FormData } from "./types";
+import { Contract, FormData } from "./interfaces";
 
 const ContractPage: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>([

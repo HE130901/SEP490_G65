@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
-import { ConfirmDialogProps } from "./types";
+import { ConfirmDialogProps } from "./interfaces";
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,

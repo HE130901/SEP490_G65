@@ -9,9 +9,19 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { Niche } from "./interfaces";
 
-const NicheEditDialog = ({ open, niche, onClose }) => {
-  const [formData, setFormData] = useState({
+const NicheEditDialog = ({
+  open,
+  niche,
+  onClose,
+}: {
+  open: boolean;
+  niche: Niche | null;
+  onClose: () => void;
+}) => {
+  const [formData, setFormData] = useState<Niche>({
+    nicheId: 0,
     nicheName: "",
     customer: "",
     phone: "",
@@ -26,7 +36,7 @@ const NicheEditDialog = ({ open, niche, onClose }) => {
     }
   }, [niche]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };

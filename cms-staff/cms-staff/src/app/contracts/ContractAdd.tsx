@@ -26,9 +26,9 @@ import {
   AddContractFormProps,
   ContractDocumentProps,
   SearchDialogProps,
-} from "./types";
+} from "./interfaces";
 
-import "./styles.css"; // Import the external CSS file
+import "./styles.css";
 
 const initialFormData: FormData = {
   customerName: "",
@@ -151,11 +151,11 @@ const AddContractForm: React.FC<AddContractFormProps> = ({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // Convert FormData to plain object
+
     const newContract = {
       ...formData,
-      id: 0, // Placeholder for id, which will be set in parent component
-      code: "", // Placeholder for code, which will be set in parent component
+      id: 0,
+      code: "",
     };
     handleSave(newContract);
   };

@@ -9,39 +9,39 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { Niche } from "./interfaces";
 
-const CustomerViewDialog = ({ open, customer, onClose }) => {
+const NicheViewDialog = ({
+  open,
+  niche,
+  onClose,
+}: {
+  open: boolean;
+  niche: Niche | null;
+  onClose: () => void;
+}) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Xem thông tin khách hàng</DialogTitle>
+      <DialogTitle>Xem chi tiết ô chứa</DialogTitle>
       <DialogContent>
-        {customer && (
+        {niche && (
           <>
             <TextField
               margin="dense"
-              label="Mã Khách hàng"
+              label="Mã"
               type="text"
               fullWidth
               variant="outlined"
-              value={customer.customerId}
+              value={niche.nicheName}
               disabled
             />
             <TextField
               margin="dense"
-              label="Tên Khách hàng"
+              label="Khách hàng"
               type="text"
               fullWidth
               variant="outlined"
-              value={customer.fullName}
-              disabled
-            />
-            <TextField
-              margin="dense"
-              label="Email"
-              type="email"
-              fullWidth
-              variant="outlined"
-              value={customer.email}
+              value={niche.customer}
               disabled
             />
             <TextField
@@ -50,25 +50,34 @@ const CustomerViewDialog = ({ open, customer, onClose }) => {
               type="text"
               fullWidth
               variant="outlined"
-              value={customer.phone}
+              value={niche.phone}
               disabled
             />
             <TextField
               margin="dense"
-              label="Địa chỉ"
+              label="Người mất"
               type="text"
               fullWidth
               variant="outlined"
-              value={customer.address}
+              value={niche.deceased}
               disabled
             />
             <TextField
               margin="dense"
-              label="CCCD"
+              label="Trạng thái"
               type="text"
               fullWidth
               variant="outlined"
-              value={customer.citizenId}
+              value={niche.status}
+              disabled
+            />
+            <TextField
+              margin="dense"
+              label="Lịch sử"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={niche.history}
               disabled
             />
           </>
@@ -83,4 +92,4 @@ const CustomerViewDialog = ({ open, customer, onClose }) => {
   );
 };
 
-export default CustomerViewDialog;
+export default NicheViewDialog;
