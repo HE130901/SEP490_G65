@@ -40,7 +40,7 @@ const NicheReservationPage = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   const [nicheLoading, setNicheLoading] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [screenSize, setScreenSize] = useState("large");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,7 +64,14 @@ const NicheReservationPage = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 1250);
+      const width = window.innerWidth;
+      if (width <= 600) {
+        setScreenSize("small");
+      } else if (width > 600 && width <= 1250) {
+        setScreenSize("medium");
+      } else {
+        setScreenSize("large");
+      }
     };
 
     handleResize();
@@ -111,14 +118,6 @@ const NicheReservationPage = () => {
     4: "Tầng 1",
   };
 
-  const rows = isSmallScreen
-    ? createRows(sortedNiches, 5).reduce((acc, cur, idx) => {
-        if (idx % 4 === 0) acc.push([]);
-        acc[acc.length - 1].push(cur);
-        return acc;
-      }, [])
-    : createRows(sortedNiches, 20);
-
   const renderSkeletonRows = () => {
     return (
       <div className="flex flex-wrap justify-center space-x-2">
@@ -130,10 +129,19 @@ const NicheReservationPage = () => {
   };
 
   const renderRows = () => {
-    if (isSmallScreen) {
-      return rows.reverse().map((floorRows, floorIndex) => (
+    if (screenSize === "small") {
+      const rows = createRows(sortedNiches, 5);
+      const groupedRows = rows
+        .reduce((acc, cur, idx) => {
+          if (idx % 4 === 0) acc.push([]);
+          acc[acc.length - 1].push(cur.reverse());
+          return acc;
+        }, [])
+        .reverse();
+
+      return groupedRows.map((floorRows, floorIndex) => (
         <div key={floorIndex} className="flex flex-col space-y-2">
-          <div className="flex items-center justify-center font-semibold  whitespace-nowrap">
+          <div className="flex items-center justify-center font-semibold whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
           {floorRows.map((row: any[], rowIndex: number) => (
@@ -157,12 +165,68 @@ const NicheReservationPage = () => {
                               openBookingForm();
                             }
                           }}
-                          className={`p-2 border rounded-md cursor-pointer transform transition-transform ${
+                          className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                             niche.status === "unavailable"
-                              ? "bg-black text-white cursor-not-allowed"
+                              ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
-                              ? "bg-gray-400 cursor-not-allowed"
-                              : "bg-white border hover:bg-orange-300 hover:scale-105"
+                              ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
+                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
+                          }`}
+                        >
+                          <div>{niche.nicheName}</div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>{tooltipMessage}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      ));
+    } else if (screenSize === "medium") {
+      const rows = createRows(sortedNiches, 10);
+      const groupedRows = rows
+        .reduce((acc, cur, idx) => {
+          if (idx % 2 === 0) acc.push([]);
+          acc[acc.length - 1].push(cur);
+          return acc;
+        }, [])
+        .reverse();
+
+      return groupedRows.map((floorRows, floorIndex) => (
+        <div key={floorIndex} className="flex flex-col space-y-2">
+          <div className="flex items-center justify-center font-semibold whitespace-nowrap">
+            {floorLabels[floorIndex]}
+          </div>
+          {floorRows.map((row: any[], rowIndex: number) => (
+            <div key={rowIndex} className="flex space-x-2">
+              {row.map((niche: any) => {
+                const tooltipMessage =
+                  niche.status === "Booked"
+                    ? "Ô chứa đã được đặt trước!"
+                    : niche.status === "unavailable"
+                    ? "Ô chứa đã được sử dụng!"
+                    : "Bạn có thể chọn ô chứa này!";
+
+                return (
+                  <TooltipProvider key={niche.nicheId}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={() => {
+                            if (niche.status === "Available") {
+                              setSelectedNiche(niche);
+                              openBookingForm();
+                            }
+                          }}
+                          className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
+                            niche.status === "unavailable"
+                              ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
+                              : niche.status === "Booked"
+                              ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
+                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
                           }`}
                         >
                           <div>{niche.nicheName}</div>
@@ -178,7 +242,8 @@ const NicheReservationPage = () => {
         </div>
       ));
     } else {
-      return rows.reverse().map((row, rowIndex) => (
+      const rows = createRows(sortedNiches, 20).reverse();
+      return rows.map((row, rowIndex) => (
         <div key={rowIndex} className="flex space-x-2 items-center pt-2">
           <div className="flex-shrink-0 font-semibold whitespace-nowrap">
             {floorLabels[rowIndex]}
@@ -204,10 +269,10 @@ const NicheReservationPage = () => {
                       }}
                       className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                         niche.status === "unavailable"
-                          ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed "
+                          ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
                           ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                          : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform  hover:duration-300"
+                          : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
                       }`}
                     >
                       <div className="">{niche.nicheName}</div>
