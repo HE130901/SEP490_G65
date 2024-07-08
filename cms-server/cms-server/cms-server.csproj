@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>cms_server</RootNamespace>
+    <UserSecretsId>2edf726c-5fe5-4ca4-b65e-e465e4c265b9</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

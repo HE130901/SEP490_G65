@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/cms-server/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsCmsbdDatabase_4CC16754C5",
+      "secretStore": null,
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/sep490g65/databases/cms",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:CmsbdDatabase",
+      "dynamicId": null
+    }
+  }
+}
