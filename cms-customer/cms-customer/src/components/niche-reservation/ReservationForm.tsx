@@ -131,10 +131,21 @@ const ReservationForm = ({
     }
   };
 
+  const getAllowedDates = () => {
+    const today = new Date();
+    const dates = [today.toISOString().split("T")[0]];
+    for (let i = 1; i <= 2; i++) {
+      const nextDate = new Date(today);
+      nextDate.setDate(today.getDate() + i);
+      dates.push(nextDate.toISOString().split("T")[0]);
+    }
+    return dates;
+  };
+
   return (
     <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Đăng ký đặt chỗ</DialogTitle>
-      <DialogContent>
+      <DialogTitle className="text-center">Đăng ký đặt chỗ</DialogTitle>
+      <DialogContent className="bg-gradient-to-b from-white to-stone-300">
         <form onSubmit={handleSubmit(onSubmit)}>
           <Controller
             name="name"
@@ -142,7 +153,11 @@ const ReservationForm = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Tên của bạn"
+                label={
+                  <span>
+                    Tên của bạn <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 fullWidth
                 margin="normal"
                 error={!!errors.name}
@@ -174,7 +189,11 @@ const ReservationForm = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Số điện thoại"
+                label={
+                  <span>
+                    Số điện thoại <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 fullWidth
                 margin="normal"
                 error={!!errors.phoneNumber}
@@ -209,7 +228,7 @@ const ReservationForm = ({
             className="mt-4"
             sx={{ color: "#0e0101" }}
           >
-            Địa chỉ ký hợp đồng
+            Địa chỉ ký hợp đồng <span style={{ color: "red" }}>*</span>
           </FormLabel>
           <Controller
             name="signAddress"
@@ -248,7 +267,11 @@ const ReservationForm = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Ngày hẹn ký hợp đồng"
+                label={
+                  <span>
+                    Ngày hẹn ký hợp đồng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 type="date"
                 fullWidth
                 margin="normal"
@@ -258,6 +281,10 @@ const ReservationForm = ({
                     ? errors.contractDate.message?.toString()
                     : ""
                 }
+                inputProps={{
+                  min: getAllowedDates()[0],
+                  max: getAllowedDates()[2],
+                }}
                 sx={{
                   "& .MuiInputBase-root": {
                     color: "#0e0101",
@@ -334,6 +361,7 @@ const ReservationForm = ({
             color="error"
             align="center"
             className="mt-4"
+            sx={{ fontWeight: "bold" }}
           >
             Quý khách vui lòng lưu ý!
           </Typography>
@@ -341,11 +369,12 @@ const ReservationForm = ({
             variant="body2"
             color="error"
             align="center"
+            sx={{ fontStyle: "italic" }}
             className="mb-4"
           >
             Thời gian giữ chỗ chỉ có hiệu lực trong vòng 3 ngày kể từ khi đặt
-            chỗ thành công. Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị
-            hủy.
+            chỗ thành công. <br />
+            Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị hủy.
           </Typography>
           <div className="flex justify-between mt-4 space-x-2">
             <Button
