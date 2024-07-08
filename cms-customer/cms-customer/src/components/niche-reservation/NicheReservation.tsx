@@ -283,7 +283,7 @@ const NicheReservationPage = () => {
                           ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
                           ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                          : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
+                          : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300 text-gray-600"
                       }`}
                     >
                       <div className="">{niche.nicheName}</div>
@@ -311,7 +311,7 @@ const NicheReservationPage = () => {
           variants={revealVariants}
           custom={1}
         >
-          <h1 className="text-2xl font-bold mb-4">Tìm kiếm</h1>
+          <h1 className="text-2xl font-bold mb-4 text-center">Tìm kiếm</h1>
           {loading ? <Skeleton height={40} /> : <CombinedSelector />}
         </motion.div>
 

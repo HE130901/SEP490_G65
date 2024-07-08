@@ -76,8 +76,7 @@ const CombinedSelector = () => {
     setFloors(building.floors?.$values || []);
     resetSelections();
     setBuildingValue(building.buildingName);
-    setBuildingOpen(false); // Close the building popover
-
+    setBuildingOpen(false);
     if (building.floors?.$values && building.floors.$values.length > 0) {
       handleSelectFloor(building.floors.$values[0]);
     }
@@ -88,7 +87,7 @@ const CombinedSelector = () => {
     setAreas(floor.areas?.$values || []);
     resetSectionAndNiche();
     setFloorValue(floor.floorName);
-    setFloorOpen(false); // Close the floor popover
+    setFloorOpen(false);
 
     if (floor.areas?.$values && floor.areas.$values.length > 0) {
       handleSelectArea(floor.areas.$values[0]);
@@ -99,11 +98,11 @@ const CombinedSelector = () => {
     setSelectedArea(area);
     resetNiche();
     setAreaValue(area.areaName);
-    setAreaOpen(false); // Close the area popover
+    setAreaOpen(false);
   };
 
   return (
-    <div className="flex flex-col space-y-4   rounded-md ">
+    <div className="flex flex-col space-y-4 rounded-md ">
       <div>
         {/* Building Selector */}
         <Popover open={buildingOpen} onOpenChange={setBuildingOpen}>
@@ -112,7 +111,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={buildingOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {buildingValue || "Chọn tòa nhà..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -156,7 +155,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={floorOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {floorValue || "Chọn tầng..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -200,7 +199,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={areaOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {areaValue || "Chọn khu..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
