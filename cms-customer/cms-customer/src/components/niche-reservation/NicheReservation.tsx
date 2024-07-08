@@ -161,7 +161,7 @@ const NicheReservationPage = () => {
                 const tooltipMessage =
                   niche.status === "Booked"
                     ? "Ô chứa đã được đặt trước!"
-                    : niche.status === "unavailable"
+                    : niche.status === "Unavailable"
                     ? "Ô chứa đã được sử dụng!"
                     : "Bạn có thể chọn ô chứa này!";
 
@@ -177,7 +177,7 @@ const NicheReservationPage = () => {
                             }
                           }}
                           className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                            niche.status === "unavailable"
+                            niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -217,7 +217,7 @@ const NicheReservationPage = () => {
                 const tooltipMessage =
                   niche.status === "Booked"
                     ? "Ô chứa đã được đặt trước!"
-                    : niche.status === "unavailable"
+                    : niche.status === "Unavailable"
                     ? "Ô chứa đã được sử dụng!"
                     : "Bạn có thể chọn ô chứa này!";
 
@@ -263,7 +263,7 @@ const NicheReservationPage = () => {
             const tooltipMessage =
               niche.status === "Booked"
                 ? "Ô chứa đã được đặt trước!"
-                : niche.status === "unavailable"
+                : niche.status === "Unavailable"
                 ? "Ô chứa đã được sử dụng!"
                 : "Bạn có thể chọn ô chứa này!";
 
@@ -279,7 +279,7 @@ const NicheReservationPage = () => {
                         }
                       }}
                       className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                        niche.status === "unavailable"
+                        niche.status === "Unavailable"
                           ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
                           ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"

@@ -105,14 +105,14 @@ namespace cms_server.Controllers
                         DeceasedId = deceased.DeceasedId,
                         StartDate = request.StartDate,
                         EndDate = request.EndDate,
-                        Status = "Trong hạn",
+                        Status = "Active",
                         Note = request.Note,
                         TotalAmount = request.TotalAmount
                     };
                     _context.Contracts.Add(contract);
                     await _context.SaveChangesAsync();
 
-                    niche.Status = "Booked";
+                    niche.Status = "Unavailable";
                     niche.CustomerId = customer.CustomerId;
                     niche.DeceasedId = deceased.DeceasedId;
                     _context.Niches.Update(niche);
