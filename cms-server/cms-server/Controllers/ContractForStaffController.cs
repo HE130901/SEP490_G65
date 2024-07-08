@@ -74,7 +74,9 @@ namespace cms_server.Controllers
                         Address = request.CustomerAddress,
                         CitizenId = request.CustomerCitizenId,
                         CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
-                        CitizenIdsupplier = request.CustomerCitizenIdSupplier
+                        CitizenIdsupplier = request.CustomerCitizenIdSupplier,
+                        PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
+
                     };
                     _context.Customers.Add(customer);
                     await _context.SaveChangesAsync();
@@ -123,7 +125,7 @@ namespace cms_server.Controllers
                         DeceasedId = deceased.DeceasedId,
                         ContractId = contract.ContractId,
                         StartDate = contract.StartDate,
-                        EndDate = contract.EndDate,
+                        EndDate = contract.EndDate
                     };
                     _context.NicheHistories.Add(nicheHistory);
                     await _context.SaveChangesAsync();
