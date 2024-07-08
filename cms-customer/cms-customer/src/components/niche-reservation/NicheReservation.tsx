@@ -67,9 +67,9 @@ const NicheReservationPage = () => {
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      if (width <= 600) {
+      if (width <= 800) {
         setScreenSize("small");
-      } else if (width > 600 && width <= 1250) {
+      } else if (width > 800 && width <= 1450) {
         setScreenSize("medium");
       } else {
         setScreenSize("large");

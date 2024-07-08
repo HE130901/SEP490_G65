@@ -4,6 +4,7 @@ import { StateProvider } from "@/context/StateContext";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/CartContext";
 import "./globals.css";
+import { ThemeProvider } from "@mui/material";
 
 export const metadata = {
   title: "An Bình Viên",
