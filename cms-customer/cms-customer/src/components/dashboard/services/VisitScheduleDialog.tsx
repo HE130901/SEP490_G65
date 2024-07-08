@@ -106,7 +106,7 @@ export default function VisitScheduleDialog({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem disabled value={""}>
+                    <SelectItem disabled value="no-data">
                       Không có dữ liệu
                     </SelectItem>
                   )}

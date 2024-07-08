@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStateContext } from "@/context/StateContext";
+import Loading from "@/components/ui/Loading";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const WithAuth = (props: any) => {
     const { user, loading } = useStateContext();
     const router = useRouter();
+    const [showLoading, setShowLoading] = useState(false);
 
     useEffect(() => {
       if (!loading && !user) {
-        router.push("/auth/login");
+        setShowLoading(true);
+        const timer = setTimeout(() => {
+          router.push("/auth/login");
+        }, 1000);
+        return () => clearTimeout(timer);
       }
     }, [loading, user, router]);
 
@@ -21,6 +27,10 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
 
     if (user) {
       return <WrappedComponent {...props} />;
+    }
+
+    if (showLoading) {
+      return <Loading />;
     }
 
     return null;

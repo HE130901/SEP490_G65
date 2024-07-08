@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -118,11 +120,20 @@ const NicheReservationPage = () => {
     4: "Tầng 1",
   };
 
-  const renderSkeletonRows = () => {
+  const renderSkeletonRows = (itemsPerRow: number, rowsCount: number) => {
     return (
-      <div className="flex flex-wrap justify-center space-x-2">
-        {Array.from({ length: 100 }).map((_, idx) => (
-          <Skeleton key={idx} height={50} width={50} />
+      <div className="flex flex-col space-y-2">
+        {Array.from({ length: rowsCount }).map((_, rowIndex) => (
+          <div key={rowIndex} className="flex space-x-2">
+            {Array.from({ length: itemsPerRow }).map((_, itemIndex) => (
+              <Skeleton
+                key={itemIndex}
+                height={40}
+                width={40}
+                className="p-2 border rounded-md"
+              />
+            ))}
+          </div>
         ))}
       </div>
     );
@@ -318,7 +329,16 @@ const NicheReservationPage = () => {
             {selectedArea?.areaName}
           </h2>
           <div className="flex flex-col items-center mb-6">
-            {nicheLoading ? renderSkeletonRows() : renderRows()}
+            {nicheLoading
+              ? renderSkeletonRows(
+                  screenSize === "small"
+                    ? 5
+                    : screenSize === "medium"
+                    ? 10
+                    : 20,
+                  5
+                )
+              : renderRows()}
           </div>
           <div className="mt-4 flex justify-center space-x-4 ">
             <div className="flex items-center space-x-2">

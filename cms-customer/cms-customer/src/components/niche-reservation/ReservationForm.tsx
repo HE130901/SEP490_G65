@@ -132,7 +132,7 @@ const ReservationForm = ({
         </div>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className={isSmallScreen ? "form-container" : "p-4 bg-white rounded"}
+          className={isSmallScreen ? "form-container" : "px-4 bg-white rounded"}
         >
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">
