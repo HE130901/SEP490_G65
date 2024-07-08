@@ -4,7 +4,8 @@ import { StateProvider } from "@/context/StateContext";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/CartContext";
 import "./globals.css";
-import { ThemeProvider } from "@mui/material";
+import { Analytics } from "@vercel/analytics/react";
+import CallHotline from "@/components/home/call-hotline";
 
 export const metadata = {
   title: "An Bình Viên",
@@ -26,6 +27,7 @@ export default function RootLayout({
             {children}
             <Toaster />
             <Footer />
+            <CallHotline />
           </CartProvider>
         </StateProvider>
       </body>
