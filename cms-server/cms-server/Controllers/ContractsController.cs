@@ -59,15 +59,63 @@ namespace cms_server.Controllers
         [HttpGet("{contractId}/detail")]
         public async Task<ActionResult<ContractDetailDto>> GetContractDetail(int contractId)
         {
-            var contract = await _context.Contracts
-                .Include(c => c.Customer)
-                .Include(c => c.Deceased)
-                .Include(c => c.Staff)
-                .Include(c => c.Niche)
-                    .ThenInclude(n => n.Area)
-                        .ThenInclude(a => a.Floor)
-                            .ThenInclude(f => f.Building)
-                .FirstOrDefaultAsync(c => c.ContractId == contractId);
+            // Tạo mới bản ghi trong bảng Deceased
+            var deceased = new Deceased
+            {
+                CustomerId = contractDto.CustomerId,
+                NicheId = contractDto.NicheId,
+                CitizenId = contractDto.CitizenId,
+                FullName = contractDto.FullName,
+                DateOfBirth = contractDto.DateOfBirth,
+                DateOfDeath = contractDto.DateOfDeath
+            };
+
+            _context.Deceaseds.Add(deceased);
+            await _context.SaveChangesAsync();
+
+            // Tạo mới bản ghi trong bảng Contract
+            var contract = new Contract
+            {
+                CustomerId = contractDto.CustomerId,
+                StaffId = contractDto.StaffId,
+                NicheId = contractDto.NicheId,
+                DeceasedId = deceased.DeceasedId,
+                StartDate = contractDto.StartDate,
+                EndDate = contractDto.EndDate,
+                TotalAmount = contractDto.TotalAmount,
+                Status = "Active", 
+                Note = contractDto.Note,
+            };
+
+            _context.Contracts.Add(contract);
+            await _context.SaveChangesAsync();
+
+            // Tạo mới bản ghi trong bảng NicheHistory
+            var nicheHistory = new NicheHistory
+            {
+                CustomerId = contractDto.CustomerId,
+                NicheId = contractDto.NicheId,
+                DeceasedId = deceased.DeceasedId,
+                ContractId = contract.ContractId,
+                StartDate = contractDto.StartDate,
+                EndDate = contractDto.EndDate
+            };
+
+            _context.NicheHistories.Add(nicheHistory);
+            await _context.SaveChangesAsync();
+
+            // Sửa đổi trạng thái của Niche thành unavailable
+            var niche = await _context.Niches.FindAsync(contractDto.NicheId);
+            if (niche != null)
+            {
+                niche.Status = "unavailable";
+                _context.Entry(niche).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+
+            return CreatedAtAction("GetContract", new { id = contract.ContractId }, contract);
+        }
+
 
             if (contract == null)
             {
