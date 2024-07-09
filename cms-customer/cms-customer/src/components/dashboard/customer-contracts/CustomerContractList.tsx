@@ -230,21 +230,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         <div className="text-center">{row.getValue("startDate")}</div>
       ),
     },
-    {
-      accessorKey: "endDate",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ngày kết thúc
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("endDate")}</div>
-      ),
-    },
+
     {
       accessorKey: "status",
       header: ({ column }) => (

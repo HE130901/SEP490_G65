@@ -5,13 +5,14 @@ import { useStateContext } from "@/context/StateContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import styles from "./login.module.css";
 import { useState } from "react";
 import { Loader } from "lucide-react";
+import "react-toastify/dist/ReactToastify.css";
 
 // Define the validation schema using Zod
 const schema = z.object({

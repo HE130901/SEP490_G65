@@ -39,7 +39,8 @@
         public class ContractDto
         {
             public int ContractId { get; set; }
-            public string NicheName { get; set; } = null!;
+        public int NicheId { get; set; }
+        public string NicheName { get; set; } = null!;
             public string CustomerName { get; set; } = null!;
             public string DeceasedName { get; set; } = null!;
             public string? DeceasedRelationshipWithCustomer { get; set; }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogActions,
@@ -16,6 +16,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import VisitRegistrationAPI from "@/services/visitService";
 import { useStateContext } from "@/context/StateContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface VisitScheduleDialogProps {
   isOpen: boolean;
@@ -37,6 +39,10 @@ export default function VisitScheduleDialog({
   const [accompanyingPeople, setAccompanyingPeople] = useState(0);
   const [note, setNote] = useState("");
 
+  useEffect(() => {
+    console.log("Selected Container:", selectedContainer); // Debugging log
+  }, [selectedContainer]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -50,14 +56,20 @@ export default function VisitScheduleDialog({
       accompanyingPeople,
     };
 
+    console.log("Form data being submitted:", data); // Debugging log
+
     try {
-      await VisitRegistrationAPI.create(data);
+      const response = await VisitRegistrationAPI.create(data);
+      console.log("API response:", response); // Debugging log
       if (user && user.customerId) {
         await fetchVisitRegistrations(user.customerId);
       }
+      toast.success("Đăng ký lịch viếng thành công!");
       onSubmit();
       onClose();
     } catch (err) {
+      console.error("API error:", err); // Debugging log
+      toast.error("Đăng ký lịch viếng thất bại.");
       setError("Đăng ký lịch viếng thất bại.");
     } finally {
       setLoading(false);
