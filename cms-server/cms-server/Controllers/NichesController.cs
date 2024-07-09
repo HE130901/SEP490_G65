@@ -24,7 +24,7 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
-        [HttpGet("{nicheId}")]
+        [HttpGet("{nicheId}/details")]
         public async Task<ActionResult<NicheDetailDto>> GetNicheDetail(int nicheId)
         {
             var nicheDetail = await _nicheService.GetNicheDetailAsync(nicheId);

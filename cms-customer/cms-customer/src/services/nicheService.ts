@@ -13,6 +13,10 @@ const NicheAPI = {
     const url = `/api/niches/customer/${customerId}`;
     return axiosInstance.get(url);
   },
-
+  getDetail(nicheId: string) {
+    const url = `/api/niches/${nicheId}/details`;
+    return axiosInstance.get(url);
+  },
 };
+
 export default NicheAPI;

@@ -387,7 +387,7 @@ const ReservationForm = ({
                 "&:hover": { borderColor: "#0e0101", color: "#0e0101" },
               }}
             >
-              Quay lại
+              Đóng
             </Button>
             <Button
               type="submit"

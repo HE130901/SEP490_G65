@@ -35,9 +35,11 @@ import VisitScheduleDialog from "./VisitScheduleDialog";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
-    case "Quá hạn":
+    case "Overdue":
       return "destructive";
-    case "Trong hạn":
+    case "Inactive":
+      return "destructive";
+    case "Active":
       return "green";
     default:
       return "secondary";

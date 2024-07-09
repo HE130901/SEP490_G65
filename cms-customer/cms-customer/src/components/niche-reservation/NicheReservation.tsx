@@ -1,11 +1,10 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
+import NicheDetailDialog from "@/components/niche-reservation/NicheDetailDialog";
 import { useStateContext } from "@/context/StateContext";
 import {
   Tooltip,
@@ -13,6 +12,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import NicheAPI from "@/services/nicheService";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -25,6 +25,12 @@ const revealVariants = {
     },
   }),
 };
+
+interface Niche {
+  nicheId: string;
+  nicheName: string;
+  status: string;
+}
 
 const NicheReservationPage = () => {
   const {
@@ -40,6 +46,8 @@ const NicheReservationPage = () => {
   } = useStateContext();
 
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isDetailDialogVisible, setIsDetailDialogVisible] = useState(false);
+  const [selectedNicheDetail, setSelectedNicheDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [nicheLoading, setNicheLoading] = useState(false);
   const [screenSize, setScreenSize] = useState("large");
@@ -98,13 +106,39 @@ const NicheReservationPage = () => {
     }
   };
 
+  const openDetailDialog = async (niche: Niche) => {
+    try {
+      const response = await NicheAPI.getDetail(niche.nicheId);
+      setSelectedNicheDetail(response.data);
+      setIsDetailDialogVisible(true);
+    } catch (error) {
+      console.error("Error fetching niche details:", error);
+    }
+  };
+
+  const closeDetailDialog = () => {
+    setIsDetailDialogVisible(false);
+  };
+
+  const proceedToBooking = () => {
+    if (selectedNicheDetail) {
+      setSelectedNiche({
+        nicheId: selectedNicheDetail.nicheId,
+        nicheName: selectedNicheDetail.nicheName,
+        status: "Available",
+      });
+      setIsDetailDialogVisible(false);
+      openBookingForm();
+    }
+  };
+
   const sortedNiches = [...niches].sort((a, b) => {
     const aName = parseInt(a.nicheName, 10);
     const bName = parseInt(b.nicheName, 10);
     return aName - bName;
   });
 
-  const createRows = (items: any[], itemsPerRow: number) => {
+  const createRows = (items: Niche[], itemsPerRow: number) => {
     const rows = [];
     for (let i = 0; i < items.length; i += itemsPerRow) {
       rows.push(items.slice(i, i + itemsPerRow));
@@ -147,7 +181,7 @@ const NicheReservationPage = () => {
           if (idx % 4 === 0) acc.push([]);
           acc[acc.length - 1].push(cur.reverse());
           return acc;
-        }, [])
+        }, [] as Niche[][][])
         .reverse();
 
       return groupedRows.map((floorRows, floorIndex) => (
@@ -155,9 +189,9 @@ const NicheReservationPage = () => {
           <div className="flex items-center justify-center font-semibold whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
-          {floorRows.map((row: any[], rowIndex: number) => (
+          {floorRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex space-x-2">
-              {row.map((niche: any) => {
+              {row.map((niche) => {
                 const tooltipMessage =
                   niche.status === "Booked"
                     ? "Ô chứa đã được đặt trước!"
@@ -172,8 +206,7 @@ const NicheReservationPage = () => {
                         <div
                           onClick={() => {
                             if (niche.status === "Available") {
-                              setSelectedNiche(niche);
-                              openBookingForm();
+                              openDetailDialog(niche);
                             }
                           }}
                           className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
@@ -203,7 +236,7 @@ const NicheReservationPage = () => {
           if (idx % 2 === 0) acc.push([]);
           acc[acc.length - 1].push(cur);
           return acc;
-        }, [])
+        }, [] as Niche[][][])
         .reverse();
 
       return groupedRows.map((floorRows, floorIndex) => (
@@ -211,9 +244,9 @@ const NicheReservationPage = () => {
           <div className="flex items-center justify-center font-semibold whitespace-nowrap">
             {floorLabels[floorIndex]}
           </div>
-          {floorRows.map((row: any[], rowIndex: number) => (
+          {floorRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex space-x-2">
-              {row.map((niche: any) => {
+              {row.map((niche) => {
                 const tooltipMessage =
                   niche.status === "Booked"
                     ? "Ô chứa đã được đặt trước!"
@@ -228,12 +261,11 @@ const NicheReservationPage = () => {
                         <div
                           onClick={() => {
                             if (niche.status === "Available") {
-                              setSelectedNiche(niche);
-                              openBookingForm();
+                              openDetailDialog(niche);
                             }
                           }}
                           className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                            niche.status === "unavailable"
+                            niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -259,7 +291,7 @@ const NicheReservationPage = () => {
           <div className="flex-shrink-0 font-semibold whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
-          {row.map((niche: any) => {
+          {row.map((niche) => {
             const tooltipMessage =
               niche.status === "Booked"
                 ? "Ô chứa đã được đặt trước!"
@@ -274,8 +306,7 @@ const NicheReservationPage = () => {
                     <div
                       onClick={() => {
                         if (niche.status === "Available") {
-                          setSelectedNiche(niche);
-                          openBookingForm();
+                          openDetailDialog(niche);
                         }
                       }}
                       className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
@@ -357,6 +388,12 @@ const NicheReservationPage = () => {
           <ReservationForm
             isVisible={isFormVisible}
             onClose={closeBookingForm}
+          />
+          <NicheDetailDialog
+            isVisible={isDetailDialogVisible}
+            onClose={closeDetailDialog}
+            niche={selectedNicheDetail}
+            onProceedToBooking={proceedToBooking}
           />
         </motion.div>
       </section>

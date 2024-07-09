@@ -90,6 +90,7 @@ namespace cms_server.Controllers
                         CustomerId = customer.CustomerId,
                         DeathCertificateNumber = request.DeathCertificateNumber,
                         DeathCertificateSupplier = request.DeathCertificateSupplier,
+                        CitizenId = request.DeceasedCitizenId,
                         RelationshipWithCusomer = request.RelationshipWithCustomer
                     };
                     _context.Deceaseds.Add(deceased);
@@ -153,8 +154,9 @@ namespace cms_server.Controllers
         public string? CustomerAddress { get; set; }
         public string? CustomerCitizenId { get; set; }
         public DateOnly? CustomerCitizenIdIssueDate { get; set; }
-        public string? CustomerCitizenIdSupplier { get; set; }
+        public string? CustomerCitizenIdSupplier { get; set; }        
         public string DeceasedFullName { get; set; }
+        public string? DeceasedCitizenId { get; set; }
         public DateOnly? DeceasedDateOfBirth { get; set; }
         public DateOnly? DeceasedDateOfDeath { get; set; }
         public string? DeathCertificateNumber { get; set; }
