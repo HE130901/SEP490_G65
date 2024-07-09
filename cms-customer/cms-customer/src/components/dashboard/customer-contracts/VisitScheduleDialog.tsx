@@ -1,55 +1,57 @@
-// src/components/VisitScheduleDialog.tsx
+"use client";
 
 import { useState } from "react";
 import {
   Dialog,
+  DialogActions,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import axiosInstance from "@/utils/axiosInstance";
+  Button,
+  TextField,
+  Typography,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Input } from "@/components/ui/input";
+import VisitRegistrationAPI from "@/services/visitService";
 import { useStateContext } from "@/context/StateContext";
-import { Button } from "@/components/ui/button";
+
+interface VisitScheduleDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  selectedContainer: any;
+}
 
 export default function VisitScheduleDialog({
   isOpen,
   onClose,
   onSubmit,
   selectedContainer,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-  selectedContainer: any;
-}) {
+}: VisitScheduleDialogProps) {
   const { user, fetchVisitRegistrations } = useStateContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [accompanyingPeople, setAccompanyingPeople] = useState(0);
+  const [note, setNote] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.target as HTMLFormElement);
     const data = {
       customerId: user.customerId,
       nicheId: selectedContainer.nicheId,
       visitDate: selectedDate.toISOString(),
-      note: formData.get("note"),
-      accompanyingPeople: accompanyingPeople,
+      note,
+      accompanyingPeople,
     };
 
     try {
-      await axiosInstance.post("/api/VisitRegistrations", data);
+      await VisitRegistrationAPI.create(data);
       if (user && user.customerId) {
         await fetchVisitRegistrations(user.customerId);
       }
@@ -63,67 +65,65 @@ export default function VisitScheduleDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
-          <DialogDescription>
-            Điền thông tin để đăng ký lịch viếng.
-          </DialogDescription>
-        </DialogHeader>
+        <Typography variant="body2" gutterBottom>
+          Điền thông tin để đăng ký lịch viếng.
+        </Typography>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="containerId">Ô Chứa</Label>
-              <Input
-                id="containerId"
-                name="containerId"
-                value={selectedContainer.nicheName}
-                readOnly
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="visitDateTime">Ngày Giờ Viếng Thăm</Label>
+          <Box display="flex" flexDirection="column" gap={2} mt={2}>
+            <TextField
+              label="Ô Chứa"
+              value={selectedContainer.nicheName}
+              InputProps={{ readOnly: true }}
+              fullWidth
+            />
+            <Box>
+              <Typography gutterBottom>Ngày Giờ Viếng Thăm</Typography>
               <DatePicker
-                id="visitDateTime"
                 selected={selectedDate}
                 onChange={(date) => setSelectedDate(date as Date)}
                 showTimeSelect
                 minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
                 dateFormat="Pp"
-                className="w-full rounded border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full"
+                customInput={<TextField fullWidth />}
               />
-            </div>
-          </div>
-          <div className="mt-4">
-            <Label htmlFor="accompanyingPeople">Số Người Đi Cùng</Label>
-            <Input
-              id="accompanyingPeople"
-              name="accompanyingPeople"
+            </Box>
+            <TextField
+              label="Số Người Đi Cùng"
               type="number"
-              min="0"
-              max="20"
               value={accompanyingPeople}
               onChange={(e) => setAccompanyingPeople(parseInt(e.target.value))}
+              inputProps={{ min: 0, max: 20 }}
+              fullWidth
               required
-              className="w-full"
             />
-          </div>
-          <div className="mt-4">
-            <Label htmlFor="note">Ghi Chú</Label>
-            <Textarea id="note" name="note" rows={3} />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+            <TextField
+              label="Ghi Chú"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              multiline
+              rows={3}
+              fullWidth
+            />
+            {error && <Typography color="error">{error}</Typography>}
+          </Box>
+          <DialogActions>
+            <Button onClick={onClose} variant="outlined" disabled={loading}>
               Quay lại
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={loading}
+              startIcon={loading ? <CircularProgress size={20} /> : null}
+            >
               {loading ? "Đang lưu..." : "Xác nhận"}
             </Button>
-          </div>
+          </DialogActions>
         </form>
       </DialogContent>
     </Dialog>

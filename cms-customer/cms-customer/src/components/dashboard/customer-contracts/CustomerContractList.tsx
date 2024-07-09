@@ -31,7 +31,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import ContractDetailsDialog from "./ContractDetailsDialog"; // Import ContractDetailsDialog
+import ContractDetailsDialog from "./ContractDetailsDialog";
+import VisitScheduleDialog from "./VisitScheduleDialog"; // Import VisitScheduleDialog
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -92,6 +93,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null
   );
+  const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -110,17 +112,22 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     setFilteredData(filtered);
   }, [searchTerm, contracts]);
 
-  const handleServiceClick = (contract: Contract) => {
+  const handleServiceClick = () => {
     router.push("/service-order");
   };
 
   const handleVisitClick = (contract: Contract) => {
     setSelectedContract(contract);
-    setIsDialogOpen(true);
+    setIsVisitDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
+    setSelectedContract(null);
+  };
+
+  const handleVisitDialogClose = () => {
+    setIsVisitDialogOpen(false);
     setSelectedContract(null);
   };
 
@@ -290,7 +297,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleServiceClick(row.original);
+                    handleServiceClick();
                   }}
                   className="text-green-600"
                 >
@@ -444,6 +451,14 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           isOpen={isDialogOpen}
           onClose={handleDialogClose}
           contractId={selectedContract.contractId}
+        />
+      )}
+      {isVisitDialogOpen && selectedContract && (
+        <VisitScheduleDialog
+          isOpen={isVisitDialogOpen}
+          onClose={handleVisitDialogClose}
+          onSubmit={handleDialogSubmit}
+          selectedContainer={selectedContract}
         />
       )}
     </div>

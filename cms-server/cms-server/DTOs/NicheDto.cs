@@ -13,6 +13,7 @@
 
     public class NicheDetailDto
     {
+        public int NicheId { get; set; }
         public string BuildingName { get; set; } = null!;
         public string? BuildingDescription { get; set; }
         public string? BuildingPicture { get; set; }

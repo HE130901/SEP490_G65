@@ -1,3 +1,5 @@
+"use client";
+
 import React, { FC, useState } from "react";
 import {
   Dialog,
@@ -71,7 +73,7 @@ interface NicheDetailDialogProps {
   isVisible: boolean;
   onClose: () => void;
   niche: any;
-  onProceedToBooking: () => void;
+  onProceedToBooking: (niche: any, type: string, duration: number) => void;
 }
 
 const NicheDetailDialog: FC<NicheDetailDialogProps> = ({
@@ -99,7 +101,7 @@ const NicheDetailDialog: FC<NicheDetailDialogProps> = ({
     try {
       schema.parse({ type, duration });
       setError(null);
-      onProceedToBooking();
+      onProceedToBooking(niche, type, duration); // Pass niche to onProceedToBooking
     } catch (e) {
       if (e instanceof z.ZodError) {
         setError(e.errors[0].message);
