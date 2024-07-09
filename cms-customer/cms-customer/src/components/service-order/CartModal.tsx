@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { PaymentModal } from "./PaymentModal";
+import ItemType from "./ItemType"; // Import the ItemType type from the appropriate module
 
 interface CartModalProps {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
     return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
   };
 
-  const handleDecreaseQuantity = (item) => {
+  const handleDecreaseQuantity = (item: ItemType) => {
     if (item.quantity > 1) {
       updateQuantity(item.id, item.quantity - 1);
     } else {
@@ -40,7 +41,7 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
     }
   };
 
-  const handleIncreaseQuantity = (item) => {
+  const handleIncreaseQuantity = (item: ItemType) => {
     updateQuantity(item.id, item.quantity + 1);
   };
 

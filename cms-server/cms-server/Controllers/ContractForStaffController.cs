@@ -108,6 +108,7 @@ namespace cms_server.Controllers
                         CustomerId = customer.CustomerId,
                         DeathCertificateNumber = request.DeathCertificateNumber,
                         DeathCertificateSupplier = request.DeathCertificateSupplier,
+                        CitizenId = request.DeceasedCitizenId,
                         RelationshipWithCusomer = request.RelationshipWithCustomer
                     };
                     _context.Deceaseds.Add(deceased);
@@ -121,14 +122,14 @@ namespace cms_server.Controllers
                         DeceasedId = deceased.DeceasedId,
                         StartDate = request.StartDate,
                         EndDate = request.EndDate,
-                        Status = "Trong hạn",
+                        Status = "Active",
                         Note = request.Note,
                         TotalAmount = request.TotalAmount
                     };
                     _context.Contracts.Add(contract);
                     await _context.SaveChangesAsync();
 
-                    niche.Status = "Booked";
+                    niche.Status = "Unavailable";
                     niche.CustomerId = customer.CustomerId;
                     niche.DeceasedId = deceased.DeceasedId;
                     _context.Niches.Update(niche);
@@ -169,8 +170,9 @@ namespace cms_server.Controllers
         public string? CustomerAddress { get; set; }
         public string? CustomerCitizenId { get; set; }
         public DateOnly? CustomerCitizenIdIssueDate { get; set; }
-        public string? CustomerCitizenIdSupplier { get; set; }
+        public string? CustomerCitizenIdSupplier { get; set; }        
         public string DeceasedFullName { get; set; }
+        public string? DeceasedCitizenId { get; set; }
         public DateOnly? DeceasedDateOfBirth { get; set; }
         public DateOnly? DeceasedDateOfDeath { get; set; }
         public string? DeathCertificateNumber { get; set; }

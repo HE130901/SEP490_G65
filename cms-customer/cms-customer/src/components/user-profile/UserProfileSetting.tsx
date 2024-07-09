@@ -151,9 +151,11 @@ export default function UserProfileSetting() {
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      onSelect={(date) =>
-                        setDateOfBirth(date.toLocaleDateString())
-                      }
+                      onSelect={(date) => {
+                        if (date) {
+                          setDateOfBirth(date.toLocaleDateString());
+                        }
+                      }}
                     />
                   </PopoverContent>
                 </Popover>

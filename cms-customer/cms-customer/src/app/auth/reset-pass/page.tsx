@@ -15,7 +15,7 @@ export default function Component() {
   const [error, setError] = useState("");
 
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setMessage("");
     setError("");
@@ -31,9 +31,9 @@ export default function Component() {
         );
       }
     } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message || "Đã xảy ra lỗi.");
-      } else if (err.request) {
+      if ((err as any).response) {
+        setError((err as any).response.data.message || "Đã xảy ra lỗi.");
+      } else if ((err as any).request) {
         setError("Không thể kết nối đến máy chủ. Vui lòng thử lại sau.");
       } else {
         setError("Đã xảy ra lỗi.");

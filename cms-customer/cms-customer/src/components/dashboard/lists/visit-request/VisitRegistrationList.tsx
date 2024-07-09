@@ -89,10 +89,11 @@ export default function VisitRegistrationList({
 
   useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = visitRegistrations.filter((item) =>
-      Object.keys(item).some((key) =>
-        String(item[key]).toLowerCase().includes(lowercasedFilter)
-      )
+    const filteredData = visitRegistrations.filter(
+      (item: { [x: string]: any }) =>
+        Object.keys(item).some((key) =>
+          String(item[key]).toLowerCase().includes(lowercasedFilter)
+        )
     );
     setFilteredData(filteredData);
   }, [searchTerm, visitRegistrations]);
@@ -121,9 +122,10 @@ export default function VisitRegistrationList({
     try {
       await VisitRegistrationAPI.delete(deleteRecord.visitId);
       toast.success("Xóa đơn đăng ký thành công!");
-      setVisitRegistrations((prev) =>
+      setVisitRegistrations((prev: any[]) =>
         prev.filter(
-          (registration) => registration.visitId !== deleteRecord.visitId
+          (registration: { visitId: number }) =>
+            registration.visitId !== deleteRecord.visitId
         )
       );
       setDeleteRecord(null); // Close the modal

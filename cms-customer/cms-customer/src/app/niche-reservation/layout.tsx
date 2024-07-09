@@ -7,7 +7,9 @@ export const metadata: Metadata = {
   description: "Nơi an nghỉ cuối cùng, bình yên và trang trọng",
 };
 
-const NicheResLayout: React.FC = ({ children }) => {
+const NicheResLayout: React.FC<React.PropsWithChildren<{}>> = ({
+  children,
+}) => {
   return <div>{children}</div>;
 };
 

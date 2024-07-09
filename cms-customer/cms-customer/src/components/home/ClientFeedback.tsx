@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 import { motion } from "framer-motion";
-import { Typography } from "@material-tailwind/react";
+import { Typography } from "@mui/material";
 import Image from "next/image";
 import StatsCard from "@/components/ui/stats-card";
 
@@ -135,7 +135,7 @@ const ClientFeedback: FC = () => {
             Các chỉ số nổi bật
           </Typography>
           <Typography
-            variant="lead"
+            variant="caption"
             className="text-center lg:text-left text-gray-700"
           >
             Là một dự án mang ý nghĩa tâm linh và nhân văn, An Bình Viên tự hào

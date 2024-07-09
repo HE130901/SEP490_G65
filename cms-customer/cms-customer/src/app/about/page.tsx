@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Typography } from "@material-tailwind/react";
-import StatsCard from "@/components/ui/stats-card";
+import Typography from "@mui/material/Typography";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const revealVariants = {
@@ -48,8 +47,9 @@ export default function Component() {
                     variant="body1"
                     className="max-w-[600px] text-lg md:text-xl"
                   >
-                    <br></br>Chúng tôi cung cấp các dịch vụ tiên tiến và chuyên
-                    nghiệp nhằm đáp ứng mọi nhu cầu của khách hàng.
+                    <br />
+                    Chúng tôi cung cấp các dịch vụ tiên tiến và chuyên nghiệp
+                    nhằm đáp ứng mọi nhu cầu của khách hàng.
                   </Typography>
                   <Typography
                     variant="body1"
@@ -76,7 +76,7 @@ export default function Component() {
                 custom={3}
               >
                 <Image
-                  src="/images/event1.jpg" // Update the image path accordingly
+                  src="/images/event1.jpg" // Cập nhật đường dẫn hình ảnh nếu cần
                   width={550}
                   height={550}
                   alt="Hero"
@@ -250,7 +250,7 @@ export default function Component() {
                       <AvatarFallback>{member.fallback}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <Typography variant="h3" className="text-lg font-bold">
+                      <Typography variant="h6" className="text-lg font-bold">
                         {member.name}
                       </Typography>
                       <Typography variant="subtitle2" className="">

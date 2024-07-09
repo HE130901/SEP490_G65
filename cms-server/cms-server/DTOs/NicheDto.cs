@@ -8,22 +8,22 @@
         public string? NicheDescription { get; set; }
         public int? ContractId { get; set; }
         public string DeceasedName { get; set; }
+
     }
 
-
-
-        public class NicheDetailDto
-        {
-            public string NicheAddress { get; set; } = null!;
-            public string? NicheDescription { get; set; }
-            public string? CustomerName { get; set; }
-            public string? DeceasedName { get; set; }
-            public DateOnly? StartDate { get; set; }
-            public DateOnly? EndDate { get; set; }
-            public string? ContractStatus { get; set; }
-        }
-    
-
-
-
+    public class NicheDetailDto
+    {
+        public string BuildingName { get; set; } = null!;
+        public string? BuildingDescription { get; set; }
+        public string? BuildingPicture { get; set; }
+        public string FloorName { get; set; } = null!;
+        public string? FloorDescription { get; set; }
+        public string? FloorPicture { get; set; }
+        public decimal? NichePrice { get; set; }
+        public string AreaName { get; set; } = null!;
+        public string? AreaDescription { get; set; }
+        public string? AreaPicture { get; set; }
+        public string NicheName { get; set; } = null!;
+        public string? NicheDescription { get; set; }
+    }
 }

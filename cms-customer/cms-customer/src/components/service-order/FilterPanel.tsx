@@ -6,12 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface FilterPanelProps {
-  priceRange: number[];
-  setPriceRange: (range: number[]) => void;
+  priceRange: [number, number];
+
+  setPriceRange: (range: [number, number]) => void;
+
   selectedCategories: string[];
+
   setSelectedCategories: (categories: string[]) => void;
+
   selectedBrands: string[];
+
   setSelectedBrands: (brands: string[]) => void;
+
   products: any[];
 }
 
@@ -75,11 +81,10 @@ export default function FilterPanel({
               <Checkbox
                 checked={selectedCategories.includes(category)}
                 onCheckedChange={() => {
-                  setSelectedCategories((prev) =>
-                    prev.includes(category)
-                      ? prev.filter((c) => c !== category)
-                      : [...prev, category]
-                  );
+                  const newCategories = selectedCategories.includes(category)
+                    ? selectedCategories.filter((c: string) => c !== category)
+                    : [...selectedCategories, category];
+                  setSelectedCategories(newCategories);
                 }}
               />
               {category} ({categoryCount[category]})
@@ -95,11 +100,10 @@ export default function FilterPanel({
               <Checkbox
                 checked={selectedBrands.includes(brand)}
                 onCheckedChange={() => {
-                  setSelectedBrands((prev) =>
-                    prev.includes(brand)
-                      ? prev.filter((b) => b !== brand)
-                      : [...prev, brand]
-                  );
+                  const newBrands = selectedBrands.includes(brand)
+                    ? selectedBrands.filter((b: string) => b !== brand)
+                    : [...selectedBrands, brand];
+                  setSelectedBrands(newBrands);
                 }}
               />
               {brand} ({brandCount[brand]})

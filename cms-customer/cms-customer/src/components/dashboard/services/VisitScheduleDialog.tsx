@@ -91,7 +91,7 @@ export default function VisitScheduleDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="containerId">Ô Chứa</Label>
-              <Select id="containerId" name="containerId" required>
+              <Select name="containerId">
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn ô chứa" />
                 </SelectTrigger>
@@ -106,7 +106,9 @@ export default function VisitScheduleDialog({
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem disabled>Không có dữ liệu</SelectItem>
+                    <SelectItem disabled value="no-data">
+                      Không có dữ liệu
+                    </SelectItem>
                   )}
                 </SelectContent>
               </Select>

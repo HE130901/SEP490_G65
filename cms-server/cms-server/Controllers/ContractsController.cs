@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
+using cms_server.DTOs;
+using cms_server.Services;
 
 namespace cms_server.Controllers
 {
@@ -20,62 +22,42 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        // GET: api/Contracts
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Contract>>> GetContracts()
+        // GET: api/Contracts/5/list
+        [HttpGet("{customerId}/list")]
+        public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
-            return await _context.Contracts.ToListAsync();
-        }
+            var contracts = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Where(c => c.CustomerId == customerId)
+                .Select(c => new ContractDto
+                {
+                    ContractId = c.ContractId,
+                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô {c.Niche.NicheName}",
+                    CustomerName = c.Customer.FullName,
+                    DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
+                    DeceasedRelationshipWithCustomer =  c.Deceased.RelationshipWithCusomer,
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    Status = c.Status
+                })
+                .ToListAsync();
 
-        // GET: api/Contracts/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Contract>> GetContract(int id)
-        {
-            var contract = await _context.Contracts.FindAsync(id);
-
-            if (contract == null)
+            if (contracts == null || !contracts.Any())
             {
                 return NotFound();
             }
 
-            return contract;
+            return contracts;
         }
 
-        // PUT: api/Contracts/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutContract(int id, Contract contract)
-        {
-            if (id != contract.ContractId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(contract).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ContractExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Contracts
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Contract>> PostContract(ContractDto contractDto)
+        // GET: api/Contracts/1/detail
+        [HttpGet("{contractId}/detail")]
+        public async Task<ActionResult<ContractDetailDto>> GetContractDetail(int contractId)
         {
             // Tạo mới bản ghi trong bảng Deceased
             var deceased = new Deceased
@@ -134,59 +116,43 @@ namespace cms_server.Controllers
             return CreatedAtAction("GetContract", new { id = contract.ContractId }, contract);
         }
 
-        // DELETE: api/Contracts/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteContract(int id)
-        {
-            var contract = await _context.Contracts.FindAsync(id);
+
             if (contract == null)
             {
                 return NotFound();
             }
 
-            _context.Contracts.Remove(contract);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ContractExists(int id)
-        {
-            return _context.Contracts.Any(e => e.ContractId == id);
-        }
-
-        // GET: api/Contracts/Customer/5
-        [HttpGet("Customer/{customerId}")]
-        public async Task<ActionResult<IEnumerable<Contract>>> GetContractsByCustomer(int customerId)
-        {
-            var contracts = await _context.Contracts
-                .Where(c => c.CustomerId == customerId)
-                .ToListAsync();
-
-            if (contracts == null || !contracts.Any())
+            var contractDetail = new ContractDetailDto
             {
-                return NotFound();
-            }
+                CustomerName = contract.Customer.FullName,
+                CustomerEmail = contract.Customer.Email,
+                CustomerPhone = contract.Customer.Phone,
+                CustomerCitizenID = contract.Customer.CitizenId,
+                CustomerAddress = contract.Customer.Address,
+                CitizenIdsupplier = contract.Customer.CitizenIdsupplier,
+                CitizenIdissuanceDate = contract.Customer.CitizenIdissuanceDate,
+                DeceasedName = contract.Deceased != null ? contract.Deceased.FullName : "Không có thông tin",
+                DeceasedCitizenID = contract.Deceased?.CitizenId,
+                DeceasedDateOfBirth = contract.Deceased?.DateOfBirth,
+                DeceasedDateOfDeath = contract.Deceased?.DateOfDeath,
+                DeceasedDeathCertificateNumber = contract.Deceased?.DeathCertificateNumber,
+                DeceasedDeathCertificateSupplier = contract.Deceased?.DeathCertificateSupplier,
+                DeceasedRelationshipWithCustomer = contract.Deceased?.RelationshipWithCusomer,
+                ContractId = contract.ContractId,
+                CustomerId = contract.CustomerId,
+                StaffId = contract.StaffId,
+                StaffName = contract.Staff.FullName,
+                NicheId = contract.NicheId,
+                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - Ô {contract.Niche.NicheName}",
+                DeceasedId = contract.DeceasedId,
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate,
+                Status = contract.Status,
+                Note = contract.Note,
+                TotalAmount = contract.TotalAmount
+            };
 
-            return contracts;
+            return Ok(contractDetail);
         }
-
-        
-    }
-
-
-    public class ContractDto
-    {
-        public int CustomerId { get; set; }
-        public int StaffId { get; set; }
-        public int NicheId { get; set; }
-        public DateOnly StartDate { get; set; }
-        public DateOnly? EndDate { get; set; }
-        public string? Note { get; set; }
-        public decimal? TotalAmount { get; set; }
-        public string? CitizenId { get; set; }
-        public string FullName { get; set; } = null!;
-        public DateOnly? DateOfBirth { get; set; }
-        public DateOnly? DateOfDeath { get; set; }
     }
 }

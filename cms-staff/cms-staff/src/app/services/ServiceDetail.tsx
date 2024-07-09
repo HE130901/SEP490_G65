@@ -11,8 +11,19 @@ import {
   Avatar,
   Grid,
 } from "@mui/material";
+import { Service } from "./interfaces";
 
-const ServiceDetail = ({ service, onClose, open }) => {
+interface ServiceDetailProps {
+  service: Service | null;
+  onClose: () => void;
+  open: boolean;
+}
+
+const ServiceDetail: React.FC<ServiceDetailProps> = ({
+  service,
+  onClose,
+  open,
+}) => {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết dịch vụ</DialogTitle>

@@ -17,26 +17,28 @@ import {
   FormControl,
   InputLabel,
   Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Edit as EditIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import buildingService from "@/services/buildingService";
-import NicheViewDialog from "./NicheViewDialog";
-import NicheEditDialog from "./NicheEditDialog";
+import NicheViewDialog from "./NicheDetail";
+import NicheEditDialog from "./NicheEdit";
+import { Niche, Building, Floor, Zone } from "./interfaces";
 
 const NicheManagementPage = () => {
-  const [buildings, setBuildings] = useState([]);
-  const [selectedBuilding, setSelectedBuilding] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState("");
-  const [selectedZone, setSelectedZone] = useState("");
-  const [niches, setNiches] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("all");
-  const [selectedNiche, setSelectedNiche] = useState(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
+  const [selectedFloor, setSelectedFloor] = useState<string>("");
+  const [selectedZone, setSelectedZone] = useState<string>("");
+  const [niches, setNiches] = useState<Niche[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchColumn, setSearchColumn] = useState<string>("all");
+  const [selectedNiche, setSelectedNiche] = useState<Niche | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -53,23 +55,23 @@ const NicheManagementPage = () => {
     fetchBuildings();
   }, []);
 
-  const handleBuildingChange = (event) => {
-    const buildingId = event.target.value;
+  const handleBuildingChange = (event: SelectChangeEvent<string>) => {
+    const buildingId = event.target.value as string;
     setSelectedBuilding(buildingId);
     setSelectedFloor("");
     setSelectedZone("");
     setNiches([]);
   };
 
-  const handleFloorChange = (event) => {
-    const floorId = event.target.value;
+  const handleFloorChange = (event: SelectChangeEvent<string>) => {
+    const floorId = event.target.value as string;
     setSelectedFloor(floorId);
     setSelectedZone("");
     setNiches([]);
   };
 
-  const handleZoneChange = async (event) => {
-    const zoneId = event.target.value;
+  const handleZoneChange = async (event: SelectChangeEvent<string>) => {
+    const zoneId = event.target.value as string;
     setSelectedZone(zoneId);
 
     try {
@@ -84,12 +86,12 @@ const NicheManagementPage = () => {
     }
   };
 
-  const handleViewNiche = (niche) => {
+  const handleViewNiche = (niche: Niche) => {
     setSelectedNiche(niche);
     setViewDialogOpen(true);
   };
 
-  const handleEditNiche = (niche) => {
+  const handleEditNiche = (niche: Niche) => {
     setSelectedNiche(niche);
     setEditDialogOpen(true);
   };
@@ -104,38 +106,32 @@ const NicheManagementPage = () => {
     setSelectedNiche(null);
   };
 
-  const handleSearchColumnChange = (event) => {
-    setSearchColumn(event.target.value);
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value as string);
   };
 
   const filteredNiches = niches.filter((niche) => {
     if (searchColumn === "all") {
       return (
-        niche.nicheName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        niche.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        niche.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        niche.deceased?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        niche.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        "" ||
-        niche.history?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ""
+        niche.nicheName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        niche.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        niche.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        niche.deceased.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        niche.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        niche.history.toLowerCase().includes(searchTerm.toLowerCase())
       );
     } else if (searchColumn === "code") {
-      return niche.nicheName?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.nicheName.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "customer") {
-      return niche.customer?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.customer.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "phone") {
-      return niche.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.phone.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "deceased") {
-      return niche.deceased?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.deceased.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "status") {
-      return niche.status?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.status.toLowerCase().includes(searchTerm.toLowerCase());
     } else if (searchColumn === "history") {
-      return niche.history?.toLowerCase().includes(searchTerm.toLowerCase());
+      return niche.history.toLowerCase().includes(searchTerm.toLowerCase());
     }
     return true;
   });

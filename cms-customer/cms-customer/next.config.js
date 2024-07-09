@@ -1,16 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'iili.io',
-          port: '',
-          pathname: '/**',
-        },
-      ],
-    },
-  };
-  
-  module.exports = nextConfig;
-  
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**', // Accept all hostnames
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;

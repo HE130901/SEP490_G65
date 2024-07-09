@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   description: "Nơi an nghỉ cuối cùng, bình yên và trang trọng",
 };
 interface LayoutProps {
-  // Define any props you need for your layout component
+  children: React.ReactNode;
+  // Define any other props you need for your layout component
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
@@ -28,7 +28,7 @@ const Home = () => {
   });
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     try {
       await login(data.email, data.password);
       toast({
@@ -37,7 +37,7 @@ const Home = () => {
         description: "Chào mừng bạn quay trở lại!",
       });
     } catch (error) {
-      if (error.message === "AccessDenied") {
+      if ((error as Error).message === "AccessDenied") {
         toast({
           variant: "destructive",
           title: "Đăng nhập thất bại",
@@ -74,9 +74,9 @@ const Home = () => {
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-300 focus:border-orange-300 sm:text-sm"
             />
-            {errors.email && (
+            {errors.email?.message && (
               <p className="mt-2 text-sm text-red-600">
-                {errors.email.message}
+                {errors.email.message.toString()}
               </p>
             )}
           </div>
@@ -90,9 +90,9 @@ const Home = () => {
               required
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-300 focus:border-orange-300 sm:text-sm"
             />
-            {errors.password && (
+            {errors.password?.message && (
               <p className="mt-2 text-sm text-red-600">
-                {errors.password.message}
+                {errors.password.message.toString()}
               </p>
             )}
           </div>

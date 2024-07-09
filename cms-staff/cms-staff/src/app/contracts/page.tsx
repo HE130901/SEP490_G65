@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import {
   Box,
   Button,
@@ -18,6 +18,7 @@ import {
   InputLabel,
   TableSortLabel,
   Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -25,15 +26,16 @@ import {
   RestorePage as RestorePageIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import AddContractForm from "./AddContractForm";
-import ContractDetailDialog from "./ContractDetailDialog";
-import RenewalDialog from "./RenewalDialog";
-import ConfirmDialog from "./ConfirmDialog";
+import AddContractForm from "./ContractAdd";
+import ContractDetailDialog from "./ContractDetail";
+import RenewalDialog from "./ContractRenewal";
+import ConfirmDialog from "./ContractDelete";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import withAuth from "@/components/withAuth";
+import { Contract, FormData } from "./interfaces";
 
-const ContractPage = () => {
-  const [contracts, setContracts] = useState([
+const ContractPage: React.FC = () => {
+  const [contracts, setContracts] = useState<Contract[]>([
     {
       id: 1,
       code: "HD001",
@@ -71,12 +73,15 @@ const ContractPage = () => {
       status: "Chờ duyệt thanh lý",
     },
   ]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Contract>("code");
   const [open, setOpen] = useState(false);
-  const [selectedContract, setSelectedContract] = useState(null);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
+    null
+  );
   const [detailOpen, setDetailOpen] = useState(false);
   const [renewalOpen, setRenewalOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -89,33 +94,34 @@ const ContractPage = () => {
     setOpen(false);
   };
 
-  const handleSave = (newContract) => {
-    const newCode = `HD${String(contracts.length + 1).padStart(3, "0")}`;
-    setContracts([
-      ...contracts,
-      {
-        ...newContract,
-        id: contracts.length + 1,
-        code: newCode,
-        status: "Còn hiệu lực",
-      },
-    ]);
+  const handleSave = (
+    newContract: Omit<Contract, "id" | "code" | "status">
+  ) => {
+    const newContractObject: Contract = {
+      ...newContract,
+      id: contracts.length + 1,
+      code: `HD${String(contracts.length + 1).padStart(3, "0")}`,
+      status: "Còn hiệu lực",
+    };
+    setContracts([...contracts, newContractObject]);
     handleClose();
   };
 
-  const handleViewContract = (id) => {
+  const handleViewContract = (id: number) => {
     const contract = contracts.find((contract) => contract.id === id);
-    setSelectedContract(contract);
-    setDetailOpen(true);
+    if (contract) {
+      setSelectedContract(contract);
+      setDetailOpen(true);
+    }
   };
 
-  const handleRenewContract = (id) => {
+  const handleRenewContract = (id: number) => {
     const contract = contracts.find((contract) => contract.id === id);
-    setSelectedContract(contract);
+    setSelectedContract(contract ?? null);
     setRenewalOpen(true);
   };
 
-  const handleRenewalSave = (updatedContract) => {
+  const handleRenewalSave = (updatedContract: Contract) => {
     const updatedContracts = contracts.map((contract) =>
       contract.id === updatedContract.id ? updatedContract : contract
     );
@@ -123,15 +129,15 @@ const ContractPage = () => {
     setRenewalOpen(false);
   };
 
-  const handleTerminateContract = (id) => {
+  const handleTerminateContract = (id: number) => {
     const contract = contracts.find((contract) => contract.id === id);
-    setSelectedContract(contract);
+    setSelectedContract(contract ?? null);
     setConfirmDialogOpen(true);
   };
 
   const handleConfirmTerminate = () => {
     const updatedContracts = contracts.map((contract) =>
-      contract.id === selectedContract.id
+      contract.id === (selectedContract as Contract).id
         ? {
             ...contract,
             status: "Đã thanh lý",
@@ -146,11 +152,11 @@ const ContractPage = () => {
     setSelectedContract(null);
   };
 
-  const handleSearchColumnChange = (event) => {
-    setSearchColumn(event.target.value);
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value as string);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: keyof Contract) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);
@@ -158,41 +164,29 @@ const ContractPage = () => {
 
   const sortedContracts = contracts.sort((a, b) => {
     if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
+      return order === "asc"
+        ? a.code.localeCompare(b.code)
+        : b.code.localeCompare(a.code);
     } else if (orderBy === "nicheCode") {
-      if (order === "asc") {
-        return a.nicheCode.localeCompare(b.nicheCode);
-      } else {
-        return b.nicheCode.localeCompare(a.nicheCode);
-      }
+      return order === "asc"
+        ? a.nicheCode.localeCompare(b.nicheCode)
+        : b.nicheCode.localeCompare(a.nicheCode);
     } else if (orderBy === "customerName") {
-      if (order === "asc") {
-        return a.customerName.localeCompare(b.customerName);
-      } else {
-        return b.customerName.localeCompare(a.customerName);
-      }
+      return order === "asc"
+        ? a.customerName.localeCompare(b.customerName)
+        : b.customerName.localeCompare(a.customerName);
     } else if (orderBy === "startDate") {
-      if (order === "asc") {
-        return new Date(a.startDate) - new Date(b.startDate);
-      } else {
-        return new Date(b.startDate) - new Date(a.startDate);
-      }
+      return order === "asc"
+        ? new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        : new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
     } else if (orderBy === "endDate") {
-      if (order === "asc") {
-        return new Date(a.endDate) - new Date(b.endDate);
-      } else {
-        return new Date(b.endDate) - new Date(a.endDate);
-      }
+      return order === "asc"
+        ? new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+        : new Date(b.endDate).getTime() - new Date(a.endDate).getTime();
     } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
+      return order === "asc"
+        ? a.status.localeCompare(b.status)
+        : b.status.localeCompare(a.status);
     }
     return 0;
   });
@@ -282,7 +276,7 @@ const ContractPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
+                  direction={orderBy === "id" ? order : undefined}
                   onClick={() => handleRequestSort("id")}
                 >
                   Số thứ tự
@@ -309,7 +303,7 @@ const ContractPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "customerName"}
-                  direction={orderBy === "customerName" ? order : "asc"}
+                  direction={orderBy === "customerName" ? order : undefined}
                   onClick={() => handleRequestSort("customerName")}
                 >
                   Tên Khách hàng
@@ -415,7 +409,9 @@ const ContractPage = () => {
         handleClose={() => setConfirmDialogOpen(false)}
         handleConfirm={handleConfirmTerminate}
         title="Xác nhận thanh lý hợp đồng"
-        content={`Bạn có chắc chắn muốn thanh lý hợp đồng ${selectedContract?.code}?`}
+        content={`Bạn có chắc chắn muốn thanh lý hợp đồng ${
+          selectedContract?.code || ""
+        }?`}
       />
     </Box>
   );

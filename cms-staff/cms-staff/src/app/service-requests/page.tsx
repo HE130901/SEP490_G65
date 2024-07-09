@@ -60,26 +60,28 @@ const ServiceRequestPage = () => {
     alert("Thêm mới đơn đăng ký dùng dịch vụ");
   };
 
-  const handleViewServiceRequest = (id) => {
+  const handleViewServiceRequest = (id: number) => {
     // Logic để xem chi tiết đơn đăng ký dùng dịch vụ
     alert(`Xem chi tiết đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
-  const handleEditServiceRequest = (id) => {
+  const handleEditServiceRequest = (id: number) => {
     // Logic để sửa đơn đăng ký dùng dịch vụ
     alert(`Sửa đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
-  const handleDeleteServiceRequest = (id) => {
+  const handleDeleteServiceRequest = (id: number) => {
     // Logic để xóa đơn đăng ký dùng dịch vụ
     alert(`Xóa đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
-  const handleSearchColumnChange = (event) => {
+  const handleSearchColumnChange = (event: {
+    target: { value: React.SetStateAction<string> };
+  }) => {
     setSearchColumn(event.target.value);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: React.SetStateAction<string>) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);
@@ -175,7 +177,9 @@ const ServiceRequestPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : "asc"}
+                  direction={
+                    orderBy === "id" ? (order as "asc" | "desc") : undefined
+                  }
                   onClick={() => handleRequestSort("id")}
                 >
                   Số thứ tự
@@ -184,7 +188,9 @@ const ServiceRequestPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
+                  direction={
+                    orderBy === "code" ? (order as "desc" | "asc") : undefined
+                  }
                   onClick={() => handleRequestSort("code")}
                 >
                   Mã đơn
@@ -193,7 +199,11 @@ const ServiceRequestPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "nicheCode"}
-                  direction={orderBy === "nicheCode" ? order : "asc"}
+                  direction={
+                    orderBy === "nicheCode"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("nicheCode")}
                 >
                   Mã ô chứa
@@ -202,7 +212,11 @@ const ServiceRequestPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "customerName"}
-                  direction={orderBy === "customerName" ? order : "asc"}
+                  direction={
+                    orderBy === "customerName"
+                      ? (order as "desc" | "asc")
+                      : undefined
+                  }
                   onClick={() => handleRequestSort("customerName")}
                 >
                   Tên Khách hàng
@@ -212,7 +226,9 @@ const ServiceRequestPage = () => {
               <TableCell>
                 <TableSortLabel
                   active={orderBy === "status"}
-                  direction={orderBy === "status" ? order : "asc"}
+                  direction={
+                    orderBy === "status" ? (order as "asc" | "desc") : undefined
+                  }
                   onClick={() => handleRequestSort("status")}
                 >
                   Trạng thái

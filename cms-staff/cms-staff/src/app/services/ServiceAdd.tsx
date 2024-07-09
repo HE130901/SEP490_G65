@@ -10,13 +10,21 @@ import {
   TextField,
   Grid,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
 import { useToast } from "@/components/ui/use-toast";
+import { Service } from "./interfaces";
 
-const ServiceAdd = ({ open, onClose, onAdd }) => {
-  const { control, handleSubmit, reset } = useForm({
+interface ServiceAddProps {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (service: Service) => void;
+}
+
+const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
+  const { control, handleSubmit, reset } = useForm<Service>({
     defaultValues: {
+      serviceId: 0,
       serviceName: "",
       description: "",
       price: 0,
@@ -27,7 +35,7 @@ const ServiceAdd = ({ open, onClose, onAdd }) => {
   });
   const { toast } = useToast();
 
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<Service> = async (data) => {
     try {
       const response = await ServiceAPI.addService(data);
       toast({
