@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 
 namespace cms_server.Controllers
 {
@@ -14,6 +15,11 @@ namespace cms_server.Controllers
         public ContractForStaffController(CmsContext context)
         {
             _context = context;
+        }
+
+        private async Task<bool> IsDuplicateDeathCertificateNumberAsync(string deathCertificateNumber)
+        {
+            return await _context.Deceaseds.AnyAsync(d => d.DeathCertificateNumber == deathCertificateNumber);
         }
 
         [HttpGet("buildings")]
@@ -66,20 +72,32 @@ namespace cms_server.Controllers
                         return BadRequest("Selected niche is not available.");
                     }
 
-                    var customer = new Customer
-                    {
-                        FullName = request.CustomerFullName,
-                        Phone = request.CustomerPhoneNumber,
-                        Email = request.CustomerEmail,
-                        Address = request.CustomerAddress,
-                        CitizenId = request.CustomerCitizenId,
-                        CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
-                        CitizenIdsupplier = request.CustomerCitizenIdSupplier,
-                        PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
+                    var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.CitizenId == request.CustomerCitizenId);
 
-                    };
-                    _context.Customers.Add(customer);
-                    await _context.SaveChangesAsync();
+                    if (customer == null)
+                    {
+                        // Create and add new customer
+                        customer = new Customer
+                        {
+                            FullName = request.CustomerFullName,
+                            Phone = request.CustomerPhoneNumber,
+                            Email = request.CustomerEmail,
+                            Address = request.CustomerAddress,
+                            CitizenId = request.CustomerCitizenId,
+                            CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
+                            CitizenIdsupplier = request.CustomerCitizenIdSupplier,
+                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
+                        };
+                        _context.Customers.Add(customer);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    bool isDuplicateDeathCertificate = await IsDuplicateDeathCertificateNumberAsync(request.DeathCertificateNumber);
+                    if (isDuplicateDeathCertificate)
+                    {
+                        return BadRequest("Đã có người mất đăng ký với số giấy chứng tử này!");
+                    }
 
                     var deceased = new Deceased
                     {
@@ -94,8 +112,6 @@ namespace cms_server.Controllers
                     };
                     _context.Deceaseds.Add(deceased);
                     await _context.SaveChangesAsync();
-
-                    
 
                     var contract = new Contract
                     {
@@ -167,4 +183,6 @@ namespace cms_server.Controllers
         public string Note { get; set; }
         public decimal TotalAmount { get; set; }
     }
+
+    
 }
