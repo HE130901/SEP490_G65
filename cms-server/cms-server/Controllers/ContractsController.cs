@@ -101,7 +101,7 @@ namespace cms_server.Controllers
                 StartDate = contractDto.StartDate,
                 EndDate = contractDto.EndDate,
                 TotalAmount = contractDto.TotalAmount,
-                Status = "Active" 
+                Status = "Active", 
                 Note = contractDto.Note,
             };
 
