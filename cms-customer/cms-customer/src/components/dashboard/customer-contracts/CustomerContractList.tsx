@@ -31,7 +31,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import VisitScheduleDialog from "./VisitScheduleDialog";
+import ContractDetailsDialog from "./ContractDetailsDialog"; // Import ContractDetailsDialog
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -46,67 +46,90 @@ const getStatusVariant = (status: string) => {
   }
 };
 
-export type Container = {
-  nicheId: number;
-  contractId?: string;
-  deceasedName?: string;
-  contractStatus: string;
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "Overdue":
+      return "Quá hạn";
+    case "Inactive":
+      return "Không hoạt động";
+    case "Active":
+      return "Hoạt động";
+    default:
+      return "Không xác định";
+  }
 };
 
-export default function CustomerContractList({
-  containers = [],
+export type Contract = {
+  contractId: number;
+  nicheName: string;
+  customerName: string;
+  deceasedName?: string;
+  status: string;
+  deceasedRelationshipWithCustomer?: string;
+  startDate: string;
+  endDate: string;
+};
+
+interface CustomerContractListProps {
+  contracts: Contract[];
+  onSelect: (contract: Contract) => void;
+}
+
+const CustomerContractList: React.FC<CustomerContractListProps> = ({
+  contracts = [],
   onSelect,
-}: {
-  containers: Container[];
-  onSelect: (container: Container) => void;
-}) {
+}) => {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "nicheId", desc: false },
+    { id: "contractId", desc: false },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState(containers);
+  const [filteredData, setFilteredData] = useState<Contract[]>(contracts);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 5,
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedContainer, setSelectedContainer] = useState<Container | null>(
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null
   );
   const router = useRouter();
 
   useEffect(() => {
+    setFilteredData(contracts);
+  }, [contracts]);
+
+  useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = containers.filter((item) =>
+    const filtered = contracts.filter((item: Contract) =>
       Object.keys(item).some((key) =>
-        String(item[key as keyof Container])
+        String(item[key as keyof Contract])
           .toLowerCase()
           .includes(lowercasedFilter)
       )
     );
-    setFilteredData(filteredData);
-  }, [searchTerm, containers]);
+    setFilteredData(filtered);
+  }, [searchTerm, contracts]);
 
-  const handleServiceClick = (container: Container) => {
+  const handleServiceClick = (contract: Contract) => {
     router.push("/service-order");
   };
 
-  const handleVisitClick = (container: Container) => {
-    setSelectedContainer(container);
+  const handleVisitClick = (contract: Contract) => {
+    setSelectedContract(contract);
     setIsDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
-    setSelectedContainer(null);
+    setSelectedContract(null);
   };
 
   const handleDialogSubmit = () => {
     setIsDialogOpen(false);
-    setSelectedContainer(null);
+    setSelectedContract(null);
   };
 
-  const columns: ColumnDef<Container>[] = [
+  const columns: ColumnDef<Contract>[] = [
     {
       id: "stt",
       header: ({ column }) => (
@@ -121,21 +144,6 @@ export default function CustomerContractList({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "nicheId",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Mã Ô
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("nicheId")}</div>
-      ),
-    },
-    {
       accessorKey: "contractId",
       header: ({ column }) => (
         <Button
@@ -147,9 +155,22 @@ export default function CustomerContractList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">
-          {row.getValue("contractId") || "Không có mã HĐ"}
-        </div>
+        <div className="text-center">{row.getValue("contractId")}</div>
+      ),
+    },
+    {
+      accessorKey: "nicheName",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Địa chỉ Ô
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("nicheName")}</div>
       ),
     },
     {
@@ -170,7 +191,55 @@ export default function CustomerContractList({
       ),
     },
     {
-      accessorKey: "contractStatus",
+      accessorKey: "deceasedRelationshipWithCustomer",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Quan hệ
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">
+          {row.getValue("deceasedRelationshipWithCustomer") ||
+            "Không có thông tin"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "startDate",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ngày bắt đầu
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("startDate")}</div>
+      ),
+    },
+    {
+      accessorKey: "endDate",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Ngày kết thúc
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("endDate")}</div>
+      ),
+    },
+    {
+      accessorKey: "status",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -182,8 +251,8 @@ export default function CustomerContractList({
       ),
       cell: ({ row }) => (
         <div className="text-center">
-          <Badge variant={getStatusVariant(row.getValue("contractStatus"))}>
-            {row.getValue("contractStatus") || "Không có thông tin"}
+          <Badge variant={getStatusVariant(row.getValue("status"))}>
+            {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
       ),
@@ -202,7 +271,8 @@ export default function CustomerContractList({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelect(row.original);
+                    setSelectedContract(row.original);
+                    setIsDialogOpen(true);
                   }}
                   className="text-blue-600"
                 >
@@ -254,7 +324,7 @@ export default function CustomerContractList({
   ];
 
   const table = useReactTable({
-    data: filteredData,
+    data: filteredData ?? [], // Ensure filteredData is not undefined
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -267,7 +337,7 @@ export default function CustomerContractList({
     },
     onPaginationChange: setPagination,
     manualPagination: false,
-    pageCount: Math.ceil(filteredData.length / pagination.pageSize),
+    pageCount: Math.ceil((filteredData?.length ?? 0) / pagination.pageSize), // Ensure filteredData.length is not undefined
   });
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -312,7 +382,10 @@ export default function CustomerContractList({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TableRow
-                        onClick={() => onSelect(row.original)}
+                        onClick={() => {
+                          setSelectedContract(row.original);
+                          setIsDialogOpen(true);
+                        }}
                         className="cursor-pointer"
                         data-state={row.getIsSelected() && "selected"}
                       >
@@ -366,14 +439,15 @@ export default function CustomerContractList({
           </Button>
         </div>
       </div>
-      {isDialogOpen && selectedContainer && (
-        <VisitScheduleDialog
+      {isDialogOpen && selectedContract && (
+        <ContractDetailsDialog
           isOpen={isDialogOpen}
           onClose={handleDialogClose}
-          onSubmit={handleDialogSubmit}
-          selectedContainer={selectedContainer}
+          contractId={selectedContract.contractId}
         />
       )}
     </div>
   );
-}
+};
+
+export default CustomerContractList;

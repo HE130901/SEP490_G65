@@ -8,6 +8,7 @@
         public string? NicheDescription { get; set; }
         public int? ContractId { get; set; }
         public string DeceasedName { get; set; }
+
     }
 
     public class NicheDetailDto

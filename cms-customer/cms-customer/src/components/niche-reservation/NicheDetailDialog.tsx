@@ -110,7 +110,7 @@ const NicheDetailDialog: FC<NicheDetailDialogProps> = ({
   return (
     <Dialog open={isVisible} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết ô chứa</DialogTitle>
-      <DialogContent>
+      <DialogContent className="bg-gradient-to-b from-white to-stone-300">
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <Carousel autoPlay infiniteLoop>
@@ -184,10 +184,10 @@ const NicheDetailDialog: FC<NicheDetailDialogProps> = ({
               </Grid>
             </Grid>
             <Typography variant="h6" gutterBottom>
-              Giá: {formatVND(calculateCost(type, duration))}
+              Giá dự tính: {formatVND(calculateCost(type, duration))}
             </Typography>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              Ngày kết thúc: {calculateEndDate(startDate, type, duration)}
+              Thời gian: {calculateEndDate(startDate, type, duration)}
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Typography variant="subtitle1" gutterBottom>

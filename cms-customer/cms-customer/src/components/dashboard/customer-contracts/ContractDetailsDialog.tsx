@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import axiosInstance from "@/utils/axiosInstance";
+import ContractAPI from "@/services/contractService";
 import ExtendContractDialog from "./ExtendContractDialog";
 import LiquidateContractDialog from "./LiquidateContractDialog";
 import { useRouter } from "next/navigation";
@@ -23,16 +24,16 @@ import {
 import Tooltip from "@mui/material/Tooltip";
 import HistorySharpIcon from "@mui/icons-material/HistorySharp";
 
-export default function ContainerDetailsDialog({
+export default function ContractDetailsDialog({
   isOpen,
   onClose,
-  containerId,
+  contractId,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  containerId: number | null;
+  contractId: number | null;
 }) {
-  const [containerDetails, setContainerDetails] = useState<any | null>(null);
+  const [contractDetails, setContractDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
@@ -40,26 +41,42 @@ export default function ContainerDetailsDialog({
   const router = useRouter();
 
   useEffect(() => {
-    const fetchContainerDetails = async () => {
-      if (!containerId) return;
+    const fetchContractDetails = async () => {
+      if (!contractId) return;
 
       setLoading(true);
       try {
-        const response = await axiosInstance.get(`/api/Niches/${containerId}`);
-        setContainerDetails(response.data);
+        const response = await ContractAPI.getContractDetail(contractId);
+        console.log("API response:", response.data); // Log API response for debugging
+        setContractDetails(response.data);
         setError(null);
       } catch (err) {
-        console.error("Error fetching container details:", err);
-        setError("Không thể tải thông tin chi tiết của ô chứa.");
+        console.error("Error fetching contract details:", err);
+        setError("Không thể tải thông tin chi tiết của hợp đồng.");
       } finally {
         setLoading(false);
       }
     };
 
     if (isOpen) {
-      fetchContainerDetails();
+      fetchContractDetails();
     }
-  }, [isOpen, containerId]);
+  }, [isOpen, contractId]);
+
+  const handleExtendClick = () => {
+    console.log("Extend button clicked");
+    setExtendDialogOpen(true);
+  };
+
+  const handleLiquidateClick = () => {
+    console.log("Liquidate button clicked");
+    setLiquidateDialogOpen(true);
+  };
+
+  useEffect(() => {
+    console.log("isExtendDialogOpen: ", isExtendDialogOpen);
+    console.log("isLiquidateDialogOpen: ", isLiquidateDialogOpen);
+  }, [isExtendDialogOpen, isLiquidateDialogOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -68,7 +85,7 @@ export default function ContainerDetailsDialog({
           <DialogTitle>
             <div className="grid gap-1">
               <p className="">
-                Chi tiết Ô Chứa : {containerDetails?.nicheAddress}
+                Chi tiết Hợp Đồng: {contractDetails?.contractId}
               </p>
             </div>
           </DialogTitle>
@@ -85,27 +102,60 @@ export default function ContainerDetailsDialog({
                 <div className="grid gap-1">
                   <p className="text-sm font-medium">Tên Khách Hàng</p>
                   <p className="text-sm">
-                    {containerDetails?.customerName || "Không có thông tin"}
+                    {contractDetails?.customerName || "Không có thông tin"}
                   </p>
                 </div>
                 <div className="grid gap-1">
-                  <p className="text-sm font-medium">Tên Người Đã Mất</p>
+                  <p className="text-sm font-medium">Email Khách Hàng</p>
                   <p className="text-sm">
-                    {containerDetails?.deceasedName || "Không có thông tin"}
+                    {contractDetails?.customerEmail || "Không có thông tin"}
                   </p>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="grid gap-1">
-                  <p className="text-sm font-medium">Ngày Ký Hợp Đồng</p>
+                  <p className="text-sm font-medium">
+                    Số điện thoại Khách Hàng
+                  </p>
                   <p className="text-sm">
-                    {containerDetails?.startDate || "Không có thông tin"}
+                    {contractDetails?.customerPhone || "Không có thông tin"}
                   </p>
                 </div>
                 <div className="grid gap-1">
-                  <p className="text-sm font-medium">Ngày Kết Thúc Hợp Đồng</p>
+                  <p className="text-sm font-medium">Địa chỉ Khách Hàng</p>
                   <p className="text-sm">
-                    {containerDetails?.endDate || "Không có thông tin"}
+                    {contractDetails?.customerAddress || "Không có thông tin"}
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Tên Người Đã Mất</p>
+                  <p className="text-sm">
+                    {contractDetails?.deceasedName || "Không có thông tin"}
+                  </p>
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Ngày Sinh Người Đã Mất</p>
+                  <p className="text-sm">
+                    {contractDetails?.deceasedDateOfBirth ||
+                      "Không có thông tin"}
+                  </p>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Ngày Mất Người Đã Mất</p>
+                  <p className="text-sm">
+                    {contractDetails?.deceasedDateOfDeath ||
+                      "Không có thông tin"}
+                  </p>
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Số Giấy Chứng Tử</p>
+                  <p className="text-sm">
+                    {contractDetails?.deceasedDeathCertificateNumber ||
+                      "Không có thông tin"}
                   </p>
                 </div>
               </div>
@@ -114,14 +164,20 @@ export default function ContainerDetailsDialog({
                   <p className="text-sm font-medium">Trạng Thái Hợp Đồng</p>
                   <Badge
                     variant={
-                      containerDetails?.contractStatus === "Quá hạn"
+                      contractDetails?.status === "Overdue"
                         ? "destructive"
                         : "green"
                     }
                     className="w-fit px-3 py-1"
                   >
-                    {containerDetails?.contractStatus || "Không có thông tin"}
+                    {contractDetails?.status || "Không có thông tin"}
                   </Badge>
+                </div>
+                <div className="grid gap-1">
+                  <p className="text-sm font-medium">Ghi chú</p>
+                  <p className="text-sm">
+                    {contractDetails?.note || "Không có thông tin"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -129,40 +185,44 @@ export default function ContainerDetailsDialog({
         )}
         <DialogFooter className="flex justify-center space-x-2">
           <Tooltip title="Gia hạn hợp đồng">
-            <Button
-              onClick={() => {
-                setExtendDialogOpen(true);
-                onClose();
-              }}
-              disabled={loading}
-              variant="green"
-            >
-              <HistorySharpIcon /> Gia hạn
-            </Button>
+            <span>
+              <Button
+                onClick={handleExtendClick}
+                disabled={loading}
+                variant="green"
+              >
+                <HistorySharpIcon /> Gia hạn
+              </Button>
+            </span>
           </Tooltip>
           <Tooltip title="Thanh lý hợp đồng">
-            <Button
-              onClick={() => {
-                setLiquidateDialogOpen(true);
-                onClose();
-              }}
-              disabled={loading}
-              variant="destructive"
-            >
-              <DeleteIcon /> Thanh lý
-            </Button>
+            <span>
+              <Button
+                onClick={handleLiquidateClick}
+                disabled={loading}
+                variant="destructive"
+              >
+                <DeleteIcon /> Thanh lý
+              </Button>
+            </span>
           </Tooltip>
         </DialogFooter>
       </DialogContent>
       <ExtendContractDialog
         isOpen={isExtendDialogOpen}
-        onClose={() => setExtendDialogOpen(false)}
-        containerId={containerId}
+        onClose={() => {
+          console.log("Closing Extend Contract Dialog");
+          setExtendDialogOpen(false);
+        }}
+        contractId={contractId}
       />
       <LiquidateContractDialog
         isOpen={isLiquidateDialogOpen}
-        onClose={() => setLiquidateDialogOpen(false)}
-        containerId={containerId}
+        onClose={() => {
+          console.log("Closing Liquidate Contract Dialog");
+          setLiquidateDialogOpen(false);
+        }}
+        contractId={contractId}
       />
     </Dialog>
   );
