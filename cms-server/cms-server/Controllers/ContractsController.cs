@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using cms_server.DTOs;
-using cms_server.Services;
 
 namespace cms_server.Controllers
 {
@@ -22,7 +21,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        // GET: api/Contracts/5/list
+        // GET: api/Contracts/Customer/5
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
@@ -37,13 +36,11 @@ namespace cms_server.Controllers
                 .Select(c => new ContractDto
                 {
                     ContractId = c.ContractId,
-                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô {c.Niche.NicheName}",
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
-                    DeceasedRelationshipWithCustomer =  c.Deceased.RelationshipWithCusomer,
                     StartDate = c.StartDate,
-                    EndDate = c.EndDate,
-                    Status = c.Status
+                    Status = c.Status,
+                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô  {c.Niche.NicheName}"
                 })
                 .ToListAsync();
 
@@ -55,67 +52,18 @@ namespace cms_server.Controllers
             return contracts;
         }
 
-        // GET: api/Contracts/1/detail
         [HttpGet("{contractId}/detail")]
-        public async Task<ActionResult<ContractDetailDto>> GetContractDetail(int contractId)
+        public async Task<ActionResult<ContractDto>> GetContractDetail(int contractId)
         {
-            // Tạo mới bản ghi trong bảng Deceased
-            var deceased = new Deceased
-            {
-                CustomerId = contractDto.CustomerId,
-                NicheId = contractDto.NicheId,
-                CitizenId = contractDto.CitizenId,
-                FullName = contractDto.FullName,
-                DateOfBirth = contractDto.DateOfBirth,
-                DateOfDeath = contractDto.DateOfDeath
-            };
-
-            _context.Deceaseds.Add(deceased);
-            await _context.SaveChangesAsync();
-
-            // Tạo mới bản ghi trong bảng Contract
-            var contract = new Contract
-            {
-                CustomerId = contractDto.CustomerId,
-                StaffId = contractDto.StaffId,
-                NicheId = contractDto.NicheId,
-                DeceasedId = deceased.DeceasedId,
-                StartDate = contractDto.StartDate,
-                EndDate = contractDto.EndDate,
-                TotalAmount = contractDto.TotalAmount,
-                Status = "Active", 
-                Note = contractDto.Note,
-            };
-
-            _context.Contracts.Add(contract);
-            await _context.SaveChangesAsync();
-
-            // Tạo mới bản ghi trong bảng NicheHistory
-            var nicheHistory = new NicheHistory
-            {
-                CustomerId = contractDto.CustomerId,
-                NicheId = contractDto.NicheId,
-                DeceasedId = deceased.DeceasedId,
-                ContractId = contract.ContractId,
-                StartDate = contractDto.StartDate,
-                EndDate = contractDto.EndDate
-            };
-
-            _context.NicheHistories.Add(nicheHistory);
-            await _context.SaveChangesAsync();
-
-            // Sửa đổi trạng thái của Niche thành unavailable
-            var niche = await _context.Niches.FindAsync(contractDto.NicheId);
-            if (niche != null)
-            {
-                niche.Status = "unavailable";
-                _context.Entry(niche).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-            }
-
-            return CreatedAtAction("GetContract", new { id = contract.ContractId }, contract);
-        }
-
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Staff)
+                .Include(c => c.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
             {
@@ -143,7 +91,7 @@ namespace cms_server.Controllers
                 StaffId = contract.StaffId,
                 StaffName = contract.Staff.FullName,
                 NicheId = contract.NicheId,
-                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - Ô {contract.Niche.NicheName}",
+                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - {contract.Niche.NicheName}",
                 DeceasedId = contract.DeceasedId,
                 StartDate = contract.StartDate,
                 EndDate = contract.EndDate,
