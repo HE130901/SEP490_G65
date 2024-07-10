@@ -1,6 +1,10 @@
 // types.ts
 
 export interface Contract {
+    nicheAddress: any;
+    contractId: any;
+    niche: any;
+    customer: any;
     id: number;
     code: string;
     nicheCode: string;
