@@ -5,7 +5,7 @@ import Link from "next/link";
 import ServiceCard from "@/components/ui/ServiceCard";
 import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 
-export default function ServicesList({ containers }) {
+export default function ServicesList({ containers }: { containers: any }) {
   const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);
 
   const services = [

@@ -1,13 +1,21 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import Typography from "@mui/material/Typography";
 import { toast } from "sonner";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useStateContext } from "@/context/StateContext";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMediaQuery } from "react-responsive";
 import NicheReservationAPI from "@/services/nicheReservationService";
 
@@ -42,7 +50,13 @@ const predefinedAddresses = [
   "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
 ];
 
-const ReservationForm = ({ isVisible, onClose }) => {
+const ReservationForm = ({
+  isVisible,
+  onClose,
+}: {
+  isVisible: boolean;
+  onClose: () => void;
+}) => {
   const {
     selectedBuilding,
     selectedFloor,
@@ -56,7 +70,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
   );
 
   const {
-    register,
+    control,
     handleSubmit,
     setValue,
     formState: { errors },
@@ -75,7 +89,7 @@ const ReservationForm = ({ isVisible, onClose }) => {
     }
   }, [setValue, selectedAddress, user]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     const contractDate = data.contractDate + "T23:59:00";
 
     const dataToSubmit = {
@@ -97,15 +111,17 @@ const ReservationForm = ({ isVisible, onClose }) => {
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
-      if (error.response) {
-        console.error("Server responded with:", error.response.data);
-        if (error.response.data.errors) {
-          Object.entries(error.response.data.errors).forEach(([key, value]) => {
-            toast.error(`${key}: ${value}`);
-          });
+      if ((error as any).response) {
+        console.error("Server responded with:", (error as any).response.data);
+        if ((error as any).response.data.errors) {
+          Object.entries((error as any).response.data.errors).forEach(
+            ([key, value]) => {
+              toast.error(`${key}: ${value}`);
+            }
+          );
         } else {
           toast.error(
-            error.response.data.error ||
+            (error as any).response.data.error ||
               "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa"
           );
         }
@@ -115,143 +131,274 @@ const ReservationForm = ({ isVisible, onClose }) => {
     }
   };
 
+  const getAllowedDates = () => {
+    const today = new Date();
+    const dates = [today.toISOString().split("T")[0]];
+    for (let i = 1; i <= 2; i++) {
+      const nextDate = new Date(today);
+      nextDate.setDate(today.getDate() + i);
+      dates.push(nextDate.toISOString().split("T")[0]);
+    }
+    return dates;
+  };
+
   return (
-    <Dialog open={isVisible} onOpenChange={onClose}>
-      <DialogTitle></DialogTitle>
-      <DialogContent className={isSmallScreen ? "dialog-content" : ""}>
-        <div className="flex justify-center">
-          <h2 className="text-xl font-bold">Đăng ký đặt chỗ</h2>
-        </div>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className={isSmallScreen ? "form-container" : "p-4 bg-white rounded"}
-        >
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Tên của bạn
-            </label>
-            <input
-              type="text"
-              {...register("name")}
-              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-              readOnly={!!user}
-            />
-            {errors.name && (
-              <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
+    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle className="text-center">Đăng ký đặt chỗ</DialogTitle>
+      <DialogContent className="bg-gradient-to-b from-white to-stone-300">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+            name="name"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label={
+                  <span>
+                    Tên của bạn <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
+                fullWidth
+                margin="normal"
+                error={!!errors.name}
+                helperText={errors.name ? errors.name.message?.toString() : ""}
+                InputProps={{
+                  readOnly: !!user,
+                }}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#0e0101",
+                  },
+                  "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: "#0e0101",
+                    },
+                }}
+              />
             )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Số điện thoại
-            </label>
-            <input
-              type="text"
-              {...register("phoneNumber")}
-              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-              readOnly={!!user}
-            />
-            {errors.phoneNumber && (
-              <p className="mt-2 text-sm text-red-600">
-                {errors.phoneNumber.message}
-              </p>
+          />
+          <Controller
+            name="phoneNumber"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label={
+                  <span>
+                    Số điện thoại <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
+                fullWidth
+                margin="normal"
+                error={!!errors.phoneNumber}
+                helperText={
+                  errors.phoneNumber
+                    ? errors.phoneNumber.message?.toString()
+                    : ""
+                }
+                InputProps={{
+                  readOnly: !!user,
+                }}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#0e0101",
+                  },
+                  "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: "#0e0101",
+                    },
+                }}
+              />
             )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 pb-4">
-              Địa chỉ ký hợp đồng
-            </label>
-            <RadioGroup
-              value={selectedAddress}
-              onValueChange={(value) => setSelectedAddress(value)}
-            >
-              {predefinedAddresses.map((address) => (
-                <div key={address} className="flex items-center">
-                  <RadioGroupItem
-                    id={address}
-                    value={address}
-                    className="mr-2"
-                  />
-                  <label htmlFor={address} className="text-gray-700 text-sm">
-                    {address}
-                  </label>
-                </div>
-              ))}
-            </RadioGroup>
-            <input
-              type="hidden"
-              value={selectedAddress}
-              {...register("signAddress")}
-            />
-            {errors.signAddress && (
-              <p className="mt-2 text-sm text-red-600">
-                {errors.signAddress.message}
-              </p>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Ô đã chọn
-            </label>
-            <input
-              type="text"
-              value={`${selectedBuilding?.buildingName} - ${selectedFloor?.floorName} - ${selectedArea?.areaName} - Ô số ${selectedNiche?.nicheName}`}
-              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              readOnly
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Ngày hẹn ký hợp đồng
-            </label>
-            <input
-              type="date"
-              {...register("contractDate")}
-              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
-            {errors.contractDate && (
-              <p className="mt-2 text-sm text-red-600">
-                {errors.contractDate.message}
-              </p>
-            )}
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Ghi chú
-            </label>
-            <textarea
-              {...register("note")}
-              className="input-field mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="flex justify-center">
-            <p className="text-sm font-semibold text-red-600">
-              Quý khách vui lòng lưu ý!
-            </p>
-          </div>
-
-          <p className="mb-4 text-sm text-red-600">
-            Thời gian giữ chỗ chỉ có hiệu lực trong vòng 3 ngày kể từ khi đặt
-            chỗ thành công. Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị
-            hủy.
-          </p>
-          <div
-            className={`button-container flex justify-center ${
-              isSmallScreen ? "flex-col" : ""
-            }`}
+          />
+          <FormLabel
+            component="legend"
+            className="mt-4"
+            sx={{ color: "#0e0101" }}
           >
+            Địa chỉ ký hợp đồng <span style={{ color: "red" }}>*</span>
+          </FormLabel>
+          <Controller
+            name="signAddress"
+            control={control}
+            render={({ field }) => (
+              <RadioGroup
+                {...field}
+                value={selectedAddress}
+                onChange={(e) => {
+                  setSelectedAddress(e.target.value);
+                  field.onChange(e.target.value);
+                }}
+                sx={{
+                  "& .MuiFormControlLabel-root .MuiTypography-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiRadio-root.Mui-checked": {
+                    color: "#0e0101",
+                  },
+                }}
+              >
+                {predefinedAddresses.map((address) => (
+                  <FormControlLabel
+                    key={address}
+                    value={address}
+                    control={<Radio />}
+                    label={address}
+                  />
+                ))}
+              </RadioGroup>
+            )}
+          />
+          <Controller
+            name="contractDate"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label={
+                  <span>
+                    Ngày hẹn ký hợp đồng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
+                type="date"
+                fullWidth
+                margin="normal"
+                error={!!errors.contractDate}
+                helperText={
+                  errors.contractDate
+                    ? errors.contractDate.message?.toString()
+                    : ""
+                }
+                inputProps={{
+                  min: getAllowedDates()[0],
+                  max: getAllowedDates()[2],
+                }}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#0e0101",
+                  },
+                  "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: "#0e0101",
+                    },
+                }}
+              />
+            )}
+          />
+          <TextField
+            label="Ô đã chọn"
+            value={`${selectedBuilding?.buildingName} - ${selectedFloor?.floorName} - ${selectedArea?.areaName} - Ô số ${selectedNiche?.nicheName}`}
+            fullWidth
+            margin="normal"
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{
+              "& .MuiInputBase-root": {
+                color: "#0e0101",
+              },
+              "& .MuiInputLabel-root": {
+                color: "#0e0101",
+              },
+              "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#0e0101",
+              },
+              "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                {
+                  borderColor: "#0e0101",
+                },
+            }}
+          />
+          <Controller
+            name="note"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Ghi chú"
+                fullWidth
+                margin="normal"
+                multiline
+                rows={4}
+                sx={{
+                  "& .MuiInputBase-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "#0e0101",
+                  },
+                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#0e0101",
+                  },
+                  "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: "#0e0101",
+                    },
+                }}
+              />
+            )}
+          />
+          <Typography
+            variant="body2"
+            color="error"
+            align="center"
+            className="mt-4"
+            sx={{ fontWeight: "bold" }}
+          >
+            Quý khách vui lòng lưu ý!
+          </Typography>
+          <Typography
+            variant="body2"
+            color="error"
+            align="center"
+            sx={{ fontStyle: "italic" }}
+            className="mb-4"
+          >
+            Thời gian giữ chỗ chỉ có hiệu lực trong vòng 3 ngày kể từ khi đặt
+            chỗ thành công. <br />
+            Nếu quá thời hạn trên, việc đặt chỗ sẽ tự động bị hủy.
+          </Typography>
+          <div className="flex justify-between mt-4 space-x-2">
             <Button
-              variant="secondary"
+              variant="outlined"
               onClick={onClose}
-              type="button"
-              className="w-full max-w-xs"
+              fullWidth
+              sx={{
+                borderColor: "#0e0101",
+                color: "#0e0101",
+                "&:hover": { borderColor: "#0e0101", color: "#0e0101" },
+              }}
             >
-              Quay lại
+              Đóng
             </Button>
-            <Button type="submit" className="ml-2 w-full max-w-xs">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{
+                backgroundColor: "#FB8C00",
+                "&:hover": { backgroundColor: "#EF6C00" },
+              }}
+            >
               Đặt chỗ
             </Button>
           </div>

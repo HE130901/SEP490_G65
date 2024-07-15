@@ -1,0 +1,59 @@
+/* styles.css */
+.grid-container {
+    display: grid;
+    grid-template-columns: auto repeat(20, 1fr);
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .grid-item {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+  }
+  
+  .grid-item-content {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    font-size: 0.8em; /* Adjust font size to ensure text fits within smaller boxes */
+  }
+  
+  .grid-item:hover .grid-item-content {
+    transform: scale(1.1);
+    background-color: #f0f0f0;
+  }
+  
+  .grid-item.booked .grid-item-content {
+    background-color: orange;
+    cursor: not-allowed;
+  }
+  
+  .grid-item.unavailable .grid-item-content {
+    background-color: black;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+  .grid-item.available:hover .grid-item-content {
+    background-color: green;
+  }
+  
+  .row-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    padding: 10px;
+    grid-column: span 21; /* Span the label across all columns */
+  }
+  

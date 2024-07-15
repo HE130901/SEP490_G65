@@ -21,7 +21,6 @@ builder.Services.AddDbContext<CmsContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CmsbdDatabase")));
 
 // Custom services
-//builder.Services.AddHostedService<OverdueReservationChecker>();
 builder.Services.AddScoped<NicheService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -54,30 +53,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireManagerRole", policy => policy.RequireRole("Manager"));
-    options.AddPolicy("RequireStaffRole", policy => policy.RequireRole("Staff", "Manager"));
-    options.AddPolicy("RequireCustomerRole", policy => policy.RequireRole("Customer", "Manager"));
-    options.AddPolicy("RequireGuestRole", policy => policy.RequireRole("Guest", "Customer", "Staff", "Manager"));
-});
-
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-    });
 }
-else
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();

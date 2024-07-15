@@ -2,8 +2,10 @@ import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
 import { StateProvider } from "@/context/StateContext";
 import { Toaster } from "@/components/ui/sonner";
-import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
+import CallHotline from "@/components/home/call-hotline";
 
 export const metadata = {
   title: "An Bình Viên",
@@ -21,10 +23,11 @@ export default function RootLayout({
       <body>
         <StateProvider>
           <CartProvider>
-            <Header />
+            <Header currentView={undefined} setCurrentView={undefined} />
             {children}
             <Toaster />
             <Footer />
+            <CallHotline />
           </CartProvider>
         </StateProvider>
       </body>

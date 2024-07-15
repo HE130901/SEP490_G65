@@ -26,13 +26,13 @@ const predefinedAddresses = [
 interface ExtendContractDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  containerId: number | null;
+  contractId: number | null;
 }
 
 export default function ExtendContractDialog({
   isOpen,
   onClose,
-  containerId,
+  contractId,
 }: ExtendContractDialogProps) {
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>(
@@ -64,7 +64,7 @@ export default function ExtendContractDialog({
 
     try {
       setLoading(true);
-      await axiosInstance.post(`/api/Niches/${containerId}/extend`, {
+      await axiosInstance.post(`/api/Niches/${contractId}/extend`, {
         appointmentDate,
         signAddress: selectedAddress,
         durationType,
@@ -94,6 +94,10 @@ export default function ExtendContractDialog({
   const formatDateToVietnamese = (date: Date): string => {
     return format(date, "dd/MM/yyyy", { locale: vi });
   };
+
+  useEffect(() => {
+    console.log(`ExtendContractDialog isOpen: ${isOpen}`);
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

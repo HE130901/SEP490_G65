@@ -38,8 +38,8 @@ const CombinedSelector = () => {
   const [floorOpen, setFloorOpen] = useState(false);
   const [areaOpen, setAreaOpen] = useState(false);
 
-  const [floors, setFloors] = useState([]);
-  const [areas, setAreas] = useState([]);
+  const [floors, setFloors] = useState<Floor[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [buildingValue, setBuildingValue] = useState("");
   const [floorValue, setFloorValue] = useState("");
   const [areaValue, setAreaValue] = useState("");
@@ -50,39 +50,59 @@ const CombinedSelector = () => {
     }
   }, [buildings]);
 
-  const handleSelectBuilding = (building) => {
+  interface Building {
+    buildingId: string;
+    buildingName: string;
+    floors?: {
+      $values: Floor[];
+    };
+  }
+
+  interface Floor {
+    floorId: string;
+    floorName: string;
+    areas?: {
+      $values: Area[];
+    };
+  }
+
+  interface Area {
+    areaId: string;
+    areaName: string;
+  }
+
+  const handleSelectBuilding = (building: Building) => {
     setSelectedBuilding(building);
     setFloors(building.floors?.$values || []);
     resetSelections();
     setBuildingValue(building.buildingName);
-    setBuildingOpen(false); // Close the building popover
-
+    setBuildingOpen(false);
     if (building.floors?.$values && building.floors.$values.length > 0) {
       handleSelectFloor(building.floors.$values[0]);
     }
   };
 
-  const handleSelectFloor = (floor) => {
+  const handleSelectFloor = (floor: Floor) => {
     setSelectedFloor(floor);
     setAreas(floor.areas?.$values || []);
     resetSectionAndNiche();
     setFloorValue(floor.floorName);
-    setFloorOpen(false); // Close the floor popover
+    setFloorOpen(false);
 
     if (floor.areas?.$values && floor.areas.$values.length > 0) {
       handleSelectArea(floor.areas.$values[0]);
     }
   };
 
-  const handleSelectArea = (area) => {
+  const handleSelectArea = (area: Area) => {
     setSelectedArea(area);
     resetNiche();
     setAreaValue(area.areaName);
-    setAreaOpen(false); // Close the area popover
+    setAreaOpen(false);
   };
 
   return (
-    <div className="flex flex-col space-y-4   rounded-md ">
+    <div className="flex flex-col space-y-4 rounded-md ">
       <div>
         {/* Building Selector */}
         <Popover open={buildingOpen} onOpenChange={setBuildingOpen}>
@@ -91,7 +111,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={buildingOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {buildingValue || "Chọn tòa nhà..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -103,7 +123,7 @@ const CombinedSelector = () => {
               <CommandList>
                 <CommandEmpty>Không tìm thấy tòa nhà.</CommandEmpty>
                 <CommandGroup>
-                  {buildings?.map((building) => (
+                  {buildings?.map((building: Building) => (
                     <CommandItem
                       key={building.buildingId}
                       value={building.buildingName}
@@ -135,7 +155,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={floorOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {floorValue || "Chọn tầng..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -179,7 +199,7 @@ const CombinedSelector = () => {
               variant="outline"
               role="combobox"
               aria-expanded={areaOpen}
-              className="w-full justify-between"
+              className="w-full justify-between text-center font-bold"
             >
               {areaValue || "Chọn khu..."}
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

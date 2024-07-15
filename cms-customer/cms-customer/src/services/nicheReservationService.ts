@@ -1,7 +1,7 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 const NicheReservationAPI = {
-  createReservation(data) {
+  createReservation(data: any) {
     return axiosInstance.post("/api/NicheReservations", data);
   },
   getByPhoneNumber(phoneNumber: string) {

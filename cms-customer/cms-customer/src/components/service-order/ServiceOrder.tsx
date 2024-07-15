@@ -4,19 +4,17 @@ import { useState, useMemo, useEffect } from "react";
 import FilterPanel from "./FilterPanel";
 import ProductList from "./ProductList";
 import ServiceAPI from "@/services/serviceService";
-import { toast } from "sonner";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { toast } from "sonner"; // Corrected import statement
+
+interface Service {
+  price: number;
+  category: string;
+  tag: string;
+}
 
 export default function ServiceOrder() {
-  const [services, setServices] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [services, setServices] = useState<Service[]>([]); // Added type annotation
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]); // Added type annotation
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 

@@ -176,3 +176,7 @@ button:active {
 body {
   -ms-overflow-style: -ms-autohiding-scrollbar; /* Hides the scrollbar when not in use */
 }
+
+body {
+  font-family: 'Calibri', Arial, sans-serif;
+}

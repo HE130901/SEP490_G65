@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
   createContext,
   useContext,
   useState,
@@ -13,6 +13,7 @@ import BuildingAPI from "@/services/buildingService";
 import NicheAPI from "@/services/nicheService";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import VisitRegistrationAPI from "@/services/visitService";
+import ContractAPI from "@/services/contractService";
 import { useRouter } from "next/navigation";
 import { toast as sonnerToast } from "sonner";
 
@@ -42,6 +43,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [niches, setNiches] = useState<any[]>([]);
   const [reservations, setReservations] = useState<any[]>([]);
   const [visitRegistrations, setVisitRegistrations] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -124,7 +126,11 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchNiches = useCallback(
     async (buildingId: number, floorId: number, areaId: number) => {
       try {
-        const response = await NicheAPI.getAll(buildingId, floorId, areaId);
+        const response = await NicheAPI.getAll(
+          String(buildingId),
+          String(floorId),
+          String(areaId)
+        );
         setNiches(response.data.$values);
       } catch (error) {
         console.error("[StateProvider] Error fetching niches:", error);
@@ -171,7 +177,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchVisitRegistrations = useCallback(async (customerId: number) => {
     try {
-      const response = await VisitRegistrationAPI.getByCustomerId(customerId);
+      const response = await VisitRegistrationAPI.getByCustomerId(
+        String(customerId)
+      );
       setVisitRegistrations(response.data.$values);
       console.log("[useStateContext] Fetching visit registrations");
     } catch (error) {
@@ -196,6 +204,19 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const fetchContracts = useCallback(async (customerId: number) => {
+    try {
+      const response = await ContractAPI.getContractsByCustomer(customerId);
+      setContracts(response.data.$values);
+      console.log(
+        "[useStateContext] Fetching contracts: ",
+        response.data.$values
+      );
+    } catch (error) {
+      console.error("[StateProvider] Error fetching contracts:", error);
+    }
+  }, []);
+
   const resetSelections = () => {
     setSelectedFloor(null);
     setSelectedArea(null);
@@ -218,6 +239,13 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       isMounted.current = true;
     }
   }, [fetchBuildingsData]);
+
+  useEffect(() => {
+    if (user?.customerId) {
+      console.log("[StateContext] User customerId: ", user.customerId);
+      fetchContracts(user.customerId);
+    }
+  }, [user, fetchContracts]);
 
   return (
     <StateContext.Provider
@@ -248,6 +276,8 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         setReservations,
         visitRegistrations,
         setVisitRegistrations,
+        contracts,
+        setContracts,
         fetchBuildingsData,
         fetchNiches,
         fetchReservations,
@@ -255,6 +285,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         deleteReservation,
         fetchVisitRegistrations,
         deleteVisitRegistration,
+        fetchContracts,
         resetSelections,
         resetSectionAndNiche,
         resetNiche,

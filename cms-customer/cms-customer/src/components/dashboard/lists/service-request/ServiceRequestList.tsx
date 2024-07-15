@@ -208,9 +208,7 @@ export default function RegistrationList({
       ),
       cell: ({ row }) => (
         <Badge
-          variant={
-            row.getValue("status") === "Đang chờ duyệt" ? "gray" : "green"
-          }
+          variant={row.getValue("status") === "Đang chờ duyệt" ? null : "green"}
         >
           {row.getValue("status")}
         </Badge>

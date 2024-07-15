@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import axiosInstance from "@/utils/axiosInstance";
-import {
-  AccessTime as AccessTimeIcon,
-  Delete as DeleteIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 
 const predefinedAddresses = [
   "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
@@ -28,13 +24,13 @@ const predefinedAddresses = [
 interface LiquidateContractDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  containerId: number | null;
+  contractId: number | null;
 }
 
 export default function LiquidateContractDialog({
   isOpen,
   onClose,
-  containerId,
+  contractId,
 }: LiquidateContractDialogProps) {
   const [appointmentDate, setAppointmentDate] = useState<string>("");
   const [selectedAddress, setSelectedAddress] = useState<string>(
@@ -50,7 +46,7 @@ export default function LiquidateContractDialog({
 
     try {
       setLoading(true);
-      await axiosInstance.post(`/api/Niches/${containerId}/liquidate`, {
+      await axiosInstance.post(`/api/Niches/${contractId}/liquidate`, {
         appointmentDate,
         signAddress: selectedAddress,
       });
@@ -63,6 +59,10 @@ export default function LiquidateContractDialog({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    console.log(`LiquidateContractDialog isOpen: ${isOpen}`);
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -114,7 +114,7 @@ export default function LiquidateContractDialog({
             onClick={handleLiquidate}
             disabled={loading}
           >
-            <DeleteIcon></DeleteIcon>Thanh lý
+            <DeleteIcon className="mr-2" /> Thanh lý
           </Button>
         </DialogFooter>
       </DialogContent>

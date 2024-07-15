@@ -1,5 +1,14 @@
 "use client";
 
+import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
+import ContractDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
+import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
+import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
+import ServiceRequestList from "@/components/dashboard/lists/service-request/ServiceRequestList";
+import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
+import ServicesList from "@/components/dashboard/services/ServicesSection";
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,26 +17,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import Loading from "@/components/ui/Loading";
-import ContainerDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
-import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
-import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
-import ServiceRequestList from "@/components/dashboard/lists/service-request/ServiceRequestList";
-import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
-import ServicesList from "@/components/dashboard/services/ServicesSection";
-import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/StateContext";
-import axiosInstance from "@/utils/axiosInstance";
-import { motion } from "framer-motion";
 
-const DashboardPage = () => {
-  const [isLoading, setIsLoading] = useState(true);
+export default function Dashboard() {
   const {
     user,
     niches: containers,
-    setNiches: setContainers,
     selectedContainer,
     setSelectedContainer,
     isContainerModalOpen,
@@ -35,34 +31,26 @@ const DashboardPage = () => {
     isVisitScheduleModalOpen,
     setIsVisitScheduleModalOpen,
     fetchVisitRegistrations,
+    fetchContracts,
+    contracts,
   } = useStateContext();
 
   const [reFetchTrigger, setReFetchTrigger] = useState(false);
   const isMounted = useRef(false);
 
-  const fetchContainers = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const response = await axiosInstance.get(
-        `/api/niches/customer/${user.customerId}`
-      );
-
-      if (response.data && Array.isArray(response.data.$values)) {
-        setContainers(response.data.$values);
-      } else {
-        console.error("[Dashboard] Unexpected response format:", response.data);
-      }
-    } catch (error) {
-      console.error("[Dashboard] Error fetching niches:", error);
-    }
-  }, [user, setContainers]);
+  useEffect(() => {
+    console.log("User in Dashboard: ", user);
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
-      fetchContainers();
+    if (user?.customerId) {
+      console.log(
+        "[Dashboard] Fetching contracts for customerId: ",
+        user.customerId
+      );
+      fetchContracts(user.customerId);
     }
-  }, [user, fetchContainers]);
+  }, [user, fetchContracts]);
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -76,6 +64,7 @@ const DashboardPage = () => {
   }, [user, reFetchTrigger, fetchVisitRegistrations]);
 
   const handleContainerSelect = (container: any) => {
+    console.log("Selected container: ", container);
     setSelectedContainer(container);
     setIsContainerModalOpen(true);
   };
@@ -90,21 +79,13 @@ const DashboardPage = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <Loading />;
-  }
+    console.log("isContainerModalOpen: ", isContainerModalOpen);
+  }, [isContainerModalOpen]);
 
   return (
     <div className="text-foreground min-h-screen flex flex-col py-20 bg-gradient-to-b from-stone-200 to-stone-700">
       <main className="flex-1 container mx-auto px-4">
-        <div className="grid grid-cols-1 gap-8 pb-4">
+        <div className="grid grid-cols-1 gap-8 pb-4 ">
           <Breadcrumb className="flex-1">
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -112,9 +93,7 @@ const DashboardPage = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage className="font-bold">
-                  Khách hàng
-                </BreadcrumbPage>
+                <BreadcrumbPage>Khách hàng</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -125,7 +104,7 @@ const DashboardPage = () => {
           </div>
           <div className="">
             <CustomerContractList
-              containers={containers}
+              contracts={contracts}
               onSelect={handleContainerSelect}
             />
           </div>
@@ -163,19 +142,19 @@ const DashboardPage = () => {
                 <RegistrationList reFetchTrigger={reFetchTrigger} />
               </TabsContent>
               <TabsContent value="serviceRequests" className="w-full">
-                <ServiceRequestList />
+                <ServiceRequestList reFetchTrigger={false} />
               </TabsContent>
               <TabsContent value="bookingRequests" className="w-full">
-                <BookingRequestList />
+                <BookingRequestList reFetchTrigger={false} />
               </TabsContent>
             </Tabs>
           </motion.div>
         </div>
       </main>
-      <ContainerDetailsDialog
+      <ContractDetailsDialog
         isOpen={isContainerModalOpen}
         onClose={() => setIsContainerModalOpen(false)}
-        containerId={selectedContainer?.nicheId}
+        contractId={selectedContainer?.nicheId}
       />
       <VisitScheduleDialog
         isOpen={isVisitScheduleModalOpen}
@@ -185,6 +164,4 @@ const DashboardPage = () => {
       />
     </div>
   );
-};
-
-export default DashboardPage;
+}

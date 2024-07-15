@@ -35,7 +35,7 @@ namespace cms_server.Services
                     DeceasedName = n.Deceaseds
                         .OrderByDescending(d => d.DateOfDeath)
                         .Select(d => d.FullName)
-                        .FirstOrDefault() ?? "Không có thông tin" // Thêm DeceasedName
+                        .FirstOrDefault() ?? "Không có thông tin"
                 })
                 .ToListAsync();
         }
@@ -46,9 +46,6 @@ namespace cms_server.Services
                 .Include(n => n.Area)
                     .ThenInclude(a => a.Floor)
                         .ThenInclude(f => f.Building)
-                .Include(n => n.Deceaseds)
-                .Include(n => n.Contracts)
-                    .ThenInclude(c => c.Customer)
                 .FirstOrDefaultAsync(n => n.NicheId == nicheId);
 
             if (niche == null)
@@ -56,20 +53,22 @@ namespace cms_server.Services
                 throw new KeyNotFoundException("Niche not found.");
             }
 
-            var latestContract = niche.Contracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
-            var deceased = niche.Deceaseds.FirstOrDefault();
-            var customer = latestContract?.Customer;
-
             return new NicheDetailDto
             {
-                NicheAddress = $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}",
-                NicheDescription = niche.NicheDescription,
-                CustomerName = customer?.FullName,
-                DeceasedName = deceased?.FullName,
-                StartDate = latestContract?.StartDate,
-                EndDate = latestContract?.EndDate,
-                ContractStatus = latestContract?.Status ?? "Không xác định"
+                BuildingName = niche.Area.Floor.Building.BuildingName,
+                BuildingDescription = niche.Area.Floor.Building.BuildingDescription,
+                BuildingPicture = niche.Area.Floor.Building.BuildingPicture,
+                FloorName = niche.Area.Floor.FloorName,
+                FloorDescription = niche.Area.Floor.FloorDescription,
+                FloorPicture = niche.Area.Floor.FloorPicture,
+                NichePrice = niche.Area.Floor.NichePrice,
+                AreaName = niche.Area.AreaName,
+                AreaDescription = niche.Area.AreaDescription,
+                AreaPicture = niche.Area.AreaPicture,
+                NicheName = niche.NicheName,
+                NicheDescription = niche.NicheDescription
             };
         }
+  
     }
 }

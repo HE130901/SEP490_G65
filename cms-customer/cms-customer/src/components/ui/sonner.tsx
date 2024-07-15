@@ -23,14 +23,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             "group-[.toast]:bg-slate-100 group-[.toast]:text-slate-500 dark:group-[.toast]:bg-slate-800 dark:group-[.toast]:text-slate-400",
         },
-        success: {
-          className: "bg-green-600 text-white",
-          descriptionClassName: "text-green-200",
-        },
-        error: {
-          className: "bg-red-600 text-white",
-          descriptionClassName: "text-red-200",
-        },
       }}
       {...props}
     />

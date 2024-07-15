@@ -70,12 +70,12 @@ const Sidebar = () => {
     {
       text: "Đơn đặt chỗ",
       icon: <CalendarIcon className="h-6 w-6" />,
-      path: "/bookings",
+      path: "/niche-reservations",
     },
     {
       text: "Đơn đăng ký viếng",
       icon: <ClipboardListIcon className="h-6 w-6" />,
-      path: "/visit-requests",
+      path: "/visit-registrations",
     },
     {
       text: "Đơn đặt dịch vụ",

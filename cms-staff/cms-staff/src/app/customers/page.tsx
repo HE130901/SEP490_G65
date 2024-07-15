@@ -19,22 +19,26 @@ import {
   InputLabel,
   TableSortLabel,
 } from "@mui/material";
+import { SelectChangeEvent } from "@mui/material";
 import {
   Edit as EditIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import CustomerAPI from "@/services/customerService";
 import { useToast } from "@/components/ui/use-toast";
-import CustomerViewDialog from "./CustomerViewDialog";
-import CustomerEditDialog from "./CustomerEditDialog";
+import CustomerViewDialog from "./CustomerDetail";
+import CustomerEditDialog from "./CustomerEdit";
+import { Customer } from "./interfaces";
 
 const CustomerPage = () => {
-  const [customers, setCustomers] = useState([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("fullName");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("customerId");
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Customer>("customerId");
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -56,12 +60,12 @@ const CustomerPage = () => {
     fetchCustomers();
   }, [toast]);
 
-  const handleViewCustomer = (customer) => {
+  const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setViewDialogOpen(true);
   };
 
-  const handleEditCustomer = (customer) => {
+  const handleEditCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setEditDialogOpen(true);
   };
@@ -76,11 +80,11 @@ const CustomerPage = () => {
     setSelectedCustomer(null);
   };
 
-  const handleSearchColumnChange = (event) => {
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
     setSearchColumn(event.target.value);
   };
 
-  const handleRequestSort = (property) => {
+  const handleRequestSort = (property: keyof Customer) => {
     const isAscending = orderBy === property && order === "asc";
     setOrder(isAscending ? "desc" : "asc");
     setOrderBy(property);

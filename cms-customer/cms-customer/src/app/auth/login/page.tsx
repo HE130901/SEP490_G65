@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import styles from "./login.module.css";
+import { useState } from "react";
+import { Loader } from "lucide-react";
 
 // Define the validation schema using Zod
 const schema = z.object({
@@ -17,22 +19,29 @@ const schema = z.object({
   password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
 });
 
+// Define the type using the schema
+type FormData = z.infer<typeof schema>;
+
 const Login = () => {
   const { login } = useStateContext();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
     try {
       await login(data.email, data.password);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.response?.data.message || "Đăng nhập thất bại");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,8 +88,12 @@ const Login = () => {
               </p>
             )}
           </div>
-          <Button type="submit" className="w-full">
-            Đăng nhập
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <Loader className="animate-spin h-5 w-5 mx-auto" />
+            ) : (
+              "Đăng nhập"
+            )}
           </Button>
           <div className="flex justify-between items-center">
             <Link

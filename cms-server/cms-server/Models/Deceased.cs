@@ -19,6 +19,12 @@ public partial class Deceased
 
     public int? CustomerId { get; set; }
 
+    public string? DeathCertificateNumber { get; set; }
+
+    public string? DeathCertificateSupplier { get; set; }
+
+    public string? RelationshipWithCusomer { get; set; }
+
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 
     public virtual Customer? Customer { get; set; }
