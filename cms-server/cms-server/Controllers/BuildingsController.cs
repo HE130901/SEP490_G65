@@ -18,8 +18,6 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-
-
         [HttpGet("all")]
         public async Task<ActionResult<BuildingsFloorsAreasDto>> GetAllBuildingsFloorsAreas()
         {
@@ -53,9 +51,18 @@ namespace cms_server.Controllers
         }
 
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
-        public async Task<ActionResult<IEnumerable<Niche>>> GetNiches(int buildingId, int floorId, int areaId)
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
         {
-            return await _context.Niches.Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId).ToListAsync();
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
+                .Select(n => new NicheDto
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName
+                })
+                .ToListAsync();
+
+            return niches;
         }
     }
 
@@ -84,5 +91,11 @@ namespace cms_server.Controllers
     {
         public int AreaId { get; set; }
         public string AreaName { get; set; }
+    }
+
+    public class NicheDto
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
     }
 }
