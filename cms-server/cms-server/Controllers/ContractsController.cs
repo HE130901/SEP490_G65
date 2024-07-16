@@ -21,7 +21,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        // GET: api/Contracts/Customer/5
+        // GET: api/{customerId}/list
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
@@ -103,5 +103,6 @@ namespace cms_server.Controllers
 
             return Ok(contractDetail);
         }
+
     }
 }

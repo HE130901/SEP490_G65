@@ -3,7 +3,7 @@ import withAuth from "@/components/withAuth";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 
-const DashboardPage = () => {
+const ManagerDashboardPage = () => {
   const { user, logout } = useAuth();
 
   return (
@@ -25,4 +25,4 @@ const DashboardPage = () => {
   );
 };
 
-export default withAuth(DashboardPage);
+export default withAuth(ManagerDashboardPage);

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://cms-server.azurewebsites.net",
+   baseURL: "https://cms-server.azurewebsites.net",
   //  baseURL: "https://localhost:7148",
   headers: {
     "Content-Type": "application/json",

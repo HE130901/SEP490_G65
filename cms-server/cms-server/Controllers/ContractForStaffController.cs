@@ -178,6 +178,71 @@ namespace cms_server.Controllers
 
             return Ok(contract);
         }
+
+        // New methods to fetch buildings, floors, zones, and niches
+
+        // GET: api/Contracts/buildings
+        [HttpGet("buildings")]
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
+        {
+            var buildings = await _context.Buildings
+                .Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName
+                })
+                .ToListAsync();
+
+            return Ok(buildings);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors
+        [HttpGet("buildings/{buildingId}/floors")]
+        public async Task<ActionResult<IEnumerable<FloorDto>>> GetFloors(int buildingId)
+        {
+            var floors = await _context.Floors
+                .Where(f => f.BuildingId == buildingId)
+                .Select(f => new FloorDto
+                {
+                    FloorId = f.FloorId,
+                    FloorName = f.FloorName
+                })
+                .ToListAsync();
+
+            return Ok(floors);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas")]
+        public async Task<ActionResult<IEnumerable<AreaDto>>> GetZones(int buildingId, int floorId)
+        {
+            var areas = await _context.Areas
+                .Where(a => a.FloorId == floorId)
+                .Select(a => new AreaDto
+                {
+                    AreaId = a.AreaId,
+                    AreaName = a.AreaName
+                })
+                .ToListAsync();
+
+            return Ok(areas);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas/{zoneId}/niches
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas/{areaID}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId)
+                .Select(n => new NicheDto
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName
+                })
+                .ToListAsync();
+
+            return Ok(niches);
+        }
     }
 
     public class CreateContractRequest
