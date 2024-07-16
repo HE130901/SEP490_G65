@@ -18,58 +18,58 @@ export interface Contract {
     idDate?: string;
     idPlace?: string;
     deceasedName?: string;
-    duration?: number;  // đổi lại thành number để đồng nhất
+    duration?: number;  
     type?: string;
     cost?: number;
     notes?: string[];
+    staffID: number;
+    
 }
 
 export interface FormData {
-    customerName: string;
-    relationship: string;
-    phone: string;
-    address: string;
-    idNumber: string;
-    idDate: string;
-    idPlace: string;
-    deceasedName: string;
-    age: string;
-    deathDate: string;
-    deathCertificate: string;
-    deathCertificatePlace: string;
-    nicheBuilding: string;
-    nicheFloor: string;
-    nicheZone: string;
-    nicheCode: string;
-    type: string;
-    duration: number;
+    customerFullName: string;
+    customerPhoneNumber: string;
+    customerEmail: string;
+    customerAddress: string;
+    customerCitizenId: string;
+    customerCitizenIdIssueDate: string;
+    customerCitizenIdSupplier: string;
+    deceasedFullName: string;
+    deceasedCitizenId: string;
+    deceasedDateOfBirth: string;
+    deceasedDateOfDeath: string;
+    deathCertificateNumber: string;
+    deathCertificateSupplier: string;
+    relationshipWithCustomer: string;
+    nicheID: number;
+    staffID: number;
     startDate: string;
     endDate: string;
-    cost: number;
-    status: string;
+    note: string;
+    totalAmount: number;
 }
 
 export interface Building {
-    id: number;
-    name: string;
+    buildingId: number;
+    buildingName: string;
     floors: Floor[];
 }
 
 export interface Floor {
-    id: number;
-    name: string;
-    zones: Zone[];
+    floorId: number;
+    floorName: string;
+    areas: Area[];
 }
 
-export interface Zone {
-    id: number;
-    name: string;
+export interface Area {
+    areaId: number;
+    areaName: string;
     niches: Niche[];
 }
 
 export interface Niche {
-    id: string;
-    name: string;
+    nicheId: string;
+    nicheName: string;
 }
 
 export interface AddContractFormProps {

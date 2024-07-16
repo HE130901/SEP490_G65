@@ -32,8 +32,8 @@ import RenewalDialog from "./ContractRenewal";
 import ConfirmDialog from "./ContractDelete";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import withAuth from "@/components/withAuth";
-import { Contract, FormData } from "./interfaces";
-import contractService from "@/services/contractService"; // Import the contract service
+import { Contract } from "./interfaces";
+import contractService from "@/services/contractService";
 
 const ContractPage: React.FC = () => {
   const [contracts, setContracts] = useState<Contract[]>([]);

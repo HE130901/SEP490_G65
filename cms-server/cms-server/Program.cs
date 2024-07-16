@@ -18,7 +18,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<CmsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("CmsbdDatabase")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("RemoteDB")));
 
 // Custom services
 builder.Services.AddScoped<NicheService>();

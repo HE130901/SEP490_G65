@@ -10,21 +10,41 @@ const contractService = {
   },
   async getContractById(id: number) {
     const response = await axiosInstance.get(`/api/ContractForStaff/contract/${id}`);
-    return response.data;
+    if (response.data) {
+      return response.data;
+    }
+    throw new Error("Invalid API response format");
   },
   createContract(contractData: any) {
     return axiosInstance.post("/api/ContractForStaff/create-contract", contractData);
   },
   async getBuildings() {
-    const response = await axiosInstance.get("/api/Buildings/all");
-    if (response.data && response.data.buildings && response.data.buildings.$values) {
-      return response.data.buildings.$values;
+    const response = await axiosInstance.get("/api/ContractForStaff/buildings");
+    if (response.data && Array.isArray(response.data.$values)) {
+      return response.data;
+    }
+    throw new Error("Invalid API response format");
+  },
+  async getFloors(buildingId: number) {
+    const response = await axiosInstance.get(`/api/ContractForStaff/buildings/${buildingId}/floors`);
+    if (response.data && Array.isArray(response.data.$values)) {
+      return response.data;
+    }
+    throw new Error("Invalid API response format");
+  },
+  async getAreas(buildingId: number, floorId: number) {
+    const response = await axiosInstance.get(`/api/ContractForStaff/buildings/${buildingId}/floors/${floorId}/areas`);
+    if (response.data && Array.isArray(response.data.$values)) {
+      return response.data;
     }
     throw new Error("Invalid API response format");
   },
   async getNiches(buildingId: number, floorId: number, areaId: number) {
-    const response = await axiosInstance.get(`/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`);
-    return response.data;
+    const response = await axiosInstance.get(`/api/ContractForStaff/buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`);
+    if (response.data && Array.isArray(response.data.$values)) {
+      return response.data;
+    }
+    throw new Error("Invalid API response format");
   }
 };
 

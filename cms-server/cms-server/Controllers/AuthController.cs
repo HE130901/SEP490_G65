@@ -44,10 +44,13 @@ namespace cms_server.Controllers
             var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
             if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
             {
-                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Role);
+                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Email);
                 return Ok(new
                 {
                     Token = token,
+                    Id = staff.StaffId,
+                    Name = staff.FullName,
+                    Email = staff.Email,
                     Role = staff.Role
                 });
             }

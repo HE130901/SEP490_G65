@@ -48,9 +48,20 @@ public partial class CmsContext : DbContext
     public virtual DbSet<VisitRegistration> VisitRegistrations { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server = trunghieu; Initial Catalog = cms; Persist Security Info=False;User ID = sa; Password=abcd1234;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout = 30;");
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            // Create a configuration builder
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
 
+            // Get the connection string from the configuration
+            var connectionString = configuration.GetConnectionString("RemoteDB");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Area>(entity =>
