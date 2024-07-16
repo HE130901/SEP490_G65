@@ -55,6 +55,7 @@ namespace cms_server.Services
 
             return new NicheDetailDto
             {
+                NicheId = niche.NicheId,
                 BuildingName = niche.Area.Floor.Building.BuildingName,
                 BuildingDescription = niche.Area.Floor.Building.BuildingDescription,
                 BuildingPicture = niche.Area.Floor.Building.BuildingPicture,

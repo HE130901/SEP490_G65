@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import CallHotline from "@/components/home/call-hotline";
+import { ToastContainer } from "react-toastify";
 
 export const metadata = {
   title: "An Bình Viên",
@@ -26,6 +27,7 @@ export default function RootLayout({
             <Header currentView={undefined} setCurrentView={undefined} />
             {children}
             <Toaster />
+            <ToastContainer position="bottom-right" />
             <Footer />
             <CallHotline />
           </CartProvider>

@@ -156,6 +156,10 @@ const AddContractForm: React.FC<AddContractFormProps> = ({
       ...formData,
       id: 0,
       code: "",
+      nicheAddress: "",
+      contractId: "",
+      niche: "",
+      customer: "",
     };
     handleSave(newContract);
   };

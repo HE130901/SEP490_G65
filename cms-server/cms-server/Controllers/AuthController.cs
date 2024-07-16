@@ -12,7 +12,7 @@ using MimeKit;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace CMSApi.Controllers
+namespace cms_server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

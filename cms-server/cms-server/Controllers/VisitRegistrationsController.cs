@@ -10,12 +10,12 @@ namespace cms_server.Controllers
     public class VisitRegistrationsController : ControllerBase
     {
         private readonly CmsContext _context;
-        private readonly ILogger<VisitRegistrationsController> _logger; // Add logger
+        private readonly ILogger<VisitRegistrationsController> _logger; 
 
         public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
         {
             _context = context;
-            _logger = logger; // Initialize logger
+            _logger = logger; 
         }
 
         // GET: api/VisitRegistrations
@@ -31,7 +31,7 @@ namespace cms_server.Controllers
                         CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "Không xác định",
+                        Status = vr.Status ?? "No infomation",
                         ApprovedBy = vr.ApprovedBy,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         Note = vr.Note ?? string.Empty,
@@ -77,7 +77,7 @@ namespace cms_server.Controllers
                         NicheId = vr.NicheId,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "Không xác định",
+                        Status = vr.Status ?? "No infomation",
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
                         Note = vr.Note ?? string.Empty
                     })
@@ -146,7 +146,7 @@ namespace cms_server.Controllers
                 NicheId = visitRegistrationDto.NicheId,
                 VisitDate = visitRegistrationDto.VisitDate,
                 Note = visitRegistrationDto.Note,
-                Status = "Đang chờ duyệt",
+                Status = "Pending",
                 ApprovedBy = null,
                 CreatedDate = DateTime.Now,
                 AccompanyingPeople = visitRegistrationDto.AccompanyingPeople
@@ -189,7 +189,7 @@ public class VisitRegistrationDto
     public int NicheId { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? VisitDate { get; set; }
-    public string? Status { get; set; } = "Đang chờ duyệt";
+    public string? Status { get; set; } = "Pending";
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
 

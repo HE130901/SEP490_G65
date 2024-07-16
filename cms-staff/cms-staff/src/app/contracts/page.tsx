@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -33,51 +33,14 @@ import ConfirmDialog from "./ContractDelete";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import withAuth from "@/components/withAuth";
 import { Contract, FormData } from "./interfaces";
+import contractService from "@/services/contractService"; // Import the contract service
 
 const ContractPage: React.FC = () => {
-  const [contracts, setContracts] = useState<Contract[]>([
-    {
-      id: 1,
-      code: "HD001",
-      nicheCode: "N001",
-      customerName: "Nguyễn Văn A",
-      startDate: "2023-01-01",
-      endDate: "2024-01-01",
-      status: "Còn hiệu lực",
-    },
-    {
-      id: 2,
-      code: "HD002",
-      nicheCode: "N002",
-      customerName: "Trần Thị B",
-      startDate: "2023-02-01",
-      endDate: "2024-02-01",
-      status: "Quá hạn",
-    },
-    {
-      id: 3,
-      code: "HD003",
-      nicheCode: "N003",
-      customerName: "Lê Văn C",
-      startDate: "2023-03-01",
-      endDate: "2024-03-01",
-      status: "Chờ duyệt gia hạn",
-    },
-    {
-      id: 4,
-      code: "HD004",
-      nicheCode: "N004",
-      customerName: "Phạm Thị D",
-      startDate: "2023-04-01",
-      endDate: "2024-04-01",
-      status: "Chờ duyệt thanh lý",
-    },
-  ]);
-
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("all");
   const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<keyof Contract>("code");
+  const [orderBy, setOrderBy] = useState<keyof Contract>("contractId");
   const [open, setOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null
@@ -85,6 +48,19 @@ const ContractPage: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [renewalOpen, setRenewalOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        const contracts = await contractService.getAllContracts();
+        setContracts(contracts);
+      } catch (error) {
+        console.error("Error fetching contracts:", error);
+      }
+    };
+
+    fetchContracts();
+  }, []);
 
   const handleAddContract = () => {
     setOpen(true);
@@ -108,7 +84,7 @@ const ContractPage: React.FC = () => {
   };
 
   const handleViewContract = (id: number) => {
-    const contract = contracts.find((contract) => contract.id === id);
+    const contract = contracts.find((contract) => contract.contractId === id);
     if (contract) {
       setSelectedContract(contract);
       setDetailOpen(true);
@@ -116,28 +92,30 @@ const ContractPage: React.FC = () => {
   };
 
   const handleRenewContract = (id: number) => {
-    const contract = contracts.find((contract) => contract.id === id);
+    const contract = contracts.find((contract) => contract.contractId === id);
     setSelectedContract(contract ?? null);
     setRenewalOpen(true);
   };
 
   const handleRenewalSave = (updatedContract: Contract) => {
     const updatedContracts = contracts.map((contract) =>
-      contract.id === updatedContract.id ? updatedContract : contract
+      contract.contractId === updatedContract.contractId
+        ? updatedContract
+        : contract
     );
     setContracts(updatedContracts);
     setRenewalOpen(false);
   };
 
   const handleTerminateContract = (id: number) => {
-    const contract = contracts.find((contract) => contract.id === id);
+    const contract = contracts.find((contract) => contract.contractId === id);
     setSelectedContract(contract ?? null);
     setConfirmDialogOpen(true);
   };
 
   const handleConfirmTerminate = () => {
     const updatedContracts = contracts.map((contract) =>
-      contract.id === (selectedContract as Contract).id
+      contract.contractId === (selectedContract as Contract).contractId
         ? {
             ...contract,
             status: "Đã thanh lý",
@@ -163,14 +141,14 @@ const ContractPage: React.FC = () => {
   };
 
   const sortedContracts = contracts.sort((a, b) => {
-    if (orderBy === "code") {
+    if (orderBy === "contractId") {
       return order === "asc"
-        ? a.code.localeCompare(b.code)
-        : b.code.localeCompare(a.code);
-    } else if (orderBy === "nicheCode") {
+        ? a.contractId - b.contractId
+        : b.contractId - a.contractId;
+    } else if (orderBy === "nicheAddress") {
       return order === "asc"
-        ? a.nicheCode.localeCompare(b.nicheCode)
-        : b.nicheCode.localeCompare(a.nicheCode);
+        ? a.nicheAddress.localeCompare(b.nicheAddress)
+        : b.nicheAddress.localeCompare(a.nicheAddress);
     } else if (orderBy === "customerName") {
       return order === "asc"
         ? a.customerName.localeCompare(b.customerName)
@@ -197,8 +175,10 @@ const ContractPage: React.FC = () => {
         contract.customerName
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        contract.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        contract.nicheCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        contract.contractId.toString().includes(searchTerm.toLowerCase()) ||
+        contract.nicheAddress
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
         contract.startDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contract.endDate.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contract.status.toLowerCase().includes(searchTerm.toLowerCase())
@@ -207,10 +187,10 @@ const ContractPage: React.FC = () => {
       return contract.customerName
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "code") {
-      return contract.code.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "nicheCode") {
-      return contract.nicheCode
+    } else if (searchColumn === "contractId") {
+      return contract.contractId.toString().includes(searchTerm.toLowerCase());
+    } else if (searchColumn === "nicheAddress") {
+      return contract.nicheAddress
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     } else if (searchColumn === "startDate") {
@@ -254,8 +234,8 @@ const ContractPage: React.FC = () => {
             >
               <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="customerName">Tên khách hàng</MenuItem>
-              <MenuItem value="code">Mã Hợp đồng</MenuItem>
-              <MenuItem value="nicheCode">Mã Ô chứa</MenuItem>
+              <MenuItem value="contractId">Mã Hợp đồng</MenuItem>
+              <MenuItem value="nicheAddress">Mã Ô chứa</MenuItem>
               <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
               <MenuItem value="endDate">Ngày kết thúc</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
@@ -275,27 +255,27 @@ const ContractPage: React.FC = () => {
             <TableRow>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={orderBy === "id" ? order : undefined}
-                  onClick={() => handleRequestSort("id")}
+                  active={orderBy === "contractId"}
+                  direction={orderBy === "contractId" ? order : undefined}
+                  onClick={() => handleRequestSort("contractId")}
                 >
                   Số thứ tự
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={orderBy === "code" ? order : "asc"}
-                  onClick={() => handleRequestSort("code")}
+                  active={orderBy === "contractId"}
+                  direction={orderBy === "contractId" ? order : "asc"}
+                  onClick={() => handleRequestSort("contractId")}
                 >
                   Mã Hợp đồng
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === "nicheCode"}
-                  direction={orderBy === "nicheCode" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheCode")}
+                  active={orderBy === "nicheAddress"}
+                  direction={orderBy === "nicheAddress" ? order : "asc"}
+                  onClick={() => handleRequestSort("nicheAddress")}
                 >
                   Mã Ô chứa
                 </TableSortLabel>
@@ -341,10 +321,10 @@ const ContractPage: React.FC = () => {
           </TableHead>
           <TableBody>
             {filteredContracts.map((contract, index) => (
-              <TableRow key={contract.id}>
+              <TableRow key={contract.contractId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{contract.code}</TableCell>
-                <TableCell>{contract.nicheCode}</TableCell>
+                <TableCell>{contract.contractId}</TableCell>
+                <TableCell>{contract.nicheAddress}</TableCell>
                 <TableCell>{contract.customerName}</TableCell>
                 <TableCell>{contract.startDate}</TableCell>
                 <TableCell>{contract.endDate}</TableCell>
@@ -352,12 +332,12 @@ const ContractPage: React.FC = () => {
                   <Chip
                     label={contract.status}
                     color={
-                      contract.status === "Còn hiệu lực"
+                      contract.status === "Active"
                         ? "success"
-                        : contract.status === "Quá hạn"
+                        : contract.status === "Expired"
                         ? "error"
-                        : contract.status === "Chờ duyệt gia hạn" ||
-                          contract.status === "Chờ duyệt thanh lý"
+                        : contract.status === "Pending Renewal" ||
+                          contract.status === "Pending Termination"
                         ? "warning"
                         : "default"
                     }
@@ -366,19 +346,19 @@ const ContractPage: React.FC = () => {
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewContract(contract.id)}
+                    onClick={() => handleViewContract(contract.contractId)}
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="success"
-                    onClick={() => handleRenewContract(contract.id)}
+                    onClick={() => handleRenewContract(contract.contractId)}
                   >
                     <RestorePageIcon />
                   </IconButton>
                   <IconButton
                     color="error"
-                    onClick={() => handleTerminateContract(contract.id)}
+                    onClick={() => handleTerminateContract(contract.contractId)}
                   >
                     <CancelOutlinedIcon />
                   </IconButton>
@@ -410,7 +390,7 @@ const ContractPage: React.FC = () => {
         handleConfirm={handleConfirmTerminate}
         title="Xác nhận thanh lý hợp đồng"
         content={`Bạn có chắc chắn muốn thanh lý hợp đồng ${
-          selectedContract?.code || ""
+          selectedContract?.contractId || ""
         }?`}
       />
     </Box>

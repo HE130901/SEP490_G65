@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
@@ -110,6 +112,7 @@ const NicheReservationPage = () => {
     try {
       const response = await NicheAPI.getDetail(niche.nicheId);
       setSelectedNicheDetail(response.data);
+      console.log("Niche details:", response.data); // Debugging log
       setIsDetailDialogVisible(true);
     } catch (error) {
       console.error("Error fetching niche details:", error);
@@ -120,13 +123,15 @@ const NicheReservationPage = () => {
     setIsDetailDialogVisible(false);
   };
 
-  const proceedToBooking = () => {
-    if (selectedNicheDetail) {
+  const proceedToBooking = (niche: Niche) => {
+    // Updated to take niche as argument
+    if (niche) {
       setSelectedNiche({
-        nicheId: selectedNicheDetail.nicheId,
-        nicheName: selectedNicheDetail.nicheName,
+        nicheId: niche.nicheId,
+        nicheName: niche.nicheName,
         status: "Available",
       });
+      console.log("Proceeding to booking with niche:", niche); // Debugging log
       setIsDetailDialogVisible(false);
       openBookingForm();
     }
@@ -388,6 +393,7 @@ const NicheReservationPage = () => {
           <ReservationForm
             isVisible={isFormVisible}
             onClose={closeBookingForm}
+            selectedNiche={selectedNicheDetail} // Pass selectedNicheDetail as selectedNiche
           />
           <NicheDetailDialog
             isVisible={isDetailDialogVisible}

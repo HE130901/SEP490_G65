@@ -35,6 +35,7 @@ namespace cms_server.Controllers
                 .Where(c => c.CustomerId == customerId)
                 .Select(c => new ContractDto
                 {
+                    NicheId = c.NicheId,
                     ContractId = c.ContractId,
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",

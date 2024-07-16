@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import FilterPanel from "./FilterPanel";
 import ProductList from "./ProductList";
 import ServiceAPI from "@/services/serviceService";
-import { toast } from "sonner"; // Corrected import statement
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Service {
   price: number;
