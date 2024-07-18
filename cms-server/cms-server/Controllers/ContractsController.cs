@@ -21,7 +21,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        // GET: api/Contracts/Customer/5
+        // GET: api/{customerId}/list
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
@@ -35,6 +35,7 @@ namespace cms_server.Controllers
                 .Where(c => c.CustomerId == customerId)
                 .Select(c => new ContractDto
                 {
+                    NicheId = c.NicheId,
                     ContractId = c.ContractId,
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
@@ -102,5 +103,6 @@ namespace cms_server.Controllers
 
             return Ok(contractDetail);
         }
+
     }
 }

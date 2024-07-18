@@ -53,18 +53,14 @@ const predefinedAddresses = [
 const ReservationForm = ({
   isVisible,
   onClose,
+  selectedNiche, // Added selectedNiche as prop
 }: {
   isVisible: boolean;
   onClose: () => void;
+  selectedNiche: any; // Added selectedNiche type
 }) => {
-  const {
-    selectedBuilding,
-    selectedFloor,
-    selectedArea,
-    selectedNiche,
-    fetchNiches,
-    user,
-  } = useStateContext();
+  const { selectedBuilding, selectedFloor, selectedArea, fetchNiches, user } =
+    useStateContext();
   const [selectedAddress, setSelectedAddress] = useState(
     predefinedAddresses[0]
   );
@@ -89,11 +85,21 @@ const ReservationForm = ({
     }
   }, [setValue, selectedAddress, user]);
 
+  useEffect(() => {
+    console.log("Selected Niche: ", selectedNiche); // Debugging log
+  }, [selectedNiche]);
+
   const onSubmit = async (data: any) => {
+    console.log("Form data on submit:", data); // Debugging log
+    if (!selectedNiche?.nicheId && !selectedNiche?.$id) {
+      toast.error("Please select a niche.");
+      return;
+    }
+
     const contractDate = data.contractDate + "T23:59:00";
 
     const dataToSubmit = {
-      nicheId: selectedNiche?.nicheId,
+      nicheId: selectedNiche.nicheId, // Fixed nicheId field
       name: data.name,
       confirmationDate: contractDate,
       signAddress: selectedAddress,
@@ -102,10 +108,13 @@ const ReservationForm = ({
       isCustomer: !!user, // Check if the user is a customer
     };
 
+    console.log("Data to submit:", dataToSubmit); // Debugging log
+
     try {
       const response = await NicheReservationAPI.createReservation(
         dataToSubmit
       );
+      console.log("API response:", response); // Debugging log
       toast.success("Đặt ô chứa thành công!");
       fetchNiches(); // Call fetchNiches after successful submission
       onClose();

@@ -12,7 +12,7 @@ using MimeKit;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
 
-namespace CMSApi.Controllers
+namespace cms_server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -44,10 +44,13 @@ namespace CMSApi.Controllers
             var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
             if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
             {
-                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Role);
+                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Email);
                 return Ok(new
                 {
                     Token = token,
+                    Id = staff.StaffId,
+                    Name = staff.FullName,
+                    Email = staff.Email,
                     Role = staff.Role
                 });
             }
@@ -55,27 +58,6 @@ namespace CMSApi.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto registerDto)
-        {
-            if (_context.Customers.Any(c => c.Email == registerDto.Email))
-                return BadRequest("Email already in use.");
-
-            var customer = new Customer
-            {
-                FullName = registerDto.FullName,
-                Email = registerDto.Email,
-                Phone = registerDto.Phone,
-                Address = registerDto.Address,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                CitizenId = registerDto.CitizenId,
-            };
-
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
-
-            return Ok("Registration successful.");
-        }
 
         [HttpGet("get-current-user")]
         [Authorize]

@@ -15,7 +15,8 @@ import NicheReservationAPI from "@/services/nicheReservationService";
 import VisitRegistrationAPI from "@/services/visitService";
 import ContractAPI from "@/services/contractService";
 import { useRouter } from "next/navigation";
-import { toast as sonnerToast } from "sonner";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StateContext = createContext<any | null>(null);
 
@@ -89,9 +90,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("token", token);
       await fetchCurrentUser(token);
       router.push("/dashboard");
-      sonnerToast.success("Đăng nhập thành công!");
+      toast.success("Đăng nhập thành công!");
     } catch (error) {
-      sonnerToast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
+      toast.error("Đăng nhập thất bại. Vui lòng thử lại sau.");
     }
   };
 
@@ -99,9 +100,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await AuthAPI.register(formData);
       router.push("/auth/login");
-      sonnerToast.success("Registration successful.");
+      toast.success("Registration successful.");
     } catch (error) {
-      sonnerToast.error("Registration failed. Please try again later.");
+      toast.error("Registration failed. Please try again later.");
     }
   };
 
@@ -155,9 +156,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         ...prevReservations,
         response.data,
       ]);
-      sonnerToast.success("Reservation created successfully!");
+      toast.success("Đặt ô chứa thành công!");
     } catch (error) {
-      sonnerToast.error("Failed to create reservation.");
+      toast.error("Đặt ô chứa thất bại!");
     }
   };
 
@@ -169,9 +170,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
           (reservation) => reservation.reservationId !== reservationId
         )
       );
-      sonnerToast.success("Reservation deleted successfully!");
+      toast.success("Xóa thành công!");
     } catch (error) {
-      sonnerToast.error("Failed to delete the reservation.");
+      toast.error("Xóa thất bại!");
     }
   };
 
@@ -198,9 +199,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
           (registration) => registration.visitId !== visitId
         )
       );
-      sonnerToast.success("Visit registration deleted successfully!");
+      toast.success("Xóa thành công!");
     } catch (error) {
-      sonnerToast.error("Failed to delete the visit registration.");
+      toast.error("Xóa thất bại!");
     }
   };
 

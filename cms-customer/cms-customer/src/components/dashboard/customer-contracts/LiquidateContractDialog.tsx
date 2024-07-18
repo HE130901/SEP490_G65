@@ -3,17 +3,22 @@
 import { useState, useEffect } from "react";
 import {
   Dialog,
+  DialogActions,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+  Button,
+  Typography,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  FormLabel,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const predefinedAddresses = [
   "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
@@ -65,59 +70,54 @@ export default function LiquidateContractDialog({
   }, [isOpen]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="">
-        <DialogHeader>
-          <DialogTitle>Thanh lý hợp đồng</DialogTitle>
-        </DialogHeader>
-        <Separator />
-        <div className="grid gap-6 p-6">
-          <div className="grid gap-4">
-            <div className="grid gap-1">
-              <p className="text-sm font-medium">Địa điểm ký hợp đồng</p>
+    <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Thanh lý hợp đồng</DialogTitle>
+      <DialogContent>
+        <Grid container spacing={2} mt={2}>
+          <Grid item xs={12}>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Địa điểm ký hợp đồng</FormLabel>
               <RadioGroup
                 value={selectedAddress}
-                onValueChange={(value) => setSelectedAddress(value)}
+                onChange={(e) => setSelectedAddress(e.target.value)}
               >
                 {predefinedAddresses.map((address) => (
-                  <div key={address} className="flex items-center">
-                    <RadioGroupItem
-                      id={address}
-                      value={address}
-                      className="mr-2"
-                    />
-                    <label htmlFor={address} className="text-gray-700 text-sm">
-                      {address}
-                    </label>
-                  </div>
+                  <FormControlLabel
+                    key={address}
+                    value={address}
+                    control={<Radio />}
+                    label={address}
+                  />
                 ))}
               </RadioGroup>
-            </div>
-            <div className="grid gap-1">
-              <p className="text-sm font-medium">Ngày hẹn thanh lý</p>
-              <Input
-                type="date"
-                value={appointmentDate}
-                onChange={(e) => setAppointmentDate(e.target.value)}
-                placeholder="Chọn ngày"
-                className="w-36"
-              />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Hủy
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleLiquidate}
-            disabled={loading}
-          >
-            <DeleteIcon className="mr-2" /> Thanh lý
-          </Button>
-        </DialogFooter>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Ngày hẹn thanh lý"
+              type="date"
+              value={appointmentDate}
+              onChange={(e) => setAppointmentDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+        </Grid>
       </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined">
+          Hủy
+        </Button>
+        <Button
+          onClick={handleLiquidate}
+          variant="contained"
+          color="secondary"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : <DeleteIcon />}
+        >
+          Thanh lý
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -32,7 +32,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import EditModal from "./EditModal";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";

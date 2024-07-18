@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import {
   Dialog,
   DialogActions,
@@ -17,66 +17,41 @@ import {
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SaveIcon from "@mui/icons-material/Save";
-import SearchIcon from "@mui/icons-material/Search";
-import PrintIcon from "@mui/icons-material/Print";
-import { useReactToPrint } from "react-to-print";
 import {
   FormData,
   Building,
   AddContractFormProps,
-  ContractDocumentProps,
-  SearchDialogProps,
+  Contract,
+  Floor,
+  Area,
+  Niche,
 } from "./interfaces";
-
+import contractService from "@/services/contractService";
 import "./styles.css";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth hook
 
 const initialFormData: FormData = {
-  customerName: "",
-  relationship: "",
-  phone: "",
-  address: "",
-  idNumber: "",
-  idDate: "",
-  idPlace: "",
-  deceasedName: "",
-  age: "",
-  deathDate: "",
-  deathCertificate: "",
-  deathCertificatePlace: "",
-  nicheBuilding: "",
-  nicheFloor: "",
-  nicheZone: "",
-  nicheCode: "",
-  type: "",
-  duration: 0,
+  customerFullName: "",
+  customerPhoneNumber: "",
+  customerEmail: "",
+  customerAddress: "",
+  customerCitizenId: "",
+  customerCitizenIdIssueDate: "",
+  customerCitizenIdSupplier: "",
+  deceasedFullName: "",
+  deceasedCitizenId: "",
+  deceasedDateOfBirth: "",
+  deceasedDateOfDeath: "",
+  deathCertificateNumber: "",
+  deathCertificateSupplier: "",
+  relationshipWithCustomer: "",
+  nicheID: 0,
+  staffID: 0,
   startDate: "",
   endDate: "",
-  cost: 0,
-  status: "Còn hiệu lực",
+  note: "",
+  totalAmount: 0,
 };
-
-const buildings: Building[] = [
-  {
-    id: 1,
-    name: "Tòa nhà A",
-    floors: [
-      {
-        id: 1,
-        name: "Tầng 1",
-        zones: [
-          {
-            id: 1,
-            name: "Khu 1",
-            niches: [
-              { id: "N001", name: "Ô N001" },
-              { id: "N002", name: "Ô N002" },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-];
 
 const calculateCost = (type: string, duration: number): number => {
   if (type === "Gửi theo tháng") {
@@ -110,623 +85,540 @@ const AddContractForm: React.FC<AddContractFormProps> = ({
   handleClose,
   handleSave,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const contractRef = useRef<HTMLDivElement>(null);
-
-  const handlePrint = useReactToPrint({
-    content: () => contractRef.current,
-  });
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [floors, setFloors] = useState<Floor[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [niches, setNiches] = useState<Niche[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [selectedArea, setSelectedArea] = useState<number | null>(null);
+  const [type, setType] = useState<string>("Gửi theo tháng");
+  const [duration, setDuration] = useState<number>(1);
 
   useEffect(() => {
-    if (formData.startDate && formData.duration) {
-      const endDate = calculateEndDate(
-        formData.startDate,
-        formData.type,
-        formData.duration
-      );
+    const fetchBuildings = async () => {
+      try {
+        const buildingsData = await contractService.getBuildings();
+        setBuildings(buildingsData.$values || []);
+      } catch (error) {
+        console.error("Error fetching buildings:", error);
+      }
+    };
+    fetchBuildings();
+  }, []);
+
+  useEffect(() => {
+    if (formData.startDate) {
+      const endDate = calculateEndDate(formData.startDate, type, duration);
       setFormData((prevFormData) => ({
         ...prevFormData,
         endDate: endDate,
+        totalAmount: calculateCost(type, duration),
       }));
     }
-  }, [formData.startDate, formData.type, formData.duration]);
+  }, [formData.startDate, type, duration]);
 
   const handleChange = (
     event: ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }
     >
   ) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target as HTMLInputElement;
     setFormData({
       ...formData,
-      [name as string]: value,
-      cost: calculateCost(formData.type, formData.duration),
+      [name]: value,
     });
   };
 
-  const handleImport = (importedData: Partial<FormData>) => {
-    setFormData({ ...formData, ...importedData });
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const newContract = {
+  const handleSelectChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    setFormData({
       ...formData,
-      id: 0,
-      code: "",
-    };
-    handleSave(newContract);
+      [name]: value,
+    });
   };
 
-  const handleSearchOpen = () => {
-    setSearchOpen(true);
+  const handleBuildingChange = async (event: SelectChangeEvent<string>) => {
+    const buildingId = parseInt(event.target.value);
+    setSelectedBuilding(buildingId);
+    setSelectedFloor(null);
+    setSelectedArea(null);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      nicheID: 0,
+    }));
+    try {
+      const floorsData = await contractService.getFloors(buildingId);
+      setFloors(floorsData.$values || []);
+      setAreas([]);
+      setNiches([]);
+    } catch (error) {
+      console.error("Error fetching floors:", error);
+    }
   };
 
-  const handleSearchClose = () => {
-    setSearchOpen(false);
+  const handleFloorChange = async (event: SelectChangeEvent<string>) => {
+    const floorId = parseInt(event.target.value);
+    setSelectedFloor(floorId);
+    setSelectedArea(null);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      nicheID: 0,
+    }));
+    try {
+      const areasData = await contractService.getAreas(
+        selectedBuilding!,
+        floorId
+      );
+      setAreas(areasData.$values || []);
+      setNiches([]);
+    } catch (error) {
+      console.error("Error fetching areas:", error);
+    }
+  };
+
+  const handleAreaChange = async (event: SelectChangeEvent<string>) => {
+    const areaId = parseInt(event.target.value);
+    setSelectedArea(areaId);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      nicheID: 0,
+    }));
+    try {
+      const nichesData = await contractService.getNiches(
+        selectedBuilding!,
+        selectedFloor!,
+        areaId
+      );
+      setNiches(nichesData.$values || []);
+    } catch (error) {
+      console.error("Error fetching niches:", error);
+    }
   };
 
   const handleTypeChange = (event: SelectChangeEvent<string>) => {
-    const { name, value } = event.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name as string]: value,
-      duration: 0,
-      cost: 0,
-    }));
+    const { value } = event.target;
+    setType(value);
+    setDuration(1); // Reset duration when type changes
   };
 
   const handleDurationChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = event.target;
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name as string]: value,
-      cost: calculateCost(prevFormData.type, parseInt(value as string, 10)),
-    }));
+    const { value } = event.target;
+    setDuration(parseInt(value, 10));
   };
 
-  const selectedBuilding = buildings.find(
-    (building) => building.id === parseInt(formData.nicheBuilding, 10)
-  );
-
-  const selectedFloor = selectedBuilding?.floors.find(
-    (floor) => floor.id === parseInt(formData.nicheFloor, 10)
-  );
-
-  const selectedZone = selectedFloor?.zones.find(
-    (zone) => zone.id === parseInt(formData.nicheZone, 10)
-  );
-
-  return (
-    <>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
-        <DialogTitle>
-          Thêm mới hợp đồng
-          <Button
-            onClick={handleSearchOpen}
-            color="primary"
-            className="searchButton"
-          >
-            <SearchIcon />
-            Nhập từ mã đơn đăng ký
-          </Button>
-        </DialogTitle>
-        <DialogContent>
-          <Box mt={2}>
-            <Typography variant="h6" gutterBottom>
-              Thông tin khách hàng
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Tên khách hàng"
-                  name="customerName"
-                  value={formData.customerName}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Quan hệ với người chết</InputLabel>
-                  <Select
-                    name="relationship"
-                    value={formData.relationship}
-                    onChange={handleTypeChange}
-                    label="Quan hệ với người chết"
-                  >
-                    <MenuItem value="Cha/Mẹ">Cha/Mẹ</MenuItem>
-                    <MenuItem value="Anh/Chị/Em">Anh/Chị/Em</MenuItem>
-                    <MenuItem value="Con">Con</MenuItem>
-                    <MenuItem value="Khác">Khác</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Số điện thoại"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Địa chỉ"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Số CCCD"
-                  name="idNumber"
-                  value={formData.idNumber}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Ngày cấp CCCD"
-                  name="idDate"
-                  type="date"
-                  value={formData.idDate}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Nơi cấp CCCD"
-                  name="idPlace"
-                  value={formData.idPlace}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-            </Grid>
-
-            <Typography variant="h6" gutterBottom mt={4}>
-              Thông tin người chết
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Họ tên người chết"
-                  name="deceasedName"
-                  value={formData.deceasedName}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Tuổi"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Ngày chết"
-                  name="deathDate"
-                  type="date"
-                  value={formData.deathDate}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Giấy chứng tử số"
-                  name="deathCertificate"
-                  value={formData.deathCertificate}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Nơi cấp giấy chứng tử"
-                  name="deathCertificatePlace"
-                  value={formData.deathCertificatePlace}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
-              </Grid>
-            </Grid>
-
-            <Typography variant="h6" gutterBottom mt={4}>
-              Thông tin hợp đồng
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Nhà</InputLabel>
-                  <Select
-                    name="nicheBuilding"
-                    value={formData.nicheBuilding}
-                    onChange={handleTypeChange}
-                    label="Nhà"
-                  >
-                    {buildings.map((building) => (
-                      <MenuItem key={building.id} value={building.id}>
-                        {building.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Tầng</InputLabel>
-                  <Select
-                    name="nicheFloor"
-                    value={formData.nicheFloor}
-                    onChange={handleTypeChange}
-                    label="Tầng"
-                  >
-                    {selectedBuilding &&
-                      selectedBuilding.floors.map((floor) => (
-                        <MenuItem key={floor.id} value={floor.id}>
-                          {floor.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Khu</InputLabel>
-                  <Select
-                    name="nicheZone"
-                    value={formData.nicheZone}
-                    onChange={handleTypeChange}
-                    label="Khu"
-                  >
-                    {selectedFloor &&
-                      selectedFloor.zones.map((zone) => (
-                        <MenuItem key={zone.id} value={zone.id}>
-                          {zone.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Ô</InputLabel>
-                  <Select
-                    name="nicheCode"
-                    value={formData.nicheCode}
-                    onChange={handleTypeChange}
-                    label="Ô"
-                  >
-                    {selectedZone &&
-                      selectedZone.niches.map((niche) => (
-                        <MenuItem key={niche.id} value={niche.id}>
-                          {niche.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Loại hình gửi</InputLabel>
-                  <Select
-                    name="type"
-                    value={formData.type}
-                    onChange={handleTypeChange}
-                    label="Loại hình gửi"
-                  >
-                    <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
-                    <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              {formData.type === "Gửi theo tháng" && (
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    label="Số tháng"
-                    name="duration"
-                    type="number"
-                    inputProps={{ min: 1, max: 12 }}
-                    value={formData.duration}
-                    onChange={handleDurationChange}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-              )}
-              {formData.type === "Gửi theo năm" && (
-                <Grid item xs={12} sm={6} md={4}>
-                  <TextField
-                    label="Số năm"
-                    name="duration"
-                    type="number"
-                    inputProps={{ min: 1, max: 10 }}
-                    value={formData.duration}
-                    onChange={handleDurationChange}
-                    fullWidth
-                    variant="outlined"
-                  />
-                </Grid>
-              )}
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Thời hạn gửi từ ngày"
-                  name="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Đến ngày"
-                  name="endDate"
-                  type="date"
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <TextField
-                  label="Chi phí"
-                  name="cost"
-                  value={formData.cost}
-                  onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleClose}
-            variant="contained"
-            startIcon={<CancelIcon />}
-            className="cancelButton"
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            variant="contained"
-            startIcon={<SaveIcon />}
-            className="saveButton"
-          >
-            Lưu
-          </Button>
-          <Button
-            onClick={handlePrint}
-            variant="contained"
-            startIcon={<PrintIcon />}
-            className="printButton"
-          >
-            In hợp đồng
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <SearchDialog
-        open={searchOpen}
-        handleClose={handleSearchClose}
-        handleImport={handleImport}
-      />
-      <div style={{ display: "none" }}>
-        <ContractDocument ref={contractRef} formData={formData} />
-      </div>
-    </>
-  );
-};
-
-const SearchDialog: React.FC<SearchDialogProps> = ({
-  open,
-  handleClose,
-  handleImport,
-}) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearch = () => {
-    // Logic tìm kiếm mã đơn đăng ký
-    const importedData: Partial<FormData> = {
-      customerName: "Nguyễn Văn A",
-      phone: "0123456789",
-      nicheBuilding: "Tòa nhà A",
-      nicheFloor: "Tầng 1",
-      nicheZone: "Khu 1",
-      nicheCode: "N001",
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!user || !user.id) {
+      console.error("User not logged in");
+      return;
+    }
+    const contractData: Omit<Contract, "id" | "code" | "status"> = {
+      ...formData,
+      staffID: user.id,
+      nicheAddress: "",
+      contractId: 0,
+      niche: "",
+      customer: "",
+      nicheCode: "",
+      customerName: formData.customerFullName,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
     };
-    handleImport(importedData);
-    handleClose();
+    try {
+      await contractService.createContract(contractData);
+      handleSave(contractData);
+    } catch (error) {
+      console.error("Error creating contract:", error);
+    }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Tìm kiếm mã đơn đăng ký</DialogTitle>
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
+      <DialogTitle>Thêm mới hợp đồng</DialogTitle>
       <DialogContent>
-        <TextField
-          label="Tìm kiếm"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          fullWidth
-          variant="outlined"
-          margin="normal"
-        />
-        {/* Giả lập kết quả tìm kiếm */}
         <Box mt={2}>
-          <Typography>Kết quả tìm kiếm:</Typography>
-          <Button onClick={handleSearch} color="primary">
-            Chọn mã đơn đăng ký
-          </Button>
+          <Typography variant="h6" gutterBottom>
+            Thông tin khách hàng
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Tên khách hàng"
+                name="customerFullName"
+                value={formData.customerFullName}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Số điện thoại"
+                name="customerPhoneNumber"
+                value={formData.customerPhoneNumber}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Email"
+                name="customerEmail"
+                value={formData.customerEmail}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Địa chỉ"
+                name="customerAddress"
+                value={formData.customerAddress}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Số CCCD"
+                name="customerCitizenId"
+                value={formData.customerCitizenId}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ngày cấp CCCD"
+                name="customerCitizenIdIssueDate"
+                type="date"
+                value={formData.customerCitizenIdIssueDate}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Nơi cấp CCCD"
+                name="customerCitizenIdSupplier"
+                value={formData.customerCitizenIdSupplier}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+          </Grid>
+
+          <Typography variant="h6" gutterBottom mt={4}>
+            Thông tin người đã mất
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Họ tên người đã mất"
+                name="deceasedFullName"
+                value={formData.deceasedFullName}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Quan hệ với khách hàng</InputLabel>
+                <Select
+                  name="relationshipWithCustomer"
+                  value={formData.relationshipWithCustomer}
+                  onChange={handleSelectChange}
+                  label="Quan hệ với khách hàng"
+                >
+                  <MenuItem value="Ông/Bà">Ông/Bà</MenuItem>
+                  <MenuItem value="Cha/Mẹ">Cha/Mẹ</MenuItem>
+                  <MenuItem value="Anh/Chị/Em">Anh/Chị/Em</MenuItem>
+                  <MenuItem value="Con">Con</MenuItem>
+                  <MenuItem value="Con">Cháu</MenuItem>
+                  <MenuItem value="Khác">Khác</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Số CCCD người đã mất"
+                name="deceasedCitizenId"
+                value={formData.deceasedCitizenId}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ngày sinh"
+                name="deceasedDateOfBirth"
+                type="date"
+                value={formData.deceasedDateOfBirth}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Ngày mất"
+                name="deceasedDateOfDeath"
+                type="date"
+                value={formData.deceasedDateOfDeath}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Giấy chứng tử số"
+                name="deathCertificateNumber"
+                value={formData.deathCertificateNumber}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Nơi cấp giấy chứng tử"
+                name="deathCertificateSupplier"
+                value={formData.deathCertificateSupplier}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+              />
+            </Grid>
+          </Grid>
+
+          <Typography variant="h6" gutterBottom mt={4}>
+            Thông tin hợp đồng
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Nhà</InputLabel>
+                <Select
+                  name="building"
+                  value={selectedBuilding?.toString() || ""}
+                  onChange={handleBuildingChange}
+                  label="Nhà"
+                >
+                  {buildings.map((building) => (
+                    <MenuItem
+                      key={building.buildingId}
+                      value={building.buildingId}
+                    >
+                      {building.buildingName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Tầng</InputLabel>
+                <Select
+                  name="floor"
+                  value={selectedFloor?.toString() || ""}
+                  onChange={handleFloorChange}
+                  label="Tầng"
+                  disabled={!selectedBuilding}
+                >
+                  {floors.map((floor) => (
+                    <MenuItem key={floor.floorId} value={floor.floorId}>
+                      {floor.floorName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Khu</InputLabel>
+                <Select
+                  name="area"
+                  value={selectedArea?.toString() || ""}
+                  onChange={handleAreaChange}
+                  label="Khu"
+                  disabled={!selectedFloor}
+                >
+                  {areas.map((area) => (
+                    <MenuItem key={area.areaId} value={area.areaId}>
+                      {area.areaName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Ô</InputLabel>
+                <Select
+                  name="nicheID"
+                  value={formData.nicheID.toString()}
+                  onChange={(e: SelectChangeEvent<string>) => {
+                    const nicheId = parseInt(e.target.value);
+                    setFormData((prevFormData) => ({
+                      ...prevFormData,
+                      nicheID: nicheId,
+                    }));
+                  }}
+                  label="Ô"
+                  disabled={!selectedArea}
+                >
+                  {niches.map((niche) => (
+                    <MenuItem key={niche.nicheId} value={niche.nicheId}>
+                      {niche.nicheName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel>Loại hình gửi</InputLabel>
+                <Select
+                  name="type"
+                  value={type}
+                  onChange={handleTypeChange}
+                  label="Loại hình gửi"
+                >
+                  <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
+                  <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            {type === "Gửi theo tháng" && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Số tháng"
+                  name="duration"
+                  type="number"
+                  inputProps={{ min: 1, max: 12 }}
+                  value={duration}
+                  onChange={handleDurationChange}
+                  fullWidth
+                  variant="outlined"
+                />
+              </Grid>
+            )}
+            {type === "Gửi theo năm" && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Số năm"
+                  name="duration"
+                  type="number"
+                  inputProps={{ min: 1, max: 10 }}
+                  value={duration}
+                  onChange={handleDurationChange}
+                  fullWidth
+                  variant="outlined"
+                />
+              </Grid>
+            )}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Thời hạn gửi từ ngày"
+                name="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Đến ngày"
+                name="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Chi phí"
+                name="totalAmount"
+                value={formData.totalAmount}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Ghi chú"
+                name="note"
+                value={formData.note}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                multiline
+                rows={4}
+              />
+            </Grid>
+          </Grid>
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">
-          Đóng
+        <Button
+          onClick={handleClose}
+          variant="contained"
+          startIcon={<CancelIcon />}
+          className="cancelButton"
+        >
+          Hủy
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          startIcon={<SaveIcon />}
+          className="saveButton"
+        >
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
-
-const ContractDocument = React.forwardRef<
-  HTMLDivElement,
-  ContractDocumentProps
->(({ formData }, ref) => (
-  <div ref={ref} style={{ padding: "20px" }}>
-    <Typography variant="h4" align="center" gutterBottom>
-      HỢP ĐỒNG GỬI GIỮ TRO CỐT
-    </Typography>
-    <Typography variant="h6" align="center" gutterBottom>
-      Số: [Số hợp đồng]
-    </Typography>
-    <Typography variant="h6" align="center" gutterBottom>
-      Ngày tháng: {formData.startDate}
-    </Typography>
-
-    <Typography variant="h6" gutterBottom>
-      BÊN A: Công ty An Bình Viên
-    </Typography>
-    <Typography>Địa chỉ: [Địa chỉ của công ty]</Typography>
-    <Typography>Điện thoại: [Số điện thoại công ty]</Typography>
-    <Typography>Đại diện bởi: [Tên người đại diện]</Typography>
-    <Typography>Chức vụ: [Chức vụ người đại diện]</Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      BÊN B: {formData.customerName}
-    </Typography>
-    <Typography>Địa chỉ: {formData.address}</Typography>
-    <Typography>Số điện thoại: {formData.phone}</Typography>
-    <Typography>CMND/CCCD: {formData.idNumber}</Typography>
-    <Typography>Ngày cấp: {formData.idDate}</Typography>
-    <Typography>Nơi cấp: {formData.idPlace}</Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 1: MỤC ĐÍCH VÀ PHẠM VI HỢP ĐỒNG
-    </Typography>
-    <Typography>
-      Hợp đồng này nhằm mục đích quy định việc gửi giữ tro cốt của{" "}
-      {formData.deceasedName} giữa Bên A và Bên B.
-    </Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 2: THỜI HẠN GỬI GIỮ
-    </Typography>
-    <Typography>
-      Thời hạn gửi giữ tro cốt là {formData.duration}{" "}
-      {formData.type === "Gửi theo tháng" ? "tháng" : "năm"}, kể từ ngày{" "}
-      {formData.startDate} đến ngày {formData.endDate}.
-    </Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 3: DỊCH VỤ VÀ CHI PHÍ
-    </Typography>
-    <Typography>
-      3.1. Bên A sẽ cung cấp dịch vụ gửi giữ tro cốt tại [địa điểm gửi giữ] với
-      các điều kiện và dịch vụ sau:
-    </Typography>
-    <Typography>[Mô tả chi tiết dịch vụ và các điều kiện]</Typography>
-    <Typography>
-      3.2. Chi phí dịch vụ là {formData.cost.toLocaleString()} VND, được thanh
-      toán theo định kỳ [khoảng thời gian thanh toán].
-    </Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 4: QUYỀN VÀ NGHĨA VỤ CỦA CÁC BÊN
-    </Typography>
-    <Typography>4.1. Bên A có trách nhiệm:</Typography>
-    <Typography>Bảo quản tro cốt theo đúng cam kết.</Typography>
-    <Typography>
-      Thông báo cho Bên B về bất kỳ thay đổi liên quan đến dịch vụ gửi giữ.
-    </Typography>
-    <Typography>4.2. Bên B có trách nhiệm:</Typography>
-    <Typography>
-      Cung cấp đầy đủ thông tin và giấy tờ liên quan đến việc gửi giữ tro cốt.
-    </Typography>
-    <Typography>
-      Thanh toán đầy đủ và đúng hạn các khoản phí đã thỏa thuận.
-    </Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 5: ĐIỀU KHOẢN CHUNG
-    </Typography>
-    <Typography>
-      Các điều khoản và điều kiện khác của hợp đồng sẽ được thực hiện theo pháp
-      luật hiện hành của Việt Nam. Mọi tranh chấp phát sinh từ hợp đồng này sẽ
-      được giải quyết thông qua thương lượng và hòa giải. Trong trường hợp không
-      giải quyết được, các bên có quyền khởi kiện tại Tòa án có thẩm quyền.
-    </Typography>
-
-    <Typography variant="h6" gutterBottom mt={4}>
-      ĐIỀU 6: KÝ KẾT HỢP ĐỒNG
-    </Typography>
-    <Typography>
-      Hợp đồng này được lập thành hai bản có giá trị pháp lý như nhau, mỗi bên
-      giữ một bản và có hiệu lực kể từ ngày ký.
-    </Typography>
-
-    <Box mt={4}>
-      <Grid container>
-        <Grid item xs={6}>
-          <Typography>Đại diện Bên A</Typography>
-          <Typography>[Tên người ký]</Typography>
-        </Grid>
-        <Grid item xs={6}>
-          <Typography>Đại diện Bên B</Typography>
-          <Typography>{formData.customerName}</Typography>
-        </Grid>
-      </Grid>
-    </Box>
-  </div>
-));
-
-ContractDocument.displayName = "ContractDocument";
 
 export default AddContractForm;

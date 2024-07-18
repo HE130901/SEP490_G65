@@ -6,8 +6,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { formatVND } from "@/utils/formatCurrency";
 import { useCart } from "@/context/CartContext";
-import { toast } from "sonner";
-import { Toaster } from "../ui/sonner";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -137,7 +137,6 @@ export default function ProductList({ products }: ProductListProps) {
 
   return (
     <div>
-      <Toaster />
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <DropdownMenu>

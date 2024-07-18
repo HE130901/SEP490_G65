@@ -18,10 +18,10 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<CmsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("CmsbdDatabase")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDB")));
 
 // Custom services
-builder.Services.AddScoped<NicheService>();
+builder.Services.AddScoped<INicheService, NicheService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -68,7 +68,7 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseCors("AllowAll");
+app.UseCors("AllowAll"); 
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

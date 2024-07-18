@@ -1,8 +1,10 @@
 ﻿using cms_server.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SendGrid.Helpers.Mail;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
+using cms_server.DTOs;
 
 namespace cms_server.Controllers
 {
@@ -22,40 +24,6 @@ namespace cms_server.Controllers
             return await _context.Deceaseds.AnyAsync(d => d.DeathCertificateNumber == deathCertificateNumber);
         }
 
-        [HttpGet("buildings")]
-        public async Task<IActionResult> GetBuildings()
-        {
-            var buildings = await _context.Buildings.ToListAsync();
-            return Ok(buildings);
-        }
-
-        [HttpGet("buildings/{buildingId}/floors")]
-        public async Task<IActionResult> GetFloors(int buildingId)
-        {
-            var floors = await _context.Floors
-                .Where(f => f.BuildingId == buildingId)
-                .ToListAsync();
-            return Ok(floors);
-        }
-
-        [HttpGet("floors/{floorId}/areas")]
-        public async Task<IActionResult> GetAreas(int floorId)
-        {
-            var areas = await _context.Areas
-                .Where(a => a.FloorId == floorId)
-                .ToListAsync();
-            return Ok(areas);
-        }
-
-        [HttpGet("areas/{areaId}/niches")]
-        public async Task<IActionResult> GetNiches(int areaId)
-        {
-            var niches = await _context.Niches
-                .Where(n => n.AreaId == areaId && n.Status == "Available")
-                .ToListAsync();
-            return Ok(niches);
-        }
-
         [HttpPost("create-contract")]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
         {
@@ -63,9 +31,8 @@ namespace cms_server.Controllers
             {
                 try
                 {
-
                     var niche = await _context.Niches
-                    .FirstOrDefaultAsync(n => n.NicheId == request.NicheID && n.Status == "Available");
+                        .FirstOrDefaultAsync(n => n.NicheId == request.NicheID && n.Status == "Available");
 
                     if (niche == null)
                     {
@@ -73,7 +40,7 @@ namespace cms_server.Controllers
                     }
 
                     var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.CitizenId == request.CustomerCitizenId);
+                        .FirstOrDefaultAsync(c => c.CitizenId == request.CustomerCitizenId);
 
                     if (customer == null)
                     {
@@ -87,6 +54,7 @@ namespace cms_server.Controllers
                             CitizenId = request.CustomerCitizenId,
                             CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
                             CitizenIdsupplier = request.CustomerCitizenIdSupplier,
+                            // Default password is "abcdabcd"
                             PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
                         };
                         _context.Customers.Add(customer);
@@ -161,7 +129,122 @@ namespace cms_server.Controllers
                 }
             }
         }
+
+        // New method to get all contracts
+        [HttpGet("all-contracts")]
+        public async Task<IActionResult> GetAllContracts()
+        {
+            var contracts = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Niche)
+
+                .Select(c => new ContractForStaffDto
+                {
+                    ContractId = c.ContractId,
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-{c.Niche.NicheName}",
+                    CustomerName = c.Customer.FullName,
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    Status = c.Status
+                })
+                .ToListAsync();
+            return Ok(contracts);
+        }
+
+        // New method to get details of a specific contract by ID
+        [HttpGet("contract/{id}")]
+        public async Task<IActionResult> GetContractById(int id)
+        {
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Niche)
+                .Select(c => new ContractForStaffDto
+                {
+                    ContractId = c.ContractId,
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-{c.Niche.NicheName}",
+                    CustomerName = c.Customer.FullName,
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    Status = c.Status
+                })
+                .FirstOrDefaultAsync(c => c.ContractId == id);
+
+            if (contract == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(contract);
+        }
+
+        // New methods to fetch buildings, floors, zones, and niches
+
+        // GET: api/Contracts/buildings
+        [HttpGet("buildings")]
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
+        {
+            var buildings = await _context.Buildings
+                .Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName
+                })
+                .ToListAsync();
+
+            return Ok(buildings);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors
+        [HttpGet("buildings/{buildingId}/floors")]
+        public async Task<ActionResult<IEnumerable<FloorDto>>> GetFloors(int buildingId)
+        {
+            var floors = await _context.Floors
+                .Where(f => f.BuildingId == buildingId)
+                .Select(f => new FloorDto
+                {
+                    FloorId = f.FloorId,
+                    FloorName = f.FloorName
+                })
+                .ToListAsync();
+
+            return Ok(floors);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas")]
+        public async Task<ActionResult<IEnumerable<AreaDto>>> GetZones(int buildingId, int floorId)
+        {
+            var areas = await _context.Areas
+                .Where(a => a.FloorId == floorId)
+                .Select(a => new AreaDto
+                {
+                    AreaId = a.AreaId,
+                    AreaName = a.AreaName
+                })
+                .ToListAsync();
+
+            return Ok(areas);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas/{zoneId}/niches
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas/{areaID}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId)
+                .Select(n => new NicheDto
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName
+                })
+                .ToListAsync();
+
+            return Ok(niches);
+        }
     }
+
     public class CreateContractRequest
     {
         public string CustomerFullName { get; set; }
@@ -170,7 +253,7 @@ namespace cms_server.Controllers
         public string? CustomerAddress { get; set; }
         public string? CustomerCitizenId { get; set; }
         public DateOnly? CustomerCitizenIdIssueDate { get; set; }
-        public string? CustomerCitizenIdSupplier { get; set; }        
+        public string? CustomerCitizenIdSupplier { get; set; }
         public string DeceasedFullName { get; set; }
         public string? DeceasedCitizenId { get; set; }
         public DateOnly? DeceasedDateOfBirth { get; set; }
@@ -186,5 +269,14 @@ namespace cms_server.Controllers
         public decimal TotalAmount { get; set; }
     }
 
-    
+
+public class ContractForStaffDto
+    {
+        public int ContractId { get; set; }
+        public string NicheAddress { get; set; }
+        public string CustomerName { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public string Status { get; set; }
+    }
 }
