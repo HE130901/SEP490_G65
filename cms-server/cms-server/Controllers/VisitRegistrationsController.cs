@@ -31,7 +31,7 @@ namespace cms_server.Controllers
                         CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "No infomation",
+                        Status = vr.Status ?? "No information",
                         ApprovedBy = vr.ApprovedBy,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         Note = vr.Note ?? string.Empty,
@@ -43,10 +43,11 @@ namespace cms_server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching visit registrations");
+                _logger.LogError(ex, "Error fetching visit registrations: {Message}", ex.Message);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
 
         // GET: api/VisitRegistrations/5

@@ -1,5 +1,6 @@
 ﻿using cms_server.DTOs;
 using cms_server.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,15 @@ using System.Threading.Tasks;
 
 namespace cms_server.Services
 {
-    public class NicheService
+    // Interface
+    public interface INicheService
+    {
+        Task<IEnumerable<NicheDto>> GetNichesAsync(int customerId);
+        Task<NicheDetailDto> GetNicheDetailAsync(int nicheId);
+    }
+
+    // Service Implementation
+    public class NicheService : INicheService
     {
         private readonly CmsContext _context;
 
@@ -70,6 +79,5 @@ namespace cms_server.Services
                 NicheDescription = niche.NicheDescription
             };
         }
-  
     }
 }

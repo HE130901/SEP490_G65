@@ -58,7 +58,9 @@ namespace cms_server.Controllers
                 .Select(n => new NicheDto
                 {
                     NicheId = n.NicheId,
-                    NicheName = n.NicheName
+                    NicheName = n.NicheName,
+                    status = n.Status
+                    
                 })
                 .ToListAsync();
 
@@ -97,5 +99,6 @@ namespace cms_server.Controllers
     {
         public int NicheId { get; set; }
         public string NicheName { get; set; }
+        public string status { get; set; }
     }
 }

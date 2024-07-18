@@ -1,8 +1,6 @@
 ﻿using cms_server.DTOs;
 using cms_server.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace cms_server.Controllers
 {
@@ -10,9 +8,9 @@ namespace cms_server.Controllers
     [Route("api/[controller]")]
     public class NichesController : ControllerBase
     {
-        private readonly NicheService _nicheService;
+        private readonly INicheService _nicheService;
 
-        public NichesController(NicheService nicheService)
+        public NichesController(INicheService nicheService)
         {
             _nicheService = nicheService;
         }
@@ -27,8 +25,15 @@ namespace cms_server.Controllers
         [HttpGet("{nicheId}/details")]
         public async Task<ActionResult<NicheDetailDto>> GetNicheDetail(int nicheId)
         {
-            var nicheDetail = await _nicheService.GetNicheDetailAsync(nicheId);
-            return Ok(nicheDetail);
+            try
+            {
+                var nicheDetail = await _nicheService.GetNicheDetailAsync(nicheId);
+                return Ok(nicheDetail);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
     }
 }

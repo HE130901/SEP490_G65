@@ -7,15 +7,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace CmsServer.Tests
+namespace cms_server.Tests
 {
-    public class BuildingsControllerTests
+    public class ViewNicheListTests
     {
         private readonly DbContextOptions<CmsContext> _options;
         private readonly CmsContext _context;
         private readonly BuildingsController _controller;
 
-        public BuildingsControllerTests()
+        public ViewNicheListTests()
         {
             _options = new DbContextOptionsBuilder<CmsContext>()
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
