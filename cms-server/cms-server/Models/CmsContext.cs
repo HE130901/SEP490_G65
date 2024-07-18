@@ -48,6 +48,7 @@ public partial class CmsContext : DbContext
     public virtual DbSet<VisitRegistration> VisitRegistrations { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+
     {
         if (!optionsBuilder.IsConfigured)
         {
