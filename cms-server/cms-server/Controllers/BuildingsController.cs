@@ -53,8 +53,8 @@ namespace cms_server.Controllers
         }
 
         [Authorize]
-        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
-        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
+        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/nichesForCustomer")]
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); // Giả sử user ID được lưu trong phần tên của Identity
 
@@ -65,7 +65,24 @@ namespace cms_server.Controllers
                     NicheId = n.NicheId,
                     NicheName = n.NicheName,
                     Status = n.Status,
-                    ReservedByUser = n.CustomerId == userId // Kiểm tra nếu ô chứa được đặt bởi người dùng hiện tại
+                    ReservedByUser = n.CustomerId == userId 
+                })
+                .ToListAsync();
+
+            return niches;
+        }
+
+        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto2>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
+                .Select(n => new NicheDto2
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    Status = n.Status,
                 })
                 .ToListAsync();
 
@@ -106,5 +123,11 @@ namespace cms_server.Controllers
         public string NicheName { get; set; }
         public string Status { get; set; }
         public bool ReservedByUser { get; set; } // Thêm thuộc tính mới
+    }
+    public class NicheDto2
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
+        public string Status { get; set; }
     }
 }

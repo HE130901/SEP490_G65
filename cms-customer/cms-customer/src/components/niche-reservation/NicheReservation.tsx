@@ -44,6 +44,7 @@ const NicheReservationPage = () => {
     setSelectedNiche,
     fetchBuildingsData,
     fetchNiches,
+    fetchNichesForCustomer,
     fetchReservations,
     niches,
     user,
@@ -69,7 +70,8 @@ const NicheReservationPage = () => {
   useEffect(() => {
     if (selectedBuilding && selectedFloor && selectedArea) {
       setNicheLoading(true);
-      fetchNiches(
+      const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
+      fetchNichesFunction(
         selectedBuilding.buildingId,
         selectedFloor.floorId,
         selectedArea.areaId
@@ -78,7 +80,14 @@ const NicheReservationPage = () => {
         setNicheLoading(false);
       });
     }
-  }, [selectedBuilding, selectedFloor, selectedArea, fetchNiches]);
+  }, [
+    selectedBuilding,
+    selectedFloor,
+    selectedArea,
+    fetchNiches,
+    fetchNichesForCustomer,
+    user,
+  ]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -103,7 +112,8 @@ const NicheReservationPage = () => {
   };
 
   const closeBookingForm = () => {
-    fetchNiches(
+    const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
+    fetchNichesFunction(
       selectedBuilding.buildingId,
       selectedFloor.floorId,
       selectedArea.areaId
@@ -172,11 +182,11 @@ const NicheReservationPage = () => {
   };
 
   const floorLabels: { [key: number]: string } = {
-    0: "Hàng 5",
-    1: "Hàng 4",
-    2: "Hàng 3",
-    3: "Hàng 2",
-    4: "Hàng 1",
+    0: "Tầng 5",
+    1: "Tầng 4",
+    2: "Tầng 3",
+    3: "Tầng 2",
+    4: "Tầng 1",
   };
 
   const renderSkeletonRows = (itemsPerRow: number, rowsCount: number) => {

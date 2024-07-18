@@ -141,6 +141,26 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     []
   );
 
+  const fetchNichesForCustomer = useCallback(
+    async (buildingId: number, floorId: number, areaId: number) => {
+      try {
+        const response = await NicheAPI.getAllNicheForCustomer(
+          String(buildingId),
+          String(floorId),
+          String(areaId)
+        );
+        console.log("Niches for customer from API:", response.data);
+        setNiches(response.data.$values);
+      } catch (error) {
+        console.error(
+          "[StateProvider] Error fetching niches for customer:",
+          error
+        );
+      }
+    },
+    []
+  );
+
   const fetchReservations = async (phoneNumber: string) => {
     try {
       const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
@@ -282,6 +302,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         setContracts,
         fetchBuildingsData,
         fetchNiches,
+        fetchNichesForCustomer,
         fetchReservations,
         createReservation,
         deleteReservation,

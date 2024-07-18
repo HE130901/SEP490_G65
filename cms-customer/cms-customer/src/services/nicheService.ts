@@ -1,6 +1,10 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 const NicheAPI = {
+  getAllNicheForCustomer(buildingId: any, floorId: any, areaId: any) {
+    const url = `/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/nichesForCustomer`;
+    return axiosInstance.get(url);
+  },
   getAll(buildingId: any, floorId: any, areaId: any) {
     const url = `/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`;
     return axiosInstance.get(url);
