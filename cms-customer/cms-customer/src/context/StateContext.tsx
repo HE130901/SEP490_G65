@@ -132,6 +132,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
           String(floorId),
           String(areaId)
         );
+        console.log("Niches from API:", response.data);
         setNiches(response.data.$values);
       } catch (error) {
         console.error("[StateProvider] Error fetching niches:", error);

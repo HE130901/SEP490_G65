@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
 import NicheDetailDialog from "@/components/niche-reservation/NicheDetailDialog";
+import MyNicheDetailDialog from "@/components/niche-reservation/MyNicheDetailDialog"; // New dialog for user's niche details
 import { useStateContext } from "@/context/StateContext";
 import {
   Tooltip,
@@ -32,6 +33,7 @@ interface Niche {
   nicheId: string;
   nicheName: string;
   status: string;
+  reservedByUser?: boolean;
 }
 
 const NicheReservationPage = () => {
@@ -49,6 +51,7 @@ const NicheReservationPage = () => {
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isDetailDialogVisible, setIsDetailDialogVisible] = useState(false);
+  const [isMyDetailDialogVisible, setIsMyDetailDialogVisible] = useState(false);
   const [selectedNicheDetail, setSelectedNicheDetail] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [nicheLoading, setNicheLoading] = useState(false);
@@ -70,7 +73,10 @@ const NicheReservationPage = () => {
         selectedBuilding.buildingId,
         selectedFloor.floorId,
         selectedArea.areaId
-      ).then(() => setNicheLoading(false));
+      ).then((data: any) => {
+        console.log("Fetched niches:", data);
+        setNicheLoading(false);
+      });
     }
   }, [selectedBuilding, selectedFloor, selectedArea, fetchNiches]);
 
@@ -112,8 +118,19 @@ const NicheReservationPage = () => {
     try {
       const response = await NicheAPI.getDetail(niche.nicheId);
       setSelectedNicheDetail(response.data);
-      console.log("Niche details:", response.data); // Debugging log
+      console.log("Niche details:", response.data);
       setIsDetailDialogVisible(true);
+    } catch (error) {
+      console.error("Error fetching niche details:", error);
+    }
+  };
+
+  const openMyDetailDialog = async (niche: Niche) => {
+    try {
+      const response = await NicheAPI.getDetail(niche.nicheId);
+      setSelectedNicheDetail(response.data);
+      console.log("My Niche details:", response.data);
+      setIsMyDetailDialogVisible(true);
     } catch (error) {
       console.error("Error fetching niche details:", error);
     }
@@ -123,15 +140,18 @@ const NicheReservationPage = () => {
     setIsDetailDialogVisible(false);
   };
 
+  const closeMyDetailDialog = () => {
+    setIsMyDetailDialogVisible(false);
+  };
+
   const proceedToBooking = (niche: Niche) => {
-    // Updated to take niche as argument
     if (niche) {
       setSelectedNiche({
         nicheId: niche.nicheId,
         nicheName: niche.nicheName,
         status: "Available",
       });
-      console.log("Proceeding to booking with niche:", niche); // Debugging log
+      console.log("Proceeding to booking with niche:", niche);
       setIsDetailDialogVisible(false);
       openBookingForm();
     }
@@ -152,11 +172,11 @@ const NicheReservationPage = () => {
   };
 
   const floorLabels: { [key: number]: string } = {
-    0: "Tầng 5",
-    1: "Tầng 4",
-    2: "Tầng 3",
-    3: "Tầng 2",
-    4: "Tầng 1",
+    0: "Hàng 5",
+    1: "Hàng 4",
+    2: "Hàng 3",
+    3: "Hàng 2",
+    4: "Hàng 1",
   };
 
   const renderSkeletonRows = (itemsPerRow: number, rowsCount: number) => {
@@ -197,12 +217,15 @@ const NicheReservationPage = () => {
           {floorRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex space-x-2">
               {row.map((niche) => {
-                const tooltipMessage =
-                  niche.status === "Booked"
-                    ? "Ô chứa đã được đặt trước!"
-                    : niche.status === "Unavailable"
-                    ? "Ô chứa đã được sử dụng!"
-                    : "Bạn có thể chọn ô chứa này!";
+                const tooltipMessage = niche.reservedByUser
+                  ? "Đây là ô chứa của bạn!"
+                  : niche.status === "Booked"
+                  ? "Ô chứa đã được đặt trước!"
+                  : niche.status === "Unavailable"
+                  ? "Ô chứa đã được sử dụng!"
+                  : "Bạn có thể chọn ô chứa này!";
+
+                console.log(niche.nicheName, niche.reservedByUser);
 
                 return (
                   <TooltipProvider key={niche.nicheId}>
@@ -212,14 +235,18 @@ const NicheReservationPage = () => {
                           onClick={() => {
                             if (niche.status === "Available") {
                               openDetailDialog(niche);
+                            } else if (niche.reservedByUser) {
+                              openMyDetailDialog(niche);
                             }
                           }}
-                          className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                            niche.status === "Unavailable"
+                          className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
+                            niche.reservedByUser
+                              ? "bg-yellow-400 text-black"
+                              : niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
+                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300 text-gray-600"
                           }`}
                         >
                           <div>{niche.nicheName}</div>
@@ -257,6 +284,8 @@ const NicheReservationPage = () => {
                     ? "Ô chứa đã được đặt trước!"
                     : niche.status === "Unavailable"
                     ? "Ô chứa đã được sử dụng!"
+                    : niche.reservedByUser
+                    ? "Đây là ô chứa của bạn!"
                     : "Bạn có thể chọn ô chứa này!";
 
                 return (
@@ -267,14 +296,18 @@ const NicheReservationPage = () => {
                           onClick={() => {
                             if (niche.status === "Available") {
                               openDetailDialog(niche);
+                            } else if (niche.reservedByUser) {
+                              openMyDetailDialog(niche);
                             }
                           }}
-                          className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                            niche.status === "Unavailable"
+                          className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
+                            niche.reservedByUser
+                              ? "bg-yellow-400 text-black"
+                              : niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300"
+                              : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300 text-gray-600"
                           }`}
                         >
                           <div>{niche.nicheName}</div>
@@ -292,7 +325,7 @@ const NicheReservationPage = () => {
     } else {
       const rows = createRows(sortedNiches, 20).reverse();
       return rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex space-x-2 items-center pt-2">
+        <div key={rowIndex} className="flex space-x-2 items-center">
           <div className="flex-shrink-0 font-semibold whitespace-nowrap">
             {floorLabels[rowIndex]}
           </div>
@@ -302,6 +335,8 @@ const NicheReservationPage = () => {
                 ? "Ô chứa đã được đặt trước!"
                 : niche.status === "Unavailable"
                 ? "Ô chứa đã được sử dụng!"
+                : niche.reservedByUser
+                ? "Đây là ô chứa của bạn!"
                 : "Bạn có thể chọn ô chứa này!";
 
             return (
@@ -312,10 +347,14 @@ const NicheReservationPage = () => {
                       onClick={() => {
                         if (niche.status === "Available") {
                           openDetailDialog(niche);
+                        } else if (niche.reservedByUser) {
+                          openMyDetailDialog(niche);
                         }
                       }}
-                      className={`p-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                        niche.status === "Unavailable"
+                      className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
+                        niche.reservedByUser
+                          ? "bg-yellow-400 text-black"
+                          : niche.status === "Unavailable"
                           ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
                           ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -376,20 +415,27 @@ const NicheReservationPage = () => {
                 )
               : renderRows()}
           </div>
-          <div className="mt-4 flex justify-center space-x-4 ">
+          <div className="mt-4 flex justify-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-black rounded-sm "></div>
+              <div className="w-4 h-4 bg-black rounded-sm"></div>
               <span className="font-semibold text-white">Đã sử dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>
               <span className="font-semibold text-white">Còn trống</span>
             </div>
-            <div className="flex items-center space-x-2 ">
+            <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
               <span className="font-semibold text-white">Đã được đặt</span>
             </div>
+            {user && (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                <span className="font-semibold text-white">Ô chứa của bạn</span>
+              </div>
+            )}
           </div>
+
           <ReservationForm
             isVisible={isFormVisible}
             onClose={closeBookingForm}
@@ -400,6 +446,11 @@ const NicheReservationPage = () => {
             onClose={closeDetailDialog}
             niche={selectedNicheDetail}
             onProceedToBooking={proceedToBooking}
+          />
+          <MyNicheDetailDialog
+            isVisible={isMyDetailDialogVisible}
+            onClose={closeMyDetailDialog}
+            niche={selectedNicheDetail}
           />
         </motion.div>
       </section>

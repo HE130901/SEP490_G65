@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace cms_server.Controllers
 {
@@ -50,17 +52,20 @@ namespace cms_server.Controllers
             return dto;
         }
 
+        [Authorize]
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
         public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
         {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); // Giả sử user ID được lưu trong phần tên của Identity
+
             var niches = await _context.Niches
                 .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
                 .Select(n => new NicheDto
                 {
                     NicheId = n.NicheId,
                     NicheName = n.NicheName,
-                    status = n.Status
-                    
+                    Status = n.Status,
+                    ReservedByUser = n.CustomerId == userId // Kiểm tra nếu ô chứa được đặt bởi người dùng hiện tại
                 })
                 .ToListAsync();
 
@@ -99,6 +104,7 @@ namespace cms_server.Controllers
     {
         public int NicheId { get; set; }
         public string NicheName { get; set; }
-        public string status { get; set; }
+        public string Status { get; set; }
+        public bool ReservedByUser { get; set; } // Thêm thuộc tính mới
     }
 }

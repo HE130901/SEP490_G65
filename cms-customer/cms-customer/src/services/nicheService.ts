@@ -1,7 +1,7 @@
 import axiosInstance from "@/utils/axiosInstance";
 
 const NicheAPI = {
-  getAll(buildingId: string, floorId: string, areaId: string) {
+  getAll(buildingId: any, floorId: any, areaId: any) {
     const url = `/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`;
     return axiosInstance.get(url);
   },
@@ -20,3 +20,5 @@ const NicheAPI = {
 };
 
 export default NicheAPI;
+
+

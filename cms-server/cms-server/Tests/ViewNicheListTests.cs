@@ -100,7 +100,7 @@ namespace cms_server.Tests
             Assert.Single(nicheList);
             Assert.Equal(1, nicheList.First().NicheId);
             Assert.Equal("Niche 1", nicheList.First().NicheName);
-            Assert.Equal("Status 1", nicheList.First().status);
+            Assert.Equal("Status 1", nicheList.First().Status);
         }
     }
 }

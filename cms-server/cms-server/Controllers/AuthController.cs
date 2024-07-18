@@ -6,9 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using cms_server.DTOs;
 using cms_server.Models;
 using System.Text;
-using System.Security.Cryptography;
-using MailKit.Net.Smtp;
 using MimeKit;
+using MailKit.Net.Smtp;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
 
@@ -33,7 +32,7 @@ namespace cms_server.Controllers
             var customer = _context.Customers.SingleOrDefault(c => c.Email == loginDto.Email);
             if (customer != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, customer.PasswordHash))
             {
-                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.Phone, customer.Address, "Customer");
+                var token = GenerateJwtToken(customer.CustomerId.ToString(), "Customer", customer.Phone, customer.Address);
                 return Ok(new
                 {
                     Token = token,
@@ -44,7 +43,7 @@ namespace cms_server.Controllers
             var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
             if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
             {
-                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Email);
+                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Role, staff.Phone, staff.Email);
                 return Ok(new
                 {
                     Token = token,
@@ -57,7 +56,6 @@ namespace cms_server.Controllers
 
             return Unauthorized("Invalid credentials.");
         }
-
 
         [HttpGet("get-current-user")]
         [Authorize]
@@ -133,7 +131,7 @@ namespace cms_server.Controllers
             }
         }
 
-        private string GenerateJwtToken(string userId, string phone, string role, string address = null)
+        private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
             {
@@ -196,6 +194,7 @@ namespace cms_server.Controllers
         }
     }
 }
+
 
 namespace cms_server.DTOs
 {
