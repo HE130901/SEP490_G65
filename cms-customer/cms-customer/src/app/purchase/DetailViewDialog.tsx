@@ -72,9 +72,10 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
                   <TableCell>
                     {detail.completionImage ? (
                       <Image
+                        width={100}
+                        height={100}
                         src={detail.completionImage}
                         alt="Completion"
-                        style={{ width: "100px", height: "100px" }}
                       />
                     ) : (
                       "N/A"

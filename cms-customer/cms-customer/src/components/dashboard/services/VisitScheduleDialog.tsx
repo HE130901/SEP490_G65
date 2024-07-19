@@ -1,64 +1,84 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import axiosInstance from "@/utils/axiosInstance";
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
+  CircularProgress,
+} from "@mui/material";
+import NicheAPI from "@/services/nicheService";
+import VisitAPI from "@/services/visitService"; // Import the service to fetch niches
+import { toast } from "react-toastify";
+import { useStateContext } from "@/context/StateContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Input } from "@/components/ui/input";
-import { useStateContext } from "@/context/StateContext";
 
-export default function VisitScheduleDialog({
-  isOpen,
-  onClose,
-  onSubmit,
-  containers = [],
-}: {
+interface Niche {
+  nicheId: number;
+  nicheName: string;
+}
+
+interface VisitScheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  containers: any[];
-}) {
+}
+
+const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}) => {
   const { user, fetchVisitRegistrations } = useStateContext();
   const [loading, setLoading] = useState(false);
+  const [nicheLoading, setNicheLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [accompanyingPeople, setAccompanyingPeople] = useState(0);
+  const [niches, setNiches] = useState<Niche[]>([]);
+  const [nicheID, setNicheID] = useState<number | "">(1);
+
+  useEffect(() => {
+    const fetchNiches = async () => {
+      setNicheLoading(true);
+      try {
+        const response = await NicheAPI.getNichesForCustomer();
+        setNiches(response.data.$values);
+      } catch (error) {
+        toast.error("Failed to fetch niches. Please try again later.");
+      } finally {
+        setNicheLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchNiches();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.target as HTMLFormElement);
     const data = {
       customerId: user.customerId,
-      nicheId: formData.get("containerId"),
+      nicheId: nicheID,
       visitDate: selectedDate.toISOString(),
-      note: formData.get("note"),
+      note: (e.target as any).note.value,
       accompanyingPeople: accompanyingPeople,
     };
 
     console.log("[VisitScheduleDialog] Submitting visit schedule:", data);
 
     try {
-      await axiosInstance.post("/api/VisitRegistrations", data);
+      await VisitAPI.create(data);
+      toast.success("Đăng ký lịch viếng thành công!"); // Success notification
       console.log(
         "[VisitScheduleDialog] Visit schedule submitted successfully"
       );
@@ -73,88 +93,83 @@ export default function VisitScheduleDialog({
     } catch (err) {
       console.error("[VisitScheduleDialog] Error registering visit:", err);
       setError("Đăng ký lịch viếng thất bại.");
+      toast.error("Đăng ký lịch viếng thất bại."); // Failure notification
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
-          <DialogDescription>
-            Điền thông tin để đăng ký lịch viếng.
-          </DialogDescription>
-        </DialogHeader>
+    <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
+      <DialogContent>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="containerId">Ô Chứa</Label>
-              <Select name="containerId">
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn ô chứa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {containers.length > 0 ? (
-                    containers.map((container) => (
-                      <SelectItem
-                        key={container.nicheId}
-                        value={container.nicheId.toString()}
-                      >
-                        {container.nicheName}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem disabled value="no-data">
-                      Không có dữ liệu
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="visitDateTime">Ngày Giờ Viếng Thăm</Label>
-              <DatePicker
-                id="visitDateTime"
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date as Date)}
-                showTimeSelect
-                minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
-                dateFormat="Pp"
-                className="w-full rounded border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-          </div>
-          <div className="mt-4">
-            <Label htmlFor="accompanyingPeople">Số Người Đi Cùng</Label>
-            <Input
-              id="accompanyingPeople"
-              name="accompanyingPeople"
-              type="number"
-              min="0"
-              max="20"
-              value={accompanyingPeople}
-              onChange={(e) => setAccompanyingPeople(parseInt(e.target.value))}
-              required
-              className="w-full"
-            />
-          </div>
-          <div className="mt-4">
-            <Label htmlFor="note">Ghi Chú</Label>
-            <Textarea id="note" name="note" rows={3} />
-          </div>
-          <div className="mt-4 flex justify-end gap-2">
-            {error && <p className="text-red-600 text-sm">{error}</p>}
-            <Button type="submit" disabled={loading}>
+          <TextField
+            select
+            label="Ô chứa"
+            value={nicheID}
+            onChange={(e) => setNicheID(Number(e.target.value))}
+            fullWidth
+            margin="normal"
+            disabled={nicheLoading}
+          >
+            {nicheLoading ? (
+              <MenuItem disabled value="">
+                <CircularProgress size={24} />
+              </MenuItem>
+            ) : (
+              niches.map((niche) => (
+                <MenuItem key={niche.nicheId} value={niche.nicheId}>
+                  {niche.nicheName}
+                </MenuItem>
+              ))
+            )}
+          </TextField>
+          <TextField
+            label="Ngày hẹn"
+            type="datetime-local"
+            fullWidth
+            value={selectedDate.toISOString().slice(0, 16)}
+            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            margin="normal"
+          />
+          <TextField
+            label="Số Người Đi Cùng"
+            type="number"
+            fullWidth
+            value={accompanyingPeople}
+            onChange={(e) => setAccompanyingPeople(parseInt(e.target.value))}
+            margin="normal"
+          />
+          <TextField
+            label="Ghi Chú"
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            name="note"
+          />
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+          <DialogActions>
+            <Button onClick={onClose} color="primary" disabled={loading}>
+              Hủy bỏ
+            </Button>
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              disabled={loading}
+            >
               {loading ? "Đang lưu..." : "Lưu"}
             </Button>
-            <Button variant="outline" onClick={onClose} disabled={loading}>
-              Hủy
-            </Button>
-          </div>
+          </DialogActions>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default VisitScheduleDialog;

@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import ContractDetailsDialog from "./ContractDetailsDialog";
-import VisitScheduleDialog from "./VisitScheduleDialog"; // Import VisitScheduleDialog
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog"; // Import VisitScheduleDialog
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -444,7 +444,6 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           isOpen={isVisitDialogOpen}
           onClose={handleVisitDialogClose}
           onSubmit={handleDialogSubmit}
-          selectedContainer={selectedContract}
         />
       )}
     </div>

@@ -13,8 +13,8 @@ const NicheAPI = {
     const url = `/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches/${nicheId}`;
     return axiosInstance.get(url);
   },
-  getAllByCustomer(customerId: string) {
-    const url = `/api/niches/customer/${customerId}`;
+  getNichesForCustomer() {
+    const url = `/api/Niches/customer`;
     return axiosInstance.get(url);
   },
   getDetail(nicheId: string) {
