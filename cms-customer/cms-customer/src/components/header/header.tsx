@@ -23,8 +23,12 @@ import {
   ArrowRightOnRectangleIcon,
   PowerIcon,
   UserCircleIcon,
-  UserIcon,
 } from "@heroicons/react/24/solid";
+import {
+  ClipboardDocumentListIcon,
+  UserIcon,
+  ListBulletIcon,
+} from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -165,7 +169,19 @@ export function Header({
                   <DropdownMenuItem asChild>
                     <Link href="/user-profile">
                       <UserIcon className="h-5 w-5 mr-2" />
-                      Hồ sơ của tôi
+                      Tài khoản của tôi
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">
+                      <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                      Hợp đồng
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/purchase">
+                      <ListBulletIcon className="h-5 w-5 mr-2" />
+                      Đơn mua
                     </Link>
                   </DropdownMenuItem>
 

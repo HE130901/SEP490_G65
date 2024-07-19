@@ -17,6 +17,7 @@ import ContractAPI from "@/services/contractService";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ServiceOrderAPI from "@/services/serviceOrderService";
 
 const StateContext = createContext<any | null>(null);
 
@@ -29,6 +30,7 @@ export const useStateContext = () => {
 };
 
 export const StateProvider = ({ children }: { children: React.ReactNode }) => {
+  const [orders, setOrders] = useState<any[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<any | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<any | null>(null);
   const [selectedArea, setSelectedArea] = useState<any | null>(null);
@@ -197,18 +199,30 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const fetchVisitRegistrations = useCallback(async (customerId: number) => {
+  const fetchVisitRegistrations = useCallback(async () => {
+    if (user?.customerId) {
+      try {
+        const response = await VisitRegistrationAPI.getByCustomerId(
+          user.customerId
+        );
+        setVisitRegistrations(response.data.$values);
+        console.log("[useStateContext] Fetching visit registrations");
+      } catch (error) {
+        console.error(
+          "[StateProvider] Error fetching visit registrations:",
+          error
+        );
+      }
+    }
+  }, [user?.customerId]);
+
+  const fetchOrders = useCallback(async () => {
     try {
-      const response = await VisitRegistrationAPI.getByCustomerId(
-        String(customerId)
-      );
-      setVisitRegistrations(response.data.$values);
-      console.log("[useStateContext] Fetching visit registrations");
+      const response = await ServiceOrderAPI.getAllByCustomer();
+      setOrders(response.data.$values);
     } catch (error) {
-      console.error(
-        "[StateProvider] Error fetching visit registrations:",
-        error
-      );
+      console.error("Error fetching orders:", error);
+      toast.error("Không thể lấy danh sách đơn đặt hàng.");
     }
   }, []);
 
@@ -226,18 +240,22 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const fetchContracts = useCallback(async (customerId: number) => {
-    try {
-      const response = await ContractAPI.getContractsByCustomer(customerId);
-      setContracts(response.data.$values);
-      console.log(
-        "[useStateContext] Fetching contracts: ",
-        response.data.$values
-      );
-    } catch (error) {
-      console.error("[StateProvider] Error fetching contracts:", error);
+  const fetchContracts = useCallback(async () => {
+    if (user?.customerId) {
+      try {
+        const response = await ContractAPI.getContractsByCustomer(
+          user.customerId
+        );
+        setContracts(response.data.$values);
+        console.log(
+          "[useStateContext] Fetching contracts: ",
+          response.data.$values
+        );
+      } catch (error) {
+        console.error("[StateProvider] Error fetching contracts:", error);
+      }
     }
-  }, []);
+  }, [user?.customerId]);
 
   const resetSelections = () => {
     setSelectedFloor(null);
@@ -265,9 +283,10 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (user?.customerId) {
       console.log("[StateContext] User customerId: ", user.customerId);
-      fetchContracts(user.customerId);
+      fetchContracts();
+      fetchOrders();
     }
-  }, [user, fetchContracts]);
+  }, [user?.customerId, fetchContracts, fetchOrders]);
 
   return (
     <StateContext.Provider
@@ -299,6 +318,9 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         visitRegistrations,
         setVisitRegistrations,
         contracts,
+        orders,
+        setOrders,
+        fetchOrders,
         setContracts,
         fetchBuildingsData,
         fetchNiches,

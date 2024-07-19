@@ -10,6 +10,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
+using Castle.Core.Resource;
 
 namespace cms_server.Controllers
 {
@@ -56,6 +57,8 @@ namespace cms_server.Controllers
 
             return Unauthorized("Invalid credentials.");
         }
+
+
 
         [HttpGet("get-current-user")]
         [Authorize]
@@ -131,16 +134,22 @@ namespace cms_server.Controllers
             }
         }
 
+
         private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, userId),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, userId),
+        new Claim("Phone", phone),
+        new Claim(ClaimTypes.Role, role)
+    };
+
+            if (role == "Customer")
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim("Phone", phone),
-                new Claim(ClaimTypes.Role, role)
-            };
+                claims.Add(new Claim("CustomerId", userId)); // Ensure this claim is added
+            }
 
             if (address != null)
             {
@@ -160,6 +169,9 @@ namespace cms_server.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+
 
         private string GenerateRandomPassword(int length = 12)
         {

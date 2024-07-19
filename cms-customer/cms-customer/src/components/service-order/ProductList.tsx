@@ -178,7 +178,9 @@ export default function ProductList({ products }: ProductListProps) {
             <ListIcon className="w-5 h-5" />
           </Button>
         </div>
-        <CartButton ref={cartIconRef} />
+        <div className="flex space-x-4">
+          <CartButton ref={cartIconRef} />
+        </div>
       </div>
       <div
         className={`grid ${

@@ -19,7 +19,7 @@ import { useStateContext } from "@/context/StateContext";
 import { useMediaQuery } from "react-responsive";
 import NicheReservationAPI from "@/services/nicheReservationService";
 
-const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
+const phoneRegex = /^(\+84|0[1|3|5|7|8|9])+([0-9]{8})$/;
 
 const bookingSchema = z.object({
   name: z.string().min(1, "Tên của bạn là bắt buộc"),

@@ -332,6 +332,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
             entity.Property(e => e.OrderDate).HasColumnType("datetime");
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.ServiceOrderCode)
                 .HasMaxLength(15)
                 .HasDefaultValueSql("(left(CONVERT([nvarchar](36),newid()),(15)))");

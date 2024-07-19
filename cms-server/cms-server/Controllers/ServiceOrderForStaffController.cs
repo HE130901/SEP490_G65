@@ -155,7 +155,9 @@ namespace cms_server.Controllers
                     {
                         CustomerId = request.CustomerID,
                         NicheId = request.NicheID,
-                        OrderDate = DateTime.Now
+                        CreatedDate = DateTime.Now,
+                        OrderDate = request.OrderDate,
+
                     };
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();
@@ -294,6 +296,7 @@ namespace cms_server.Controllers
     {
         public int CustomerID { get; set; }
         public int NicheID { get; set; }
+        public DateTime OrderDate { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
 

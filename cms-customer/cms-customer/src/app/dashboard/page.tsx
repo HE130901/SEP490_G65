@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import ContractDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
 import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
 import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
-import ServiceRequestList from "@/components/dashboard/lists/service-request/ServiceRequestList";
 import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
 import ServicesList from "@/components/dashboard/services/ServicesSection";
 import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
@@ -125,12 +124,7 @@ export default function Dashboard() {
                 >
                   Đơn đăng ký viếng
                 </TabsTrigger>
-                <TabsTrigger
-                  value="serviceRequests"
-                  className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
-                >
-                  Đơn đăng ký sử dụng dịch vụ
-                </TabsTrigger>
+
                 <TabsTrigger
                   value="bookingRequests"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
@@ -140,9 +134,6 @@ export default function Dashboard() {
               </TabsList>
               <TabsContent value="visitRegistrations" className="w-full">
                 <RegistrationList reFetchTrigger={reFetchTrigger} />
-              </TabsContent>
-              <TabsContent value="serviceRequests" className="w-full">
-                <ServiceRequestList reFetchTrigger={false} />
               </TabsContent>
               <TabsContent value="bookingRequests" className="w-full">
                 <BookingRequestList reFetchTrigger={false} />
