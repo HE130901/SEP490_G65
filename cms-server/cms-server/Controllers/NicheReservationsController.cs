@@ -181,7 +181,7 @@ namespace cms_server.Controllers
             }
         }
 
-        // DELETE: api/NicheReservations/5
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNicheReservation(int id)
         {
@@ -190,28 +190,34 @@ namespace cms_server.Controllers
             {
                 return NotFound();
             }
-
             if (nicheReservation.Status == "Approved")
             {
-                return BadRequest(new { error = "Không thể xóa đơn đặt chỗ đã được duyệt" });
+                return BadRequest(new { error = "Không thể xóa đơn đã được duyệt" });
             }
+
+            var originalStatus = nicheReservation.Status;
 
             // Update the status of the reservation to "Canceled"
             nicheReservation.Status = "Canceled";
             _context.Entry(nicheReservation).State = EntityState.Modified;
 
-            // Update the status of the niche to "Available"
-            var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
-            if (niche != null)
+            // Only update the Niche status if the original reservation status was not "PendingContractRenewal" or "PendingContractCancellation"
+            if (originalStatus != "PendingContractRenewal" && originalStatus != "PendingContractCancellation")
             {
-                niche.Status = "Available";
-                _context.Entry(niche).State = EntityState.Modified;
+                var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
+                if (niche != null)
+                {
+                    niche.Status = "Available";
+                    _context.Entry(niche).State = EntityState.Modified;
+                }
             }
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
+
+
+
 
         private bool NicheReservationExists(int id)
         {

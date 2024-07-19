@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import ContractDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
-import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
 import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
 import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
 import ServicesList from "@/components/dashboard/services/ServicesSection";
@@ -18,6 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/StateContext";
+import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
 
 export default function Dashboard() {
   const {
@@ -101,12 +101,6 @@ export default function Dashboard() {
           <div>
             <ServicesList containers={containers} />
           </div>
-          <div className="">
-            <CustomerContractList
-              contracts={contracts}
-              onSelect={handleContainerSelect}
-            />
-          </div>
           <motion.div
             className=""
             initial={{ opacity: 0, y: 20 }}
@@ -114,17 +108,22 @@ export default function Dashboard() {
             transition={{ duration: 0.5 }}
           >
             <Tabs
-              defaultValue="visitRegistrations"
+              defaultValue="contracts"
               className="w-full flex flex-col items-center"
             >
               <TabsList className="flex-wrap w-fit space-x-0 sm:space-x-4 shadow-lg">
+                <TabsTrigger
+                  value="contracts"
+                  className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
+                >
+                  Hợp đồng của tôi
+                </TabsTrigger>
                 <TabsTrigger
                   value="visitRegistrations"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
                 >
                   Đơn đăng ký viếng
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="bookingRequests"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
@@ -137,6 +136,12 @@ export default function Dashboard() {
               </TabsContent>
               <TabsContent value="bookingRequests" className="w-full">
                 <BookingRequestList reFetchTrigger={false} />
+              </TabsContent>
+              <TabsContent value="contracts" className="w-full">
+                <CustomerContractList
+                  contracts={contracts}
+                  onSelect={handleContainerSelect}
+                />
               </TabsContent>
             </Tabs>
           </motion.div>
@@ -151,7 +156,6 @@ export default function Dashboard() {
         isOpen={isVisitScheduleModalOpen}
         onClose={() => setIsVisitScheduleModalOpen(false)}
         onSubmit={handleVisitScheduleSubmit}
-        containers={containers}
       />
     </div>
   );

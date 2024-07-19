@@ -170,8 +170,25 @@ namespace cms_server.Controllers
                 return NotFound();
             }
 
-            _context.VisitRegistrations.Remove(visitRegistration);
-            await _context.SaveChangesAsync();
+            // Update the status to "Canceled" instead of deleting the record
+            visitRegistration.Status = "Canceled";
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.VisitRegistrations.Any(e => e.VisitId == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }

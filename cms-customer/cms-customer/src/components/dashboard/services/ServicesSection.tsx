@@ -56,7 +56,6 @@ export default function ServicesList({ containers }: { containers: any }) {
         isOpen={isVisitDialogOpen}
         onClose={() => setIsVisitDialogOpen(false)}
         onSubmit={() => setIsVisitDialogOpen(false)}
-        containers={containers}
       />
     </div>
   );

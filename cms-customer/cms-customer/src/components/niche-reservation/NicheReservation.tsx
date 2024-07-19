@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
 import ReservationForm from "@/components/niche-reservation/ReservationForm";
 import NicheDetailDialog from "@/components/niche-reservation/NicheDetailDialog";
-import MyNicheDetailDialog from "@/components/niche-reservation/MyNicheDetailDialog"; // New dialog for user's niche details
+import MyNicheDetailDialog from "@/components/niche-reservation/MyNicheDetailDialog";
 import { useStateContext } from "@/context/StateContext";
 import {
   Tooltip,
@@ -137,7 +137,7 @@ const NicheReservationPage = () => {
 
   const openMyDetailDialog = async (niche: Niche) => {
     try {
-      const response = await NicheAPI.getDetail(niche.nicheId);
+      const response = await NicheAPI.getDetailForCustomer(niche.nicheId);
       setSelectedNicheDetail(response.data);
       console.log("My Niche details:", response.data);
       setIsMyDetailDialogVisible(true);

@@ -54,13 +54,13 @@ namespace cms_server.Controllers
 
         [Authorize]
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/nichesForCustomer")]
-        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
+        public async Task<ActionResult<IEnumerable<NicheDto1>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); // Giả sử user ID được lưu trong phần tên của Identity
 
             var niches = await _context.Niches
                 .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
-                .Select(n => new NicheDto
+                .Select(n => new NicheDto1
                 {
                     NicheId = n.NicheId,
                     NicheName = n.NicheName,
@@ -117,12 +117,12 @@ namespace cms_server.Controllers
         public string AreaName { get; set; }
     }
 
-    public class NicheDto
+    public class NicheDto1
     {
         public int NicheId { get; set; }
         public string NicheName { get; set; }
         public string Status { get; set; }
-        public bool ReservedByUser { get; set; } // Thêm thuộc tính mới
+        public bool ReservedByUser { get; set; } 
     }
     public class NicheDto2
     {

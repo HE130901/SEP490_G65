@@ -59,7 +59,7 @@ public partial class CmsContext : DbContext
                 .Build();
 
             // Get the connection string from the configuration
-            var connectionString = configuration.GetConnectionString("LocalDB");
+            var connectionString = configuration.GetConnectionString("RemoteDB");
             optionsBuilder.UseSqlServer(connectionString);
         }
     }

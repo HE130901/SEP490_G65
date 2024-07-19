@@ -19,11 +19,13 @@ import {
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const predefinedAddresses = [
-  "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
-  "Nghĩa trang Văn Điển (Phan Trọng Tuệ - Tam Hiệp - Thanh Trì)",
-  "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
+  "Nhà tang lễ thành phố ",
+  "Nghĩa trang Văn Điển ",
+  "An Bình Viên - Hòa Lạc",
 ];
 
 interface LiquidateContractDialogProps {
@@ -51,15 +53,17 @@ export default function LiquidateContractDialog({
 
     try {
       setLoading(true);
-      await axiosInstance.post(`/api/Niches/${contractId}/liquidate`, {
-        appointmentDate,
+      await axiosInstance.post(`/api/Contracts/cancel`, {
+        contractId,
+        note: `Thanh lý hợp đồng tại ${selectedAddress} vào ngày ${appointmentDate}`,
+        confirmationDate: new Date(appointmentDate).toISOString(),
         signAddress: selectedAddress,
       });
-      alert("Hợp đồng đã được thanh lý.");
+      toast.success("Hợp đồng đã được thanh lý.");
       onClose();
     } catch (err) {
       console.error("Error liquidating contract:", err);
-      alert("Không thể thanh lý hợp đồng.");
+      toast.error("Không thể thanh lý hợp đồng.");
     } finally {
       setLoading(false);
     }

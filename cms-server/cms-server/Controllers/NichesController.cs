@@ -1,14 +1,16 @@
 ﻿using cms_server.DTOs;
 using cms_server.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace cms_server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    
     public class NichesController : ControllerBase
     {
         private readonly INicheService _nicheService;
@@ -17,8 +19,9 @@ namespace cms_server.Controllers
         {
             _nicheService = nicheService;
         }
-
+       
         [HttpGet("customer")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches()
         {
             var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
@@ -39,6 +42,20 @@ namespace cms_server.Controllers
             try
             {
                 var nicheDetail = await _nicheService.GetNicheDetailAsync(nicheId);
+                return Ok(nicheDetail);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+   
+        [HttpGet("{nicheId}/details-for-customer")]
+        public async Task<ActionResult<NicheDetailDto3>> GetNicheDetail3(int nicheId)
+        {
+            try
+            {
+                var nicheDetail = await _nicheService.GetNicheDetailAsync3(nicheId);
                 return Ok(nicheDetail);
             }
             catch (KeyNotFoundException)

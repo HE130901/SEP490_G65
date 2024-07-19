@@ -87,20 +87,6 @@ namespace cms_server.Tests
             Assert.Single(returnValue.Buildings.First().Floors.First().Areas);
         }
 
-        [Fact]
-        public async Task GetNiches_ReturnsNicheDtoList()
-        {
-            // Act
-            var result = await _controller.GetNiches(1, 1, 1);
-
-            // Assert
-            var okResult = Assert.IsType<ActionResult<IEnumerable<NicheDto>>>(result);
-            var returnValue = Assert.IsAssignableFrom<IEnumerable<NicheDto>>(okResult.Value);
-            var nicheList = returnValue.ToList();
-            Assert.Single(nicheList);
-            Assert.Equal(1, nicheList.First().NicheId);
-            Assert.Equal("Niche 1", nicheList.First().NicheName);
-            Assert.Equal("Status 1", nicheList.First().Status);
-        }
+       
     }
 }

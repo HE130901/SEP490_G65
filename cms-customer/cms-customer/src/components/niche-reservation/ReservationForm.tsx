@@ -45,9 +45,9 @@ const bookingSchema = z.object({
 });
 
 const predefinedAddresses = [
-  "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
-  "Nghĩa trang Văn Điển (Phan Trọng Tuệ - Tam Hiệp - Thanh Trì)",
-  "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
+  "Nhà tang lễ thành phố ",
+  "Nghĩa trang Văn Điển ",
+  "An Bình Viên - Hòa Lạc",
 ];
 
 const ReservationForm = ({
