@@ -142,7 +142,9 @@ namespace cms_server.Controllers
                 .Select(c => new ContractForStaffDto
                 {
                     ContractId = c.ContractId,
-                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-{c.Niche.NicheName}",
+                    NicheId = c.NicheId,
+                    CustomerId = c.CustomerId,
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}/{c.Niche.Area.Floor.FloorName}/{c.Niche.Area.AreaName}/Ô {c.Niche.NicheName}",
                     CustomerName = c.Customer.FullName,
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,
@@ -273,10 +275,13 @@ namespace cms_server.Controllers
 public class ContractForStaffDto
     {
         public int ContractId { get; set; }
+        public int NicheId { get; set; }
+        public int CustomerId { get; set; }
         public string NicheAddress { get; set; }
         public string CustomerName { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string Status { get; set; }
+        
     }
 }
