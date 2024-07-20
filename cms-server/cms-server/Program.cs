@@ -18,10 +18,12 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<CmsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("RemoteDB")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDB")));
 
 // Custom services
 builder.Services.AddScoped<INicheService, NicheService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

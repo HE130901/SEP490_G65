@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
 import { CssBaseline, Box, Toolbar } from "@mui/material";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const metadata: Metadata = {
   title: "Nhân viên",
@@ -34,6 +36,7 @@ export default function RootLayout({
             </Box>
           </Box>
           <Toaster />
+          <ToastContainer />
         </AppProviders>
       </body>
     </html>

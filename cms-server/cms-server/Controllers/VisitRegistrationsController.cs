@@ -18,6 +18,8 @@ namespace cms_server.Controllers
             _logger = logger; 
         }
 
+       
+
         // GET: api/VisitRegistrations
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VisitRegistrationDto>>> GetVisitRegistrations()

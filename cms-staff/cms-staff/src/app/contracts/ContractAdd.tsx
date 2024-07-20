@@ -238,7 +238,7 @@ const AddContractForm: React.FC<AddContractFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Thêm mới hợp đồng</DialogTitle>
       <DialogContent>
         <Box mt={2}>

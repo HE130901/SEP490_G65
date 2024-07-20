@@ -134,7 +134,6 @@ namespace cms_server.Controllers
             }
         }
 
-
         private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
@@ -149,6 +148,10 @@ namespace cms_server.Controllers
             if (role == "Customer")
             {
                 claims.Add(new Claim("CustomerId", userId)); // Ensure this claim is added
+            }
+            else if (role == "Staff")
+            {
+                claims.Add(new Claim("StaffId", userId)); // Ensure this claim is added
             }
 
             if (address != null)
@@ -169,6 +172,7 @@ namespace cms_server.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
 
 
