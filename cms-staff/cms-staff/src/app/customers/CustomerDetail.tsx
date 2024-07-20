@@ -29,7 +29,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.customerId}
-              disabled
             />
             <TextField
               margin="dense"
@@ -38,7 +37,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.fullName}
-              disabled
             />
             <TextField
               margin="dense"
@@ -47,7 +45,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.email}
-              disabled
             />
             <TextField
               margin="dense"
@@ -56,7 +53,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.phone}
-              disabled
             />
             <TextField
               margin="dense"
@@ -65,7 +61,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.address}
-              disabled
             />
             <TextField
               margin="dense"
@@ -74,7 +69,6 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
               fullWidth
               variant="outlined"
               value={customer.citizenId}
-              disabled
             />
           </>
         )}

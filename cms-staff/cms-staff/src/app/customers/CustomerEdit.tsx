@@ -9,7 +9,9 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import axiosInstance from "@/utils/axiosInstance"; // Assuming you have an Axios instance setup
 import { Customer, CustomerEditDialogProps } from "./interfaces";
+import { toast } from "react-toastify";
 
 const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
   open,
@@ -36,9 +38,18 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSave = () => {
-    // Add your save logic here
-    onClose();
+  const handleSave = async () => {
+    try {
+      await axiosInstance.put(`/api/Customers/${formData.customerId}`, {
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+      });
+      toast.success("Customer information updated successfully");
+      onClose();
+    } catch (error) {
+      toast.error("Failed to update customer information");
+    }
   };
 
   return (
@@ -65,6 +76,7 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
+              disabled
             />
             <TextField
               margin="dense"
@@ -105,6 +117,7 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
               name="citizenId"
               value={formData.citizenId}
               onChange={handleChange}
+              disabled
             />
           </>
         )}

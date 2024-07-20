@@ -149,7 +149,7 @@ namespace cms_server.Controllers
             serviceOrderDetail.CompletionImage = request.CompletionImage;
             serviceOrderDetail.Status = "Complete";
 
-            serviceOrder.StaffId = staffId;  // Update StaffID in ServiceOrder
+            serviceOrder.StaffId = staffId;  
 
             _context.ServiceOrderDetails.Update(serviceOrderDetail);
             _context.ServiceOrders.Update(serviceOrder);

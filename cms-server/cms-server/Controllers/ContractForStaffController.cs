@@ -144,7 +144,7 @@ namespace cms_server.Controllers
                     ContractId = c.ContractId,
                     NicheId = c.NicheId,
                     CustomerId = c.CustomerId,
-                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}/{c.Niche.Area.Floor.FloorName}/{c.Niche.Area.AreaName}/Ô {c.Niche.NicheName}",
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-Ô {c.Niche.NicheName}",
                     CustomerName = c.Customer.FullName,
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,

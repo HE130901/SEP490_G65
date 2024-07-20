@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -11,173 +10,94 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Typography,
+  CircularProgress,
+  Button,
   IconButton,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  TableSortLabel,
-  Chip,
-  Tooltip,
-  SelectChangeEvent,
 } from "@mui/material";
 import {
-  Add as AddIcon,
+  Visibility as VisibilityIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
+  Add as AddIcon,
 } from "@mui/icons-material";
-import VisitRegistrationAPI from "@/services/visitRegistrationService";
-import { useToast } from "@/components/ui/use-toast";
-import AddVisitRequestDialog from "./VisitRegistrationAdd";
-import ViewVisitRequestDialog from "./VisitRegistrationDetail";
-import EditVisitRequestDialog from "./VisitRegistrationEdit";
-import DeleteVisitRequestDialog from "./VisitRegistrationDelete";
-import { VisitRequest } from "./interfaces";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
+import VisitViewDialog from "./VisitViewDialog";
+import VisitEditDialog from "./VisitEditDialog";
+import VisitDeleteDialog from "./VisitDeleteDialog";
+import VisitAddDialog from "./VisitAddDialog";
 
-const VisitRegistrationPage: React.FC = () => {
-  const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchColumn, setSearchColumn] = useState<string>("all");
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<string>("visitId");
-  const { toast } = useToast();
-  const [selectedVisitRequest, setSelectedVisitRequest] =
-    useState<VisitRequest | null>(null);
-  const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
-  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+interface VisitRegistrationDto {
+  visitId: number;
+  customerId: number;
+  nicheId: number;
+  customerName: string;
+  staffName: string;
+  nicheAddress: string;
+  createdDate: string;
+  visitDate: string;
+  status: string;
+  accompanyingPeople: number;
+  note: string;
+  approvedBy?: number;
+}
+
+const VisitRegistrationsList: React.FC = () => {
+  const [visitRegistrations, setVisitRegistrations] = useState<
+    VisitRegistrationDto[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] =
+    useState<VisitRegistrationDto | null>(null);
 
   useEffect(() => {
-    const fetchVisitRequests = async () => {
-      try {
-        const response = await VisitRegistrationAPI.getAllVisitRegistrations();
-        setVisitRequests(response.data.$values);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Lỗi",
-          description: "Không thể tải danh sách đơn đăng ký viếng thăm",
-        });
-      }
-    };
+    fetchVisitRegistrations();
+  }, []);
 
-    fetchVisitRequests();
-  }, [toast]);
-
-  const handleAddVisitRequest = () => {
-    setAddDialogOpen(true);
+  const fetchVisitRegistrations = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get("/api/VisitRegistrations");
+      setVisitRegistrations(response.data.$values);
+    } catch (error) {
+      toast.error("Unable to fetch visit registrations");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
+  const handleView = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit);
     setViewDialogOpen(true);
   };
 
-  const handleEditVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
+  const handleEdit = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
+  const handleDelete = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit);
     setDeleteDialogOpen(true);
   };
 
-  const handleAddDialogClose = () => {
-    setAddDialogOpen(false);
+  const handleAdd = () => {
+    setAddDialogOpen(true);
   };
 
-  const handleViewDialogClose = () => {
+  const closeDialogs = () => {
     setViewDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
-
-  const handleEditDialogClose = () => {
     setEditDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
-
-  const handleDeleteDialogClose = () => {
     setDeleteDialogOpen(false);
-    setSelectedVisitRequest(null);
+    setAddDialogOpen(false);
+    setSelectedVisit(null);
+    fetchVisitRegistrations();
   };
-
-  const handleDeleteConfirmed = () => {
-    // Add delete logic here
-    setDeleteDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
-
-  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
-    setSearchColumn(event.target.value as string);
-  };
-
-  const handleRequestSort = (property: string) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const sortedVisitRequests = visitRequests.sort((a, b) => {
-    if (orderBy === "visitId") {
-      return order === "asc"
-        ? Number(a.visitId) - Number(b.visitId)
-        : Number(b.visitId) - Number(a.visitId);
-    } else if (orderBy === "nicheId") {
-      return order === "asc"
-        ? Number(a.nicheId) - Number(b.nicheId)
-        : Number(b.nicheId) - Number(a.nicheId);
-    } else if (orderBy === "status") {
-      return order === "asc"
-        ? a.status.localeCompare(b.status)
-        : b.status.localeCompare(a.status);
-    } else if (orderBy === "createdDate") {
-      return order === "asc"
-        ? a.createdDate && b.createdDate
-          ? new Date(a.createdDate).getTime() -
-            new Date(b.createdDate).getTime()
-          : 0
-        : a.createdDate && b.createdDate
-        ? new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-        : 0;
-    } else if (orderBy === "visitDate") {
-      return order === "asc"
-        ? new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime()
-        : new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime();
-    } else if (orderBy === "note") {
-      return order === "asc"
-        ? a.note.localeCompare(b.note)
-        : b.note.localeCompare(a.note);
-    }
-    return 0;
-  });
-
-  const filteredVisitRequests = sortedVisitRequests.filter((visitRequest) => {
-    if (searchColumn === "all") {
-      return (
-        visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        visitRequest.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        visitRequest.visitId
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        visitRequest.nicheId
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-    } else if (searchColumn === "note") {
-      return visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "status") {
-      return visitRequest.status
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    }
-    return true;
-  });
 
   return (
     <Box p={3}>
@@ -191,188 +111,102 @@ const VisitRegistrationPage: React.FC = () => {
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          onClick={handleAddVisitRequest}
+          onClick={handleAdd}
         >
-          Thêm mới đơn đăng ký viếng thăm
+          Add Visit Registration
         </Button>
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 120, marginRight: 2 }}
-          >
-            <InputLabel>Tìm theo</InputLabel>
-            <Select
-              value={searchColumn}
-              onChange={(event: SelectChangeEvent<string>) =>
-                handleSearchColumnChange(event)
-              }
-              label="Tìm theo"
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="note">Ghi chú</MenuItem>
-              <MenuItem value="status">Trạng thái</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Box>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitId"}
-                  direction={orderBy === "visitId" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitId")}
-                >
-                  STT
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitId"}
-                  direction={orderBy === "visitId" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitId")}
-                >
-                  Mã đơn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "nicheId"}
-                  direction={orderBy === "nicheId" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheId")}
-                >
-                  Mã ô chứa
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "createdDate"}
-                  direction={orderBy === "createdDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("createdDate")}
-                >
-                  Ngày tạo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitDate"}
-                  direction={orderBy === "visitDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitDate")}
-                >
-                  Ngày viếng thăm
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "status"}
-                  direction={orderBy === "status" ? order : "asc"}
-                  onClick={() => handleRequestSort("status")}
-                >
-                  Trạng thái
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">Địa chỉ</TableCell>
-              <TableCell align="center">Ghi chú</TableCell>
-              <TableCell align="center">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredVisitRequests.map((visitRequest, index) => (
-              <TableRow key={visitRequest.visitId}>
-                <TableCell align="center">{index + 1}</TableCell>
-                <TableCell align="center">{visitRequest.visitId}</TableCell>
-                <TableCell align="center">{visitRequest.nicheId}</TableCell>
-                <TableCell align="center">
-                  {new Date(
-                    visitRequest.createdDate ?? ""
-                  ).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  {new Date(visitRequest.visitDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={
-                      visitRequest.status === "Đang chờ duyệt"
-                        ? "Đang chờ"
-                        : visitRequest.status === "Đã duyệt"
-                        ? "Đã duyệt"
-                        : "Đã hủy"
-                    }
-                    color={
-                      visitRequest.status === "Đang chờ duyệt"
-                        ? "warning"
-                        : visitRequest.status === "Đã duyệt"
-                        ? "success"
-                        : "error"
-                    }
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title={visitRequest.signAddress}>
-                    <span className="truncate">{visitRequest.signAddress}</span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title={visitRequest.note}>
-                    <span className="truncate">{visitRequest.note}</span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleViewVisitRequest(visitRequest)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleEditVisitRequest(visitRequest)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteVisitRequest(visitRequest)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell align="center">S.No</TableCell>
+                <TableCell>Visit ID</TableCell>
+                <TableCell>Customer Name</TableCell>
+                <TableCell>Staff Name</TableCell>
+                <TableCell>Niche Address</TableCell>
+                <TableCell>Created Date</TableCell>
+                <TableCell>Visit Date</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Accompanying People</TableCell>
+                <TableCell>Note</TableCell>
+                <TableCell align="center">Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <AddVisitRequestDialog
-        open={addDialogOpen}
-        onClose={handleAddDialogClose}
-      />
-      <ViewVisitRequestDialog
+            </TableHead>
+            <TableBody>
+              {visitRegistrations.map((visit, index) => (
+                <TableRow key={visit.visitId}>
+                  <TableCell align="center">{index + 1}</TableCell>
+                  <TableCell>{visit.visitId}</TableCell>
+                  <TableCell>{visit.customerName}</TableCell>
+                  <TableCell>{visit.staffName}</TableCell>
+                  <TableCell>{visit.nicheAddress}</TableCell>
+                  <TableCell>
+                    {new Date(visit.createdDate).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(visit.visitDate).toLocaleString()}
+                  </TableCell>
+                  <TableCell>{visit.status}</TableCell>
+                  <TableCell>{visit.accompanyingPeople}</TableCell>
+                  <TableCell>{visit.note}</TableCell>
+                  <TableCell align="center">
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleView(visit)}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                    <IconButton
+                      color="secondary"
+                      onClick={() => handleEdit(visit)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(visit)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      {/* Dialogs for View, Edit, and Delete */}
+      <VisitViewDialog
         open={viewDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleViewDialogClose}
+        visit={selectedVisit}
+        onClose={closeDialogs}
       />
-      <EditVisitRequestDialog
+      <VisitEditDialog
         open={editDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleEditDialogClose}
+        visit={selectedVisit}
+        onClose={closeDialogs}
       />
-      <DeleteVisitRequestDialog
+      <VisitDeleteDialog
         open={deleteDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleDeleteDialogClose}
-        onDelete={handleDeleteConfirmed}
+        visit={selectedVisit}
+        onClose={closeDialogs}
       />
+      <VisitAddDialog open={addDialogOpen} onClose={closeDialogs} />
     </Box>
   );
 };
 
-export default VisitRegistrationPage;
+export default VisitRegistrationsList;

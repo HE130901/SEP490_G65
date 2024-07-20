@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
-using Microsoft.Extensions.Logging; // Add logging
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace cms_server.Controllers
 {
@@ -10,15 +13,13 @@ namespace cms_server.Controllers
     public class VisitRegistrationsController : ControllerBase
     {
         private readonly CmsContext _context;
-        private readonly ILogger<VisitRegistrationsController> _logger; 
+        private readonly ILogger<VisitRegistrationsController> _logger;
 
         public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
         {
             _context = context;
-            _logger = logger; 
+            _logger = logger;
         }
-
-       
 
         // GET: api/VisitRegistrations
         [HttpGet]
@@ -27,17 +28,26 @@ namespace cms_server.Controllers
             try
             {
                 var visitRegistrations = await _context.VisitRegistrations
+                    .Include(vr => vr.Customer)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
                     .Select(vr => new VisitRegistrationDto
                     {
                         VisitId = vr.VisitId,
                         CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
                         VisitDate = vr.VisitDate,
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
                         Status = vr.Status ?? "No information",
                         ApprovedBy = vr.ApprovedBy,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         Note = vr.Note ?? string.Empty,
-                        AccompanyingPeople = (int)vr.AccompanyingPeople
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
                     })
                     .ToListAsync();
 
@@ -50,20 +60,41 @@ namespace cms_server.Controllers
             }
         }
 
-
-
         // GET: api/VisitRegistrations/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<VisitRegistration>> GetVisitRegistration(int id)
+        public async Task<ActionResult<VisitRegistrationDto>> GetVisitRegistration(int id)
         {
-            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+            var visitRegistration = await _context.VisitRegistrations
+                .Include(vr => vr.Customer)
+                .Include(vr => vr.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
+                .Where(vr => vr.VisitId == id)
+                .Select(vr => new VisitRegistrationDto
+                {
+                    VisitId = vr.VisitId,
+                    CustomerId = vr.CustomerId,
+                    NicheId = vr.NicheId,
+                    VisitDate = vr.VisitDate,
+                    NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                    Status = vr.Status ?? "No information",
+                    ApprovedBy = vr.ApprovedBy,
+                    CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                    Note = vr.Note ?? string.Empty,
+                    AccompanyingPeople = (int)vr.AccompanyingPeople,
+                    CustomerName = vr.Customer.FullName,
+                    StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
+                })
+                .FirstOrDefaultAsync();
 
             if (visitRegistration == null)
             {
                 return NotFound();
             }
 
-            return visitRegistration;
+            return Ok(visitRegistration);
         }
 
         // GET: api/VisitRegistrations/customer/5
@@ -74,15 +105,25 @@ namespace cms_server.Controllers
             {
                 var visitRegistrations = await _context.VisitRegistrations
                     .Where(vr => vr.CustomerId == customerId)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
                     .Select(vr => new VisitRegistrationDto
                     {
                         VisitId = vr.VisitId,
+                        CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
-                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "No infomation",
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                        Status = vr.Status ?? "No information",
+                        ApprovedBy = vr.ApprovedBy,
+                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                        Note = vr.Note ?? string.Empty,
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
-                        Note = vr.Note ?? string.Empty
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
                     })
                     .ToListAsync();
 
@@ -95,7 +136,7 @@ namespace cms_server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching visit registrations for customer ID: {CustomerId}", customerId); // Log error
+                _logger.LogError(ex, "Error fetching visit registrations for customer ID: {CustomerId}", customerId);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -207,11 +248,13 @@ public class VisitRegistrationDto
     public int VisitId { get; set; }
     public int CustomerId { get; set; }
     public int NicheId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? StaffName { get; set; }
+    public string? NicheAddress { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? VisitDate { get; set; }
     public string? Status { get; set; } = "Pending";
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
-
     public int? ApprovedBy { get; set; }
 }
