@@ -8,7 +8,5 @@ const buildingService = {
   getNiches(buildingId: any, floorId: any, areaId: any) {
     return axiosInstance.get(`/api/Buildings/${buildingId}/floors/${floorId}/areas/${areaId}/niches`);
   },
-  // Các hàm API khác...
 };
-
 export default buildingService;

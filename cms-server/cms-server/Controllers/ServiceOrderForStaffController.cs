@@ -41,26 +41,49 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+        private async Task<string> GetNicheAddress(int nicheId)
+        {
+            var niche = await _context.Niches
+                .Include(n => n.Area)
+                    .ThenInclude(a => a.Floor)
+                        .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(n => n.NicheId == nicheId);
+
+            if (niche == null) return string.Empty;
+
+            return $"{niche.Area.Floor.Building.BuildingName}-{niche.Area.Floor.FloorName}-{niche.Area.AreaName}-{niche.NicheName}";
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetServiceOrdersList()
         {
             var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.ServiceOrderDetails)
-                .ThenInclude(sod => sod.Service)
-            .ToListAsync();
+                .Include(so => so.ServiceOrderDetails)
+                    .ThenInclude(sod => sod.Service)
+                .Include(so => so.Customer)
+                .ToListAsync();
 
-            var serviceOrderResponses = new List<ServiceOrderResponse>();
+            var serviceOrderResponses = new List<ServiceOrderResponseDto1>();
 
             foreach (var serviceOrder in serviceOrders)
             {
-                var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
+                var nicheAddress = await GetNicheAddress(serviceOrder.NicheId);
 
-                var response = new ServiceOrderResponse
+                var response = new ServiceOrderResponseDto1
                 {
-                    ServiceOrderCode = serviceOrder.ServiceOrderCode,
-                    ServiceOrderDetails = (List<ServiceOrderDetail>)serviceOrder.ServiceOrderDetails,
-                    TotalPrice = totalPrice
+                    ServiceOrderId = serviceOrder.ServiceOrderId,
+                    NicheAddress = nicheAddress,
+                    CustomerName = serviceOrder.Customer.FullName,
+                    CreatedDate = serviceOrder.CreatedDate,
+                    OrderDate = serviceOrder.OrderDate,
+                    ServiceOrderDetails = serviceOrder.ServiceOrderDetails.Select(detail => new ServiceOrderDetailDto
+                    {
+                        
+                        ServiceName = detail.Service.ServiceName,
+                        Quantity = detail.Quantity,
+                        Status = detail.Status,
+                        CompletionImage = detail.CompletionImage
+                    }).ToList()
                 };
 
                 serviceOrderResponses.Add(response);
@@ -68,6 +91,7 @@ namespace cms_server.Controllers
 
             return Ok(serviceOrderResponses);
         }
+
 
         // Endpoint to get the details of a specific service order
         [HttpGet("{serviceOrderId}")]
@@ -94,6 +118,8 @@ namespace cms_server.Controllers
             {
                 ServiceOrderCode = serviceOrder.ServiceOrderCode,
                 CustomerFullName = serviceOrder.Customer.FullName,
+                OrderDate = serviceOrder.OrderDate,
+                CreatedDate = serviceOrder.CreatedDate,
                 Niche = new NicheInfo
                 {
                     Building = serviceOrder.Niche.Area.Floor.Building.BuildingName,
@@ -168,7 +194,9 @@ namespace cms_server.Controllers
                     {
                         CustomerId = request.CustomerID,
                         NicheId = request.NicheID,
-                        OrderDate = DateTime.Now
+                        CreatedDate = DateTime.Now,
+                        OrderDate = request.OrderDate,
+
                     };
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();
@@ -283,6 +311,8 @@ namespace cms_server.Controllers
     {
         public string ServiceOrderCode { get; set; }
         public string CustomerFullName { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? OrderDate { get; set; }
         public NicheInfo Niche { get; set; }
         public decimal TotalPrice { get; set; }
         public List<ServiceOrderDetail> ServiceOrderDetails { get; set; }
@@ -307,6 +337,7 @@ namespace cms_server.Controllers
     {
         public int CustomerID { get; set; }
         public int NicheID { get; set; }
+        public DateTime OrderDate { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
 
@@ -321,4 +352,36 @@ namespace cms_server.Controllers
         public int ServiceOrderID { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
+    public class ServiceOrderForStaffDto
+    {
+        public int ServiceOrderId { get; set; }
+        public string ServiceOrderCode { get; set; }
+        public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }
+        public decimal TotalPrice { get; set; }
+    }
+
+    public class ServiceOrderDetailDto
+    {
+        public int ServiceOrderDetailId { get; set; }
+        public int ServiceOrderId { get; set; }
+        public int ServiceId { get; set; }
+        public string ServiceName { get; set; }
+     
+
+        public int Quantity { get; set; }
+        public string Status { get; set; }
+        public string? CompletionImage { get; set; }
+    }
+    public class ServiceOrderResponseDto1
+    {
+        public int ServiceOrderId { get; set; }
+        public string NicheAddress { get; set; }
+        public string CustomerName { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? OrderDate { get; set; }
+        public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }
+    }
+
+  
+
 }

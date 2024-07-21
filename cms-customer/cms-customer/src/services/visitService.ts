@@ -1,10 +1,13 @@
-
 import axiosInstance from "@/utils/axiosInstance";
 
 const VisitRegistrationAPI = {
   getByCustomerId(customerId: string) {
     const url = `/api/VisitRegistrations/customer/${customerId}`;
     return axiosInstance.get(url);
+  },
+  create(data: any) {
+    const url = `/api/VisitRegistrations`;
+    return axiosInstance.post(url, data);
   },
   update(visitId: number, data: any) {
     const url = `/api/VisitRegistrations/${visitId}`;

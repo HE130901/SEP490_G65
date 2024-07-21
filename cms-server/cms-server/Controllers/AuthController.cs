@@ -6,13 +6,13 @@ using Microsoft.IdentityModel.Tokens;
 using cms_server.DTOs;
 using cms_server.Models;
 using System.Text;
-using System.Security.Cryptography;
-using MailKit.Net.Smtp;
 using MimeKit;
+using MailKit.Net.Smtp;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
+using Castle.Core.Resource;
 
-namespace CMSApi.Controllers
+namespace cms_server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -33,7 +33,7 @@ namespace CMSApi.Controllers
             var customer = _context.Customers.SingleOrDefault(c => c.Email == loginDto.Email);
             if (customer != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, customer.PasswordHash))
             {
-                var token = GenerateJwtToken(customer.CustomerId.ToString(), customer.Phone, customer.Address, "Customer");
+                var token = GenerateJwtToken(customer.CustomerId.ToString(), "Customer", customer.Phone, customer.Address);
                 return Ok(new
                 {
                     Token = token,
@@ -44,10 +44,13 @@ namespace CMSApi.Controllers
             var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
             if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
             {
-                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Phone, staff.Role, staff.Role);
+                var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Role, staff.Phone, staff.Email);
                 return Ok(new
                 {
                     Token = token,
+                    Id = staff.StaffId,
+                    Name = staff.FullName,
+                    Email = staff.Email,
                     Role = staff.Role
                 });
             }
@@ -55,27 +58,7 @@ namespace CMSApi.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto registerDto)
-        {
-            if (_context.Customers.Any(c => c.Email == registerDto.Email))
-                return BadRequest("Email already in use.");
 
-            var customer = new Customer
-            {
-                FullName = registerDto.FullName,
-                Email = registerDto.Email,
-                Phone = registerDto.Phone,
-                Address = registerDto.Address,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
-                CitizenId = registerDto.CitizenId,
-            };
-
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
-
-            return Ok("Registration successful.");
-        }
 
         [HttpGet("get-current-user")]
         [Authorize]
@@ -151,16 +134,25 @@ namespace CMSApi.Controllers
             }
         }
 
-        private string GenerateJwtToken(string userId, string phone, string role, string address = null)
+        private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, userId),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, userId),
+        new Claim("Phone", phone),
+        new Claim(ClaimTypes.Role, role)
+    };
+
+            if (role == "Customer")
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim("Phone", phone),
-                new Claim(ClaimTypes.Role, role)
-            };
+                claims.Add(new Claim("CustomerId", userId)); // Ensure this claim is added
+            }
+            else if (role == "Staff")
+            {
+                claims.Add(new Claim("StaffId", userId)); // Ensure this claim is added
+            }
 
             if (address != null)
             {
@@ -180,6 +172,10 @@ namespace CMSApi.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
+
+
 
         private string GenerateRandomPassword(int length = 12)
         {
@@ -214,6 +210,7 @@ namespace CMSApi.Controllers
         }
     }
 }
+
 
 namespace cms_server.DTOs
 {

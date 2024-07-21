@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -12,12 +12,6 @@ import {
   TableRow,
   Paper,
   IconButton,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  TableSortLabel,
   Chip,
 } from "@mui/material";
 import {
@@ -26,110 +20,84 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import ServiceOrderAPI from "@/services/serviceOrderService";
+import { toast } from "react-toastify";
+import AddServiceOrderDialog from "./AddServiceOrderDialog";
+import ViewServiceOrderDialog from "./ViewServiceOrderDialog";
 
 const ServiceRequestPage = () => {
-  const [serviceRequests, setServiceRequests] = useState([
-    {
-      id: 1,
-      code: "SR001",
-      nicheCode: "N001",
-      customerName: "Nguyễn Văn A",
-      services: [
-        { name: "Dịch vụ 1", quantity: 2 },
-        { name: "Dịch vụ 2", quantity: 1 },
-      ],
-      status: "Pending",
-    },
-    {
-      id: 2,
-      code: "SR002",
-      nicheCode: "N002",
-      customerName: "Trần Thị B",
-      services: [{ name: "Dịch vụ 3", quantity: 1 }],
-      status: "Completed",
-    },
-    // Thêm dữ liệu đơn đăng ký dùng dịch vụ ở đây
-  ]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("customerName");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("code");
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedServiceOrderId, setSelectedServiceOrderId] = useState<
+    number | null
+  >(null);
+
+  const fetchServiceRequests = async () => {
+    try {
+      const response = await ServiceOrderAPI.getAllServiceOrders();
+      setServiceRequests(response.data.$values || response.data);
+    } catch (error) {
+      toast.error("Không thể tải danh sách đơn đặt chỗ");
+    }
+  };
+
+  useEffect(() => {
+    fetchServiceRequests();
+  }, []);
 
   const handleAddServiceRequest = () => {
-    // Logic để thêm mới đơn đăng ký dùng dịch vụ
-    alert("Thêm mới đơn đăng ký dùng dịch vụ");
+    setAddDialogOpen(true);
   };
 
   const handleViewServiceRequest = (id: number) => {
-    // Logic để xem chi tiết đơn đăng ký dùng dịch vụ
-    alert(`Xem chi tiết đơn đăng ký dùng dịch vụ với ID: ${id}`);
+    setSelectedServiceOrderId(id);
+    setViewDialogOpen(true);
   };
 
   const handleEditServiceRequest = (id: number) => {
-    // Logic để sửa đơn đăng ký dùng dịch vụ
     alert(`Sửa đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
   const handleDeleteServiceRequest = (id: number) => {
-    // Logic để xóa đơn đăng ký dùng dịch vụ
     alert(`Xóa đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
-  const handleSearchColumnChange = (event: {
-    target: { value: React.SetStateAction<string> };
-  }) => {
-    setSearchColumn(event.target.value);
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return "Đang chờ";
+      case "Complete":
+        return "Hoàn thành";
+      case "Canceled":
+        return "Đã hủy";
+      default:
+        return status;
+    }
   };
 
-  const handleRequestSort = (property: React.SetStateAction<string>) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return "warning";
+      case "Complete":
+        return "success";
+      case "Canceled":
+        return "error";
+      default:
+        return "default";
+    }
   };
 
-  const sortedServiceRequests = serviceRequests.sort((a, b) => {
-    if (orderBy === "code") {
-      if (order === "asc") {
-        return a.code.localeCompare(b.code);
-      } else {
-        return b.code.localeCompare(a.code);
-      }
-    } else if (orderBy === "nicheCode") {
-      if (order === "asc") {
-        return a.nicheCode.localeCompare(b.nicheCode);
-      } else {
-        return b.nicheCode.localeCompare(a.nicheCode);
-      }
-    } else if (orderBy === "customerName") {
-      if (order === "asc") {
-        return a.customerName.localeCompare(b.customerName);
-      } else {
-        return b.customerName.localeCompare(a.customerName);
-      }
-    } else if (orderBy === "status") {
-      if (order === "asc") {
-        return a.status.localeCompare(b.status);
-      } else {
-        return b.status.localeCompare(a.status);
-      }
-    }
-    return 0;
-  });
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false);
+    fetchServiceRequests();
+  };
 
-  const filteredServiceRequests = sortedServiceRequests.filter(
-    (serviceRequest) => {
-      if (searchColumn === "customerName") {
-        return serviceRequest.customerName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "code") {
-        return serviceRequest.code
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      }
-      return true;
-    }
-  );
+  const handleCloseViewDialog = () => {
+    setViewDialogOpen(false);
+    fetchServiceRequests();
+  };
 
   return (
     <Box p={3}>
@@ -147,145 +115,70 @@ const ServiceRequestPage = () => {
         >
           Thêm mới đơn đăng ký dùng dịch vụ
         </Button>
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 120, marginRight: 2 }}
-          >
-            <InputLabel>Tìm theo</InputLabel>
-            <Select
-              value={searchColumn}
-              onChange={handleSearchColumnChange}
-              label="Tìm theo"
-            >
-              <MenuItem value="customerName">Tên khách hàng</MenuItem>
-              <MenuItem value="code">Mã đơn</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Box>
       </Box>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "id"}
-                  direction={
-                    orderBy === "id" ? (order as "asc" | "desc") : undefined
-                  }
-                  onClick={() => handleRequestSort("id")}
-                >
-                  Số thứ tự
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "code"}
-                  direction={
-                    orderBy === "code" ? (order as "desc" | "asc") : undefined
-                  }
-                  onClick={() => handleRequestSort("code")}
-                >
-                  Mã đơn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "nicheCode"}
-                  direction={
-                    orderBy === "nicheCode"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("nicheCode")}
-                >
-                  Mã ô chứa
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "customerName"}
-                  direction={
-                    orderBy === "customerName"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("customerName")}
-                >
-                  Tên Khách hàng
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Số thứ tự</TableCell>
+              <TableCell>Mã đơn</TableCell>
+              <TableCell>Mã ô chứa</TableCell>
+              <TableCell>Tên Khách hàng</TableCell>
               <TableCell>Dịch vụ</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "status"}
-                  direction={
-                    orderBy === "status" ? (order as "asc" | "desc") : undefined
-                  }
-                  onClick={() => handleRequestSort("status")}
-                >
-                  Trạng thái
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Trạng thái</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredServiceRequests.map((serviceRequest, index) => (
-              <TableRow key={serviceRequest.id}>
+            {serviceRequests.map((serviceRequest, index) => (
+              <TableRow key={serviceRequest.serviceOrderId}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{serviceRequest.code}</TableCell>
-                <TableCell>{serviceRequest.nicheCode}</TableCell>
+                <TableCell>{serviceRequest.serviceOrderId}</TableCell>
+                <TableCell>{serviceRequest.nicheAddress}</TableCell>
                 <TableCell>{serviceRequest.customerName}</TableCell>
                 <TableCell>
-                  {serviceRequest.services.map((service, idx) => (
-                    <div key={idx}>
-                      {service.name} (x{service.quantity})
-                    </div>
-                  ))}
+                  {serviceRequest.serviceOrderDetails.$values.map(
+                    (service: any, idx: number) => (
+                      <div key={idx}>
+                        {service.serviceName} (x{service.quantity})
+                      </div>
+                    )
+                  )}
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    label={
-                      serviceRequest.status === "Pending"
-                        ? "Đang chờ"
-                        : serviceRequest.status === "Completed"
-                        ? "Hoàn thành"
-                        : "Đã hủy"
-                    }
-                    color={
-                      serviceRequest.status === "Pending"
-                        ? "warning"
-                        : serviceRequest.status === "Completed"
-                        ? "success"
-                        : "error"
-                    }
-                  />
+                  {serviceRequest.serviceOrderDetails.$values.map(
+                    (service: any, idx: number) => (
+                      <div key={idx} style={{ marginBottom: 4 }}>
+                        <Chip
+                          label={getStatusLabel(service.status)}
+                          color={getStatusColor(service.status)}
+                          size="small"
+                        />
+                      </div>
+                    )
+                  )}
                 </TableCell>
                 <TableCell>
                   <IconButton
                     color="primary"
-                    onClick={() => handleViewServiceRequest(serviceRequest.id)}
+                    onClick={() =>
+                      handleViewServiceRequest(serviceRequest.serviceOrderId)
+                    }
                   >
                     <VisibilityIcon />
                   </IconButton>
                   <IconButton
                     color="secondary"
-                    onClick={() => handleEditServiceRequest(serviceRequest.id)}
+                    onClick={() =>
+                      handleEditServiceRequest(serviceRequest.serviceOrderId)
+                    }
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     color="error"
                     onClick={() =>
-                      handleDeleteServiceRequest(serviceRequest.id)
+                      handleDeleteServiceRequest(serviceRequest.serviceOrderId)
                     }
                   >
                     <DeleteIcon />
@@ -296,6 +189,16 @@ const ServiceRequestPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <AddServiceOrderDialog
+        open={addDialogOpen}
+        onClose={handleCloseAddDialog}
+        onAddSuccess={handleCloseAddDialog}
+      />
+      <ViewServiceOrderDialog
+        open={viewDialogOpen}
+        onClose={handleCloseViewDialog}
+        serviceOrderId={selectedServiceOrderId}
+      />
     </Box>
   );
 };

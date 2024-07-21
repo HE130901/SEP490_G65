@@ -31,7 +31,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
-import ContractDetailsDialog from "./ContractDetailsDialog"; // Import ContractDetailsDialog
+import ContractDetailsDialog from "./ContractDetailsDialog";
+import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog"; // Import VisitScheduleDialog
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -92,6 +93,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null
   );
+  const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -110,17 +112,22 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     setFilteredData(filtered);
   }, [searchTerm, contracts]);
 
-  const handleServiceClick = (contract: Contract) => {
+  const handleServiceClick = () => {
     router.push("/service-order");
   };
 
   const handleVisitClick = (contract: Contract) => {
     setSelectedContract(contract);
-    setIsDialogOpen(true);
+    setIsVisitDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
+    setSelectedContract(null);
+  };
+
+  const handleVisitDialogClose = () => {
+    setIsVisitDialogOpen(false);
     setSelectedContract(null);
   };
 
@@ -223,21 +230,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         <div className="text-center">{row.getValue("startDate")}</div>
       ),
     },
-    {
-      accessorKey: "endDate",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ngày kết thúc
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("endDate")}</div>
-      ),
-    },
+
     {
       accessorKey: "status",
       header: ({ column }) => (
@@ -290,7 +283,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleServiceClick(row.original);
+                    handleServiceClick();
                   }}
                   className="text-green-600"
                 >
@@ -444,6 +437,13 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           isOpen={isDialogOpen}
           onClose={handleDialogClose}
           contractId={selectedContract.contractId}
+        />
+      )}
+      {isVisitDialogOpen && selectedContract && (
+        <VisitScheduleDialog
+          isOpen={isVisitDialogOpen}
+          onClose={handleVisitDialogClose}
+          onSubmit={handleDialogSubmit}
         />
       )}
     </div>

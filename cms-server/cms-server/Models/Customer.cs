@@ -15,7 +15,7 @@ public partial class Customer
 
     public string? Address { get; set; }
 
-    public string PasswordHash { get; set; } = null!;
+    public string? PasswordHash { get; set; }
 
     public string? CitizenId { get; set; }
 

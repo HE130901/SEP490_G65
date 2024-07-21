@@ -10,13 +10,15 @@ namespace cms_server.Controllers
     public class VisitRegistrationsController : ControllerBase
     {
         private readonly CmsContext _context;
-        private readonly ILogger<VisitRegistrationsController> _logger; // Add logger
+        private readonly ILogger<VisitRegistrationsController> _logger; 
 
         public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
         {
             _context = context;
-            _logger = logger; // Initialize logger
+            _logger = logger; 
         }
+
+       
 
         // GET: api/VisitRegistrations
         [HttpGet]
@@ -31,7 +33,7 @@ namespace cms_server.Controllers
                         CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "Không xác định",
+                        Status = vr.Status ?? "No information",
                         ApprovedBy = vr.ApprovedBy,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         Note = vr.Note ?? string.Empty,
@@ -43,10 +45,11 @@ namespace cms_server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching visit registrations");
+                _logger.LogError(ex, "Error fetching visit registrations: {Message}", ex.Message);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
 
         // GET: api/VisitRegistrations/5
@@ -77,7 +80,7 @@ namespace cms_server.Controllers
                         NicheId = vr.NicheId,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "Không xác định",
+                        Status = vr.Status ?? "No infomation",
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
                         Note = vr.Note ?? string.Empty
                     })
@@ -146,7 +149,7 @@ namespace cms_server.Controllers
                 NicheId = visitRegistrationDto.NicheId,
                 VisitDate = visitRegistrationDto.VisitDate,
                 Note = visitRegistrationDto.Note,
-                Status = "Đang chờ duyệt",
+                Status = "Pending",
                 ApprovedBy = null,
                 CreatedDate = DateTime.Now,
                 AccompanyingPeople = visitRegistrationDto.AccompanyingPeople
@@ -169,8 +172,25 @@ namespace cms_server.Controllers
                 return NotFound();
             }
 
-            _context.VisitRegistrations.Remove(visitRegistration);
-            await _context.SaveChangesAsync();
+            // Update the status to "Canceled" instead of deleting the record
+            visitRegistration.Status = "Canceled";
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.VisitRegistrations.Any(e => e.VisitId == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -189,7 +209,7 @@ public class VisitRegistrationDto
     public int NicheId { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? VisitDate { get; set; }
-    public string? Status { get; set; } = "Đang chờ duyệt";
+    public string? Status { get; set; } = "Pending";
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
 

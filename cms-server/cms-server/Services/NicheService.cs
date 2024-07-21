@@ -7,7 +7,14 @@ using System.Threading.Tasks;
 
 namespace cms_server.Services
 {
-    public class NicheService
+    public interface INicheService
+    {
+        Task<IEnumerable<NicheDto>> GetNichesAsync(int customerId);
+        Task<NicheDetailDto> GetNicheDetailAsync(int nicheId);
+        Task<NicheDetailDto3> GetNicheDetailAsync3(int nicheId);
+    }
+
+    public class NicheService : INicheService
     {
         private readonly CmsContext _context;
 
@@ -32,9 +39,9 @@ namespace cms_server.Services
                         .OrderByDescending(c => c.StartDate)
                         .Select(c => c.ContractId)
                         .FirstOrDefault(),
-                    DeceasedName = n.Deceaseds
-                        .OrderByDescending(d => d.DateOfDeath)
-                        .Select(d => d.FullName)
+                    DeceasedName = n.Contracts
+                        .OrderByDescending(c => c.StartDate)
+                        .Select(c => c.Deceased.FullName)
                         .FirstOrDefault() ?? "Không có thông tin"
                 })
                 .ToListAsync();
@@ -55,6 +62,7 @@ namespace cms_server.Services
 
             return new NicheDetailDto
             {
+                NicheId = niche.NicheId,
                 BuildingName = niche.Area.Floor.Building.BuildingName,
                 BuildingDescription = niche.Area.Floor.Building.BuildingDescription,
                 BuildingPicture = niche.Area.Floor.Building.BuildingPicture,
@@ -69,6 +77,65 @@ namespace cms_server.Services
                 NicheDescription = niche.NicheDescription
             };
         }
-  
+        public async Task<NicheDetailDto3> GetNicheDetailAsync3(int nicheId)
+        {
+            var niche = await _context.Niches
+                .Include(n => n.Area)
+                    .ThenInclude(a => a.Floor)
+                        .ThenInclude(f => f.Building)
+                .Include(n => n.Contracts)
+                    .ThenInclude(c => c.Deceased)
+                .Include(n => n.VisitRegistrations)
+                .Include(n => n.ServiceOrders)
+                    .ThenInclude(so => so.ServiceOrderDetails)
+                    .ThenInclude(sod => sod.Service)
+                .FirstOrDefaultAsync(n => n.NicheId == nicheId);
+
+            if (niche == null)
+            {
+                throw new KeyNotFoundException("Niche not found");
+            }
+
+            var contract = niche.Contracts.OrderByDescending(c => c.StartDate).FirstOrDefault();
+            if (contract == null)
+            {
+                throw new KeyNotFoundException("No contract found for this niche");
+            }
+
+            var nicheDetailDto3 = new NicheDetailDto3
+            {
+                NicheId = niche.NicheId,
+                ContractId = contract.ContractId,
+                NicheAddress = $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}",
+                FullName = contract.Deceased?.FullName ?? "N/A",
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate,
+                Status = contract.Status,
+                NicheDescription = niche.NicheDescription,
+                VisitRegistrations = niche.VisitRegistrations.Select(vr => new VisitRegistrationDto3
+                {
+                    VisitId = vr.VisitId,
+                    VisitDate = vr.VisitDate,
+                    Status = vr.Status,
+                    Note = vr.Note,
+                    AccompanyingPeople = vr.AccompanyingPeople
+                }).ToList(),
+                ServiceOrders = niche.ServiceOrders.Select(so => new ServiceOrderDto3
+                {
+                    ServiceOrderId = so.ServiceOrderId,
+                    OrderDate = so.OrderDate,
+                    ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailDto3
+                    {
+                        ServiceName = sod.Service.ServiceName,
+                        Quantity = sod.Quantity,
+                        CompletionImage = sod.CompletionImage,
+                        Status = sod.Status
+                    }).ToList()
+                }).ToList()
+            };
+
+            return nicheDetailDto3;
+        }
+
     }
 }

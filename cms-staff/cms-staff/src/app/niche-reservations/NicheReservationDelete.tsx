@@ -28,8 +28,8 @@ const DeleteBookingRequestDialog = ({
       <DialogTitle>Xóa đơn đăng ký đặt chỗ</DialogTitle>
       <DialogContent>
         <Typography>
-          Bạn có chắc chắn muốn xóa đơn đăng ký đặt chỗ này không? Hành động này
-          không thể hoàn tác.
+          Bạn có chắc chắn muốn xóa đơn đăng ký đặt chỗ này không? <br></br>Hành
+          động này không thể hoàn tác.
         </Typography>
       </DialogContent>
       <DialogActions>

@@ -18,14 +18,40 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<CmsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("CmsbdDatabase")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("RemoteDB")));
 
 // Custom services
-builder.Services.AddScoped<NicheService>();
+builder.Services.AddScoped<INicheService, NicheService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
 builder.Services.AddCors(options =>

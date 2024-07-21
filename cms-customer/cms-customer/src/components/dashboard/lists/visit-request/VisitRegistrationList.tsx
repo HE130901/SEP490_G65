@@ -32,7 +32,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
 import VisitRegistrationAPI from "@/services/visitService";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import EditModal from "./EditModal";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
@@ -99,12 +100,14 @@ export default function VisitRegistrationList({
   }, [searchTerm, visitRegistrations]);
 
   const handleEdit = (record: VisitRegistration) => {
+    if (record.status === "Canceled") return;
     setEditingRecord(record);
     setViewingRecord(null);
     setDeleteRecord(null);
   };
 
   const handleDeleteConfirmation = (record: VisitRegistration) => {
+    if (record.status === "Canceled") return;
     setDeleteRecord(record);
     setViewingRecord(null);
     setEditingRecord(null);
@@ -121,17 +124,18 @@ export default function VisitRegistrationList({
 
     try {
       await VisitRegistrationAPI.delete(deleteRecord.visitId);
-      toast.success("Xóa đơn đăng ký thành công!");
+      toast.success("Đã hủy đơn đăng ký thành công!");
       setVisitRegistrations((prev: any[]) =>
-        prev.filter(
-          (registration: { visitId: number }) =>
-            registration.visitId !== deleteRecord.visitId
+        prev.map((registration: { visitId: number }) =>
+          registration.visitId === deleteRecord.visitId
+            ? { ...registration, status: "Canceled" }
+            : registration
         )
       );
       setDeleteRecord(null); // Close the modal
     } catch (error) {
-      console.error("Error deleting visit registration:", error);
-      toast.error("Không thể xóa đơn đặt chỗ.");
+      console.error("Error canceling visit registration:", error);
+      toast.error("Không thể hủy đơn đăng ký.");
     }
   };
 
@@ -152,7 +156,7 @@ export default function VisitRegistrationList({
       fetchVisitRegistrations(user.customerId); // Refetch the data after updating
     } catch (error) {
       console.error("Error updating visit registration:", error);
-      toast.error("Không thể cập nhật đơn đặt chỗ.");
+      toast.error("Không thể cập nhật đơn đăng ký.");
     }
   };
 
@@ -308,6 +312,7 @@ export default function VisitRegistrationList({
                     handleEdit(row.original);
                   }}
                   className="text-orange-600"
+                  disabled={row.original.status === "Canceled"} // Disable edit button if status is Canceled
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -326,6 +331,7 @@ export default function VisitRegistrationList({
                     handleDeleteConfirmation(row.original);
                   }}
                   className="text-red-600"
+                  disabled={row.original.status === "Canceled"} // Disable delete button if status is Canceled
                 >
                   <Trash className="w-4 h-4" />
                 </Button>

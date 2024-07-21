@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace cms_server.Controllers
 {
@@ -17,8 +19,6 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
-
-
 
         [HttpGet("all")]
         public async Task<ActionResult<BuildingsFloorsAreasDto>> GetAllBuildingsFloorsAreas()
@@ -52,10 +52,41 @@ namespace cms_server.Controllers
             return dto;
         }
 
-        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
-        public async Task<ActionResult<IEnumerable<Niche>>> GetNiches(int buildingId, int floorId, int areaId)
+        [Authorize]
+        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/nichesForCustomer")]
+        public async Task<ActionResult<IEnumerable<NicheDto1>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
         {
-            return await _context.Niches.Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId).ToListAsync();
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); // Giả sử user ID được lưu trong phần tên của Identity
+
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
+                .Select(n => new NicheDto1
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    Status = n.Status,
+                    ReservedByUser = n.CustomerId == userId 
+                })
+                .ToListAsync();
+
+            return niches;
+        }
+
+        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto2>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
+                .Select(n => new NicheDto2
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    Status = n.Status,
+                })
+                .ToListAsync();
+
+            return niches;
         }
     }
 
@@ -84,5 +115,19 @@ namespace cms_server.Controllers
     {
         public int AreaId { get; set; }
         public string AreaName { get; set; }
+    }
+
+    public class NicheDto1
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
+        public string Status { get; set; }
+        public bool ReservedByUser { get; set; } 
+    }
+    public class NicheDto2
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
+        public string Status { get; set; }
     }
 }

@@ -11,8 +11,8 @@ import {
   Tooltip,
 } from "@mui/material";
 import ContractAPI from "@/services/contractService";
-import ExtendContractDialog from "./ExtendContractDialog";
-import LiquidateContractDialog from "./LiquidateContractDialog";
+import ExtendContractDialog from "./ContractRenewalDialog";
+import LiquidateContractDialog from "./ContractTerminationDialog";
 import HistorySharpIcon from "@mui/icons-material/HistorySharp";
 import DeleteIcon from "@mui/icons-material/Delete";
 

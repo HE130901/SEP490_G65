@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
   createContext,
   useContext,
   useState,
@@ -10,8 +10,17 @@ import {
 import AuthAPI from "@/services/authService";
 import { useRouter } from "next/navigation";
 
+interface User {
+  id: number;
+  name?: string;
+  email?: string;
+  role?: string;
+  phone?: string;
+  address?: string;
+}
+
 interface AuthContextType {
-  user: any;
+  user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -20,7 +29,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -29,8 +38,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       AuthAPI.getCurrentUser(token)
         .then((response) => {
+          console.log("Fetched user:", response.data); // Debug log
           setUser(response.data);
           setLoading(false);
+          // Điều hướng người dùng dựa trên vai trò
+          if (response.data.role === "Manager") {
+            router.push("/manager-dashboard");
+          } else if (response.data.role === "Staff") {
+            router.push("/dashboard");
+          } else {
+            logout();
+          }
         })
         .catch((error) => {
           console.error(error);
@@ -48,7 +66,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", data.token);
       setUser(data);
 
-      if (data.role === "Staff" || data.role === "Manager") {
+      // Điều hướng dựa trên vai trò
+      if (data.role === "Manager") {
+        router.push("/manager-dashboard");
+      } else if (data.role === "Staff") {
         router.push("/dashboard");
       } else {
         throw new Error("AccessDenied"); // Ném lỗi nếu vai trò không hợp lệ

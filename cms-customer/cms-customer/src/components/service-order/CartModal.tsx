@@ -5,7 +5,9 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { PaymentModal } from "./PaymentModal";
+import ServiceOrderAPI from "@/services/serviceOrderService"; // Import the service order API
+import { toast } from "react-toastify";
+import SelectNicheAndDateDialog from "./SelectNicheAndDateDialog"; // Import the new dialog component
 import ItemType from "./ItemType"; // Import the ItemType type from the appropriate module
 
 interface CartModalProps {
@@ -14,19 +16,13 @@ interface CartModalProps {
 }
 
 export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
-  const { items, removeFromCart, updateQuantity } = useCart();
-  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
+  const { items, removeFromCart, updateQuantity, clearCart } = useCart(); // Added clearCart
+  const [loading, setLoading] = useState(false); // Added loading state
+  const [isSelectDialogOpen, setSelectDialogOpen] = useState(false); // Added state for the new dialog
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     console.log("Cart modal state changed:", open);
-  };
-
-  const handlePaymentOpen = () => {
-    setIsOpen(false);
-    setTimeout(() => {
-      setPaymentModalOpen(true);
-    }, 300); // Adjust the delay as needed
   };
 
   const calculateTotal = () => {
@@ -43,6 +39,32 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
 
   const handleIncreaseQuantity = (item: ItemType) => {
     updateQuantity(item.id, item.quantity + 1);
+  };
+
+  const handleCreateOrder = async (nicheID: number, orderDate: string) => {
+    setLoading(true); // Start loading
+    try {
+      const orderDetails = items.map((item) => ({
+        serviceID: item.id,
+        quantity: item.quantity,
+      }));
+
+      const orderData = {
+        nicheID, // Use the selected niche ID
+        orderDate,
+        serviceOrderDetails: orderDetails,
+      };
+
+      const response = await ServiceOrderAPI.create(orderData);
+      toast.success("Đơn đặt hàng đã được tạo thành công!");
+      clearCart(); // Clear the cart after successful order creation
+      setIsOpen(false); // Close the cart modal
+    } catch (error) {
+      console.error("Error creating order:", error);
+      toast.error("Không thể tạo đơn đặt hàng.");
+    } finally {
+      setLoading(false); // End loading
+    }
   };
 
   const totalAmount = calculateTotal();
@@ -133,9 +155,9 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                 <Button
                   variant="default"
                   className="w-full"
-                  onClick={handlePaymentOpen}
+                  onClick={() => setSelectDialogOpen(true)} // Open the new dialog
                 >
-                  Tiến hành thanh toán
+                  Chọn ô chứa và ngày hẹn
                 </Button>
               </div>
             </div>
@@ -144,10 +166,12 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
           )}
         </DialogContent>
       </Dialog>
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        setIsOpen={setPaymentModalOpen}
-        totalAmount={totalAmount}
+
+      {/* Select Niche and Date Dialog */}
+      <SelectNicheAndDateDialog
+        isOpen={isSelectDialogOpen}
+        onClose={() => setSelectDialogOpen(false)}
+        onSave={handleCreateOrder}
       />
     </>
   );

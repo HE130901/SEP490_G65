@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace cms_server.Controllers
 {
@@ -15,59 +16,156 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
 
+        private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
+        {
+            var totalPrice = await _context.ServiceOrderDetails
+                .Where(sod => sod.ServiceOrderId == serviceOrderId)
+                .Join(_context.Services, sod => sod.ServiceId, s => s.ServiceId,
+                      (sod, s) => new { sod.Quantity, s.Price })
+                .SumAsync(x => (decimal?)(x.Quantity * x.Price)) ?? 0;
+
+            return totalPrice;
+        }
+
         public ServiceOrdersController(CmsContext context)
         {
             _context = context;
         }
 
-        // GET: api/ServiceOrders
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServiceOrder>>> GetServiceOrders()
+      
+
+        [HttpGet("customer")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<ServiceOrderResponseDto>>> GetServiceOrdersByCustomer()
         {
-            return await _context.ServiceOrders.ToListAsync();
+            var customerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "CustomerId");
+            if (customerIdClaim == null)
+            {
+                return Unauthorized("Customer ID not found in token");
+            }
+
+            int customerId = int.Parse(customerIdClaim.Value);
+
+            var serviceOrders = await _context.ServiceOrders
+                .Include(so => so.ServiceOrderDetails)
+                .ThenInclude(sod => sod.Service)
+                .Include(so => so.Niche)
+                .ThenInclude(n => n.Area)
+                .ThenInclude(a => a.Floor)
+                .ThenInclude(f => f.Building)
+                .Where(so => so.CustomerId == customerId)
+                .ToListAsync();
+
+            if (!serviceOrders.Any())
+            {
+                return NotFound();
+            }
+
+            var serviceOrderDtos = serviceOrders.Select(so => new ServiceOrderResponseDto
+            {
+                ServiceOrderId = so.ServiceOrderId,
+                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName}-{so.Niche.Area.Floor.FloorName}-{so.Niche.Area.AreaName}-{so.Niche.NicheName}",
+                CreatedDate = so.CreatedDate,
+                OrderDate = so.OrderDate,
+                ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailResponseDto
+                {
+                    ServiceName = sod.Service.ServiceName,
+                    Quantity = sod.Quantity,
+                    CompletionImage = sod.CompletionImage,
+                    Status = sod.Status
+                }).ToList()
+            }).ToList();
+
+            return Ok(serviceOrderDtos);
         }
 
-        // GET: api/ServiceOrders/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ServiceOrder>> GetServiceOrder(int id)
+        [HttpPost("create-service-order")]
+        [Authorize]
+        public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest1 request)
         {
-            var serviceOrder = await _context.ServiceOrders.FindAsync(id);
+            var customerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "CustomerId");
+            if (customerIdClaim == null)
+            {
+                return Unauthorized("Customer ID not found in token");
+            }
 
+            int customerId = int.Parse(customerIdClaim.Value);
+
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var customer = await _context.Customers.FindAsync(customerId);
+                    if (customer == null)
+                    {
+                        return NotFound("Customer not found.");
+                    }
+
+                    var niche = await _context.Niches.FindAsync(request.NicheID);
+                    if (niche == null || niche.CustomerId != customer.CustomerId)
+                    {
+                        return BadRequest("Niche not found or does not belong to the customer.");
+                    }
+
+                    var serviceOrder = new ServiceOrder
+                    {
+                        CustomerId = customerId,
+                        NicheId = request.NicheID,
+                        CreatedDate = DateTime.Now,
+                        OrderDate = request.OrderDate,
+                    };
+                    _context.ServiceOrders.Add(serviceOrder);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var detail in request.ServiceOrderDetails)
+                    {
+                        var serviceOrderDetail = new ServiceOrderDetail
+                        {
+                            ServiceOrderId = serviceOrder.ServiceOrderId,
+                            ServiceId = detail.ServiceID,
+                            Quantity = detail.Quantity,
+                            Status = "Pending"
+                        };
+                        _context.ServiceOrderDetails.Add(serviceOrderDetail);
+                    }
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    // Calculate the total price
+                    var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
+
+                    return Ok(new
+                    {
+                        ServiceOrder = serviceOrder,
+                        TotalPrice = totalPrice
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, ex.Message);
+                }
+            }
+        }
+
+
+        // PUT: api/ServiceOrders/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutServiceOrder(int id, UpdateServiceOrderRequest request)
+        {
+            if (id != request.ServiceOrderId)
+            {
+                return BadRequest();
+            }
+
+            var serviceOrder = await _context.ServiceOrders.FindAsync(id);
             if (serviceOrder == null)
             {
                 return NotFound();
             }
 
-            return serviceOrder;
-        }
-
-        // GET: api/ServiceOrders/customer/5
-        [HttpGet("customer/{customerId}")]
-        public async Task<ActionResult<IEnumerable<ServiceOrder>>> GetServiceOrdersByCustomer(int customerId)
-        {
-            var serviceOrders = await _context.ServiceOrders
-                .Where(so => so.CustomerId == customerId)
-                .ToListAsync();
-
-            if (serviceOrders == null || !serviceOrders.Any())
-            {
-                return NotFound();
-            }
-
-            return serviceOrders;
-        }
-
-        // PUT: api/ServiceOrders/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutServiceOrder(int id, ServiceOrder serviceOrder)
-        {
-            if (id != serviceOrder.ServiceOrderId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(serviceOrder).State = EntityState.Modified;
+            serviceOrder.OrderDate = request.OrderDate;
 
             try
             {
@@ -88,43 +186,6 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-        // POST: api/ServiceOrders
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<ServiceOrder>> PostServiceOrder(ServiceOrderDto serviceOrderDto)
-        {
-            var serviceOrder = new ServiceOrder
-            {
-                CustomerId = serviceOrderDto.CustomerId,
-                NicheId = serviceOrderDto.NicheId,
-                /*ServiceList = serviceOrderDto.ServiceList,*/
-                OrderDate = DateTime.UtcNow, // Set order date to current date
-/*                Status = "Pending", // Set status to pending
-                CompletionImage = null, // Set image to null*/
-                StaffId = null // Set staffId to null
-            };
-
-            _context.ServiceOrders.Add(serviceOrder);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetServiceOrder", new { id = serviceOrder.ServiceOrderId }, serviceOrder);
-        }
-
-        // DELETE: api/ServiceOrders/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteServiceOrder(int id)
-        {
-            var serviceOrder = await _context.ServiceOrders.FindAsync(id);
-            if (serviceOrder == null)
-            {
-                return NotFound();
-            }
-
-            _context.ServiceOrders.Remove(serviceOrder);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
 
         private bool ServiceOrderExists(int id)
         {
@@ -136,6 +197,37 @@ namespace cms_server.Controllers
     {
         public int CustomerId { get; set; }
         public int NicheId { get; set; }
+        public DateTime OrderDate { get; set; }
         public string? ServiceList { get; set; }
+    }
+
+    public class ServiceOrderResponseDto
+    {
+        public int ServiceOrderId { get; set; }
+        public string? NicheAddress { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? OrderDate { get; set; }
+        public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
+    }
+
+    public class ServiceOrderDetailResponseDto
+    {
+        public string ServiceName { get; set; }
+        public int Quantity { get; set; }
+        public string? CompletionImage { get; set; }
+        public string? Status { get; set; }
+    }
+
+    public class CreateServiceOrderRequest1
+    {
+        public int NicheID { get; set; }
+        public DateTime OrderDate { get; set; }
+        public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
+    }
+
+    public class UpdateServiceOrderRequest
+    {
+        public int ServiceOrderId { get; set; }
+        public DateTime OrderDate { get; set; }
     }
 }

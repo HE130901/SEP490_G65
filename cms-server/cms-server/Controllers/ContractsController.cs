@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using cms_server.DTOs;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace cms_server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ContractsController : ControllerBase
     {
         private readonly CmsContext _context;
@@ -21,7 +24,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-        // GET: api/Contracts/Customer/5
+        // GET: api/{customerId}/list
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
@@ -35,6 +38,7 @@ namespace cms_server.Controllers
                 .Where(c => c.CustomerId == customerId)
                 .Select(c => new ContractDto
                 {
+                    NicheId = c.NicheId,
                     ContractId = c.ContractId,
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
@@ -102,5 +106,174 @@ namespace cms_server.Controllers
 
             return Ok(contractDetail);
         }
+
+
+        // POST: api/Contracts/renew
+        [HttpPost("renew")]
+        public async Task<ActionResult> RenewContract(ContractRenewalRequestDto renewalRequest)
+        {
+            if (renewalRequest == null)
+            {
+                return BadRequest("Renewal request cannot be null.");
+            }
+
+            // Get customer ID from the logged-in user
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int customerId;
+            if (!int.TryParse(userIdClaim.Value, out customerId))
+            {
+                return Unauthorized("Invalid user ID in token.");
+            }
+
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Niche)
+                .FirstOrDefaultAsync(c => c.ContractId == renewalRequest.ContractId && c.CustomerId == customerId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+
+            if (contract.Customer == null || contract.Niche == null)
+            {
+                return BadRequest("Invalid contract data.");
+            }
+
+            // Update contract status to PendingRenewal
+            contract.Status = "PendingRenewal";
+            _context.Entry(contract).State = EntityState.Modified;
+
+            // Create a new NicheReservation for the renewal
+            var nicheReservation = new NicheReservation
+            {
+                NicheId = contract.NicheId,
+                CreatedDate = DateTime.Now,
+                ConfirmationDate = renewalRequest.ConfirmationDate,
+                Status = "PendingContractRenewal",
+                Note = renewalRequest.Note,
+                Name = contract.Customer.FullName,
+                PhoneNumber = contract.Customer.Phone,
+                SignAddress = renewalRequest.SignAddress
+            };
+
+            _context.NicheReservations.Add(nicheReservation);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ContractExists(renewalRequest.ContractId))
+                {
+                    return NotFound("Contract not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // POST: api/Contracts/cancel
+        [HttpPost("cancel")]
+        [Authorize]
+        public async Task<ActionResult> CancelContract(ContractCancellationRequestDto cancellationRequest)
+        {
+            if (cancellationRequest == null)
+            {
+                return BadRequest("Cancellation request cannot be null.");
+            }
+
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int customerId = int.Parse(userIdClaim.Value);
+
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Niche)
+                .FirstOrDefaultAsync(c => c.ContractId == cancellationRequest.ContractId && c.CustomerId == customerId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+
+            if (contract.Customer == null || contract.Niche == null)
+            {
+                return BadRequest("Invalid contract data.");
+            }
+
+            // Update contract status to PendingCancellation
+            contract.Status = "PendingCancellation";
+            _context.Entry(contract).State = EntityState.Modified;
+
+            // Create a new NicheReservation for the cancellation
+            var nicheReservation = new NicheReservation
+            {
+                NicheId = contract.NicheId,
+                CreatedDate = DateTime.Now,
+                ConfirmationDate = cancellationRequest.ConfirmationDate,
+                Status = "PendingContractCancellation",
+                Note = cancellationRequest.Note,
+                Name = contract.Customer.FullName,
+                PhoneNumber = contract.Customer.Phone,
+                SignAddress = cancellationRequest.SignAddress
+            };
+
+            _context.NicheReservations.Add(nicheReservation);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ContractExists(cancellationRequest.ContractId))
+                {
+                    return NotFound("Contract not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
+        private bool ContractExists(int id)
+        {
+            return _context.Contracts.Any(e => e.ContractId == id);
+        }
+
     }
+    public class ContractRenewalRequestDto
+    {
+        public int ContractId { get; set; }
+        public string? Note { get; set; }
+        public DateTime? ConfirmationDate { get; set; }
+        public string? SignAddress { get; set; }
+    }
+    public class ContractCancellationRequestDto
+    {
+        public int ContractId { get; set; }
+        public string Note { get; set; }
+        public DateTime ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+    }
+
 }

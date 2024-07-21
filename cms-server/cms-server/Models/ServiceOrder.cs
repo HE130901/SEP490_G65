@@ -17,6 +17,8 @@ public partial class ServiceOrder
 
     public string? ServiceOrderCode { get; set; }
 
+    public DateTime? CreatedDate { get; set; }
+
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Niche Niche { get; set; } = null!;

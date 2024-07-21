@@ -19,7 +19,7 @@ import { useStateContext } from "@/context/StateContext";
 import { useMediaQuery } from "react-responsive";
 import NicheReservationAPI from "@/services/nicheReservationService";
 
-const phoneRegex = /^(\+84|0[3|5|7|8|9])+([0-9]{8})$/;
+const phoneRegex = /^(\+84|0[1|3|5|7|8|9])+([0-9]{8})$/;
 
 const bookingSchema = z.object({
   name: z.string().min(1, "Tên của bạn là bắt buộc"),
@@ -45,26 +45,22 @@ const bookingSchema = z.object({
 });
 
 const predefinedAddresses = [
-  "Nhà tang lễ thành phố (Phùng Hưng - Cửa Đông - Hoàn Kiếm)",
-  "Nghĩa trang Văn Điển (Phan Trọng Tuệ - Tam Hiệp - Thanh Trì)",
-  "Nghĩa trang Mai Dịch (Trần Vỹ - Mai Dịch - Cầu Giấy)",
+  "Nhà tang lễ thành phố ",
+  "Nghĩa trang Văn Điển ",
+  "An Bình Viên - Hòa Lạc",
 ];
 
 const ReservationForm = ({
   isVisible,
   onClose,
+  selectedNiche, // Added selectedNiche as prop
 }: {
   isVisible: boolean;
   onClose: () => void;
+  selectedNiche: any; // Added selectedNiche type
 }) => {
-  const {
-    selectedBuilding,
-    selectedFloor,
-    selectedArea,
-    selectedNiche,
-    fetchNiches,
-    user,
-  } = useStateContext();
+  const { selectedBuilding, selectedFloor, selectedArea, fetchNiches, user } =
+    useStateContext();
   const [selectedAddress, setSelectedAddress] = useState(
     predefinedAddresses[0]
   );
@@ -89,11 +85,21 @@ const ReservationForm = ({
     }
   }, [setValue, selectedAddress, user]);
 
+  useEffect(() => {
+    console.log("Selected Niche: ", selectedNiche); // Debugging log
+  }, [selectedNiche]);
+
   const onSubmit = async (data: any) => {
+    console.log("Form data on submit:", data); // Debugging log
+    if (!selectedNiche?.nicheId && !selectedNiche?.$id) {
+      toast.error("Please select a niche.");
+      return;
+    }
+
     const contractDate = data.contractDate + "T23:59:00";
 
     const dataToSubmit = {
-      nicheId: selectedNiche?.nicheId,
+      nicheId: selectedNiche.nicheId, // Fixed nicheId field
       name: data.name,
       confirmationDate: contractDate,
       signAddress: selectedAddress,
@@ -102,10 +108,13 @@ const ReservationForm = ({
       isCustomer: !!user, // Check if the user is a customer
     };
 
+    console.log("Data to submit:", dataToSubmit); // Debugging log
+
     try {
       const response = await NicheReservationAPI.createReservation(
         dataToSubmit
       );
+      console.log("API response:", response); // Debugging log
       toast.success("Đặt ô chứa thành công!");
       fetchNiches(); // Call fetchNiches after successful submission
       onClose();
