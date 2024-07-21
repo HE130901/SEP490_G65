@@ -129,6 +129,19 @@ namespace cms_server.Controllers
             _context.ServiceOrders.Update(serviceOrder);
             await _context.SaveChangesAsync();
 
+            // Create and save the notification
+            var notification = new Notification
+            {
+                CustomerId = serviceOrder.CustomerId,
+                StaffId = staffId,
+                ServiceOrderId = serviceOrder.ServiceOrderId,
+                NotificationDate = DateTime.Now,
+                Message = "Your service order has been updated with a completion image."
+            };
+
+            _context.Notifications.Add(notification);
+            await _context.SaveChangesAsync();
+
             return Ok(serviceOrderDetail);
         }
 
