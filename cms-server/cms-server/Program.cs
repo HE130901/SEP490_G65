@@ -23,11 +23,13 @@ builder.Services.AddDbContext<CmsContext>(options =>
 // Custom services
 builder.Services.AddScoped<INicheService, NicheService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddHttpClient<ImageUploadService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -52,6 +54,7 @@ builder.Services.AddSwaggerGen(c =>
             new string[] {}
         }
     });
+
 });
 
 builder.Services.AddCors(options =>

@@ -1,81 +1,135 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import NicheAPI from "@/services/nicheService";
+import React, { useState } from "react";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+  Box,
+  Button,
+  TextField,
+  Paper,
+  Typography,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
+import { toast } from "react-toastify";
+import Image from "next/image";
 
-const NicheReservationPage = () => {
-  const [niches, setNiches] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const ImageUpload: React.FC = () => {
+  const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchNiches = async () => {
-      try {
-        const response = await NicheAPI.getAll(1, 1, 1);
-        const nichesData = response.data.$values;
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setImage(e.target.files[0]);
+      setImageUrl(""); // Reset imageUrl when a new file is selected
+    }
+  };
 
-        if (Array.isArray(nichesData)) {
-          setNiches(nichesData);
-        } else {
-          console.error("API did not return an array:", nichesData);
+  const handleUpload = async () => {
+    if (!image) {
+      toast.error("Please select an image to upload");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", image);
+
+    try {
+      const response = await axios.post(
+        "https://localhost:7148/Image/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
+      );
 
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching niches:", error);
-        setLoading(false);
+      if (response.data) {
+        setImageUrl(response.data);
+        toast.success("Image uploaded successfully");
+      } else {
+        throw new Error("Failed to upload image");
       }
-    };
-
-    fetchNiches();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center">
-      {niches.map((niche) => {
-        const tooltipMessage =
-          niche.status === "Booked"
-            ? "Ô chứa đã được đặt trước!"
-            : niche.status === "Unavailable"
-            ? "Ô chứa đã được sử dụng!"
-            : niche.reservedByUser
-            ? "Đây là ô chứa của bạn!"
-            : "Bạn có thể chọn ô chứa này!";
-
-        return (
-          <TooltipProvider key={niche.nicheId}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                    niche.reservedByUser
-                      ? "bg-yellow-400 text-black"
-                      : niche.status === "Unavailable"
-                      ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
-                      : niche.status === "Booked"
-                      ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                      : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300 text-gray-600"
-                  }`}
-                >
-                  <div>{niche.nicheName}</div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{tooltipMessage}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        );
-      })}
-    </div>
+    <Grid
+      container
+      justifyContent="center"
+      alignItems="center"
+      style={{ minHeight: "100vh" }}
+    >
+      <Grid item xs={12} md={6}>
+        <Paper elevation={3} style={{ padding: "2rem" }}>
+          <Typography variant="h5" gutterBottom>
+            Upload Image
+          </Typography>
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <Button
+              variant="contained"
+              component="label"
+              style={{ marginBottom: "1rem" }}
+            >
+              Choose File
+              <input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            </Button>
+            {image && (
+              <Typography variant="body1" gutterBottom>
+                Selected file: {image.name}
+              </Typography>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleUpload}
+              disabled={!image || loading}
+              style={{ marginTop: "1rem" }}
+            >
+              {loading ? <CircularProgress size={24} /> : "Upload"}
+            </Button>
+            {imageUrl && (
+              <Box mt={2} width="100%">
+                <Typography variant="body1" gutterBottom>
+                  Uploaded Image URL:
+                </Typography>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  value={imageUrl}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+                <Box mt={2}>
+                  <Image
+                    src={imageUrl}
+                    alt="Uploaded"
+                    width={400}
+                    height={300}
+                  />
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
   );
 };
 
-export default NicheReservationPage;
+export default ImageUpload;

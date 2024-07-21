@@ -18,7 +18,6 @@ import {
   Grid,
   SelectChangeEvent,
 } from "@mui/material";
-
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "react-toastify";
@@ -77,7 +76,7 @@ const AddBookingRequestDialog = ({
     []
   );
   const [niches, setNiches] = useState<
-    { nicheId: string; nicheName: string }[]
+    { nicheId: string; nicheName: string; status: string }[]
   >([]);
 
   const handleChange = (
@@ -92,17 +91,67 @@ const AddBookingRequestDialog = ({
   };
 
   useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const response = await axiosInstance.get("/api/Locations/buildings");
-        setBuildings(response.data.$values);
-      } catch (error) {
-        toast.error("Không thể tải danh sách nhà");
+    if (open) {
+      const fetchBuildings = async () => {
+        try {
+          const response = await axiosInstance.get("/api/Locations/buildings");
+          setBuildings(response.data.$values);
+        } catch (error) {
+          toast.error("Không thể tải danh sách nhà");
+        }
+      };
+
+      fetchBuildings();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const fetchFloors = async () => {
+      if (formData.buildingId) {
+        try {
+          const response = await axiosInstance.get(
+            `/api/Locations/floors/${formData.buildingId}`
+          );
+          setFloors(response.data.$values);
+        } catch (error) {
+          toast.error("Không thể tải danh sách tầng");
+        }
       }
     };
 
-    fetchBuildings();
-  }, []);
+    const fetchAreas = async () => {
+      if (formData.floorId) {
+        try {
+          const response = await axiosInstance.get(
+            `/api/Locations/areas/${formData.floorId}`
+          );
+          setAreas(response.data.$values);
+        } catch (error) {
+          toast.error("Không thể tải danh sách khu");
+        }
+      }
+    };
+
+    const fetchNiches = async () => {
+      if (formData.areaId) {
+        try {
+          const response = await axiosInstance.get(
+            `/api/Locations/niches/${formData.areaId}`
+          );
+          const availableNiches = response.data.$values.filter(
+            (niche: { status: string }) => niche.status === "Available"
+          );
+          setNiches(availableNiches);
+        } catch (error) {
+          toast.error("Không thể tải danh sách ô chứa");
+        }
+      }
+    };
+
+    fetchFloors();
+    fetchAreas();
+    fetchNiches();
+  }, [formData.buildingId, formData.floorId, formData.areaId]);
 
   const handleBuildingChange = async (event: SelectChangeEvent<string>) => {
     const buildingId = event.target.value as string;
@@ -116,14 +165,6 @@ const AddBookingRequestDialog = ({
     setFloors([]);
     setAreas([]);
     setNiches([]);
-    try {
-      const response = await axiosInstance.get(
-        `/api/Locations/floors/${buildingId}`
-      );
-      setFloors(response.data.$values);
-    } catch (error) {
-      toast.error("Không thể tải danh sách tầng");
-    }
   };
 
   const handleFloorChange = async (event: SelectChangeEvent<string>) => {
@@ -136,31 +177,12 @@ const AddBookingRequestDialog = ({
     }));
     setAreas([]);
     setNiches([]);
-    try {
-      const response = await axiosInstance.get(
-        `/api/Locations/areas/${floorId}`
-      );
-      setAreas(response.data.$values);
-    } catch (error) {
-      toast.error("Không thể tải danh sách khu");
-    }
   };
 
   const handleAreaChange = async (event: SelectChangeEvent<string>) => {
     const areaId = event.target.value as string;
     setFormData((prevData) => ({ ...prevData, areaId, nicheId: "" }));
     setNiches([]);
-    try {
-      const response = await axiosInstance.get(
-        `/api/Locations/niches/${areaId}`
-      );
-      const availableNiches = response.data.$values.filter(
-        (niche: { status: string }) => niche.status === "Available"
-      );
-      setNiches(availableNiches);
-    } catch (error) {
-      toast.error("Không thể tải danh sách ô chứa");
-    }
   };
 
   const handleAdd = async () => {

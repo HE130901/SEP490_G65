@@ -1,4 +1,3 @@
-// src/components/VisitAddDialog.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -92,46 +91,49 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       };
 
       await axiosInstance.post("/api/VisitRegistrations", requestData);
-      toast.success("Visit registration added successfully");
+      toast.success("Đăng ký viếng thăm đã được thêm thành công");
       onClose();
     } catch (error) {
-      toast.error("Failed to add visit registration");
+      toast.error("Không thể thêm đăng ký viếng thăm");
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Visit Registration</DialogTitle>
-      <DialogContent>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Thêm đăng ký viếng thăm</DialogTitle>
+      <DialogContent dividers>
         <FormControl fullWidth margin="normal">
-          <InputLabel id="contract-label">Contract</InputLabel>
+          <InputLabel id="contract-label">Hợp đồng</InputLabel>
           <Select
             labelId="contract-label"
             name="contractId"
             value={formData.customerId}
             onChange={handleContractChange}
-            label="Contract"
+            label="Hợp đồng"
           >
             {contracts.map((contract) => (
               <MenuItem key={contract.contractId} value={contract.contractId}>
-                {`Contract ID: ${contract.contractId} (${contract.customerName} - ${contract.nicheAddress})`}
+                {`Mã hợp đồng: ${contract.contractId} (${contract.customerName} - ${contract.nicheAddress})`}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
         <TextField
           margin="dense"
-          label="Visit Date"
+          label="Ngày viếng thăm"
           type="datetime-local"
           fullWidth
           variant="outlined"
           name="visitDate"
           value={formData.visitDate}
           onChange={handleChange}
+          InputLabelProps={{
+            shrink: true,
+          }}
         />
         <TextField
           margin="dense"
-          label="Accompanying People"
+          label="Số lượng người đi cùng"
           type="number"
           fullWidth
           variant="outlined"
@@ -141,7 +143,7 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         />
         <TextField
           margin="dense"
-          label="Note"
+          label="Ghi chú"
           type="text"
           fullWidth
           variant="outlined"
@@ -151,11 +153,11 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
+        <Button onClick={onClose} variant="outlined">
+          Hủy
         </Button>
-        <Button onClick={handleSave} color="primary" variant="contained">
-          Save
+        <Button onClick={handleSave} variant="contained" color="primary">
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace cms_server.Controllers
 {
@@ -47,7 +48,7 @@ namespace cms_server.Controllers
                         Note = vr.Note ?? string.Empty,
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
                         CustomerName = vr.Customer.FullName,
-                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A"
                     })
                     .ToListAsync();
 
@@ -236,6 +237,56 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // PUT: api/VisitRegistrations/approve/5
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> ApproveVisitRegistration(int id)
+        {
+            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+
+            if (visitRegistration == null)
+            {
+                return NotFound();
+            }
+
+            // Update the status to "Approved"
+            visitRegistration.Status = "Approved";
+            visitRegistration.ApprovedBy = GetStaffIdFromToken();
+
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!VisitRegistrationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private int GetStaffIdFromToken()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                var staffIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
+                if (staffIdClaim != null)
+                {
+                    return int.Parse(staffIdClaim.Value);
+                }
+            }
+            throw new UnauthorizedAccessException("Invalid token");
+        }
+
         private bool VisitRegistrationExists(int id)
         {
             return _context.VisitRegistrations.Any(e => e.VisitId == id);
@@ -257,4 +308,6 @@ public class VisitRegistrationDto
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
     public int? ApprovedBy { get; set; }
+    public string? FormattedVisitDate => VisitDate?.ToString("HH:mm dd/MM/yyyy");
+    public string? FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
 }

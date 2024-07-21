@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -9,12 +9,11 @@ import {
   TextField,
   Button,
   Grid,
-  Typography,
 } from "@mui/material";
 import { toast } from "react-toastify";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import EditIcon from "@mui/icons-material/Edit";
 import NicheReservationAPI from "@/services/nicheReservationService";
+import EditBookingRequestDialog from "./EditBookingRequestDialog";
 
 interface ViewBookingRequestDialogProps {
   open: boolean;
@@ -29,47 +28,17 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
   onClose,
   onConfirmSuccess,
 }) => {
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleConfirm = async () => {
-    try {
-      await NicheReservationAPI.updateNicheReservation(
-        bookingRequest.reservationId,
-        {
-          nicheId: bookingRequest.nicheId,
-          confirmationDate: new Date().toISOString(),
-          signAddress: bookingRequest.signAddress,
-          phoneNumber: bookingRequest.phoneNumber,
-          name: bookingRequest.name,
-          note: bookingRequest.note,
-        }
-      );
-      toast.success("Đã xác nhận đơn đặt chỗ");
-      onConfirmSuccess(); // Refresh the list after confirmation
-      onClose(); // Close the dialog
-    } catch (error) {
-      toast.error("Không thể xác nhận đơn đặt chỗ");
-    }
+  const handleEditDialogOpen = () => {
+    setEditDialogOpen(true);
+    onClose(); // Close the view dialog when the edit dialog opens
   };
 
-  const handleReject = async () => {
-    try {
-      await NicheReservationAPI.deleteNicheReservation(
-        bookingRequest.reservationId
-      );
-      toast.success("Đã từ chối đơn đặt chỗ");
-      onConfirmSuccess(); // Refresh the list after rejection
-      onClose(); // Close the dialog
-    } catch (error) {
-      toast.error("Không thể từ chối đơn đặt chỗ");
-    }
+  const handleEditDialogClose = () => {
+    setEditDialogOpen(false);
+    onConfirmSuccess(); // Refresh the list after update
   };
-
-  const openConfirmDialog = () => setConfirmDialogOpen(true);
-  const closeConfirmDialog = () => setConfirmDialogOpen(false);
-  const openRejectDialog = () => setRejectDialogOpen(true);
-  const closeRejectDialog = () => setRejectDialogOpen(false);
 
   return (
     <>
@@ -151,17 +120,13 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
               <Grid item xs={6}>
                 <TextField
                   margin="dense"
-                  label="Ngày xác nhận"
+                  label="Ngày hẹn"
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={
+                  value={new Date(
                     bookingRequest.confirmationDate
-                      ? new Date(
-                          bookingRequest.confirmationDate
-                        ).toLocaleString()
-                      : "Chưa xác nhận"
-                  }
+                  ).toLocaleString()}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -202,77 +167,23 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
             Quay lại
           </Button>
           {bookingRequest && bookingRequest.status !== "Approved" && (
-            <>
-              <Button
-                onClick={openConfirmDialog}
-                color="primary"
-                variant="contained"
-                startIcon={<CheckCircleOutlineIcon />}
-              >
-                Xác nhận
-              </Button>
-              <Button
-                onClick={openRejectDialog}
-                color="error"
-                variant="contained"
-                startIcon={<CancelOutlinedIcon />}
-              >
-                Từ chối
-              </Button>
-            </>
+            <Button
+              onClick={handleEditDialogOpen}
+              color="primary"
+              variant="contained"
+              startIcon={<EditIcon />}
+            >
+              Sửa
+            </Button>
           )}
         </DialogActions>
       </Dialog>
-
-      {/* Confirmation Dialog */}
-      <Dialog open={confirmDialogOpen} onClose={closeConfirmDialog}>
-        <DialogTitle>Xác nhận đơn đặt chỗ</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xác nhận đơn đặt chỗ này?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeConfirmDialog} color="primary">
-            Hủy
-          </Button>
-          <Button
-            onClick={() => {
-              handleConfirm();
-              closeConfirmDialog();
-            }}
-            color="primary"
-            variant="contained"
-          >
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Rejection Dialog */}
-      <Dialog open={rejectDialogOpen} onClose={closeRejectDialog}>
-        <DialogTitle>Từ chối đơn đặt chỗ</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn từ chối đơn đặt chỗ này?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={closeRejectDialog} color="primary">
-            Hủy
-          </Button>
-          <Button
-            onClick={() => {
-              handleReject();
-              closeRejectDialog();
-            }}
-            color="error"
-            variant="contained"
-          >
-            Từ chối
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <EditBookingRequestDialog
+        open={editDialogOpen}
+        bookingRequest={bookingRequest}
+        onClose={handleEditDialogClose}
+        onConfirmSuccess={onConfirmSuccess}
+      />
     </>
   );
 };

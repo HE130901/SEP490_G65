@@ -1,5 +1,7 @@
 // src/components/interfaces.ts
 export interface VisitRegistrationDto {
+    formattedVisitDate: string;
+    formattedCreatedDate: string;    
     visitId: number;
     customerId: number;
     nicheId: number;

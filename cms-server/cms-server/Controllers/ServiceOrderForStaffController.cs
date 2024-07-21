@@ -41,6 +41,7 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+
         private async Task<string> GetNicheAddress(int nicheId)
         {
             var niche = await _context.Niches
@@ -78,7 +79,6 @@ namespace cms_server.Controllers
                     OrderDate = serviceOrder.OrderDate,
                     ServiceOrderDetails = serviceOrder.ServiceOrderDetails.Select(detail => new ServiceOrderDetailDto
                     {
-                        
                         ServiceName = detail.Service.ServiceName,
                         Quantity = detail.Quantity,
                         Status = detail.Status,
@@ -92,20 +92,18 @@ namespace cms_server.Controllers
             return Ok(serviceOrderResponses);
         }
 
-
-        // Endpoint to get the details of a specific service order
         [HttpGet("{serviceOrderId}")]
         public async Task<IActionResult> GetServiceOrderDetails(int serviceOrderId)
         {
             var serviceOrder = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .Include(so => so.Niche)
-                .ThenInclude(n => n.Area)
-                .ThenInclude(a => a.Floor)
-                .ThenInclude(f => f.Building)
-             .Include(so => so.ServiceOrderDetails)
-                .ThenInclude(sod => sod.Service)
-            .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
+                .Include(so => so.Customer)
+                .Include(so => so.Niche)
+                    .ThenInclude(n => n.Area)
+                    .ThenInclude(a => a.Floor)
+                    .ThenInclude(f => f.Building)
+                .Include(so => so.ServiceOrderDetails)
+                    .ThenInclude(sod => sod.Service)
+                .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
 
             if (serviceOrder == null)
             {
@@ -127,7 +125,6 @@ namespace cms_server.Controllers
                     Area = serviceOrder.Niche.Area.AreaName,
                     NicheName = serviceOrder.Niche.NicheName
                 },
-
                 ServiceOrderDetails = (List<ServiceOrderDetail>)serviceOrder.ServiceOrderDetails,
                 TotalPrice = totalPrice
             };
@@ -135,21 +132,28 @@ namespace cms_server.Controllers
             return Ok(response);
         }
 
-        // Endpoint to update the CompletionImage and set status to "Complete"
         [HttpPut("update-completion-image")]
         public async Task<IActionResult> UpdateCompletionImage([FromBody] UpdateCompletionImageRequest request)
         {
-            // Extract StaffID from the JWT token
             var staffId = GetStaffIdFromToken();
 
             var serviceOrderDetail = await _context.ServiceOrderDetails.FindAsync(request.ServiceOrderDetailID);
 
+            if (serviceOrderDetail == null)
+            {
+                return NotFound("Service order detail not found.");
+            }
+
             var serviceOrder = await _context.ServiceOrders.FindAsync(serviceOrderDetail.ServiceOrderId);
+
+            if (serviceOrder == null)
+            {
+                return NotFound("Service order not found.");
+            }
 
             serviceOrderDetail.CompletionImage = request.CompletionImage;
             serviceOrderDetail.Status = "Complete";
-
-            serviceOrder.StaffId = staffId;  
+            serviceOrder.StaffId = staffId;
 
             _context.ServiceOrderDetails.Update(serviceOrderDetail);
             _context.ServiceOrders.Update(serviceOrder);
@@ -183,8 +187,8 @@ namespace cms_server.Controllers
                         NicheId = request.NicheID,
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
-
                     };
+
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();
 
@@ -199,11 +203,10 @@ namespace cms_server.Controllers
                         };
                         _context.ServiceOrderDetails.Add(serviceOrderDetail);
                     }
-                    await _context.SaveChangesAsync();
 
+                    await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    // Calculate the total price
                     var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
 
                     return Ok(new
@@ -261,13 +264,12 @@ namespace cms_server.Controllers
             return Ok();
         }
 
-        // Endpoint to cancel a service order
         [HttpPut("cancel-service-order/{serviceOrderId}")]
         public async Task<IActionResult> CancelServiceOrder(int serviceOrderId)
         {
             var serviceOrder = await _context.ServiceOrders
-            .Include(so => so.ServiceOrderDetails)
-            .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
+                .Include(so => so.ServiceOrderDetails)
+                .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
 
             if (serviceOrder == null)
             {
@@ -276,7 +278,7 @@ namespace cms_server.Controllers
 
             foreach (var serviceOrderDetail in serviceOrder.ServiceOrderDetails)
             {
-                serviceOrderDetail.Status = "Cancled";
+                serviceOrderDetail.Status = "Canceled";
                 _context.ServiceOrderDetails.Update(serviceOrderDetail);
             }
 
@@ -286,7 +288,7 @@ namespace cms_server.Controllers
         }
     }
 
-
+    // DTO and Request classes
     public class ServiceOrderResponse
     {
         public string ServiceOrderCode { get; set; }
@@ -303,6 +305,8 @@ namespace cms_server.Controllers
         public NicheInfo Niche { get; set; }
         public decimal TotalPrice { get; set; }
         public List<ServiceOrderDetail> ServiceOrderDetails { get; set; }
+        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
+        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
     public class NicheInfo
@@ -317,7 +321,6 @@ namespace cms_server.Controllers
     {
         public int ServiceOrderDetailID { get; set; }
         public string CompletionImage { get; set; }
-
     }
 
     public class CreateServiceOrderRequest
@@ -339,12 +342,17 @@ namespace cms_server.Controllers
         public int ServiceOrderID { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
+
     public class ServiceOrderForStaffDto
     {
         public int ServiceOrderId { get; set; }
         public string ServiceOrderCode { get; set; }
         public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }
         public decimal TotalPrice { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? OrderDate { get; set; }
+        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
+        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
     public class ServiceOrderDetailDto
@@ -353,12 +361,11 @@ namespace cms_server.Controllers
         public int ServiceOrderId { get; set; }
         public int ServiceId { get; set; }
         public string ServiceName { get; set; }
-     
-
         public int Quantity { get; set; }
         public string Status { get; set; }
         public string? CompletionImage { get; set; }
     }
+
     public class ServiceOrderResponseDto1
     {
         public int ServiceOrderId { get; set; }
@@ -367,8 +374,7 @@ namespace cms_server.Controllers
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
         public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }
+        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
+        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
-
-  
-
 }

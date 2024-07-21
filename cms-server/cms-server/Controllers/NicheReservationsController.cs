@@ -37,6 +37,7 @@ namespace cms_server.Controllers
                     NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName}-{r.Niche.Area.Floor.FloorName}-{r.Niche.Area.AreaName}-{r.Niche.NicheName}",
                     CreatedDate = r.CreatedDate,
                     ConfirmationDate = r.ConfirmationDate,
+                    Note = r.Note,
                     Status = r.Status
                 })
                 .ToListAsync();
@@ -57,8 +58,6 @@ namespace cms_server.Controllers
 
             return nicheReservation;
         }
-       
-
 
         // GET: api/NicheReservations/by-phone/{phoneNumber}
         [HttpGet("by-phone/{phoneNumber}")]
@@ -80,11 +79,7 @@ namespace cms_server.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
         {
-            if (id != updateDto.ReservationId)
-            {
-                return BadRequest(new { error = "Reservation ID mismatch" });
-            }
-
+           
             var existingReservation = await _context.NicheReservations.FindAsync(id);
             if (existingReservation == null)
             {
@@ -97,12 +92,9 @@ namespace cms_server.Controllers
             }
 
             // Update only the specified properties
-            existingReservation.NicheId = updateDto.NicheId;
             existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
             existingReservation.Note = updateDto.Note;
             existingReservation.SignAddress = updateDto.SignAddress;
-            existingReservation.PhoneNumber = updateDto.PhoneNumber;
-            existingReservation.Name = updateDto.Name;
 
             _context.Entry(existingReservation).State = EntityState.Modified;
 
@@ -129,6 +121,13 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
         {
+            // Find the niche to check its status
+            var niche = await _context.Niches.FindAsync(createDto.NicheId);
+            if (niche == null || niche.Status != "Available")
+            {
+                return BadRequest(new { error = "Ô chứa không khả dụng để đặt chỗ" });
+            }
+
             // Kiểm tra xem số điện thoại có thuộc về một khách hàng hay không
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
 
@@ -150,12 +149,8 @@ namespace cms_server.Controllers
                 _context.NicheReservations.Add(nicheReservation);
 
                 // Update the status of the niche to "Booked"
-                var niche = await _context.Niches.FindAsync(createDto.NicheId);
-                if (niche != null)
-                {
-                    niche.Status = "Booked";
-                    _context.Entry(niche).State = EntityState.Modified;
-                }
+                niche.Status = "Booked";
+                _context.Entry(niche).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
 
@@ -187,18 +182,15 @@ namespace cms_server.Controllers
                 _context.NicheReservations.Add(nicheReservation);
 
                 // Update the status of the niche to "Booked"
-                var niche = await _context.Niches.FindAsync(createDto.NicheId);
-                if (niche != null)
-                {
-                    niche.Status = "Booked";
-                    _context.Entry(niche).State = EntityState.Modified;
-                }
+                niche.Status = "Booked";
+                _context.Entry(niche).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
             }
         }
+
 
 
         [HttpDelete("{id}")]
@@ -261,13 +253,13 @@ namespace cms_server.Controllers
                 CreatedDate = reservation.CreatedDate,
                 ConfirmationDate = reservation.ConfirmationDate,
                 Status = reservation.Status,
+                Note = reservation.Note,
                 SignAddress = reservation.SignAddress,
                 NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName
             };
 
             return Ok(reservationDetail);
         }
-
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
         {
@@ -292,35 +284,15 @@ namespace cms_server.Controllers
                 return NotFound("Reservation not found");
             }
 
-            // Get the old niche ID
-            var oldNicheId = nicheReservation.NicheId;
-
-            // Update the fields
-            nicheReservation.NicheId = dto.NicheId;
+            // Update only the specified fields
             nicheReservation.ConfirmationDate = dto.ConfirmationDate;
             nicheReservation.Note = dto.Note;
             nicheReservation.SignAddress = dto.SignAddress;
-            nicheReservation.PhoneNumber = dto.PhoneNumber;
-            nicheReservation.Name = dto.Name;
             nicheReservation.ConfirmedBy = int.Parse(userId); // Extracted from token
             nicheReservation.Status = "Approved";
 
             try
             {
-                // Update the status of the old niche to "Available"
-                var oldNiche = await _context.Niches.FindAsync(oldNicheId);
-                if (oldNiche != null)
-                {
-                    oldNiche.Status = "Available";
-                }
-
-                // Update the status of the new niche to "Booked"
-                var newNiche = await _context.Niches.FindAsync(dto.NicheId);
-                if (newNiche != null)
-                {
-                    newNiche.Status = "Booked";
-                }
-
                 await _context.SaveChangesAsync();
                 return Ok(nicheReservation);
             }
@@ -331,9 +303,35 @@ namespace cms_server.Controllers
         }
 
 
+        // PUT: api/NicheReservations/confirm/5
+        [HttpPut("confirm/{id}")]
+        public async Task<IActionResult> ConfirmNicheReservation(int id)
+        {
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+            if (nicheReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
 
+            if (nicheReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Reservation is already approved" });
+            }
 
+            nicheReservation.Status = "Approved";
+            nicheReservation.ConfirmedBy = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            _context.Entry(nicheReservation).State = EntityState.Modified;
 
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         private bool NicheReservationExists(int id)
         {
@@ -354,13 +352,9 @@ namespace cms_server.Controllers
     // DTO for updating niche reservation
     public class UpdateNicheReservationDto
     {
-        public int ReservationId { get; set; }
-        public int NicheId { get; set; }
-        public string Name { get; set; }
         public DateTime? ConfirmationDate { get; set; }
         public string SignAddress { get; set; }
-        public string PhoneNumber { get; set; }
-        public string? Note { get; set; }
+        public string Note { get; set; }
     }
 
     public class NicheReservationDto
@@ -368,24 +362,30 @@ namespace cms_server.Controllers
         public int ReservationId { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
-        public string NicheAddress { get; set; } 
+        public string NicheAddress { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ConfirmationDate { get; set; }
         public string Status { get; set; }
+        public string Note { get; set; }
+        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
+        public string FormattedConfirmationDate => ConfirmationDate?.ToString("HH:mm dd/MM/yyyy");
     }
+
     public class NicheReservationDetailDto
     {
         public int ReservationId { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
-        public string NicheAddress { get; set; } 
+        public string NicheAddress { get; set; }
         public int NicheId { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ConfirmationDate { get; set; }
         public string Status { get; set; }
+        public string Note { get; set; }
         public string SignAddress { get; set; }
         public string NameConfirmedBy { get; set; }
     }
+
     public class UpdateNicheReservationForStaffDto
     {
         public int NicheId { get; set; }
@@ -395,8 +395,5 @@ namespace cms_server.Controllers
         public string? PhoneNumber { get; set; }
         public string? Name { get; set; }
     }
-
-
-
 
 }

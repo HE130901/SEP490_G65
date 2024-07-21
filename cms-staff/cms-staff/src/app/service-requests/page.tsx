@@ -4,26 +4,69 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   IconButton,
   Chip,
+  Tooltip,
+  Typography,
+  Paper,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
 import AddServiceOrderDialog from "./AddServiceOrderDialog";
 import ViewServiceOrderDialog from "./ViewServiceOrderDialog";
+import { styled } from "@mui/material/styles";
+import viVN from "@/utils/viVN";
+
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    whiteSpace: "normal",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
+  },
+}));
+
+const NoWrapTypography = styled(Typography)({
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+});
+
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
 
 const ServiceRequestPage = () => {
   const [serviceRequests, setServiceRequests] = useState<any[]>([]);
@@ -53,14 +96,6 @@ const ServiceRequestPage = () => {
   const handleViewServiceRequest = (id: number) => {
     setSelectedServiceOrderId(id);
     setViewDialogOpen(true);
-  };
-
-  const handleEditServiceRequest = (id: number) => {
-    alert(`Sửa đơn đăng ký dùng dịch vụ với ID: ${id}`);
-  };
-
-  const handleDeleteServiceRequest = (id: number) => {
-    alert(`Xóa đơn đăng ký dùng dịch vụ với ID: ${id}`);
   };
 
   const getStatusLabel = (status: string) => {
@@ -99,6 +134,106 @@ const ServiceRequestPage = () => {
     fetchServiceRequests();
   };
 
+  const columns: GridColDef[] = [
+    {
+      field: "id",
+      headerName: "STT",
+      width: 70,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "serviceOrderId",
+      headerName: "Mã đơn",
+      width: 80,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "nicheAddress",
+      headerName: "Địa chỉ ô chứa",
+      width: 200,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    { field: "customerName", headerName: "Tên Khách hàng", width: 180 },
+    {
+      field: "formattedOrderDate",
+      headerName: "Thời gian hẹn",
+      width: 200,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "services",
+      headerName: "Dịch vụ",
+      width: 200,
+      renderCell: (params) => (
+        <NoWrapTypography variant="body2">
+          {params.value.map((service: any, idx: number) => (
+            <span key={idx}>
+              {service.serviceName} (x{service.quantity})
+              {idx < params.value.length - 1 && ", "}
+            </span>
+          ))}
+        </NoWrapTypography>
+      ),
+    },
+    {
+      field: "statuses",
+      headerName: "Trạng thái",
+      width: 120,
+      renderCell: (params) => (
+        <NoWrapTypography>
+          {params.value.map((status: any, idx: number) => (
+            <Chip
+              key={idx}
+              label={getStatusLabel(status.status)}
+              color={getStatusColor(status.status)}
+              size="small"
+              style={{ marginRight: 4 }}
+            />
+          ))}
+        </NoWrapTypography>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 100,
+      renderCell: (params) => (
+        <CenteredCell>
+          <Tooltip title="Xem chi tiết đơn đặt dịch vụ">
+            <IconButton
+              color="primary"
+              onClick={() =>
+                handleViewServiceRequest(params.row.serviceOrderId)
+              }
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+        </CenteredCell>
+      ),
+    },
+  ];
+
+  const rows = serviceRequests.map((serviceRequest, index) => ({
+    id: index + 1,
+    serviceOrderId: serviceRequest.serviceOrderId,
+    nicheAddress: serviceRequest.nicheAddress,
+    customerName: serviceRequest.customerName,
+    formattedOrderDate: serviceRequest.formattedOrderDate,
+    formattedCreatedDate: serviceRequest.formattedCreatedDate,
+    services: serviceRequest.serviceOrderDetails.$values.map(
+      (service: any) => ({
+        serviceName: service.serviceName,
+        quantity: service.quantity,
+      })
+    ),
+    statuses: serviceRequest.serviceOrderDetails.$values.map(
+      (service: any) => ({
+        status: service.status,
+      })
+    ),
+  }));
+
   return (
     <Box p={3}>
       <Box
@@ -116,79 +251,25 @@ const ServiceRequestPage = () => {
           Thêm mới đơn đăng ký dùng dịch vụ
         </Button>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Số thứ tự</TableCell>
-              <TableCell>Mã đơn</TableCell>
-              <TableCell>Mã ô chứa</TableCell>
-              <TableCell>Tên Khách hàng</TableCell>
-              <TableCell>Dịch vụ</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {serviceRequests.map((serviceRequest, index) => (
-              <TableRow key={serviceRequest.serviceOrderId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{serviceRequest.serviceOrderId}</TableCell>
-                <TableCell>{serviceRequest.nicheAddress}</TableCell>
-                <TableCell>{serviceRequest.customerName}</TableCell>
-                <TableCell>
-                  {serviceRequest.serviceOrderDetails.$values.map(
-                    (service: any, idx: number) => (
-                      <div key={idx}>
-                        {service.serviceName} (x{service.quantity})
-                      </div>
-                    )
-                  )}
-                </TableCell>
-                <TableCell>
-                  {serviceRequest.serviceOrderDetails.$values.map(
-                    (service: any, idx: number) => (
-                      <div key={idx} style={{ marginBottom: 4 }}>
-                        <Chip
-                          label={getStatusLabel(service.status)}
-                          color={getStatusColor(service.status)}
-                          size="small"
-                        />
-                      </div>
-                    )
-                  )}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() =>
-                      handleViewServiceRequest(serviceRequest.serviceOrderId)
-                    }
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() =>
-                      handleEditServiceRequest(serviceRequest.serviceOrderId)
-                    }
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() =>
-                      handleDeleteServiceRequest(serviceRequest.serviceOrderId)
-                    }
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+        <Paper
+          elevation={3}
+          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+        >
+          <CenteredTable
+            rows={rows}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+          />
+        </Paper>
+      </Box>
       <AddServiceOrderDialog
         open={addDialogOpen}
         onClose={handleCloseAddDialog}
