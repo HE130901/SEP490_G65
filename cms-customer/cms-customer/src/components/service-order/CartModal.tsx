@@ -155,7 +155,10 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                 <Button
                   variant="default"
                   className="w-full"
-                  onClick={() => setSelectDialogOpen(true)} // Open the new dialog
+                  onClick={() => {
+                    setSelectDialogOpen(true);
+                    setIsOpen(false); // Close the cart modal when opening the new dialog
+                  }}
                 >
                   Chọn ô chứa và ngày hẹn
                 </Button>

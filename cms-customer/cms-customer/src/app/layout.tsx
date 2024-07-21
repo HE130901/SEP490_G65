@@ -1,7 +1,6 @@
 import Footer from "../components/footer/footer";
 import Header from "../components/header/header";
 import { StateProvider } from "@/context/StateContext";
-import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/context/CartContext";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -22,12 +21,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
+        <ToastContainer position="bottom-right" />
         <StateProvider>
           <CartProvider>
             <Header currentView={undefined} setCurrentView={undefined} />
             {children}
-            <Toaster />
-            <ToastContainer position="bottom-right" />
+
             <Footer />
             <CallHotline />
           </CartProvider>
