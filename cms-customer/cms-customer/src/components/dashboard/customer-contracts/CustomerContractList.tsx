@@ -453,7 +453,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Không có dữ liệu
+                  Đang tải hợp đồng của bạn...
                 </TableCell>
               </TableRow>
             )}

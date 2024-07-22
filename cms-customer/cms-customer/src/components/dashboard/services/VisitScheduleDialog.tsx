@@ -12,11 +12,11 @@ import {
   CircularProgress,
 } from "@mui/material";
 import NicheAPI from "@/services/nicheService";
-import VisitAPI from "@/services/visitService"; // Import the service to fetch niches
-import { toast } from "react-toastify";
+import VisitAPI from "@/services/visitService";
+import { toast, ToastContainer } from "react-toastify";
 import { useStateContext } from "@/context/StateContext";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { z } from "zod";
+import { addMonths, format } from "date-fns";
 
 interface Niche {
   nicheId: number;
@@ -29,6 +29,26 @@ interface VisitScheduleDialogProps {
   onSubmit: () => void;
 }
 
+const today = new Date();
+const maxDate = addMonths(today, 3);
+
+const visitSchema = z.object({
+  appointmentDate: z.string().refine(
+    (dateString) => {
+      const date = new Date(dateString);
+      return date >= today && date <= maxDate;
+    },
+    {
+      message:
+        "Thời gian hẹn phải trong vòng 3 tháng kể từ thời điểm hiện tại.",
+    }
+  ),
+  accompanyingPeople: z
+    .number()
+    .min(0, "Số người đi cùng phải lớn hơn hoặc bằng 0."),
+  note: z.string().optional(),
+});
+
 const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
   isOpen,
   onClose,
@@ -38,10 +58,14 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [nicheLoading, setNicheLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [accompanyingPeople, setAccompanyingPeople] = useState(0);
   const [niches, setNiches] = useState<Niche[]>([]);
   const [nicheID, setNicheID] = useState<number | "">(1);
+  const [formErrors, setFormErrors] = useState<{
+    appointmentDate?: string;
+    accompanyingPeople?: string;
+  }>({});
 
   useEffect(() => {
     const fetchNiches = async () => {
@@ -61,6 +85,16 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
     }
   }, [isOpen]);
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const localDate = new Date(e.target.value);
+    const utcDate = new Date(
+      localDate.getTime() - localDate.getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .slice(0, 16);
+    setSelectedDate(utcDate);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -69,31 +103,42 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
     const data = {
       customerId: user.customerId,
       nicheId: nicheID,
-      visitDate: selectedDate.toISOString(),
+      visitDate: selectedDate,
       note: (e.target as any).note.value,
       accompanyingPeople: accompanyingPeople,
     };
 
-    console.log("[VisitScheduleDialog] Submitting visit schedule:", data);
-
     try {
+      visitSchema.parse({
+        appointmentDate: data.visitDate,
+        accompanyingPeople: data.accompanyingPeople,
+      });
       await VisitAPI.create(data);
-      toast.success("Đăng ký lịch viếng thành công!"); // Success notification
-      console.log(
-        "[VisitScheduleDialog] Visit schedule submitted successfully"
-      );
+      toast.success("Đăng ký lịch viếng thành công!");
       if (user && user.customerId) {
         await fetchVisitRegistrations(user.customerId);
-        console.log(
-          "[VisitScheduleDialog] Fetching updated visit registrations"
-        );
       }
       onSubmit();
       onClose();
     } catch (err) {
-      console.error("[VisitScheduleDialog] Error registering visit:", err);
-      setError("Đăng ký lịch viếng thất bại.");
-      toast.error("Đăng ký lịch viếng thất bại."); // Failure notification
+      if (err instanceof z.ZodError) {
+        const fieldErrors: {
+          appointmentDate?: string;
+          accompanyingPeople?: string;
+        } = {};
+        err.errors.forEach((error) => {
+          if (error.path.includes("appointmentDate")) {
+            fieldErrors.appointmentDate = error.message;
+          } else if (error.path.includes("accompanyingPeople")) {
+            fieldErrors.accompanyingPeople = error.message;
+          }
+        });
+        setFormErrors(fieldErrors);
+      } else {
+        console.error("[VisitScheduleDialog] Error registering visit:", err);
+        setError("Đăng ký lịch viếng thất bại.");
+        toast.error("Đăng ký lịch viếng thất bại.");
+      }
     } finally {
       setLoading(false);
     }
@@ -103,6 +148,7 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
       <DialogContent>
+        <ToastContainer position="bottom-right" />
         <form onSubmit={handleSubmit}>
           <TextField
             select
@@ -129,12 +175,16 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
             label="Ngày hẹn"
             type="datetime-local"
             fullWidth
-            value={selectedDate.toISOString().slice(0, 16)}
-            onChange={(e) => setSelectedDate(new Date(e.target.value))}
-            InputLabelProps={{
-              shrink: true,
-            }}
+            value={selectedDate ? selectedDate.slice(0, 16) : ""}
+            onChange={handleDateChange}
+            InputLabelProps={{ shrink: true }}
             margin="normal"
+            error={!!formErrors.appointmentDate}
+            helperText={formErrors.appointmentDate}
+            inputProps={{
+              min: format(today, "yyyy-MM-dd'T'HH:mm"),
+              max: format(maxDate, "yyyy-MM-dd'T'HH:mm"),
+            }}
           />
           <TextField
             label="Số Người Đi Cùng"
@@ -143,6 +193,8 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
             value={accompanyingPeople}
             onChange={(e) => setAccompanyingPeople(parseInt(e.target.value))}
             margin="normal"
+            error={!!formErrors.accompanyingPeople}
+            helperText={formErrors.accompanyingPeople}
           />
           <TextField
             label="Ghi Chú"

@@ -25,15 +25,15 @@ const DeleteConfirmationDialog = ({
     <Dialog open={open} onOpenChange={onCancel}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Xác nhận xóa</DialogTitle>
+          <DialogTitle>Xác nhận hủy</DialogTitle>
         </DialogHeader>
-        <p>Bạn có chắc chắn muốn xóa đơn đăng ký này không?</p>
+        <p>Bạn có chắc chắn muốn hủy đơn đăng ký này không?</p>
         <DialogFooter>
           <Button variant="outline" onClick={onCancel}>
-            Hủy
+            Đóng
           </Button>
           <Button variant="destructive" onClick={onConfirm}>
-            Xóa
+            Xác nhận hủy
           </Button>
         </DialogFooter>
       </DialogContent>

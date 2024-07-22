@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using System.Security.Claims;
+using TimeZoneConverter;
 
 namespace cms_server.Controllers
 {
@@ -15,6 +16,19 @@ namespace cms_server.Controllers
     public class NicheReservationsController : ControllerBase
     {
         private readonly CmsContext _context;
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+
+        private DateTime ConvertToTimeZone(DateTime utcDateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZoneInfo);
+        }
+
+        private DateTime ConvertToUtc(DateTime dateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
+        }
 
         public NicheReservationsController(CmsContext context)
         {
@@ -61,18 +75,40 @@ namespace cms_server.Controllers
 
         // GET: api/NicheReservations/by-phone/{phoneNumber}
         [HttpGet("by-phone/{phoneNumber}")]
-        public async Task<ActionResult<IEnumerable<NicheReservation>>> GetNicheReservationsByPhoneNumber(string phoneNumber)
+        public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservationsByPhoneNumber(string phoneNumber)
         {
-            var nicheReservations = await _context.NicheReservations
-                .Where(nr => nr.PhoneNumber == phoneNumber)
-                .ToListAsync();
-
-            if (!nicheReservations.Any())
+            try
             {
-                return NotFound(new { error = "Không tìm thấy đơn đặt chỗ nào cho số điện thoại này" });
-            }
+                var nicheReservations = await _context.NicheReservations
+                    .Where(nr => nr.PhoneNumber == phoneNumber)
+                    .Include(nr => nr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Select(nr => new NicheReservationDto
+                    {
+                        ReservationId = nr.ReservationId,
+                        Name = nr.Name,
+                        PhoneNumber = nr.PhoneNumber,
+                        NicheAddress = $"{nr.Niche.Area.Floor.Building.BuildingName}-{nr.Niche.Area.Floor.FloorName}-{nr.Niche.Area.AreaName}-Ô {nr.Niche.NicheName}",
+                        CreatedDate = nr.CreatedDate,
+                        ConfirmationDate = nr.ConfirmationDate,
+                        Note = nr.Note,
+                        Status = nr.Status
+                    })
+                    .ToListAsync();
 
-            return nicheReservations;
+                if (!nicheReservations.Any())
+                {
+                    return NotFound(new { error = "Không tìm thấy đơn đặt chỗ nào cho số điện thoại này" });
+                }
+
+                return Ok(nicheReservations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // PUT: api/NicheReservations/5
@@ -121,6 +157,11 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
         {
+
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+
             // Find the niche to check its status
             var niche = await _context.Niches.FindAsync(createDto.NicheId);
             if (niche == null || niche.Status != "Available")
@@ -142,7 +183,7 @@ namespace cms_server.Controllers
                     SignAddress = createDto.SignAddress,
                     PhoneNumber = createDto.PhoneNumber,
                     Note = createDto.Note,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = localNow,
                     Status = "Pending"
                 };
 

@@ -96,7 +96,7 @@ const ReservationForm = ({
       return;
     }
 
-    const contractDate = data.contractDate + "T23:59:00";
+    const contractDate = data.contractDate + "T23:59:59";
 
     const dataToSubmit = {
       nicheId: selectedNiche.nicheId, // Fixed nicheId field

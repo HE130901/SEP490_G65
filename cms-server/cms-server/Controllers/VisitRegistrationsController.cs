@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Claims;
+using TimeZoneConverter;
 
 namespace cms_server.Controllers
 {
@@ -15,12 +16,25 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
         private readonly ILogger<VisitRegistrationsController> _logger;
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
 
+        private DateTime ConvertToTimeZone(DateTime utcDateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZoneInfo);
+        }
+
+        private DateTime ConvertToUtc(DateTime dateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
+        }
         public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
         {
             _context = context;
             _logger = logger;
         }
+
 
         // GET: api/VisitRegistrations
         [HttpGet]
@@ -185,6 +199,10 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
         {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+
             var visitRegistration = new VisitRegistration
             {
                 CustomerId = visitRegistrationDto.CustomerId,
@@ -193,7 +211,7 @@ namespace cms_server.Controllers
                 Note = visitRegistrationDto.Note,
                 Status = "Pending",
                 ApprovedBy = null,
-                CreatedDate = DateTime.Now,
+                CreatedDate = localNow,
                 AccompanyingPeople = visitRegistrationDto.AccompanyingPeople
             };
 
@@ -202,7 +220,6 @@ namespace cms_server.Controllers
 
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
-
         // DELETE: api/VisitRegistrations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisitRegistration(int id)
