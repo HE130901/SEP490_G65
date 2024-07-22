@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   Button,
-  Typography,
   TextField,
   RadioGroup,
   FormControlLabel,
@@ -21,7 +20,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import HistorySharpIcon from "@mui/icons-material/HistorySharp";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const predefinedAddresses = [
@@ -45,14 +44,17 @@ export default function ExtendContractDialog({
   const [selectedAddress, setSelectedAddress] = useState<string>(
     predefinedAddresses[0]
   );
-  const [note, setNote] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const handleExtend = async () => {
-    if (!appointmentDate || !selectedAddress || !note) {
+    if (!appointmentDate || !selectedAddress) {
       toast.error("Vui lòng nhập đầy đủ thông tin.");
       return;
     }
+
+    const note = `Hẹn ký gia hạn hợp đồng tại ${selectedAddress} vào ngày ${formatDateToVietnamese(
+      new Date(appointmentDate)
+    )}`;
 
     try {
       setLoading(true);
@@ -82,7 +84,6 @@ export default function ExtendContractDialog({
 
   return (
     <>
-      <ToastContainer />
       <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>Gia hạn hợp đồng</DialogTitle>
         <DialogContent>
@@ -112,16 +113,6 @@ export default function ExtendContractDialog({
                 type="date"
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Ghi chú"
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>

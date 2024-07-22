@@ -23,8 +23,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const predefinedAddresses = [
-  "Nhà tang lễ thành phố ",
-  "Nghĩa trang Văn Điển ",
+  "Nhà tang lễ thành phố",
+  "Nghĩa trang Văn Điển",
   "An Bình Viên - Hòa Lạc",
 ];
 
@@ -47,7 +47,7 @@ export default function LiquidateContractDialog({
 
   const handleLiquidate = async () => {
     if (!appointmentDate || !selectedAddress) {
-      alert("Vui lòng chọn ngày hẹn và địa điểm thanh lý hợp đồng.");
+      toast.warn("Vui lòng chọn ngày hẹn và địa điểm thanh lý hợp đồng.");
       return;
     }
 
@@ -55,11 +55,11 @@ export default function LiquidateContractDialog({
       setLoading(true);
       await axiosInstance.post(`/api/Contracts/cancel`, {
         contractId,
-        note: `Thanh lý hợp đồng tại ${selectedAddress} vào ngày ${appointmentDate}`,
+        note: `Hẹn thanh lý hợp đồng tại ${selectedAddress} vào ngày ${appointmentDate}`,
         confirmationDate: new Date(appointmentDate).toISOString(),
         signAddress: selectedAddress,
       });
-      toast.success("Hợp đồng đã được thanh lý.");
+      toast.success("Đăng ký lịch hẹn thanh lý thành công.");
       onClose();
     } catch (err) {
       console.error("Error liquidating contract:", err);

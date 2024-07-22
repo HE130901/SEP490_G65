@@ -21,12 +21,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <ToastContainer position="bottom-right" />
+        <ToastContainer position="bottom-right" autoClose={5000} />{" "}
         <StateProvider>
           <CartProvider>
             <Header currentView={undefined} setCurrentView={undefined} />
             {children}
-
             <Footer />
             <CallHotline />
           </CartProvider>

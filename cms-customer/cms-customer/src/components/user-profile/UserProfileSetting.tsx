@@ -1,5 +1,3 @@
-// src/components/UserProfileSetting.tsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,9 +12,9 @@ import {
   FormControl,
   InputLabel,
   Select,
-  SelectChangeEvent,
   IconButton,
   InputAdornment,
+  SelectChangeEvent,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axiosInstance from "@/utils/axiosInstance";
@@ -71,9 +69,27 @@ const UserProfileSetting: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [districts, setDistricts] = useState<any[]>([]);
   const [wards, setWards] = useState<any[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     // Fetch user profile details and populate formData here
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axiosInstance.get("/api/CustomerProfile");
+        const data = response.data;
+        setFormData((prevData) => ({
+          ...prevData,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+        }));
+      } catch (error) {
+        toast.error("Failed to fetch user profile");
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
   const handleChange = (
@@ -155,14 +171,16 @@ const UserProfileSetting: React.FC = () => {
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
-        province: formData.province,
-        district: formData.district,
-        ward: formData.ward,
       });
       toast.success("Cập nhật thông tin cá nhân thành công");
+      setIsEditing(false);
     } catch (error) {
       toast.error("Cập nhật thông tin cá nhân thất bại");
     }
+  };
+
+  const enableEditing = () => {
+    setIsEditing(true);
   };
 
   return (
@@ -200,6 +218,7 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.email}
               helperText={errors.email}
+              disabled={!isEditing}
             />
             <TextField
               margin="normal"
@@ -212,6 +231,7 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.phone}
               helperText={errors.phone}
+              disabled={!isEditing}
             />
             <TextField
               margin="normal"
@@ -224,68 +244,33 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.address}
               helperText={errors.address}
+              disabled={!isEditing}
             />
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="province-label">Tỉnh/Thành</InputLabel>
-              <Select
-                labelId="province-label"
-                name="province"
-                value={formData.province}
-                onChange={handleSelectChange}
-                label="Tỉnh/Thành"
-              >
-                {vietnamAddress.map((province) => (
-                  <MenuItem key={province.Id} value={province.Id}>
-                    {province.Name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="district-label">Quận/Huyện</InputLabel>
-              <Select
-                labelId="district-label"
-                name="district"
-                value={formData.district}
-                onChange={handleSelectChange}
-                label="Quận/Huyện"
-                disabled={!formData.province}
-              >
-                {districts.map((district) => (
-                  <MenuItem key={district.Id} value={district.Id}>
-                    {district.Name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="ward-label">Phường/Xã</InputLabel>
-              <Select
-                labelId="ward-label"
-                name="ward"
-                value={formData.ward}
-                onChange={handleSelectChange}
-                label="Phường/Xã"
-                disabled={!formData.district}
-              >
-                {wards.map((ward) => (
-                  <MenuItem key={ward.Id} value={ward.Id}>
-                    {ward.Name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {isEditing && (
+              <Box mt={2}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                >
+                  Lưu thay đổi
+                </Button>
+              </Box>
+            )}
+          </form>
+          {!isEditing && (
             <Box mt={2}>
               <Button
-                type="submit"
                 variant="contained"
                 color="primary"
                 fullWidth
+                onClick={enableEditing}
               >
-                Lưu thay đổi
+                Sửa
               </Button>
             </Box>
-          </form>
+          )}
           <Typography variant="h5" gutterBottom style={{ marginTop: "2rem" }}>
             Đổi mật khẩu
           </Typography>

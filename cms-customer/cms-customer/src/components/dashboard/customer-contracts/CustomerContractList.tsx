@@ -12,7 +12,9 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { Eye, ShoppingCart, ArrowUpDown, CalendarClock } from "lucide-react";
+import { Eye, ArrowUpDown } from "lucide-react";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import HistorySharp from "@mui/icons-material/HistorySharp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,16 +34,20 @@ import {
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/navigation";
 import ContractDetailsDialog from "./ContractDetailsDialog";
-import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog"; // Import VisitScheduleDialog
+import ExtendContractDialog from "./ContractRenewalDialog";
+import LiquidateContractDialog from "./ContractTerminationDialog";
+import ContractAPI from "@/services/contractService"; // Import your API service
+import { useStateContext } from "@/context/StateContext";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
-    case "Overdue":
-      return "destructive";
-    case "Inactive":
-      return "destructive";
     case "Active":
       return "green";
+    case "PendingRenewal":
+    case "PendingCancellation":
+      return "default";
+    case "Expired":
+      return "destructive";
     default:
       return "secondary";
   }
@@ -49,12 +55,14 @@ const getStatusVariant = (status: string) => {
 
 const getStatusText = (status: string) => {
   switch (status) {
-    case "Overdue":
-      return "Quá hạn";
-    case "Inactive":
-      return "Không hoạt động";
     case "Active":
       return "Hoạt động";
+    case "PendingRenewal":
+      return "Đang chờ gia hạn";
+    case "PendingCancellation":
+      return "Đang chờ hủy";
+    case "Expired":
+      return "Hết hạn";
     default:
       return "Không xác định";
   }
@@ -69,6 +77,7 @@ export type Contract = {
   deceasedRelationshipWithCustomer?: string;
   startDate: string;
   endDate: string;
+  duration: string;
 };
 
 interface CustomerContractListProps {
@@ -93,7 +102,8 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const [selectedContract, setSelectedContract] = useState<Contract | null>(
     null
   );
-  const [isVisitDialogOpen, setIsVisitDialogOpen] = useState(false);
+  const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
+  const [isLiquidateDialogOpen, setLiquidateDialogOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -112,28 +122,53 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     setFilteredData(filtered);
   }, [searchTerm, contracts]);
 
-  const handleServiceClick = () => {
-    router.push("/service-order");
+  const { user } = useStateContext();
+  const fetchContracts = async () => {
+    try {
+      const response = await ContractAPI.getContractsByCustomer(
+        user.customerId
+      );
+      setFilteredData(response.data.$values);
+    } catch (error) {
+      console.error("Error fetching contracts:", error);
+    }
   };
 
-  const handleVisitClick = (contract: Contract) => {
+  const handleExtendClick = (contract: Contract) => {
     setSelectedContract(contract);
-    setIsVisitDialogOpen(true);
+    setExtendDialogOpen(true);
+  };
+
+  const handleLiquidateClick = (contract: Contract) => {
+    setSelectedContract(contract);
+    setLiquidateDialogOpen(true);
   };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
     setSelectedContract(null);
+    fetchContracts(); // Fetch contracts after closing dialog
   };
 
-  const handleVisitDialogClose = () => {
-    setIsVisitDialogOpen(false);
+  const handleExtendDialogClose = () => {
+    setExtendDialogOpen(false);
     setSelectedContract(null);
+    fetchContracts(); // Fetch contracts after closing dialog
   };
 
-  const handleDialogSubmit = () => {
-    setIsDialogOpen(false);
+  const handleLiquidateDialogClose = () => {
+    setLiquidateDialogOpen(false);
     setSelectedContract(null);
+    fetchContracts(); // Fetch contracts after closing dialog
+  };
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString("vi-VN", options);
   };
 
   const columns: ColumnDef<Contract>[] = [
@@ -227,10 +262,26 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("startDate")}</div>
+        <div className="text-center">
+          {formatDate(row.getValue("startDate"))}
+        </div>
       ),
     },
-
+    {
+      accessorKey: "duration",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Thời hạn
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("duration")}</div>
+      ),
+    },
     {
       accessorKey: "status",
       header: ({ column }) => (
@@ -283,14 +334,14 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleServiceClick();
+                    handleExtendClick(row.original);
                   }}
                   className="text-green-600"
                 >
-                  <ShoppingCart className="w-4 h-4" />
+                  <HistorySharp className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Đặt dịch vụ</TooltipContent>
+              <TooltipContent>Gia hạn hợp đồng</TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <TooltipProvider>
@@ -301,14 +352,14 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleVisitClick(row.original);
+                    handleLiquidateClick(row.original);
                   }}
-                  className="text-purple-600"
+                  className="text-red-600"
                 >
-                  <CalendarClock className="w-4 h-4" />
+                  <CancelOutlinedIcon className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Đăng ký viếng thăm</TooltipContent>
+              <TooltipContent>Thanh lý hợp đồng</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -317,7 +368,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   ];
 
   const table = useReactTable({
-    data: filteredData ?? [], // Ensure filteredData is not undefined
+    data: filteredData ?? [],
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -330,7 +381,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     },
     onPaginationChange: setPagination,
     manualPagination: false,
-    pageCount: Math.ceil((filteredData?.length ?? 0) / pagination.pageSize), // Ensure filteredData.length is not undefined
+    pageCount: Math.ceil((filteredData?.length ?? 0) / pagination.pageSize),
   });
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -439,11 +490,18 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           contractId={selectedContract.contractId}
         />
       )}
-      {isVisitDialogOpen && selectedContract && (
-        <VisitScheduleDialog
-          isOpen={isVisitDialogOpen}
-          onClose={handleVisitDialogClose}
-          onSubmit={handleDialogSubmit}
+      {isExtendDialogOpen && selectedContract && (
+        <ExtendContractDialog
+          isOpen={isExtendDialogOpen}
+          onClose={handleExtendDialogClose}
+          contractId={selectedContract.contractId}
+        />
+      )}
+      {isLiquidateDialogOpen && selectedContract && (
+        <LiquidateContractDialog
+          isOpen={isLiquidateDialogOpen}
+          onClose={handleLiquidateDialogClose}
+          contractId={selectedContract.contractId}
         />
       )}
     </div>
