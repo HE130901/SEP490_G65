@@ -18,12 +18,13 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddDbContext<CmsContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDB")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("RemoteDB")));
 
 // Custom services
 builder.Services.AddScoped<INicheService, NicheService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddHttpClient<ImageUploadService>();
+builder.Services.AddSingleton<IOtpService, OtpService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

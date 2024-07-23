@@ -216,7 +216,7 @@ namespace cms_server.Controllers
                     SignAddress = createDto.SignAddress,
                     PhoneNumber = createDto.PhoneNumber,
                     Note = createDto.Note,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = localNow,
                     Status = "Pending"
                 };
 
