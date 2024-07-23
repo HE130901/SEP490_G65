@@ -20,6 +20,9 @@ import PaymentService from "@/services/paymentService";
 import { toast } from "react-toastify";
 import NicheAPI from "@/services/nicheService";
 import ItemType from "./ItemType";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -118,7 +121,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
       open={isOpen}
       onClose={() => handleOpenChange(false)}
       fullWidth
-      maxWidth="sm"
+      maxWidth="xs"
     >
       <DialogTitle>Giỏ Hàng Của Bạn</DialogTitle>
       <DialogContent>
@@ -131,9 +134,9 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                     <Image
                       src={item.image}
                       alt={item.name}
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      width={80}
+                      height={80}
+                      className="w-24 h-24 object-cover rounded-lg"
                     />
                     <div>
                       <Typography variant="body1" color="textPrimary">
@@ -143,39 +146,30 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                         {(item.price * item.quantity).toLocaleString()} ₫
                       </Typography>
                       <div className="flex items-center mt-2">
-                        <Button
-                          variant="outlined"
+                        <IconButton
                           size="small"
                           onClick={() => handleDecreaseQuantity(item)}
+                          color="error"
                         >
-                          -
-                        </Button>
+                          <RemoveCircleIcon />
+                        </IconButton>
                         <span className="mx-2">{item.quantity}</span>
-                        <Button
-                          variant="outlined"
+                        <IconButton
+                          color="success"
                           size="small"
                           onClick={() => handleIncreaseQuantity(item)}
                         >
-                          +
-                        </Button>
+                          <AddCircleIcon />
+                        </IconButton>
                       </div>
                     </div>
                   </div>
-                  <IconButton onClick={() => removeFromCart(item.id)}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                  <IconButton
+                    color="error"
+                    size="medium"
+                    onClick={() => removeFromCart(item.id)}
+                  >
+                    <DeleteForeverIcon />
                   </IconButton>
                 </li>
               ))}

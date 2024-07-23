@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -39,14 +45,19 @@ export type ServiceOrder = {
   };
 };
 
-export default function OrderList({
+const columnHelper = createColumnHelper<ServiceOrder>();
+export default function ServiceOrderList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;
 }) {
   const { setOrders, fetchOrders, orders = [], user } = useStateContext();
-  const [editingRecord, setEditingRecord] = useState<ServiceOrder | null>(null);
-  const [viewingRecord, setViewingRecord] = useState<ServiceOrder | null>(null);
+  const [editingRecord, setEditingRecord] = React.useState<ServiceOrder | null>(
+    null
+  );
+  const [viewingRecord, setViewingRecord] = React.useState<ServiceOrder | null>(
+    null
+  );
 
   useEffect(() => {
     if (user) {
@@ -109,107 +120,124 @@ export default function OrderList({
     }
   };
 
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("serviceOrderId", {
+        header: "Mã đơn hàng",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("createdDate", {
+        header: "Ngày tạo",
+        cell: (info) => new Date(info.getValue()).toLocaleString(),
+      }),
+      columnHelper.accessor("orderDate", {
+        header: "Ngày hẹn",
+        cell: (info) => new Date(info.getValue()).toLocaleString(),
+      }),
+      columnHelper.accessor("nicheAddress", {
+        header: "Địa chỉ ô chứa",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("serviceOrderDetails.$values", {
+        header: "Dịch vụ/Sản phẩm",
+        cell: (info) => (
+          <>
+            {info.getValue().map((detail: ServiceOrderDetail, i: number) => (
+              <div key={i}>
+                {detail.serviceName} x {detail.quantity}
+              </div>
+            ))}
+          </>
+        ),
+      }),
+      columnHelper.accessor("serviceOrderDetails.$values", {
+        header: "Trạng thái",
+        cell: (info) => (
+          <>
+            {info.getValue().map((detail: ServiceOrderDetail, i: number) => (
+              <div key={i}>
+                <Badge
+                  variant={detail.status === "Pending" ? "standard" : "dot"}
+                >
+                  {detail.status}
+                </Badge>
+              </div>
+            ))}
+          </>
+        ),
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "Hành động",
+        cell: (props) => (
+          <>
+            <Tooltip title="Xem chi tiết">
+              <IconButton
+                color="primary"
+                onClick={() => handleView(props.row.original)}
+              >
+                <Visibility />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Chỉnh sửa">
+              <IconButton
+                color="primary"
+                onClick={() => handleEdit(props.row.original)}
+              >
+                <Edit />
+              </IconButton>
+            </Tooltip>
+          </>
+        ),
+      }),
+    ],
+    []
+  );
+
+  const table = useReactTable({
+    data: orders,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Đơn đặt hàng</h2>
+        <h2 className="text-2xl font-bold">Danh sách đơn đặt hàng</h2>
       </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>STT</TableCell>
-              <TableCell>Mã đơn hàng</TableCell>
-              <TableCell>Ngày tạo</TableCell>
-              <TableCell>Ngày hẹn</TableCell>
-              <TableCell>Địa chỉ ô chứa</TableCell>
-              <TableCell>Dịch vụ/Sản phẩm</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableCell key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableHead>
           <TableBody>
-            {orders.length > 0 ? (
-              orders.map(
-                (
-                  row: {
-                    serviceOrderId: any;
-                    createdDate: any;
-                    orderDate: any;
-                    serviceOrderDetails: any;
-                    nicheAddress?: string;
-                  },
-                  index: number
-                ) => (
-                  <TableRow key={row.serviceOrderId}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{row.serviceOrderId}</TableCell>
-                    <TableCell>
-                      {new Date(row.createdDate).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(row.orderDate).toLocaleString()}
-                    </TableCell>
-                    <TableCell>{row.nicheAddress}</TableCell>
-                    <TableCell>
-                      {row.serviceOrderDetails.$values.map(
-                        (
-                          detail: {
-                            serviceName: string;
-                            quantity: number;
-                          },
-                          i: React.Key | null | undefined
-                        ) => (
-                          <div key={i}>
-                            {detail.serviceName} x {detail.quantity}
-                          </div>
-                        )
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
                       )}
                     </TableCell>
-                    <TableCell>
-                      {row.serviceOrderDetails.$values.map(
-                        (
-                          detail: {
-                            status: string;
-                          },
-                          i: React.Key | null | undefined
-                        ) => (
-                          <div key={i}>
-                            <Badge
-                              variant={
-                                detail.status === "Pending" ? "standard" : "dot"
-                              }
-                            >
-                              {detail.status}
-                            </Badge>
-                          </div>
-                        )
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title="Xem chi tiết">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleView(row as ServiceOrder)}
-                        >
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Chỉnh sửa">
-                        <IconButton
-                          color="primary"
-                          onClick={() => handleEdit(row as ServiceOrder)}
-                        >
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                )
-              )
+                  ))}
+                </TableRow>
+              ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={columns.length} align="center">
                   Bạn chưa có đơn đặt hàng.
                 </TableCell>
               </TableRow>

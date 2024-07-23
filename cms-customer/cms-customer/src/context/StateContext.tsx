@@ -222,7 +222,6 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       setOrders(response.data.$values);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      toast.error("Không thể lấy danh sách đơn đặt hàng.");
     }
   }, []);
 

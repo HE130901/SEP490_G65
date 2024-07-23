@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import NicheAPI from "@/services/nicheService";
 import CombinedDialog from "./DetailAndBooking";
+import MyNicheDetailDialog from "./MyNicheDetailDialog";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -129,6 +130,7 @@ const NicheReservationPage = () => {
 
   const closeDetailDialog = () => {
     setIsDetailDialogVisible(false);
+    setIsMyDetailDialogVisible(false);
     const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
     fetchNichesFunction(
       selectedBuilding.buildingId,
@@ -436,12 +438,12 @@ const NicheReservationPage = () => {
             onClose={closeDetailDialog}
             niche={selectedNicheDetail}
             onProceedToBooking={proceedToBooking}
-          />
+          />*/}
           <MyNicheDetailDialog
             isVisible={isMyDetailDialogVisible}
-            onClose={closeMyDetailDialog}
+            onClose={closeDetailDialog}
             niche={selectedNicheDetail}
-          /> */}
+          />
         </motion.div>
       </section>
     </div>

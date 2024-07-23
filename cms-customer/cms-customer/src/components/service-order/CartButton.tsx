@@ -3,9 +3,12 @@
 
 import { forwardRef, useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { Button, Badge, IconButton } from "@mui/material";
+import { Badge } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CartModal from "@/components/service-order/CartModal";
+import { styled } from "@mui/system";
+
+import { Button } from "@/components/ui/button";
 
 export const CartButton = forwardRef<HTMLDivElement>((props, ref) => {
   const { items } = useCart();
@@ -13,13 +16,18 @@ export const CartButton = forwardRef<HTMLDivElement>((props, ref) => {
 
   return (
     <div ref={ref} className="relative">
-      <IconButton onClick={() => setIsOpen(true)}>
-        <Badge badgeContent={items.length} color="secondary">
+      <Button
+        variant="outline"
+        className="shrink-0"
+        onClick={() => setIsOpen(true)}
+      >
+        <Badge badgeContent={items.length} color="error">
           <ShoppingCartIcon />
         </Badge>
-      </IconButton>
+      </Button>
       <CartModal isOpen={isOpen} setIsOpen={setIsOpen} />
     </div>
   );
 });
+
 CartButton.displayName = "CartButton";

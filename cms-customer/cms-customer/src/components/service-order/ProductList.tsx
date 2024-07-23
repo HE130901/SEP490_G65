@@ -17,19 +17,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import PaginationControls from "./PaginationControls";
 import { CartButton } from "./CartButton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { IconButton } from "@mui/material";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
+import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
+import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
+import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartRounded";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  Button as MUIButton,
+  Typography,
+} from "@mui/material";
 
 interface ProductListProps {
   products: any[];
@@ -42,6 +50,7 @@ export default function ProductList({ products }: ProductListProps) {
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
   const cartIconRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
 
@@ -80,6 +89,7 @@ export default function ProductList({ products }: ProductListProps) {
     addToCart(item);
     setAddedProductId(product.serviceId);
     toast.success(`${product.serviceName} đã được thêm vào giỏ hàng`);
+    handleCloseDetails();
 
     const imgToFly = fromModal
       ? document.querySelector(".product-card img")
@@ -142,7 +152,7 @@ export default function ProductList({ products }: ProductListProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="shrink-0">
-                <ListOrderedIcon className="w-4 h-4 mr-2" />
+                <SortOutlinedIcon className="w-4 h-4 mr-2" />
                 Sắp xếp: {sortBy}
               </Button>
             </DropdownMenuTrigger>
@@ -168,14 +178,14 @@ export default function ProductList({ products }: ProductListProps) {
             size="icon"
             onClick={() => setViewMode("grid")}
           >
-            <LayoutGridIcon className="w-5 h-5" />
+            <GridViewOutlinedIcon className="w-5 h-5" />
           </Button>
           <Button
             variant={viewMode === "list" ? "outline" : "ghost"}
             size="icon"
             onClick={() => setViewMode("list")}
           >
-            <ListIcon className="w-5 h-5" />
+            <ViewHeadlineOutlinedIcon className="w-5 h-5" />
           </Button>
         </div>
         <div className="flex space-x-4">
@@ -233,13 +243,31 @@ export default function ProductList({ products }: ProductListProps) {
                           onClick={(event) =>
                             handleAddToCart(product, event, false)
                           }
-                          className={`${
+                          onMouseEnter={() =>
+                            setHoveredProductId(product.serviceId)
+                          }
+                          onMouseLeave={() => setHoveredProductId(null)}
+                          className={`button-transition transition-all duration-300 ${
                             addedProductId === product.serviceId
                               ? "animate-bounce"
                               : ""
+                          } ${
+                            hoveredProductId === product.serviceId
+                              ? "button-expanded"
+                              : "button-collapsed"
                           }`}
                         >
-                          Thêm vào giỏ
+                          <AddShoppingCartOutlinedIcon />
+                          <span
+                            className={`${
+                              hoveredProductId === product.serviceId
+                                ? "inline"
+                                : "hidden"
+                            }`}
+                          >
+                            {" "}
+                            Thêm vào giỏ
+                          </span>
                         </Button>
                       </div>
                     </div>
@@ -263,115 +291,49 @@ export default function ProductList({ products }: ProductListProps) {
 
       {selectedProduct && (
         <Dialog
-          open={selectedProduct !== null}
-          onOpenChange={handleCloseDetails}
+          maxWidth="xs"
+          open={!!selectedProduct}
+          onClose={handleCloseDetails}
         >
+          <DialogTitle>{selectedProduct?.serviceName}</DialogTitle>
           <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{selectedProduct.serviceName}</DialogTitle>
-              <DialogDescription>{selectedProduct.category}</DialogDescription>
-            </DialogHeader>
             <Image
               src={
-                selectedProduct.servicePicture.startsWith("http")
+                selectedProduct?.servicePicture.startsWith("http")
                   ? selectedProduct.servicePicture
                   : "/default-image-url.jpg"
               }
-              alt={selectedProduct.serviceName}
+              alt={selectedProduct?.serviceName}
               width={160}
-              height={120}
-              className="w-full h-auto object-cover rounded-lg mb-4"
+              height={160}
+              className="object-cover rounded-lg mb-4 w-80 h-80 justify-center mx-auto"
             />
-            <p className="text-gray-700">{selectedProduct.description}</p>
-            <p className="text-lg font-semibold text-gray-900 mt-2">
-              {formatVND(selectedProduct.price)}
-            </p>
-            <Button
-              className="mt-4"
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              {selectedProduct?.description}
+            </Typography>
+            <Typography
+              variant="h6"
+              component="p"
+              color="textPrimary"
+              gutterBottom
+            >
+              {formatVND(selectedProduct?.price)}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <MUIButton variant="outlined" onClick={handleCloseDetails}>
+              Đóng
+            </MUIButton>
+            <MUIButton
+              variant="contained"
+              color="warning"
               onClick={(event) => handleAddToCart(selectedProduct, event, true)}
             >
               Thêm vào giỏ hàng
-            </Button>
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={handleCloseDetails}
-            >
-              Đóng
-            </Button>
-          </DialogContent>
+            </MUIButton>
+          </DialogActions>
         </Dialog>
       )}
     </div>
-  );
-}
-
-function LayoutGridIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="7" height="7" x="3" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="14" rx="1" />
-      <rect width="7" height="7" x="3" y="14" rx="1" />
-    </svg>
-  );
-}
-
-function ListIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="8" x2="21" y1="6" y2="6" />
-      <line x1="8" x2="21" y1="12" y2="12" />
-      <line x1="8" x2="21" y1="18" y2="18" />
-      <line x1="3" x2="3.01" y1="6" y2="6" />
-      <line x1="3" x2="3.01" y1="12" y2="12" />
-      <line x1="3" x2="3.01" y1="18" y2="18" />
-    </svg>
-  );
-}
-
-function ListOrderedIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="10" x2="21" y1="6" y2="6" />
-      <line x1="10" x2="21" y1="12" y2="12" />
-      <line x1="10" x2="21" y1="18" y2="18" />
-      <path d="M4 6h1v4" />
-      <path d="M4 10h2" />
-      <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-    </svg>
   );
 }
