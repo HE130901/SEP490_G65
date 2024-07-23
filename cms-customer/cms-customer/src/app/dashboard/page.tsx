@@ -18,8 +18,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/StateContext";
 import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
+import withAuth from "@/components/withAuth";
 
-export default function Dashboard() {
+function Dashboard() {
   const {
     user,
     niches: containers,
@@ -160,3 +161,4 @@ export default function Dashboard() {
     </div>
   );
 }
+export default withAuth(Dashboard);
