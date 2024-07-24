@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import styles from "./login.module.css";
 import { useState } from "react";
 import { Loader } from "lucide-react";
-import "react-toastify/dist/ReactToastify.css";
 
 // Define the validation schema using Zod
 const schema = z.object({

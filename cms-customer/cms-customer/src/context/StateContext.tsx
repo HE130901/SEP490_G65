@@ -144,7 +144,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const fetchNichesForCustomer = useCallback(
-    async (buildingId: number, floorId: number, areaId: number) => {
+    async (buildingId: any, floorId: any, areaId: any) => {
       try {
         const response = await NicheAPI.getAllNicheForCustomer(
           String(buildingId),
@@ -222,7 +222,6 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
       setOrders(response.data.$values);
     } catch (error) {
       console.error("Error fetching orders:", error);
-      toast.error("Không thể lấy danh sách đơn đặt hàng.");
     }
   }, []);
 

@@ -1,61 +1,99 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  TableSortLabel,
-  Chip,
-  SelectChangeEvent,
-  Tooltip,
-} from "@mui/material";
+import { Box, Button, IconButton, Tooltip, Chip, Paper } from "@mui/material";
 import {
   Add as AddIcon,
-  Edit as EditIcon,
   Visibility as VisibilityIcon,
+  CheckCircle as ConfirmIcon,
+  CancelOutlined as CancelOutlinedIcon,
 } from "@mui/icons-material";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import NicheReservationAPI from "@/services/nicheReservationService";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { styled } from "@mui/material/styles";
 import { toast } from "react-toastify";
+import NicheReservationAPI from "@/services/nicheReservationService";
 import AddBookingRequestDialog from "./NicheReservationAdd";
 import ViewBookingRequestDialog from "./NicheReservationDetail";
-import EditBookingRequestDialog from "./NicheReservationEdit";
 import DeleteBookingRequestDialog from "./NicheReservationDelete";
+import ConfirmBookingRequestDialog from "./NicheReservationConfirm";
+import viVN from "@/utils/viVN";
 
-const NicheReservationPage = (props: any) => {
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    whiteSpace: "normal",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
+  },
+}));
+
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "Canceled":
+      return "Đã hủy";
+    case "Approved":
+      return "Đã duyệt";
+    default:
+      return "Chờ duyệt";
+  }
+};
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Canceled":
+      return "error";
+    case "Approved":
+      return "success";
+    default:
+      return "warning";
+  }
+};
+
+const NicheReservationPage = () => {
   const [bookingRequests, setBookingRequests] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("all");
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("reservationId");
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedBookingRequest, setSelectedBookingRequest] = useState<
     any | null
   >(null);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const fetchBookingRequests = async () => {
     try {
       const response = await NicheReservationAPI.getAllNicheReservations();
-      if (Array.isArray(response.data)) {
-        setBookingRequests(response.data);
-      } else {
-        setBookingRequests(response.data.$values);
-      }
+      setBookingRequests(response.data.$values || response.data);
     } catch (error) {
       toast.error("Không thể tải danh sách đơn đặt chỗ");
     }
@@ -79,9 +117,9 @@ const NicheReservationPage = (props: any) => {
     }
   };
 
-  const handleEditBookingRequest = (bookingRequest: any) => {
+  const handleConfirmBookingRequest = (bookingRequest: any) => {
     setSelectedBookingRequest(bookingRequest);
-    setEditDialogOpen(true);
+    setConfirmDialogOpen(true);
   };
 
   const handleDeleteBookingRequest = (bookingRequest: any) => {
@@ -91,21 +129,22 @@ const NicheReservationPage = (props: any) => {
 
   const handleAddDialogClose = () => {
     setAddDialogOpen(false);
+    fetchBookingRequests();
   };
 
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
-    setSelectedBookingRequest(null);
-  };
-
-  const handleEditDialogClose = () => {
-    setEditDialogOpen(false);
-    setSelectedBookingRequest(null);
+    fetchBookingRequests();
   };
 
   const handleDeleteDialogClose = () => {
     setDeleteDialogOpen(false);
-    setSelectedBookingRequest(null);
+    fetchBookingRequests();
+  };
+
+  const handleConfirmDialogClose = () => {
+    setConfirmDialogOpen(false);
+    fetchBookingRequests();
   };
 
   const handleDeleteConfirmed = async () => {
@@ -124,127 +163,118 @@ const NicheReservationPage = (props: any) => {
     }
   };
 
-  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
-    setSearchColumn(event.target.value as string);
-  };
-
-  const handleRequestSort = (property: string) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const sortedBookingRequests = bookingRequests.sort((a, b) => {
-    if (orderBy === "reservationId") {
-      return order === "asc"
-        ? a.reservationId - b.reservationId
-        : b.reservationId - a.reservationId;
-    } else if (orderBy === "nicheAddress") {
-      return order === "asc"
-        ? (a.nicheAddress || "").localeCompare(b.nicheAddress || "")
-        : (b.nicheAddress || "").localeCompare(a.nicheAddress || "");
-    } else if (orderBy === "phoneNumber") {
-      return order === "asc"
-        ? (a.phoneNumber || "").localeCompare(b.phoneNumber || "")
-        : (b.phoneNumber || "").localeCompare(a.phoneNumber || "");
-    } else if (orderBy === "createdDate") {
-      return order === "asc"
-        ? new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime()
-        : new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
-    } else if (orderBy === "confirmationDate") {
-      return order === "asc"
-        ? new Date(a.confirmationDate).getTime() -
-            new Date(b.confirmationDate).getTime()
-        : new Date(b.confirmationDate).getTime() -
-            new Date(a.confirmationDate).getTime();
-    } else if (orderBy === "status") {
-      return order === "asc"
-        ? (a.status || "").localeCompare(b.status || "")
-        : (b.status || "").localeCompare(a.status || "");
-    }
-    return 0;
-  });
-
-  const filteredBookingRequests = sortedBookingRequests.filter(
-    (bookingRequest) => {
-      if (searchColumn === "all") {
-        return (
-          bookingRequest.nicheAddress
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          bookingRequest.phoneNumber
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          bookingRequest.reservationId
-            ?.toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          bookingRequest.createdDate
-            ?.toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          bookingRequest.confirmationDate
-            ?.toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          bookingRequest.status
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+  const handleConfirmConfirmed = async () => {
+    try {
+      if (selectedBookingRequest) {
+        await NicheReservationAPI.confirmNicheReservation(
+          selectedBookingRequest.reservationId
         );
-      } else if (searchColumn === "nicheAddress") {
-        return bookingRequest.nicheAddress
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "phoneNumber") {
-        return bookingRequest.phoneNumber
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "reservationId") {
-        return bookingRequest.reservationId
-          ?.toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "createdDate") {
-        return new Date(bookingRequest.createdDate)
-          .toLocaleDateString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "confirmationDate") {
-        return new Date(bookingRequest.confirmationDate)
-          .toLocaleDateString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      } else if (searchColumn === "status") {
-        return bookingRequest.status
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
       }
-      return true;
+      toast.success("Đơn đăng ký đã được xác nhận thành công");
+      fetchBookingRequests();
+      setConfirmDialogOpen(false);
+      setSelectedBookingRequest(null);
+    } catch (error) {
+      toast.error("Không thể xác nhận đơn đăng ký");
     }
-  );
-
-  const getStatusChip = (status: string) => {
-    let color: "default" | "error" | "warning" = "default";
-    let label = "";
-    let sx = {};
-
-    switch (status) {
-      case "Canceled":
-        color = "error";
-        label = "Đã hủy";
-        break;
-      case "Approved":
-        label = "Đã duyệt";
-        sx = { backgroundColor: "green", color: "white" };
-        break;
-      default:
-        color = "warning";
-        label = "Chờ duyệt";
-        break;
-    }
-
-    return <Chip label={label} color={color} sx={sx} />;
   };
+
+  const columns: GridColDef[] = [
+    {
+      field: "id",
+      headerName: "STT",
+      width: 80,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "reservationId",
+      headerName: "Mã đơn",
+      width: 80,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "nicheAddress",
+      headerName: "Địa chỉ ô chứa",
+      width: 200,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    { field: "name", headerName: "Tên khách hàng", width: 180 },
+    {
+      field: "phoneNumber",
+      headerName: "Số điện thoại",
+      width: 150,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "formattedConfirmationDate",
+      headerName: "Ngày hẹn",
+      width: 150,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={getStatusLabel(params.value)}
+          color={getStatusColor(params.value)}
+        />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 180,
+      renderCell: (params) => (
+        <CenteredCell>
+          <Tooltip title="Xem chi tiết">
+            <IconButton
+              color="primary"
+              onClick={() => handleViewBookingRequest(params.row.reservationId)}
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xác nhận">
+            <IconButton
+              color="success"
+              onClick={() => handleConfirmBookingRequest(params.row)}
+              disabled={
+                params.row.status === "Canceled" ||
+                params.row.status === "Approved"
+              }
+            >
+              <ConfirmIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Từ chối">
+            <IconButton
+              color="error"
+              onClick={() => handleDeleteBookingRequest(params.row)}
+              disabled={
+                params.row.status === "Approved" ||
+                params.row.status === "Canceled"
+              }
+            >
+              <CancelOutlinedIcon />
+            </IconButton>
+          </Tooltip>
+        </CenteredCell>
+      ),
+    },
+  ];
+
+  const rows = bookingRequests.map((bookingRequest, index) => ({
+    id: index + 1,
+    reservationId: bookingRequest.reservationId,
+    nicheAddress: bookingRequest.nicheAddress,
+    name: bookingRequest.name,
+    phoneNumber: bookingRequest.phoneNumber,
+    formattedCreatedDate: bookingRequest.formattedCreatedDate,
+    formattedConfirmationDate: bookingRequest.formattedConfirmationDate,
+    status: bookingRequest.status,
+  }));
 
   return (
     <Box p={3}>
@@ -262,192 +292,26 @@ const NicheReservationPage = (props: any) => {
         >
           Thêm mới đơn đăng ký đặt chỗ
         </Button>
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 120, marginRight: 2 }}
-          >
-            <InputLabel>Tìm theo</InputLabel>
-            <Select
-              value={searchColumn}
-              onChange={handleSearchColumnChange}
-              label="Tìm theo"
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="nicheAddress">Địa chỉ</MenuItem>
-              <MenuItem value="phoneNumber">Số điện thoại</MenuItem>
-              <MenuItem value="reservationId">Mã đơn</MenuItem>
-              <MenuItem value="createdDate">Ngày tạo</MenuItem>
-              <MenuItem value="confirmationDate">Ngày xác nhận</MenuItem>
-              <MenuItem value="status">Trạng thái</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Box>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "reservationId"}
-                  direction={
-                    orderBy === "reservationId"
-                      ? (order as "desc" | "asc")
-                      : "asc"
-                  }
-                  onClick={() => handleRequestSort("reservationId")}
-                >
-                  STT
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "reservationId"}
-                  direction={
-                    orderBy === "reservationId"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("reservationId")}
-                >
-                  Mã đơn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "nicheAddress"}
-                  direction={
-                    orderBy === "nicheAddress"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("nicheAddress")}
-                >
-                  Địa chỉ ô chứa
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "createdDate"}
-                  direction={
-                    orderBy === "createdDate"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("createdDate")}
-                >
-                  Ngày tạo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "confirmationDate"}
-                  direction={
-                    orderBy === "confirmationDate"
-                      ? (order as "desc" | "asc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("confirmationDate")}
-                >
-                  Ngày hẹn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "phoneNumber"}
-                  direction={
-                    orderBy === "phoneNumber"
-                      ? (order as "asc" | "desc")
-                      : undefined
-                  }
-                  onClick={() => handleRequestSort("phoneNumber")}
-                >
-                  Số điện thoại
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "status"}
-                  direction={
-                    orderBy === "status" ? (order as "desc" | "asc") : undefined
-                  }
-                  onClick={() => handleRequestSort("status")}
-                >
-                  Trạng thái
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredBookingRequests.map((bookingRequest, index) => (
-              <TableRow key={bookingRequest.reservationId}>
-                <TableCell align="center">{index + 1}</TableCell>
-                <TableCell align="center">
-                  {bookingRequest.reservationId}
-                </TableCell>
-                <TableCell align="center">
-                  {bookingRequest.nicheAddress}
-                </TableCell>
-                <TableCell align="center">
-                  {new Date(bookingRequest.createdDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  {new Date(
-                    bookingRequest.confirmationDate
-                  ).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  {bookingRequest.phoneNumber}
-                </TableCell>
-                <TableCell align="center">
-                  {getStatusChip(bookingRequest.status)}
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title="Xem chi tiết">
-                    <IconButton
-                      color="primary"
-                      onClick={() =>
-                        handleViewBookingRequest(bookingRequest.reservationId)
-                      }
-                    >
-                      <VisibilityIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Chỉnh sửa">
-                    <IconButton
-                      color="secondary"
-                      onClick={() => handleEditBookingRequest(bookingRequest)}
-                      disabled={bookingRequest.status === "Canceled"}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Hủy đơn">
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteBookingRequest(bookingRequest)}
-                      disabled={
-                        bookingRequest.status === "Approved" ||
-                        bookingRequest.status === "Canceled"
-                      }
-                    >
-                      <CancelOutlinedIcon />
-                    </IconButton>
-                  </Tooltip>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+        <Paper
+          elevation={3}
+          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+        >
+          <CenteredTable
+            rows={rows}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+          />
+        </Paper>
+      </Box>
       <AddBookingRequestDialog
         open={addDialogOpen}
         onClose={handleAddDialogClose}
@@ -459,17 +323,16 @@ const NicheReservationPage = (props: any) => {
         onClose={handleViewDialogClose}
         onConfirmSuccess={fetchBookingRequests}
       />
-      <EditBookingRequestDialog
-        open={editDialogOpen}
-        bookingRequest={selectedBookingRequest}
-        onClose={handleEditDialogClose}
-        onUpdateSuccess={fetchBookingRequests}
-      />
       <DeleteBookingRequestDialog
         open={deleteDialogOpen}
         bookingRequest={selectedBookingRequest}
         onClose={handleDeleteDialogClose}
         onDelete={handleDeleteConfirmed}
+      />
+      <ConfirmBookingRequestDialog
+        open={confirmDialogOpen}
+        onClose={handleConfirmDialogClose}
+        onConfirm={handleConfirmConfirmed}
       />
     </Box>
   );

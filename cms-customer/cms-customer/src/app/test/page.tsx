@@ -1,81 +1,69 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import NicheAPI from "@/services/nicheService";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import React, { useState } from "react";
+import axios from "@/utils/axiosInstance";
 
-const NicheReservationPage = () => {
-  const [niches, setNiches] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchNiches = async () => {
-      try {
-        const response = await NicheAPI.getAll(1, 1, 1);
-        const nichesData = response.data.$values;
-
-        if (Array.isArray(nichesData)) {
-          setNiches(nichesData);
-        } else {
-          console.error("API did not return an array:", nichesData);
-        }
-
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching niches:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchNiches();
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
+const VnPayPayment = () => {
+  const [amount, setAmount] = useState("");
+  const [orderId, setOrderId] = useState("");
+  const [paymentUrl, setPaymentUrl] = useState("");
+  interface ErrorData {
+    title: string;
+    errors: any;
   }
 
-  return (
-    <div className="flex flex-col items-center">
-      {niches.map((niche) => {
-        const tooltipMessage =
-          niche.status === "Booked"
-            ? "Ô chứa đã được đặt trước!"
-            : niche.status === "Unavailable"
-            ? "Ô chứa đã được sử dụng!"
-            : niche.reservedByUser
-            ? "Đây là ô chứa của bạn!"
-            : "Bạn có thể chọn ô chứa này!";
+  const [error, setError] = useState<ErrorData | null>(null);
 
-        return (
-          <TooltipProvider key={niche.nicheId}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
-                    niche.reservedByUser
-                      ? "bg-yellow-400 text-black"
-                      : niche.status === "Unavailable"
-                      ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
-                      : niche.status === "Booked"
-                      ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
-                      : "bg-white border hover:bg-green-500 hover:scale-150 hover:shadow-md hover:z-10 hover:transition-transform hover:duration-300 text-gray-600"
-                  }`}
-                >
-                  <div>{niche.nicheName}</div>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>{tooltipMessage}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        );
-      })}
+  const handlePayment = async () => {
+    try {
+      console.log("Sending data to backend:", { amount, orderId }); // Log dữ liệu gửi lên
+      const response = await axios.post("/api/payments/create-payment", null, {
+        params: {
+          amount: Number(amount), // Ensure amount is a number
+          orderId,
+        },
+      });
+      console.log("Response from backend:", response.data); // Log response nhận được
+      setPaymentUrl(response.data.paymentUrl);
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      if ((error as any).response) {
+        console.error("Response data:", (error as any).response.data);
+        setError((error as any).response.data);
+      }
+    }
+  };
+
+  return (
+    <div className="pt-28">
+      <h2>VNPay Payment</h2>
+      <input
+        type="text"
+        placeholder="Amount"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="Order ID"
+        value={orderId}
+        onChange={(e) => setOrderId(e.target.value)}
+      />
+      <button onClick={handlePayment}>Pay with VNPay</button>
+      {paymentUrl && (
+        <div>
+          <a href={paymentUrl} target="_blank" rel="noopener noreferrer">
+            Complete Payment
+          </a>
+        </div>
+      )}
+      {error && (
+        <div className="text-red-500">
+          Error: {error.title}. {JSON.stringify(error.errors)}
+        </div>
+      )}
     </div>
   );
 };
 
-export default NicheReservationPage;
+export default VnPayPayment;

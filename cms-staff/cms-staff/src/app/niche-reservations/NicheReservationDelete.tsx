@@ -36,7 +36,7 @@ const DeleteBookingRequestDialog = ({
         <Button onClick={onClose} color="primary">
           Hủy
         </Button>
-        <Button onClick={onDelete} color="error">
+        <Button onClick={onDelete} color="error" variant="contained">
           Xóa
         </Button>
       </DialogActions>

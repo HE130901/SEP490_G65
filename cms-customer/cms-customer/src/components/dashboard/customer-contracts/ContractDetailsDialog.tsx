@@ -30,8 +30,6 @@ export default function ContractDetailsDialog({
   const [contractDetails, setContractDetails] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
-  const [isLiquidateDialogOpen, setLiquidateDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchContractDetails = async () => {
@@ -56,16 +54,6 @@ export default function ContractDetailsDialog({
     }
   }, [isOpen, contractId]);
 
-  const handleExtendClick = () => {
-    console.log("Extend button clicked");
-    setExtendDialogOpen(true);
-  };
-
-  const handleLiquidateClick = () => {
-    console.log("Liquidate button clicked");
-    setLiquidateDialogOpen(true);
-  };
-
   if (!contractDetails) return null;
 
   return (
@@ -77,34 +65,71 @@ export default function ContractDetailsDialog({
             HỢP ĐỒNG GỬI GIỮ TRO CỐT
           </Typography>
           <Typography variant="h6" align="center" gutterBottom>
-            Mã hợp đồng: {contractDetails.contractId}
+            Hợp đồng số: {contractDetails.contractId}
           </Typography>
-          <Typography variant="h6" align="center" gutterBottom>
-            Ngày tháng: {contractDetails.startDate}
+          <Typography variant="body1" align="left" gutterBottom>
+            Hôm nay, ngày{" "}
+            {new Date(contractDetails.startDate).toLocaleDateString("vi-VN")} ,
+            tại An Bình Viên (Hòa Lạc) chúng tôi gồm có:
           </Typography>
 
           <Typography variant="h6" gutterBottom>
             BÊN A: Công ty An Bình Viên
           </Typography>
-          <Typography>Địa chỉ: Hòa Lạc - Hà Nội</Typography>
-          <Typography>Điện thoại: 0999.999.999</Typography>
           <Typography>Đại diện bởi: {contractDetails.staffName}</Typography>
           <Typography>Chức vụ: Nhân viên</Typography>
+          <Typography>Điện thoại: 0999.999.999</Typography>
+          <Typography>Địa chỉ: Hòa Lạc - Hà Nội</Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
             BÊN B: {contractDetails.customerName}
-          </Typography>
-          <Typography>Địa chỉ: {contractDetails.customerAddress}</Typography>
-          <Typography>
-            Số điện thoại: {contractDetails.customerPhone}
           </Typography>
           <Typography>
             CMND/CCCD: {contractDetails.customerCitizenID}
           </Typography>
           <Typography>
-            Ngày cấp: {contractDetails.citizenIdissuanceDate}
+            Ngày cấp:{" "}
+            {new Date(contractDetails.citizenIdissuanceDate).toLocaleDateString(
+              "vi-VN"
+            )}
           </Typography>
           <Typography>Nơi cấp: {contractDetails.citizenIdsupplier}</Typography>
+          <Typography>
+            Số điện thoại: {contractDetails.customerPhone}
+          </Typography>
+
+          <Typography>Địa chỉ: {contractDetails.customerAddress}</Typography>
+
+          <Typography variant="h6" gutterBottom mt={4}>
+            THÔNG TIN NGƯỜI MẤT
+          </Typography>
+          <Typography>Tên người mất: {contractDetails.deceasedName}</Typography>
+          <Typography>
+            CMND/CCCD: {contractDetails.deceasedCitizenID}
+          </Typography>
+          <Typography>
+            Ngày sinh:{" "}
+            {new Date(contractDetails.deceasedDateOfBirth).toLocaleDateString(
+              "vi-VN"
+            )}
+          </Typography>
+          <Typography>
+            Ngày mất:{" "}
+            {new Date(contractDetails.deceasedDateOfDeath).toLocaleDateString(
+              "vi-VN"
+            )}
+          </Typography>
+          <Typography>
+            Số giấy chứng tử: {contractDetails.deceasedDeathCertificateNumber}
+          </Typography>
+          <Typography>
+            Nơi cấp giấy chứng tử:{" "}
+            {contractDetails.deceasedDeathCertificateSupplier}
+          </Typography>
+          <Typography>
+            Quan hệ với bên B:{" "}
+            {contractDetails.deceasedRelationshipWithCustomer}
+          </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
             ĐIỀU 1: MỤC ĐÍCH VÀ PHẠM VI HỢP ĐỒNG
@@ -118,9 +143,10 @@ export default function ContractDetailsDialog({
             ĐIỀU 2: THỜI HẠN GỬI GIỮ
           </Typography>
           <Typography>
-            Thời hạn gửi giữ tro cốt là XX
-            {contractDetails.type === "Gửi theo tháng" ? "tháng" : "năm"}, kể từ
-            ngày {contractDetails.startDate} đến ngày {contractDetails.endDate}.
+            Thời hạn gửi giữ tro cốt là {contractDetails.duration}, kể từ ngày{" "}
+            {new Date(contractDetails.startDate).toLocaleDateString("vi-VN")}{" "}
+            đến ngày{" "}
+            {new Date(contractDetails.endDate).toLocaleDateString("vi-VN")}.
           </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
@@ -134,7 +160,7 @@ export default function ContractDetailsDialog({
             3.2. Chi phí dịch vụ là{" "}
             {contractDetails.totalAmount
               ? contractDetails.totalAmount.toLocaleString()
-              : 0}
+              : 0}{" "}
             VND. Đã được thanh toán tại thời điểm ký hợp đồng.
           </Typography>
 
@@ -189,42 +215,16 @@ export default function ContractDetailsDialog({
           </Box>
 
           <Typography variant="h6" gutterBottom mt={4}>
-            Ghi chú
+            Ghi chú hợp đồng
           </Typography>
           {contractDetails.note}
         </Box>
       </DialogContent>
       <DialogActions>
-        <Tooltip title="Gia hạn hợp đồng">
-          <Button onClick={handleExtendClick} disabled={loading}>
-            <HistorySharpIcon /> Gia hạn
-          </Button>
-        </Tooltip>
-        <Tooltip title="Thanh lý hợp đồng">
-          <Button onClick={handleLiquidateClick} disabled={loading}>
-            <DeleteIcon /> Thanh lý
-          </Button>
-        </Tooltip>
         <Button onClick={onClose} color="primary">
           Đóng
         </Button>
       </DialogActions>
-      <ExtendContractDialog
-        isOpen={isExtendDialogOpen}
-        onClose={() => {
-          console.log("Closing Extend Contract Dialog");
-          setExtendDialogOpen(false);
-        }}
-        contractId={contractId}
-      />
-      <LiquidateContractDialog
-        isOpen={isLiquidateDialogOpen}
-        onClose={() => {
-          console.log("Closing Liquidate Contract Dialog");
-          setLiquidateDialogOpen(false);
-        }}
-        contractId={contractId}
-      />
     </Dialog>
   );
 }

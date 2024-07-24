@@ -43,20 +43,20 @@ const CustomerPage = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await CustomerAPI.getAllCustomers();
-        setCustomers(response.data.$values);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Lỗi",
-          description: "Không thể tải danh sách khách hàng",
-        });
-      }
-    };
+  const fetchCustomers = async () => {
+    try {
+      const response = await CustomerAPI.getAllCustomers();
+      setCustomers(response.data.$values);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: "Không thể tải danh sách khách hàng",
+      });
+    }
+  };
 
+  useEffect(() => {
     fetchCustomers();
   }, [toast]);
 
@@ -73,11 +73,13 @@ const CustomerPage = () => {
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
     setSelectedCustomer(null);
+    fetchCustomers();
   };
 
   const handleEditDialogClose = () => {
     setEditDialogOpen(false);
     setSelectedCustomer(null);
+    fetchCustomers();
   };
 
   const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {

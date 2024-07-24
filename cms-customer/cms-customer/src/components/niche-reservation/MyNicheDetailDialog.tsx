@@ -19,12 +19,48 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { format } from "date-fns";
+import { Badge } from "../ui/badge";
 
 interface MyNicheDetailDialogProps {
   isVisible: boolean;
   onClose: () => void;
   niche: any;
 }
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case "Approved":
+    case "Complete":
+      return "green";
+    case "Pending":
+    case "PendingRenewal":
+    case "PendingCancelation":
+      return "default";
+    case "Canceled":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Pending":
+      return "Đang chờ ";
+    case "Canceled":
+      return "Đã hủy";
+    case "Complete":
+      return "Đã hoàn thành";
+
+    case "PendingRenewal":
+      return "Đang chờ gia hạn";
+    case "PendingCancelation":
+      return "Đang chờ hủy";
+    default:
+      return "Không xác định";
+  }
+};
 
 const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
   isVisible,
@@ -58,32 +94,47 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
       <DialogTitle>Chi tiết Ô chứa của bạn</DialogTitle>
       <DialogContent>
         <Box mb={2}>
-          <Typography variant="h6" gutterBottom>
-            Thông tin chung
-          </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h6" gutterBottom>
+              Thông tin chung
+            </Typography>
+            <Link href="/dashboard" passHref>
+              <Button color="primary" variant="text">
+                Xem chi tiết
+              </Button>
+            </Link>
+          </Box>
+
+          <Typography variant="body2" gutterBottom>
             <strong>Mã ô chứa:</strong> {niche?.nicheId || "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <strong>Địa chỉ ô chứa:</strong> {niche?.nicheAddress || "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <strong>Thông tin ô chứa:</strong>{" "}
             {niche?.nicheDescription || "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <strong>Tên người đã khuất:</strong> {niche?.fullName || "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <strong>Ngày bắt đầu hợp đồng:</strong>{" "}
             {niche?.startDate ? formatDate2(niche.startDate) : "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body2" gutterBottom>
             <strong>Ngày kết thúc hợp đồng:</strong>{" "}
             {niche?.endDate ? formatDate2(niche.endDate) : "N/A"}
           </Typography>
-          <Typography variant="body1" gutterBottom>
-            <strong>Trạng thái hợp đồng:</strong> {niche?.status || "N/A"}
+          <Typography variant="body2" gutterBottom>
+            <strong>Trạng thái hợp đồng:</strong>
+            <Badge variant={getStatusVariant(niche?.status)}>
+              {getStatusText(niche?.status) || "Không có thông tin"}
+            </Badge>
           </Typography>
         </Box>
         <Divider />
@@ -120,7 +171,12 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                         <TableCell align="center">
                           {formatDate(visit.visitDate)}
                         </TableCell>
-                        <TableCell align="center">{visit.status}</TableCell>
+                        <TableCell align="center">
+                          <Badge variant={getStatusVariant(visit.status)}>
+                            {getStatusText(visit.status) ||
+                              "Không có thông tin"}
+                          </Badge>
+                        </TableCell>
                         <TableCell align="center">{visit.note}</TableCell>
                         <TableCell align="center">
                           {visit.accompanyingPeople}
@@ -180,7 +236,10 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                               {detail.quantity}
                             </TableCell>
                             <TableCell align="center">
-                              {detail.status}
+                              <Badge variant={getStatusVariant(detail.status)}>
+                                {getStatusText(detail.status) ||
+                                  "Không có thông tin"}
+                              </Badge>
                             </TableCell>
                             <TableCell align="center">
                               {detail.completionImage && (

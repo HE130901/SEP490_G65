@@ -21,6 +21,14 @@ const NicheReservationAPI = {
       },
     });
   },
+  confirmNicheReservation(id: number) {
+    const token = localStorage.getItem("token");
+    return axiosInstance.put(`/api/NicheReservations/confirm/${id}`, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
 };
 
 export default NicheReservationAPI;

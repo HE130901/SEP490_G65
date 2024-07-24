@@ -1,7 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
-using Microsoft.Extensions.Logging; // Add logging
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Security.Claims;
+using TimeZoneConverter;
 
 namespace cms_server.Controllers
 {
@@ -10,15 +15,26 @@ namespace cms_server.Controllers
     public class VisitRegistrationsController : ControllerBase
     {
         private readonly CmsContext _context;
-        private readonly ILogger<VisitRegistrationsController> _logger; 
+        private readonly ILogger<VisitRegistrationsController> _logger;
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
 
+        private DateTime ConvertToTimeZone(DateTime utcDateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZoneInfo);
+        }
+
+        private DateTime ConvertToUtc(DateTime dateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
+        }
         public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
         {
             _context = context;
-            _logger = logger; 
+            _logger = logger;
         }
 
-       
 
         // GET: api/VisitRegistrations
         [HttpGet]
@@ -27,17 +43,26 @@ namespace cms_server.Controllers
             try
             {
                 var visitRegistrations = await _context.VisitRegistrations
+                    .Include(vr => vr.Customer)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
                     .Select(vr => new VisitRegistrationDto
                     {
                         VisitId = vr.VisitId,
                         CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
                         VisitDate = vr.VisitDate,
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
                         Status = vr.Status ?? "No information",
                         ApprovedBy = vr.ApprovedBy,
                         CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         Note = vr.Note ?? string.Empty,
-                        AccompanyingPeople = (int)vr.AccompanyingPeople
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A"
                     })
                     .ToListAsync();
 
@@ -50,20 +75,41 @@ namespace cms_server.Controllers
             }
         }
 
-
-
         // GET: api/VisitRegistrations/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<VisitRegistration>> GetVisitRegistration(int id)
+        public async Task<ActionResult<VisitRegistrationDto>> GetVisitRegistration(int id)
         {
-            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+            var visitRegistration = await _context.VisitRegistrations
+                .Include(vr => vr.Customer)
+                .Include(vr => vr.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
+                .Where(vr => vr.VisitId == id)
+                .Select(vr => new VisitRegistrationDto
+                {
+                    VisitId = vr.VisitId,
+                    CustomerId = vr.CustomerId,
+                    NicheId = vr.NicheId,
+                    VisitDate = vr.VisitDate,
+                    NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                    Status = vr.Status ?? "No information",
+                    ApprovedBy = vr.ApprovedBy,
+                    CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                    Note = vr.Note ?? string.Empty,
+                    AccompanyingPeople = (int)vr.AccompanyingPeople,
+                    CustomerName = vr.Customer.FullName,
+                    StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
+                })
+                .FirstOrDefaultAsync();
 
             if (visitRegistration == null)
             {
                 return NotFound();
             }
 
-            return visitRegistration;
+            return Ok(visitRegistration);
         }
 
         // GET: api/VisitRegistrations/customer/5
@@ -74,15 +120,25 @@ namespace cms_server.Controllers
             {
                 var visitRegistrations = await _context.VisitRegistrations
                     .Where(vr => vr.CustomerId == customerId)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
                     .Select(vr => new VisitRegistrationDto
                     {
                         VisitId = vr.VisitId,
+                        CustomerId = vr.CustomerId,
                         NicheId = vr.NicheId,
-                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
                         VisitDate = vr.VisitDate,
-                        Status = vr.Status ?? "No infomation",
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                        Status = vr.Status ?? "No information",
+                        ApprovedBy = vr.ApprovedBy,
+                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                        Note = vr.Note ?? string.Empty,
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
-                        Note = vr.Note ?? string.Empty
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
                     })
                     .ToListAsync();
 
@@ -95,7 +151,7 @@ namespace cms_server.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching visit registrations for customer ID: {CustomerId}", customerId); // Log error
+                _logger.LogError(ex, "Error fetching visit registrations for customer ID: {CustomerId}", customerId);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -143,6 +199,10 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
         {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+
             var visitRegistration = new VisitRegistration
             {
                 CustomerId = visitRegistrationDto.CustomerId,
@@ -151,7 +211,7 @@ namespace cms_server.Controllers
                 Note = visitRegistrationDto.Note,
                 Status = "Pending",
                 ApprovedBy = null,
-                CreatedDate = DateTime.Now,
+                CreatedDate = localNow,
                 AccompanyingPeople = visitRegistrationDto.AccompanyingPeople
             };
 
@@ -160,7 +220,6 @@ namespace cms_server.Controllers
 
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
-
         // DELETE: api/VisitRegistrations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisitRegistration(int id)
@@ -195,6 +254,56 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // PUT: api/VisitRegistrations/approve/5
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> ApproveVisitRegistration(int id)
+        {
+            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+
+            if (visitRegistration == null)
+            {
+                return NotFound();
+            }
+
+            // Update the status to "Approved"
+            visitRegistration.Status = "Approved";
+            visitRegistration.ApprovedBy = GetStaffIdFromToken();
+
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!VisitRegistrationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private int GetStaffIdFromToken()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                var staffIdClaim = identity.FindFirst(ClaimTypes.NameIdentifier);
+                if (staffIdClaim != null)
+                {
+                    return int.Parse(staffIdClaim.Value);
+                }
+            }
+            throw new UnauthorizedAccessException("Invalid token");
+        }
+
         private bool VisitRegistrationExists(int id)
         {
             return _context.VisitRegistrations.Any(e => e.VisitId == id);
@@ -207,11 +316,15 @@ public class VisitRegistrationDto
     public int VisitId { get; set; }
     public int CustomerId { get; set; }
     public int NicheId { get; set; }
+    public string? CustomerName { get; set; }
+    public string? StaffName { get; set; }
+    public string? NicheAddress { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? VisitDate { get; set; }
     public string? Status { get; set; } = "Pending";
     public int AccompanyingPeople { get; set; }
     public string? Note { get; set; }
-
     public int? ApprovedBy { get; set; }
+    public string? FormattedVisitDate => VisitDate?.ToString("HH:mm dd/MM/yyyy");
+    public string? FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
 }

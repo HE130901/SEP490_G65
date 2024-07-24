@@ -1,6 +1,6 @@
+// src/components/NicheListWithSelectors.tsx
 "use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Table,
@@ -10,320 +10,283 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  TextField,
-  MenuItem,
-  Select,
+  Typography,
   FormControl,
   InputLabel,
-  Chip,
-  SelectChangeEvent,
+  Select,
+  MenuItem,
+  CircularProgress,
+  IconButton,
 } from "@mui/material";
-import {
-  Edit as EditIcon,
-  Visibility as VisibilityIcon,
-} from "@mui/icons-material";
-import buildingService from "@/services/buildingService";
-import NicheViewDialog from "./NicheDetail";
-import NicheEditDialog from "./NicheEdit";
-import { Niche, Building, Floor, Zone } from "./interfaces";
+import { Visibility, Edit } from "@mui/icons-material";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
+import ViewNicheDialog from "./ViewNicheDialog";
+import EditNicheDialog from "./EditNicheDialog";
 
-const NicheManagementPage = () => {
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [selectedBuilding, setSelectedBuilding] = useState<string>("");
-  const [selectedFloor, setSelectedFloor] = useState<string>("");
-  const [selectedZone, setSelectedZone] = useState<string>("");
-  const [niches, setNiches] = useState<Niche[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchColumn, setSearchColumn] = useState<string>("all");
-  const [selectedNiche, setSelectedNiche] = useState<Niche | null>(null);
-  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
-  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+interface NicheHistoryDto {
+  contractId: number;
+  startDate: string;
+  endDate: string;
+}
+
+interface NicheDtoForStaff {
+  nicheId: number;
+  nicheName: string;
+  customerName?: string;
+  deceasedName?: string;
+  description?: string;
+  nicheHistories: { $values: NicheHistoryDto[] };
+  status?: string;
+}
+
+const NicheListWithSelectors: React.FC = () => {
+  const [buildings, setBuildings] = useState<any[]>([]);
+  const [floors, setFloors] = useState<any[]>([]);
+  const [areas, setAreas] = useState<any[]>([]);
+  const [niches, setNiches] = useState<NicheDtoForStaff[]>([]);
+  const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [selectedArea, setSelectedArea] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchBuildings = async () => {
       try {
-        const response = await buildingService.getAllBuildingsFloorsAreas();
-        setBuildings(
-          response.data.buildings.$values || response.data.buildings || []
-        );
+        const response = await axiosInstance.get("/api/Locations/buildings");
+        const buildingsData = response.data.$values;
+        setBuildings(buildingsData);
+        if (buildingsData.length > 0) {
+          setSelectedBuilding(buildingsData[0].buildingId);
+        }
       } catch (error) {
-        console.error("Error fetching buildings data:", error);
+        toast.error("Unable to fetch buildings");
       }
     };
 
     fetchBuildings();
   }, []);
 
-  const handleBuildingChange = (event: SelectChangeEvent<string>) => {
-    const buildingId = event.target.value as string;
-    setSelectedBuilding(buildingId);
-    setSelectedFloor("");
-    setSelectedZone("");
-    setNiches([]);
-  };
+  useEffect(() => {
+    if (selectedBuilding !== null) {
+      const fetchFloors = async () => {
+        try {
+          const response = await axiosInstance.get(
+            `/api/Locations/floors/${selectedBuilding}`
+          );
+          const floorsData = response.data.$values;
+          setFloors(floorsData);
+          if (floorsData.length > 0) {
+            setSelectedFloor(floorsData[0].floorId);
+          }
+        } catch (error) {
+          toast.error("Unable to fetch floors");
+        }
+      };
 
-  const handleFloorChange = (event: SelectChangeEvent<string>) => {
-    const floorId = event.target.value as string;
-    setSelectedFloor(floorId);
-    setSelectedZone("");
-    setNiches([]);
-  };
-
-  const handleZoneChange = async (event: SelectChangeEvent<string>) => {
-    const zoneId = event.target.value as string;
-    setSelectedZone(zoneId);
-
-    try {
-      const response = await buildingService.getNiches(
-        selectedBuilding,
-        selectedFloor,
-        zoneId
-      );
-      setNiches(response.data.$values || response.data); // Ensure proper data access
-    } catch (error) {
-      console.error("Error fetching niches data:", error);
+      fetchFloors();
     }
-  };
+  }, [selectedBuilding]);
 
-  const handleViewNiche = (niche: Niche) => {
-    setSelectedNiche(niche);
+  useEffect(() => {
+    if (selectedFloor !== null) {
+      const fetchAreas = async () => {
+        try {
+          const response = await axiosInstance.get(
+            `/api/Locations/areas/${selectedFloor}`
+          );
+          const areasData = response.data.$values;
+          setAreas(areasData);
+          if (areasData.length > 0) {
+            setSelectedArea(areasData[0].areaId);
+          }
+        } catch (error) {
+          toast.error("Unable to fetch areas");
+        }
+      };
+
+      fetchAreas();
+    }
+  }, [selectedFloor]);
+
+  useEffect(() => {
+    if (selectedArea !== null) {
+      const fetchNiches = async () => {
+        try {
+          setLoading(true);
+          const response = await axiosInstance.get(
+            `/api/StaffNiches/area/${selectedArea}`
+          );
+          setNiches(response.data.$values); // Accessing the $values property
+        } catch (error) {
+          toast.error("Unable to fetch niches");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchNiches();
+    }
+  }, [selectedArea]);
+
+  const handleViewNiche = (nicheId: number) => {
+    setSelectedNicheId(nicheId);
     setViewDialogOpen(true);
   };
 
-  const handleEditNiche = (niche: Niche) => {
-    setSelectedNiche(niche);
+  const handleEditNiche = (nicheId: number) => {
+    setSelectedNicheId(nicheId);
     setEditDialogOpen(true);
   };
 
-  const handleViewDialogClose = () => {
-    setViewDialogOpen(false);
-    setSelectedNiche(null);
-  };
+  const handleEditSuccess = () => {
+    if (selectedArea !== null) {
+      const fetchNiches = async () => {
+        try {
+          setLoading(true);
+          const response = await axiosInstance.get(
+            `/api/StaffNiches/area/${selectedArea}`
+          );
+          setNiches(response.data.$values); // Accessing the $values property
+        } catch (error) {
+          toast.error("Unable to fetch niches");
+        } finally {
+          setLoading(false);
+        }
+      };
 
-  const handleEditDialogClose = () => {
-    setEditDialogOpen(false);
-    setSelectedNiche(null);
-  };
-
-  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
-    setSearchColumn(event.target.value as string);
-  };
-
-  const filteredNiches = niches.filter((niche) => {
-    if (searchColumn === "all") {
-      return (
-        niche.nicheName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.deceased.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        niche.history.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    } else if (searchColumn === "code") {
-      return niche.nicheName.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "customer") {
-      return niche.customer.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "phone") {
-      return niche.phone.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "deceased") {
-      return niche.deceased.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "status") {
-      return niche.status.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "history") {
-      return niche.history.toLowerCase().includes(searchTerm.toLowerCase());
+      fetchNiches();
     }
-    return true;
-  });
+  };
 
   return (
     <Box p={3}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 150, marginRight: 2 }}
+      <Box display="flex" justifyContent="space-between" mb={2}>
+        <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
+          <InputLabel id="building-select-label">Building</InputLabel>
+          <Select
+            labelId="building-select-label"
+            value={selectedBuilding || ""}
+            onChange={(e) => setSelectedBuilding(e.target.value as number)}
           >
-            <InputLabel>Tòa nhà</InputLabel>
-            <Select
-              value={selectedBuilding}
-              onChange={handleBuildingChange}
-              label="Tòa nhà"
-            >
-              {Array.isArray(buildings) &&
-                buildings.map((building) => (
-                  <MenuItem
-                    key={building.buildingId}
-                    value={building.buildingId}
-                  >
-                    {building.buildingName}
-                  </MenuItem>
-                ))}
-            </Select>
-          </FormControl>
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 150, marginRight: 2 }}
-            disabled={!selectedBuilding}
-          >
-            <InputLabel>Tầng</InputLabel>
-            <Select
-              value={selectedFloor}
-              onChange={handleFloorChange}
-              label="Tầng"
-            >
-              {selectedBuilding &&
-                Array.isArray(buildings) &&
-                buildings
-                  .find(
-                    (building) =>
-                      building.buildingId === parseInt(selectedBuilding)
-                  )
-                  ?.floors.$values?.map((floor) => (
-                    <MenuItem key={floor.floorId} value={floor.floorId}>
-                      {floor.floorName}
-                    </MenuItem>
-                  ))}
-            </Select>
-          </FormControl>
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 150, marginRight: 2 }}
-            disabled={!selectedFloor}
-          >
-            <InputLabel>Khu</InputLabel>
-            <Select
-              value={selectedZone}
-              onChange={handleZoneChange}
-              label="Khu"
-            >
-              {selectedFloor &&
-                Array.isArray(buildings) &&
-                buildings
-                  .find(
-                    (building) =>
-                      building.buildingId === parseInt(selectedBuilding)
-                  )
-                  ?.floors.$values.find(
-                    (floor) => floor.floorId === parseInt(selectedFloor)
-                  )
-                  ?.areas.$values?.map((zone) => (
-                    <MenuItem key={zone.areaId} value={zone.areaId}>
-                      {zone.areaName}
-                    </MenuItem>
-                  ))}
-            </Select>
-          </FormControl>
-        </Box>
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 150, marginRight: 2 }}
-          >
-            <InputLabel>Tìm theo</InputLabel>
-            <Select
-              value={searchColumn}
-              onChange={handleSearchColumnChange}
-              label="Tìm theo"
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="code">Mã</MenuItem>
-              <MenuItem value="customer">Khách hàng</MenuItem>
-              <MenuItem value="phone">Số điện thoại</MenuItem>
-              <MenuItem value="deceased">Người mất</MenuItem>
-              <MenuItem value="status">Trạng thái</MenuItem>
-              <MenuItem value="history">Lịch sử</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Box>
-      </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>STT</TableCell>
-              <TableCell>Mã</TableCell>
-              <TableCell>Khách hàng</TableCell>
-              <TableCell>Số điện thoại</TableCell>
-              <TableCell>Người mất</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Lịch sử</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredNiches.map((niche, index) => (
-              <TableRow key={niche.nicheId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{niche.nicheName}</TableCell>
-                <TableCell>{niche.customer}</TableCell>
-                <TableCell>{niche.phone}</TableCell>
-                <TableCell>{niche.deceased}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={
-                      niche.status === "Đang sử dụng"
-                        ? "Đang sử dụng"
-                        : niche.status === "Còn trống"
-                        ? "Còn trống"
-                        : niche.status === "Đang được đặt"
-                        ? "Đang được đặt"
-                        : "Đã quá hạn HĐ"
-                    }
-                    color={
-                      niche.status === "Đang sử dụng"
-                        ? "success"
-                        : niche.status === "Còn trống"
-                        ? "default"
-                        : niche.status === "Đang được đặt"
-                        ? "warning"
-                        : "error"
-                    }
-                  />
-                </TableCell>
-                <TableCell>{niche.history}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleViewNiche(niche)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleEditNiche(niche)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
+            {buildings.map((building) => (
+              <MenuItem key={building.buildingId} value={building.buildingId}>
+                {building.buildingName}
+              </MenuItem>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <NicheViewDialog
+          </Select>
+        </FormControl>
+
+        <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
+          <InputLabel id="floor-select-label">Floor</InputLabel>
+          <Select
+            labelId="floor-select-label"
+            value={selectedFloor || ""}
+            onChange={(e) => setSelectedFloor(e.target.value as number)}
+          >
+            {floors.map((floor) => (
+              <MenuItem key={floor.floorId} value={floor.floorId}>
+                {floor.floorName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl margin="normal" style={{ flex: 1 }}>
+          <InputLabel id="area-select-label">Area</InputLabel>
+          <Select
+            labelId="area-select-label"
+            value={selectedArea || ""}
+            onChange={(e) => setSelectedArea(e.target.value as number)}
+          >
+            {areas.map((area) => (
+              <MenuItem key={area.areaId} value={area.areaId}>
+                {area.areaName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        selectedArea && (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>STT</TableCell>
+                  <TableCell>Niche ID</TableCell>
+                  <TableCell>Niche Name</TableCell>
+                  <TableCell>Customer Name</TableCell>
+                  <TableCell>Deceased Name</TableCell>
+                  <TableCell>Contract History</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {niches.map((niche, index) => (
+                  <TableRow key={niche.nicheId}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{niche.nicheId}</TableCell>
+                    <TableCell>{niche.nicheName}</TableCell>
+                    <TableCell>{niche.customerName ?? "N/A"}</TableCell>
+                    <TableCell>{niche.deceasedName ?? "N/A"}</TableCell>
+                    <TableCell>
+                      {niche.nicheHistories.$values.length > 0
+                        ? niche.nicheHistories.$values.map((history) => (
+                            <div key={history.contractId}>
+                              <p>Contract ID: {history.contractId}</p>
+                              <p>Start Date: {history.startDate}</p>
+                              <p>End Date: {history.endDate}</p>
+                            </div>
+                          ))
+                        : "No history"}
+                    </TableCell>
+                    <TableCell>{niche.status ?? "N/A"}</TableCell>
+                    <TableCell>{niche.description ?? "N/A"}</TableCell>
+
+                    <TableCell>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleViewNiche(niche.nicheId)}
+                      >
+                        <Visibility />
+                      </IconButton>
+                      <IconButton
+                        color="secondary"
+                        onClick={() => handleEditNiche(niche.nicheId)}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
+      )}
+
+      <ViewNicheDialog
         open={viewDialogOpen}
-        niche={selectedNiche}
-        onClose={handleViewDialogClose}
+        onClose={() => setViewDialogOpen(false)}
+        nicheId={selectedNicheId}
       />
-      <NicheEditDialog
+      <EditNicheDialog
         open={editDialogOpen}
-        niche={selectedNiche}
-        onClose={handleEditDialogClose}
+        onClose={() => setEditDialogOpen(false)}
+        nicheId={selectedNicheId}
+        onSuccess={handleEditSuccess}
       />
     </Box>
   );
 };
 
-export default NicheManagementPage;
+export default NicheListWithSelectors;

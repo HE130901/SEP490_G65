@@ -50,6 +50,32 @@ export type NicheReservation = {
   name: string;
 };
 
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "green";
+    case "Pending":
+      return "default";
+    case "Canceled":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Pending":
+      return "Đang chờ duyệt";
+    case "Canceled":
+      return "Đã hủy";
+    default:
+      return "Không xác định";
+  }
+};
+
 export default function BookingRequestList({
   reFetchTrigger,
 }: {
@@ -220,18 +246,18 @@ export default function BookingRequestList({
       ),
     },
     {
-      accessorKey: "nicheId",
+      accessorKey: "nicheAddress",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Mã Ô
+          Địa chỉ ô chứa
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("nicheId")}</div>
+        <div className="text-center">{row.getValue("nicheAddress")}</div>
       ),
     },
     {
@@ -258,7 +284,7 @@ export default function BookingRequestList({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Ngày Xác Nhận
+          Ngày hẹn
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
@@ -281,16 +307,8 @@ export default function BookingRequestList({
       ),
       cell: ({ row }) => (
         <div className="text-center">
-          <Badge
-            variant={
-              row.getValue("status") === "Pending"
-                ? "outline"
-                : row.getValue("status") === "Approved"
-                ? "green"
-                : "red"
-            }
-          >
-            {row.getValue("status")}
+          <Badge variant={getStatusVariant(row.getValue("status"))}>
+            {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
       ),
@@ -455,7 +473,7 @@ export default function BookingRequestList({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Bạn chưa có đơn đặt chỗ nào.
+                  Đang tải đơn đặt chỗ của bạn ...
                 </TableCell>
               </TableRow>
             )}

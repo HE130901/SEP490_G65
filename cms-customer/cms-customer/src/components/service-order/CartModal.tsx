@@ -1,28 +1,51 @@
 "use client";
 
-import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  MenuItem,
+  CircularProgress,
+  Box,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import { useCart } from "@/context/CartContext";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import ServiceOrderAPI from "@/services/serviceOrderService"; // Import the service order API
+import PaymentService from "@/services/paymentService";
 import { toast } from "react-toastify";
-import SelectNicheAndDateDialog from "./SelectNicheAndDateDialog"; // Import the new dialog component
-import ItemType from "./ItemType"; // Import the ItemType type from the appropriate module
+import NicheAPI from "@/services/nicheService";
+import ItemType from "./ItemType";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 interface CartModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
 }
 
-export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
-  const { items, removeFromCart, updateQuantity, clearCart } = useCart(); // Added clearCart
-  const [loading, setLoading] = useState(false); // Added loading state
-  const [isSelectDialogOpen, setSelectDialogOpen] = useState(false); // Added state for the new dialog
+interface Niche {
+  nicheId: number;
+  nicheName: string;
+}
+
+const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
+  const { items, removeFromCart, updateQuantity, clearCart } = useCart();
+  const [loading, setLoading] = useState(false);
+  const [nicheID, setNicheID] = useState<number>(1);
+  const [orderDate, setOrderDate] = useState<string>("");
+  const [niches, setNiches] = useState<Niche[]>([]);
+  const [isNichesLoading, setNichesLoading] = useState<boolean>(true);
 
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    console.log("Cart modal state changed:", open);
+    if (!open) {
+      setIsOpen(open);
+    }
   };
 
   const calculateTotal = () => {
@@ -41,138 +64,181 @@ export const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
     updateQuantity(item.id, item.quantity + 1);
   };
 
-  const handleCreateOrder = async (nicheID: number, orderDate: string) => {
-    setLoading(true); // Start loading
+  const handleInitiatePayment = async () => {
+    setLoading(true);
     try {
       const orderDetails = items.map((item) => ({
         serviceID: item.id,
         quantity: item.quantity,
       }));
 
-      const orderData = {
-        nicheID, // Use the selected niche ID
-        orderDate,
-        serviceOrderDetails: orderDetails,
-      };
+      const totalAmount = calculateTotal();
 
-      const response = await ServiceOrderAPI.create(orderData);
-      toast.success("Đơn đặt hàng đã được tạo thành công!");
-      clearCart(); // Clear the cart after successful order creation
-      setIsOpen(false); // Close the cart modal
+      localStorage.setItem("orderDetails", JSON.stringify(orderDetails));
+      localStorage.setItem("nicheID", nicheID.toString());
+      localStorage.setItem("orderDate", orderDate);
+
+      const paymentResponse = await PaymentService.createPayment({
+        amount: totalAmount.toString(),
+        orderId: new Date().getTime().toString(),
+      });
+
+      if (paymentResponse.paymentUrl) {
+        window.location.href = paymentResponse.paymentUrl;
+      } else {
+        throw new Error("Failed to create payment URL");
+      }
     } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error("Không thể tạo đơn đặt hàng.");
+      console.error("Error creating payment URL:", error);
+      toast.error("Không thể tạo URL thanh toán.");
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    const fetchNiches = async () => {
+      try {
+        const response = await NicheAPI.getNichesForCustomer();
+        setNiches(response.data.$values);
+      } catch (error) {
+        toast.error("Failed to fetch niches. Please try again later.");
+      } finally {
+        setNichesLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchNiches();
+    }
+  }, [isOpen]);
+
   const totalAmount = calculateTotal();
+  const isPaymentDisabled = !nicheID || !orderDate || items.length === 0;
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-lg p-6 bg-white rounded-lg shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Giỏ Hàng Của Bạn</h2>
-          </div>
-          {items.length > 0 ? (
-            <div>
-              <ul className="space-y-4">
-                {items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex justify-between items-center"
-                  >
-                    <div className="flex items-center gap-4">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        width={64}
-                        height={64}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                      <div>
-                        <span className="font-medium text-gray-800">
-                          {item.name}
-                        </span>
-                        <p className="text-sm text-gray-500">
-                          {(item.price * item.quantity).toLocaleString()} ₫
-                        </p>
-                        <div className="flex items-center mt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-red-400 w-8 h-8 hover:bg-red-500"
-                            onClick={() => handleDecreaseQuantity(item)}
-                          >
-                            -
-                          </Button>
-                          <span className="mx-2">{item.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="bg-green-400 w-8 h-8 hover:bg-green-500"
-                            onClick={() => handleIncreaseQuantity(item)}
-                          >
-                            +
-                          </Button>
-                        </div>
+    <Dialog
+      open={isOpen}
+      onClose={() => handleOpenChange(false)}
+      fullWidth
+      maxWidth="xs"
+    >
+      <DialogTitle>Giỏ Hàng Của Bạn</DialogTitle>
+      <DialogContent>
+        {items.length > 0 ? (
+          <div>
+            <ul className="space-y-4">
+              {items.map((item) => (
+                <li key={item.id} className="flex justify-between items-center">
+                  <div className="flex items-center gap-4">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      className="w-24 h-24 object-cover rounded-lg"
+                    />
+                    <div>
+                      <Typography variant="body1" color="textPrimary">
+                        {item.name}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {(item.price * item.quantity).toLocaleString()} ₫
+                      </Typography>
+                      <div className="flex items-center mt-2">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleDecreaseQuantity(item)}
+                          color="error"
+                        >
+                          <RemoveCircleIcon />
+                        </IconButton>
+                        <span className="mx-2">{item.quantity}</span>
+                        <IconButton
+                          color="success"
+                          size="small"
+                          onClick={() => handleIncreaseQuantity(item)}
+                        >
+                          <AddCircleIcon />
+                        </IconButton>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeFromCart(item.id)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-6 border-t pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-semibold text-gray-900">
-                    Tổng cộng
-                  </span>
-                  <span className="text-lg font-semibold text-gray-900">
-                    {totalAmount.toLocaleString()} ₫
-                  </span>
-                </div>
-                <Button
-                  variant="default"
-                  className="w-full"
-                  onClick={() => setSelectDialogOpen(true)} // Open the new dialog
-                >
-                  Chọn ô chứa và ngày hẹn
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <p className="text-center text-gray-500">Giỏ hàng của bạn trống.</p>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Select Niche and Date Dialog */}
-      <SelectNicheAndDateDialog
-        isOpen={isSelectDialogOpen}
-        onClose={() => setSelectDialogOpen(false)}
-        onSave={handleCreateOrder}
-      />
-    </>
+                  </div>
+                  <IconButton
+                    color="error"
+                    size="medium"
+                    onClick={() => removeFromCart(item.id)}
+                  >
+                    <DeleteForeverIcon />
+                  </IconButton>
+                </li>
+              ))}
+            </ul>
+            <Box mt={4} borderTop={1} borderColor="grey.300" pt={2}>
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Typography variant="h6" color="textPrimary">
+                  Tổng cộng
+                </Typography>
+                <Typography variant="h6" color="textPrimary">
+                  {totalAmount.toLocaleString()} ₫
+                </Typography>
+              </Box>
+              {isNichesLoading ? (
+                <Box display="flex" justifyContent="center" my={2}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <>
+                  <TextField
+                    select
+                    label="Ô chứa"
+                    value={nicheID}
+                    onChange={(e) => setNicheID(Number(e.target.value))}
+                    fullWidth
+                    margin="normal"
+                  >
+                    {niches.map((niche) => (
+                      <MenuItem key={niche.nicheId} value={niche.nicheId}>
+                        {niche.nicheName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    label="Ngày hẹn"
+                    type="datetime-local"
+                    fullWidth
+                    value={orderDate}
+                    onChange={(e) => setOrderDate(e.target.value)}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    margin="normal"
+                  />
+                </>
+              )}
+            </Box>
+          </div>
+        ) : (
+          <Typography align="center" color="textSecondary">
+            Giỏ hàng của bạn trống.
+          </Typography>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setIsOpen(false)} color="primary">
+          Đóng
+        </Button>
+        <Button
+          onClick={handleInitiatePayment}
+          color="primary"
+          variant="contained"
+          disabled={isPaymentDisabled || loading}
+        >
+          {loading ? "Đang xử lý..." : "Thanh toán"}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
+
+export default CartModal;

@@ -28,20 +28,93 @@
         public string? Status { get; set; }
         public string? Note { get; set; }
         public decimal? TotalAmount { get; set; }
-
-    } 
-        public class ContractDto
+        // Thêm thuộc tính Duration
+        public string? Duration
         {
-            public int ContractId { get; set; }
-            public int NicheId { get; set; }
-            public string NicheName { get; set; } = null!;
-            public string CustomerName { get; set; } = null!;
-            public string DeceasedName { get; set; } = null!;
-            public string? DeceasedRelationshipWithCustomer { get; set; }
-            public DateOnly StartDate { get; set; }
-            public DateOnly? EndDate { get; set; }
-            public string? Status { get; set; }
+            get
+            {
+                if (!EndDate.HasValue)
+                {
+                    return null;
+                }
+
+                var start = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day);
+                var end = new DateTime(EndDate.Value.Year, EndDate.Value.Month, EndDate.Value.Day);
+
+                int months = ((end.Year - start.Year) * 12) + end.Month - start.Month;
+                if (end.Day < start.Day)
+                {
+                    months--;
+                }
+
+                int years = months / 12;
+                months %= 12;
+
+                string duration = "";
+                if (years > 0)
+                {
+                    duration += $"{years} năm ";
+                }
+                if (months > 0)
+                {
+                    duration += $"{months} tháng";
+                }
+
+                return duration.Trim();
+            }
         }
-    
+
+    }
+    public class ContractDto
+    {
+        public int ContractId { get; set; }
+        public int NicheId { get; set; }
+        public string NicheName { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
+        public string DeceasedName { get; set; } = null!;
+        public string? DeceasedRelationshipWithCustomer { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public string? Status { get; set; }
+
+        // Thêm thuộc tính Duration
+        public string? Duration
+        {
+            get
+            {
+                if (!EndDate.HasValue)
+                {
+                    return null;
+                }
+
+                var start = new DateTime(StartDate.Year, StartDate.Month, StartDate.Day);
+                var end = new DateTime(EndDate.Value.Year, EndDate.Value.Month, EndDate.Value.Day);
+
+                int months = ((end.Year - start.Year) * 12) + end.Month - start.Month;
+                if (end.Day < start.Day)
+                {
+                    months--;
+                }
+
+                int years = months / 12;
+                months %= 12;
+
+                string duration = "";
+                if (years > 0)
+                {
+                    duration += $"{years} năm ";
+                }
+                if (months > 0)
+                {
+                    duration += $"{months} tháng";
+                }
+
+                return duration.Trim();
+            }
+        }
+    }
+
+
+
 
 }

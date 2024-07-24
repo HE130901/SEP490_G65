@@ -54,12 +54,18 @@ namespace cms_server.Controllers
         // PUT: api/Customers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCustomer(int id, Customer customer)
+        public async Task<IActionResult> PutCustomer(int id, UpdateCustomerDto updateDto)
         {
-            if (id != customer.CustomerId)
+            var customer = await _context.Customers.FindAsync(id);
+
+            if (customer == null)
             {
-                return BadRequest();
+                return NotFound();
             }
+
+            customer.Email = updateDto.Email;
+            customer.Phone = updateDto.Phone;
+            customer.Address = updateDto.Address;
 
             _context.Entry(customer).State = EntityState.Modified;
 
@@ -114,15 +120,23 @@ namespace cms_server.Controllers
             return _context.Customers.Any(e => e.CustomerId == id);
         }
     }
-}
+    public class UpdateCustomerDto
+    {
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+    }
+
+    public class CustomerDto
+    {
+        public int CustomerId { get; set; }
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public string CitizenId { get; set; }
+    }
 
 
-public class CustomerDto
-{
-    public int CustomerId { get; set; }
-    public string FullName { get; set; }
-    public string Email { get; set; }
-    public string Phone { get; set; }
-    public string Address { get; set; }
-    public string CitizenId { get; set; }
 }
+

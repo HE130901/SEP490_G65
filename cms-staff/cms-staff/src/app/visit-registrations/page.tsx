@@ -1,183 +1,282 @@
 "use client";
 
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   IconButton,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  TableSortLabel,
-  Chip,
   Tooltip,
-  SelectChangeEvent,
+  Paper,
+  CircularProgress,
+  Typography,
+  Chip,
 } from "@mui/material";
 import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon,
+  CheckCircleOutlined as ApproveIcon,
+  CancelOutlined as RejectIcon,
+  Add as AddIcon,
 } from "@mui/icons-material";
-import VisitRegistrationAPI from "@/services/visitRegistrationService";
-import { useToast } from "@/components/ui/use-toast";
-import AddVisitRequestDialog from "./VisitRegistrationAdd";
-import ViewVisitRequestDialog from "./VisitRegistrationDetail";
-import EditVisitRequestDialog from "./VisitRegistrationEdit";
-import DeleteVisitRequestDialog from "./VisitRegistrationDelete";
-import { VisitRequest } from "./interfaces";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
+import VisitViewDialog from "./VisitViewDialog";
+import VisitDeleteDialog from "./VisitDeleteDialog";
+import VisitApproveDialog from "./VisitApproveDialog";
+import VisitAddDialog from "./VisitAddDialog";
+import { styled } from "@mui/material/styles";
+import viVN from "@/utils/viVN";
 
-const VisitRegistrationPage: React.FC = () => {
-  const [visitRequests, setVisitRequests] = useState<VisitRequest[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchColumn, setSearchColumn] = useState<string>("all");
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<string>("visitId");
-  const { toast } = useToast();
-  const [selectedVisitRequest, setSelectedVisitRequest] =
-    useState<VisitRequest | null>(null);
-  const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
-  const [viewDialogOpen, setViewDialogOpen] = useState<boolean>(false);
-  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+interface VisitRegistrationDto {
+  visitId: number;
+  customerId: number;
+  nicheId: number;
+  customerName: string;
+  staffName: string;
+  nicheAddress: string;
+  createdDate: string;
+  visitDate: string;
+  status: string;
+  accompanyingPeople: number;
+  note: string;
+  approvedBy?: number;
+  formattedVisitDate: string;
+  formattedCreatedDate: string;
+}
+
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    whiteSpace: "normal",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
+  },
+}));
+
+const NoWrapTypography = styled(Typography)({
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+});
+
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "Canceled":
+      return { label: "Đã hủy", color: "error" };
+    case "Pending":
+      return { label: "Đang chờ", color: "warning" };
+    case "Approved":
+      return { label: "Đã duyệt", color: "success" };
+    default:
+      return { label: status, color: "default" };
+  }
+};
+
+const VisitRegistrationsList: React.FC = () => {
+  const [visitRegistrations, setVisitRegistrations] = useState<
+    VisitRegistrationDto[]
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [selectedVisit, setSelectedVisit] =
+    useState<VisitRegistrationDto | null>(null);
 
   useEffect(() => {
-    const fetchVisitRequests = async () => {
-      try {
-        const response = await VisitRegistrationAPI.getAllVisitRegistrations();
-        setVisitRequests(response.data.$values);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Lỗi",
-          description: "Không thể tải danh sách đơn đăng ký viếng thăm",
-        });
-      }
-    };
+    fetchVisitRegistrations();
+  }, []);
 
-    fetchVisitRequests();
-  }, [toast]);
-
-  const handleAddVisitRequest = () => {
-    setAddDialogOpen(true);
+  const fetchVisitRegistrations = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get("/api/VisitRegistrations");
+      setVisitRegistrations(response.data.$values);
+    } catch (error) {
+      toast.error("Không thể tải danh sách đơn đăng ký");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleViewVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
+  const handleView = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit);
     setViewDialogOpen(true);
   };
 
-  const handleEditVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
-    setEditDialogOpen(true);
+  const handleApprove = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit); // Set the selected visit
+    setApproveDialogOpen(true);
   };
 
-  const handleDeleteVisitRequest = (visitRequest: VisitRequest) => {
-    setSelectedVisitRequest(visitRequest);
-    setDeleteDialogOpen(true);
+  const handleReject = (visit: VisitRegistrationDto) => {
+    setSelectedVisit(visit); // Set the selected visit
+    setDeleteDialogOpen(true); // Open the delete dialog
   };
 
-  const handleAddDialogClose = () => {
-    setAddDialogOpen(false);
+  const handleAdd = () => {
+    setAddDialogOpen(true);
   };
 
-  const handleViewDialogClose = () => {
+  const closeDialogs = () => {
     setViewDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
-
-  const handleEditDialogClose = () => {
     setEditDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
-
-  const handleDeleteDialogClose = () => {
     setDeleteDialogOpen(false);
-    setSelectedVisitRequest(null);
+    setApproveDialogOpen(false); // Ensure the approve dialog is also closed
+    setAddDialogOpen(false);
+    setSelectedVisit(null);
+    fetchVisitRegistrations();
   };
 
-  const handleDeleteConfirmed = () => {
-    // Add delete logic here
-    setDeleteDialogOpen(false);
-    setSelectedVisitRequest(null);
-  };
+  const columns: GridColDef[] = [
+    {
+      field: "id",
+      headerName: "STT",
+      width: 80,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "visitId",
+      headerName: "Mã đơn",
+      width: 80,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
+    { field: "staffName", headerName: "Tên nhân viên", width: 150 },
+    { field: "nicheAddress", headerName: "Địa chỉ", width: 220 },
+    {
+      field: "formattedCreatedDate",
+      headerName: "Ngày tạo",
+      width: 150,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "formattedVisitDate",
+      headerName: "Ngày viếng thăm",
+      width: 150,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "accompanyingPeople",
+      headerName: "Số lượng",
+      width: 150,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    { field: "note", headerName: "Ghi chú", width: 200 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 100,
+      renderCell: (params) => {
+        const { label, color } = getStatusLabel(params.value);
+        return (
+          <CenteredCell>
+            <Chip
+              label={label}
+              color={
+                color as
+                  | "info"
+                  | "error"
+                  | "primary"
+                  | "secondary"
+                  | "success"
+                  | "warning"
+                  | "default"
+              }
+            />
+          </CenteredCell>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 150,
+      renderCell: (params) => (
+        <CenteredCell>
+          <Tooltip title="Xem chi tiết">
+            <IconButton color="primary" onClick={() => handleView(params.row)}>
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xác nhận đơn">
+            <span>
+              <IconButton
+                color="success"
+                onClick={() => handleApprove(params.row)}
+                disabled={
+                  params.row.status === "Canceled" ||
+                  params.row.status === "Approved"
+                }
+              >
+                <ApproveIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Từ chối đơn">
+            <span>
+              <IconButton
+                color="error"
+                onClick={() => handleReject(params.row)}
+                disabled={
+                  params.row.status === "Canceled" ||
+                  params.row.status === "Approved"
+                }
+              >
+                <RejectIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </CenteredCell>
+      ),
+    },
+  ];
 
-  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
-    setSearchColumn(event.target.value as string);
-  };
-
-  const handleRequestSort = (property: string) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const sortedVisitRequests = visitRequests.sort((a, b) => {
-    if (orderBy === "visitId") {
-      return order === "asc"
-        ? Number(a.visitId) - Number(b.visitId)
-        : Number(b.visitId) - Number(a.visitId);
-    } else if (orderBy === "nicheId") {
-      return order === "asc"
-        ? Number(a.nicheId) - Number(b.nicheId)
-        : Number(b.nicheId) - Number(a.nicheId);
-    } else if (orderBy === "status") {
-      return order === "asc"
-        ? a.status.localeCompare(b.status)
-        : b.status.localeCompare(a.status);
-    } else if (orderBy === "createdDate") {
-      return order === "asc"
-        ? a.createdDate && b.createdDate
-          ? new Date(a.createdDate).getTime() -
-            new Date(b.createdDate).getTime()
-          : 0
-        : a.createdDate && b.createdDate
-        ? new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-        : 0;
-    } else if (orderBy === "visitDate") {
-      return order === "asc"
-        ? new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime()
-        : new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime();
-    } else if (orderBy === "note") {
-      return order === "asc"
-        ? a.note.localeCompare(b.note)
-        : b.note.localeCompare(a.note);
-    }
-    return 0;
-  });
-
-  const filteredVisitRequests = sortedVisitRequests.filter((visitRequest) => {
-    if (searchColumn === "all") {
-      return (
-        visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        visitRequest.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        visitRequest.visitId
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        visitRequest.nicheId
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-    } else if (searchColumn === "note") {
-      return visitRequest.note.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (searchColumn === "status") {
-      return visitRequest.status
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-    }
-    return true;
-  });
+  const rows = visitRegistrations.map((visit, index) => ({
+    id: index + 1,
+    visitId: visit.visitId,
+    customerName: visit.customerName,
+    staffName: visit.staffName,
+    nicheAddress: visit.nicheAddress,
+    formattedCreatedDate: visit.formattedCreatedDate,
+    formattedVisitDate: visit.formattedVisitDate,
+    status: visit.status,
+    accompanyingPeople: visit.accompanyingPeople,
+    note: visit.note,
+  }));
 
   return (
     <Box p={3}>
@@ -191,188 +290,68 @@ const VisitRegistrationPage: React.FC = () => {
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
-          onClick={handleAddVisitRequest}
+          onClick={handleAdd}
         >
-          Thêm mới đơn đăng ký viếng thăm
+          Thêm đăng ký viếng thăm
         </Button>
-        <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 120, marginRight: 2 }}
-          >
-            <InputLabel>Tìm theo</InputLabel>
-            <Select
-              value={searchColumn}
-              onChange={(event: SelectChangeEvent<string>) =>
-                handleSearchColumnChange(event)
-              }
-              label="Tìm theo"
-            >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="note">Ghi chú</MenuItem>
-              <MenuItem value="status">Trạng thái</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Box>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitId"}
-                  direction={orderBy === "visitId" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitId")}
-                >
-                  STT
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitId"}
-                  direction={orderBy === "visitId" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitId")}
-                >
-                  Mã đơn
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "nicheId"}
-                  direction={orderBy === "nicheId" ? order : "asc"}
-                  onClick={() => handleRequestSort("nicheId")}
-                >
-                  Mã ô chứa
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "createdDate"}
-                  direction={orderBy === "createdDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("createdDate")}
-                >
-                  Ngày tạo
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "visitDate"}
-                  direction={orderBy === "visitDate" ? order : "asc"}
-                  onClick={() => handleRequestSort("visitDate")}
-                >
-                  Ngày viếng thăm
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">
-                <TableSortLabel
-                  active={orderBy === "status"}
-                  direction={orderBy === "status" ? order : "asc"}
-                  onClick={() => handleRequestSort("status")}
-                >
-                  Trạng thái
-                </TableSortLabel>
-              </TableCell>
-              <TableCell align="center">Địa chỉ</TableCell>
-              <TableCell align="center">Ghi chú</TableCell>
-              <TableCell align="center">Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredVisitRequests.map((visitRequest, index) => (
-              <TableRow key={visitRequest.visitId}>
-                <TableCell align="center">{index + 1}</TableCell>
-                <TableCell align="center">{visitRequest.visitId}</TableCell>
-                <TableCell align="center">{visitRequest.nicheId}</TableCell>
-                <TableCell align="center">
-                  {new Date(
-                    visitRequest.createdDate ?? ""
-                  ).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  {new Date(visitRequest.visitDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    label={
-                      visitRequest.status === "Đang chờ duyệt"
-                        ? "Đang chờ"
-                        : visitRequest.status === "Đã duyệt"
-                        ? "Đã duyệt"
-                        : "Đã hủy"
-                    }
-                    color={
-                      visitRequest.status === "Đang chờ duyệt"
-                        ? "warning"
-                        : visitRequest.status === "Đã duyệt"
-                        ? "success"
-                        : "error"
-                    }
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title={visitRequest.signAddress}>
-                    <span className="truncate">{visitRequest.signAddress}</span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center">
-                  <Tooltip title={visitRequest.note}>
-                    <span className="truncate">{visitRequest.note}</span>
-                  </Tooltip>
-                </TableCell>
-                <TableCell align="center">
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleViewVisitRequest(visitRequest)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleEditVisitRequest(visitRequest)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteVisitRequest(visitRequest)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <AddVisitRequestDialog
-        open={addDialogOpen}
-        onClose={handleAddDialogClose}
-      />
-      <ViewVisitRequestDialog
+
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+          <Paper
+            elevation={3}
+            style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          >
+            <CenteredTable
+              rows={rows}
+              columns={columns}
+              autoHeight
+              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+              pageSizeOptions={[10]}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 10 },
+                },
+                columns: {
+                  columnVisibilityModel: {
+                    staffName: false,
+                    formattedCreatedDate: false,
+                    note: false,
+                  },
+                },
+              }}
+            />
+          </Paper>
+        </Box>
+      )}
+
+      <VisitViewDialog
         open={viewDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleViewDialogClose}
+        visit={selectedVisit}
+        onClose={closeDialogs}
       />
-      <EditVisitRequestDialog
-        open={editDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleEditDialogClose}
-      />
-      <DeleteVisitRequestDialog
+      <VisitDeleteDialog
         open={deleteDialogOpen}
-        visitRequest={selectedVisitRequest}
-        onClose={handleDeleteDialogClose}
-        onDelete={handleDeleteConfirmed}
+        visit={selectedVisit}
+        onClose={closeDialogs}
       />
+      <VisitApproveDialog
+        open={approveDialogOpen}
+        visit={selectedVisit}
+        onClose={closeDialogs}
+      />
+      <VisitAddDialog open={addDialogOpen} onClose={closeDialogs} />
     </Box>
   );
 };
 
-export default VisitRegistrationPage;
+export default VisitRegistrationsList;

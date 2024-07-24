@@ -1,241 +1,376 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useStateContext } from "@/context/StateContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import React, { useState, useEffect } from "react";
 import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Grid,
+  MenuItem,
+  FormControl,
+  InputLabel,
   Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { toast as sonnerToast } from "sonner";
-import Link from "next/link";
-import { User, Lock, CalendarDays } from "lucide-react";
+  IconButton,
+  InputAdornment,
+  SelectChangeEvent,
+} from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
+import { z } from "zod";
+import vietnamAddress from "@/assets/vietnamAddress.json"; // Load the JSON file
 
-export default function UserProfileSetting() {
-  const { user, updateUser } = useStateContext();
-  const [fullName, setFullName] = useState(user?.fullName || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [phoneNumber, setPhoneNumber] = useState(user?.phone || "");
-  const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth || "");
-  const [gender, setGender] = useState(user?.gender || "");
-  const [address, setAddress] = useState(user?.address || "");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+const passwordSchema = z
+  .object({
+    oldPassword: z
+      .string()
+      .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
+    newPassword: z
+      .string()
+      .min(6, { message: "Mật khẩu mới phải có ít nhất 6 ký tự" }),
+    confirmPassword: z
+      .string()
+      .min(6, { message: "Xác nhận mật khẩu phải có ít nhất 6 ký tự" }),
+  })
+  .superRefine((data, ctx) => {
+    if (data.newPassword === data.oldPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Mật khẩu mới phải khác mật khẩu cũ",
+        path: ["newPassword"],
+      });
+    }
+    if (data.newPassword !== data.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
+        path: ["confirmPassword"],
+      });
+    }
+  });
+
+const UserProfileSetting: React.FC = () => {
+  const [formData, setFormData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    province: "",
+    district: "",
+    ward: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setFullName(user.fullName);
-      setEmail(user.email);
-      setPhoneNumber(user.phone);
-      setDateOfBirth(user.dateOfBirth);
-      setGender(user.gender);
-      setAddress(user.address);
-    }
-  }, [user]);
-
-  const handleSavePersonalInfo = async () => {
-    const updatedUser = {
-      ...user,
-      fullName,
-      email,
-      phone: phoneNumber,
-      dateOfBirth,
-      gender,
-      address,
+    // Fetch user profile details and populate formData here
+    const fetchUserProfile = async () => {
+      try {
+        const response = await axiosInstance.get("/api/CustomerProfile");
+        const data = response.data;
+        setFormData((prevData) => ({
+          ...prevData,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+        }));
+      } catch (error) {
+        toast.error("Failed to fetch user profile");
+      }
     };
 
-    try {
-      await updateUser(updatedUser);
-      sonnerToast.success("Thông tin cá nhân đã được cập nhật thành công");
-    } catch (error) {
-      sonnerToast.error("Cập nhật thông tin thất bại. Vui lòng thử lại sau.");
+    fetchUserProfile();
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+
+    if (name === "province") {
+      const selectedProvince = vietnamAddress.find((p) => p.Id === value);
+      setDistricts(selectedProvince?.Districts || []);
+      setWards([]);
+    } else if (name === "district") {
+      const selectedDistrict = districts.find((d) => d.Id === value);
+      setWards(selectedDistrict?.Wards || []);
     }
   };
 
-  const handleSavePassword = () => {
-    if (newPassword === confirmNewPassword) {
-      // Logic to change password
-      sonnerToast.success("Mật khẩu đã được thay đổi thành công");
-    } else {
-      sonnerToast.error("Mật khẩu mới và xác nhận mật khẩu không khớp");
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
+
+  const handleSubmitPasswordChange = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    try {
+      passwordSchema.parse(formData);
+      setErrors({});
+
+      try {
+        await axiosInstance.post("/api/Auth/change-password", {
+          oldPassword: formData.oldPassword,
+          newPassword: formData.newPassword,
+        });
+        toast.success("Đổi mật khẩu thành công");
+        setFormData({
+          ...formData,
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } catch (error) {
+        toast.error("Mật khẩu cũ không đúng");
+      }
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const fieldErrors = validationError.flatten().fieldErrors;
+        const newErrors: Record<string, string> = {};
+        Object.keys(fieldErrors).forEach((field) => {
+          if (fieldErrors[field]) {
+            newErrors[field] = fieldErrors[field]![0];
+          }
+        });
+        setErrors(newErrors);
+      }
     }
+  };
+
+  const handleSubmitProfileUpdate = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    try {
+      await axiosInstance.put("/api/CustomerProfile", {
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+      });
+      toast.success("Cập nhật thông tin cá nhân thành công");
+      setIsEditing(false);
+    } catch (error) {
+      toast.error("Cập nhật thông tin cá nhân thất bại");
+    }
+  };
+
+  const enableEditing = () => {
+    setIsEditing(true);
   };
 
   return (
-    <div className="flex h-full w-full">
-      <div className="p-6 md:p-8 lg:p-10 border-r border-border">
-        <nav className="grid gap-4">
-          <Link
-            href="#personal-info"
-            className="flex items-center gap-2 rounded-md bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            prefetch={false}
-          >
-            <User className="h-5 w-5" />
+    <Grid
+      container
+      justifyContent="center"
+      alignItems="center"
+      style={{ minHeight: "100vh" }}
+    >
+      <Grid item xs={12} sm={8} md={6} lg={4}>
+        <Paper elevation={3} style={{ padding: "2rem" }}>
+          <Typography variant="h5" gutterBottom>
             Thông tin cá nhân
-          </Link>
-          <Link
-            href="#security-settings"
-            className="flex items-center gap-2 rounded-md bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            prefetch={false}
-          >
-            <Lock className="h-5 w-5" />
-            Cài đặt bảo mật
-          </Link>
-        </nav>
-      </div>
-      <div className="flex-1 p-6 md:p-8 lg:p-10 space-y-8">
-        <div id="personal-info">
-          <h2 className="text-2xl font-bold tracking-tight">
-            Thông tin cá nhân
-          </h2>
-          <p className="text-muted-foreground">
-            Cập nhật chi tiết cơ bản và thông tin liên hệ của bạn.
-          </p>
-          <form className="grid gap-6 mt-6">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Họ và Tên</Label>
-                <Input
-                  id="name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nhập họ và tên"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Nhập email của bạn"
-                />
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Số điện thoại</Label>
-                <Input
-                  id="phone"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="Nhập số điện thoại của bạn"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="dob">Ngày sinh</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full pl-3 text-left font-normal"
-                    >
-                      {dateOfBirth ? dateOfBirth : "Chọn ngày"}
-                      <CalendarDays className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      onSelect={(date) => {
-                        if (date) {
-                          setDateOfBirth(date.toLocaleDateString());
-                        }
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="gender">Giới tính</Label>
-                <Select
-                  value={gender}
-                  onValueChange={(value) => setGender(value)}
+          </Typography>
+          <form onSubmit={handleSubmitProfileUpdate}>
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Họ và Tên"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              disabled
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.email}
+              helperText={errors.email}
+              disabled={!isEditing}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Số điện thoại"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.phone}
+              helperText={errors.phone}
+              disabled={!isEditing}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Địa chỉ"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.address}
+              helperText={errors.address}
+              disabled={!isEditing}
+            />
+            {isEditing && (
+              <Box mt={2}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Chọn giới tính" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Nam</SelectItem>
-                    <SelectItem value="female">Nữ</SelectItem>
-                    <SelectItem value="other">Khác</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Địa chỉ</Label>
-                <Textarea
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Nhập địa chỉ của bạn"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </div>
-            <Button onClick={handleSavePersonalInfo} className="ml-auto">
-              Lưu thay đổi
-            </Button>
+                  Lưu thay đổi
+                </Button>
+              </Box>
+            )}
           </form>
-        </div>
-        <div id="security-settings">
-          <h2 className="text-2xl font-bold tracking-tight">Cài đặt bảo mật</h2>
-          <p className="text-muted-foreground">
-            Cập nhật mật khẩu và các chi tiết bảo mật khác.
-          </p>
-          <form className="grid gap-6 mt-6">
-            <div className="space-y-2">
-              <Label htmlFor="current-password">Mật khẩu hiện tại</Label>
-              <Input
-                id="current-password"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Nhập mật khẩu hiện tại"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">Mật khẩu mới</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Nhập mật khẩu mới"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Xác nhận mật khẩu mới</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="Xác nhận mật khẩu mới"
-              />
-            </div>
-            <Button onClick={handleSavePassword} className="ml-auto">
-              Cập nhật mật khẩu
-            </Button>
+          {!isEditing && (
+            <Box mt={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                fullWidth
+                onClick={enableEditing}
+              >
+                Sửa
+              </Button>
+            </Box>
+          )}
+          <Typography variant="h5" gutterBottom style={{ marginTop: "2rem" }}>
+            Đổi mật khẩu
+          </Typography>
+          <form onSubmit={handleSubmitPasswordChange}>
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Mật khẩu cũ"
+              type={showPassword ? "text" : "password"}
+              name="oldPassword"
+              value={formData.oldPassword}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.oldPassword}
+              helperText={errors.oldPassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Mật khẩu mới"
+              type={showPassword ? "text" : "password"}
+              name="newPassword"
+              value={formData.newPassword}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.newPassword}
+              helperText={errors.newPassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Xác nhận mật khẩu mới"
+              type={showPassword ? "text" : "password"}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Box mt={2}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+              >
+                Cập nhật mật khẩu
+              </Button>
+            </Box>
           </form>
-        </div>
-      </div>
-    </div>
+        </Paper>
+      </Grid>
+    </Grid>
   );
-}
+};
+
+export default UserProfileSetting;

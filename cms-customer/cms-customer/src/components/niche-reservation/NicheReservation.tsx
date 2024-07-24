@@ -5,9 +5,6 @@ import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
 import CombinedSelector from "@/components/niche-reservation/CombinedSelector";
-import ReservationForm from "@/components/niche-reservation/ReservationForm";
-import NicheDetailDialog from "@/components/niche-reservation/NicheDetailDialog";
-import MyNicheDetailDialog from "@/components/niche-reservation/MyNicheDetailDialog";
 import { useStateContext } from "@/context/StateContext";
 import {
   Tooltip,
@@ -16,6 +13,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import NicheAPI from "@/services/nicheService";
+import CombinedDialog from "./DetailAndBooking";
+import MyNicheDetailDialog from "./MyNicheDetailDialog";
 
 const revealVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -107,23 +106,6 @@ const NicheReservationPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const openBookingForm = () => {
-    setIsFormVisible(true);
-  };
-
-  const closeBookingForm = () => {
-    const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
-    fetchNichesFunction(
-      selectedBuilding.buildingId,
-      selectedFloor.floorId,
-      selectedArea.areaId
-    );
-    setIsFormVisible(false);
-    if (user && user.customerId) {
-      fetchReservations(user.customerId);
-    }
-  };
-
   const openDetailDialog = async (niche: Niche) => {
     try {
       const response = await NicheAPI.getDetail(niche.nicheId);
@@ -148,22 +130,16 @@ const NicheReservationPage = () => {
 
   const closeDetailDialog = () => {
     setIsDetailDialogVisible(false);
-  };
-
-  const closeMyDetailDialog = () => {
     setIsMyDetailDialogVisible(false);
-  };
-
-  const proceedToBooking = (niche: Niche) => {
-    if (niche) {
-      setSelectedNiche({
-        nicheId: niche.nicheId,
-        nicheName: niche.nicheName,
-        status: "Available",
-      });
-      console.log("Proceeding to booking with niche:", niche);
-      setIsDetailDialogVisible(false);
-      openBookingForm();
+    const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
+    fetchNichesFunction(
+      selectedBuilding.buildingId,
+      selectedFloor.floorId,
+      selectedArea.areaId
+    );
+    setIsFormVisible(false);
+    if (user && user.customerId) {
+      fetchReservations(user.customerId);
     }
   };
 
@@ -182,11 +158,11 @@ const NicheReservationPage = () => {
   };
 
   const floorLabels: { [key: number]: string } = {
-    0: "Tầng 5",
-    1: "Tầng 4",
-    2: "Tầng 3",
-    3: "Tầng 2",
-    4: "Tầng 1",
+    0: "Hàng 5",
+    1: "Hàng 4",
+    2: "Hàng 3",
+    3: "Hàng 2",
+    4: "Hàng 1",
   };
 
   const renderSkeletonRows = (itemsPerRow: number, rowsCount: number) => {
@@ -446,20 +422,26 @@ const NicheReservationPage = () => {
             )}
           </div>
 
-          <ReservationForm
+          <CombinedDialog
+            isVisible={isDetailDialogVisible}
+            onClose={closeDetailDialog}
+            selectedNiche={selectedNicheDetail}
+          />
+
+          {/* <ReservationForm
             isVisible={isFormVisible}
             onClose={closeBookingForm}
-            selectedNiche={selectedNicheDetail} // Pass selectedNicheDetail as selectedNiche
+            selectedNiche={selectedNicheDetail}
           />
           <NicheDetailDialog
             isVisible={isDetailDialogVisible}
             onClose={closeDetailDialog}
             niche={selectedNicheDetail}
             onProceedToBooking={proceedToBooking}
-          />
+          />*/}
           <MyNicheDetailDialog
             isVisible={isMyDetailDialogVisible}
-            onClose={closeMyDetailDialog}
+            onClose={closeDetailDialog}
             niche={selectedNicheDetail}
           />
         </motion.div>

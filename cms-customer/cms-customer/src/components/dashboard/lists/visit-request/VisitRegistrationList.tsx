@@ -38,7 +38,6 @@ import EditModal from "./EditModal";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
 
-// Define your VisitRegistration type
 export type VisitRegistration = {
   visitId: number;
   customerId: number;
@@ -50,7 +49,31 @@ export type VisitRegistration = {
   note: string;
 };
 
-// RegistrationList component
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "green";
+    case "Pending":
+      return "default";
+    case "Canceled":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
+
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Pending":
+      return "Đang chờ duyệt";
+    case "Canceled":
+      return "Đã hủy";
+    default:
+      return "Không xác định";
+  }
+};
 export default function VisitRegistrationList({
   reFetchTrigger,
 }: {
@@ -64,12 +87,12 @@ export default function VisitRegistrationList({
   } = useStateContext();
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
-  ]); // Default sort
+  ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(visitRegistrations);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 5, // Show custom records per page
+    pageSize: 5,
   });
 
   const [editingRecord, setEditingRecord] = useState<VisitRegistration | null>(
@@ -132,7 +155,7 @@ export default function VisitRegistrationList({
             : registration
         )
       );
-      setDeleteRecord(null); // Close the modal
+      setDeleteRecord(null);
     } catch (error) {
       console.error("Error canceling visit registration:", error);
       toast.error("Không thể hủy đơn đăng ký.");
@@ -153,17 +176,16 @@ export default function VisitRegistrationList({
       await VisitRegistrationAPI.update(updatedRecord.visitId, dataToUpdate);
       toast.success("Cập nhật đơn đăng ký thành công!");
       setEditingRecord(null);
-      fetchVisitRegistrations(user.customerId); // Refetch the data after updating
+      fetchVisitRegistrations(user.customerId);
     } catch (error) {
       console.error("Error updating visit registration:", error);
       toast.error("Không thể cập nhật đơn đăng ký.");
     }
   };
 
-  // Column definitions with inline handleEdit and handleDelete functions
   const columns: ColumnDef<VisitRegistration>[] = [
     {
-      id: "stt", // Add an ID for the STT column
+      id: "stt",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -173,7 +195,7 @@ export default function VisitRegistrationList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>, // Center align the cell content
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
       accessorKey: "visitId",
@@ -188,22 +210,22 @@ export default function VisitRegistrationList({
       ),
       cell: ({ row }) => (
         <div className="text-center">{row.getValue("visitId")}</div>
-      ), // Center align the cell content
+      ),
     },
     {
-      accessorKey: "nicheId",
+      accessorKey: "nicheAddress",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Mã Ô
+          Địa chỉ ô chứa
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("nicheId")}</div>
-      ), // Center align the cell content
+        <div className="text-center">{row.getValue("nicheAddress")}</div>
+      ),
     },
     {
       accessorKey: "createdDate",
@@ -252,12 +274,8 @@ export default function VisitRegistrationList({
       ),
       cell: ({ row }) => (
         <div className="text-center">
-          <Badge
-            variant={
-              row.getValue("status") === "Đang chờ duyệt" ? "outline" : "green"
-            }
-          >
-            {row.getValue("status")}
+          <Badge variant={getStatusVariant(row.getValue("status"))}>
+            {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
       ),
@@ -275,11 +293,11 @@ export default function VisitRegistrationList({
       ),
       cell: ({ row }) => (
         <div className="text-center">{row.getValue("note")}</div>
-      ), // Center align the cell content
+      ),
     },
     {
       id: "actions",
-      header: "Hành Động", // Add a header title for the actions column
+      header: "Hành Động",
       enableHiding: false,
       cell: ({ row }) => (
         <div className="flex justify-center space-x-2">
@@ -312,7 +330,10 @@ export default function VisitRegistrationList({
                     handleEdit(row.original);
                   }}
                   className="text-orange-600"
-                  disabled={row.original.status === "Canceled"} // Disable edit button if status is Canceled
+                  disabled={
+                    row.original.status === "Canceled" ||
+                    row.original.status === "Approved"
+                  }
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -331,12 +352,15 @@ export default function VisitRegistrationList({
                     handleDeleteConfirmation(row.original);
                   }}
                   className="text-red-600"
-                  disabled={row.original.status === "Canceled"} // Disable delete button if status is Canceled
+                  disabled={
+                    row.original.status === "Canceled" ||
+                    row.original.status === "Approved"
+                  }
                 >
                   <Trash className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Xóa</TooltipContent>
+              <TooltipContent>Hủy đơn</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
@@ -357,7 +381,7 @@ export default function VisitRegistrationList({
       pagination,
     },
     onPaginationChange: setPagination,
-    manualPagination: false, // Use automatic pagination
+    manualPagination: false,
     pageCount: Math.ceil(filteredData.length / pagination.pageSize),
   });
 
@@ -429,7 +453,7 @@ export default function VisitRegistrationList({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Bạn chưa có đơn đăng ký viếng.
+                  Đang tải đơn đăng ký viếng của bạn...
                 </TableCell>
               </TableRow>
             )}
@@ -460,7 +484,6 @@ export default function VisitRegistrationList({
         </div>
       </div>
 
-      {/* Editing Modal */}
       {editingRecord && (
         <EditModal
           record={editingRecord}
@@ -469,7 +492,6 @@ export default function VisitRegistrationList({
         />
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteRecord && (
         <DeleteConfirmationDialog
           open={true}
@@ -478,7 +500,6 @@ export default function VisitRegistrationList({
         />
       )}
 
-      {/* Detail View Modal */}
       {viewingRecord && (
         <DetailViewDialog
           record={viewingRecord}

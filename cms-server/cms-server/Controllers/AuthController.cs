@@ -134,6 +134,36 @@ namespace cms_server.Controllers
             }
         }
 
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (int.TryParse(userId, out int customerId))
+            {
+                var customer = await _context.Customers.FindAsync(customerId);
+
+                if (customer == null)
+                {
+                    return NotFound("Customer not found.");
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.OldPassword, customer.PasswordHash))
+                {
+                    return BadRequest("Old password is incorrect.");
+                }
+
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+
+            return Unauthorized("Invalid user role.");
+        }
+
+
         private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
@@ -222,6 +252,11 @@ namespace cms_server.DTOs
     public class ResetPasswordDto
     {
         public string Token { get; set; }
+        public string NewPassword { get; set; }
+    }
+    public class ChangePasswordDto
+    {
+        public string OldPassword { get; set; }
         public string NewPassword { get; set; }
     }
 }

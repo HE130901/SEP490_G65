@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   Button,
-  Typography,
   TextField,
   RadioGroup,
   FormControlLabel,
@@ -16,19 +15,39 @@ import {
   FormLabel,
   Grid,
   CircularProgress,
+  FormHelperText,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
-import { format } from "date-fns";
+import { format, addMonths } from "date-fns";
 import { vi } from "date-fns/locale";
 import HistorySharpIcon from "@mui/icons-material/HistorySharp";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { z } from "zod";
+import { toast } from "react-toastify";
 
 const predefinedAddresses = [
   "Nhà tang lễ thành phố",
   "Nghĩa trang Văn Điển",
   "An Bình Viên - Hòa Lạc",
 ];
+
+const today = new Date();
+const maxDate = addMonths(today, 1);
+
+const appointmentSchema = z.object({
+  appointmentDate: z.string().refine(
+    (dateString) => {
+      const date = new Date(dateString);
+      return date >= today && date <= maxDate;
+    },
+    {
+      message:
+        "Thời gian hẹn phải trong vòng 1 tháng kể từ thời điểm hiện tại.",
+    }
+  ),
+  selectedAddress: z
+    .string()
+    .nonempty({ message: "Vui lòng chọn địa điểm ký hợp đồng." }),
+});
 
 interface ExtendContractDialogProps {
   isOpen: boolean;
@@ -45,16 +64,20 @@ export default function ExtendContractDialog({
   const [selectedAddress, setSelectedAddress] = useState<string>(
     predefinedAddresses[0]
   );
-  const [note, setNote] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    appointmentDate?: string;
+    selectedAddress?: string;
+  }>({});
 
   const handleExtend = async () => {
-    if (!appointmentDate || !selectedAddress || !note) {
-      toast.error("Vui lòng nhập đầy đủ thông tin.");
-      return;
-    }
-
     try {
+      appointmentSchema.parse({ appointmentDate, selectedAddress });
+
+      const note = `Hẹn ký gia hạn hợp đồng tại ${selectedAddress} vào ngày ${formatDateToVietnamese(
+        new Date(appointmentDate)
+      )}`;
+
       setLoading(true);
       await axiosInstance.post(`/api/Contracts/renew`, {
         contractId,
@@ -65,8 +88,23 @@ export default function ExtendContractDialog({
       toast.success("Đăng ký lịch hẹn gia hạn thành công.");
       onClose();
     } catch (err) {
-      console.error("Error extending contract:", err);
-      toast.error("Không thể hẹn gia hạn hợp đồng.");
+      if (err instanceof z.ZodError) {
+        const fieldErrors: {
+          appointmentDate?: string;
+          selectedAddress?: string;
+        } = {};
+        err.errors.forEach((error) => {
+          if (error.path.includes("appointmentDate")) {
+            fieldErrors.appointmentDate = error.message;
+          } else if (error.path.includes("selectedAddress")) {
+            fieldErrors.selectedAddress = error.message;
+          }
+        });
+        setErrors(fieldErrors);
+      } else {
+        console.error("Error extending contract:", err);
+        toast.error("Không thể hẹn gia hạn hợp đồng.");
+      }
     } finally {
       setLoading(false);
     }
@@ -82,13 +120,15 @@ export default function ExtendContractDialog({
 
   return (
     <>
-      <ToastContainer />
       <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>Gia hạn hợp đồng</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} mt={2}>
             <Grid item xs={12}>
-              <FormControl component="fieldset">
+              <FormControl
+                component="fieldset"
+                error={!!errors.selectedAddress}
+              >
                 <FormLabel component="legend">Địa điểm ký hợp đồng</FormLabel>
                 <RadioGroup
                   value={selectedAddress}
@@ -103,6 +143,9 @@ export default function ExtendContractDialog({
                     />
                   ))}
                 </RadioGroup>
+                {errors.selectedAddress && (
+                  <FormHelperText>{errors.selectedAddress}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12}>
@@ -113,28 +156,24 @@ export default function ExtendContractDialog({
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Ghi chú"
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                InputLabelProps={{ shrink: true }}
+                inputProps={{
+                  min: format(today, "yyyy-MM-dd"),
+                  max: format(maxDate, "yyyy-MM-dd"),
+                }}
+                error={!!errors.appointmentDate}
+                helperText={errors.appointmentDate && errors.appointmentDate}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} variant="outlined">
-            Hủy
+            Đóng
           </Button>
           <Button
             onClick={handleExtend}
             variant="contained"
-            color="primary"
+            color="success"
             disabled={loading}
             startIcon={
               loading ? <CircularProgress size={20} /> : <HistorySharpIcon />

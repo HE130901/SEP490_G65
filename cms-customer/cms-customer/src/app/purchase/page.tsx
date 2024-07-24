@@ -16,16 +16,13 @@ import OrderList from "./ServiceOrderList";
 export default function Dashboard() {
   const {
     user,
-    niches: containers,
-    selectedContainer,
-    setSelectedContainer,
+    niches: setSelectedContainer,
     isContainerModalOpen,
     setIsContainerModalOpen,
-    isVisitScheduleModalOpen,
+
     setIsVisitScheduleModalOpen,
     fetchVisitRegistrations,
     fetchContracts,
-    contracts,
   } = useStateContext();
 
   const [reFetchTrigger, setReFetchTrigger] = useState(false);
@@ -55,21 +52,6 @@ export default function Dashboard() {
       fetchVisitRegistrations(user.customerId);
     }
   }, [user, reFetchTrigger, fetchVisitRegistrations]);
-
-  const handleContainerSelect = (container: any) => {
-    console.log("Selected container: ", container);
-    setSelectedContainer(container);
-    setIsContainerModalOpen(true);
-  };
-
-  const handleVisitScheduleSubmit = () => {
-    console.log("[Dashboard] Visit schedule submitted");
-    setReFetchTrigger((prev) => !prev);
-    setIsVisitScheduleModalOpen(false);
-    if (user && user.customerId) {
-      fetchVisitRegistrations(user.customerId);
-    }
-  };
 
   useEffect(() => {
     console.log("isContainerModalOpen: ", isContainerModalOpen);

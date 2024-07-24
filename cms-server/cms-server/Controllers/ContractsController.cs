@@ -14,7 +14,6 @@ namespace cms_server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class ContractsController : ControllerBase
     {
         private readonly CmsContext _context;
@@ -42,9 +41,11 @@ namespace cms_server.Controllers
                     ContractId = c.ContractId,
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
+                    DeceasedRelationshipWithCustomer = c.Deceased != null ? c.Deceased.RelationshipWithCusomer : "Không có thông tin",
                     StartDate = c.StartDate,
+                    EndDate = c.EndDate,
                     Status = c.Status,
-                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô  {c.Niche.NicheName}"
+                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô {c.Niche.NicheName}"
                 })
                 .ToListAsync();
 
@@ -55,6 +56,7 @@ namespace cms_server.Controllers
 
             return contracts;
         }
+
 
         [HttpGet("{contractId}/detail")]
         public async Task<ActionResult<ContractDto>> GetContractDetail(int contractId)
@@ -110,6 +112,8 @@ namespace cms_server.Controllers
 
         // POST: api/Contracts/renew
         [HttpPost("renew")]
+
+        [Authorize]
         public async Task<ActionResult> RenewContract(ContractRenewalRequestDto renewalRequest)
         {
             if (renewalRequest == null)
@@ -147,22 +151,9 @@ namespace cms_server.Controllers
 
             // Update contract status to PendingRenewal
             contract.Status = "PendingRenewal";
+            contract.Note = renewalRequest.Note;
             _context.Entry(contract).State = EntityState.Modified;
 
-            // Create a new NicheReservation for the renewal
-            var nicheReservation = new NicheReservation
-            {
-                NicheId = contract.NicheId,
-                CreatedDate = DateTime.Now,
-                ConfirmationDate = renewalRequest.ConfirmationDate,
-                Status = "PendingContractRenewal",
-                Note = renewalRequest.Note,
-                Name = contract.Customer.FullName,
-                PhoneNumber = contract.Customer.Phone,
-                SignAddress = renewalRequest.SignAddress
-            };
-
-            _context.NicheReservations.Add(nicheReservation);
 
             try
             {
@@ -218,23 +209,9 @@ namespace cms_server.Controllers
 
             // Update contract status to PendingCancellation
             contract.Status = "PendingCancellation";
+            contract.Note = cancellationRequest.Note;
             _context.Entry(contract).State = EntityState.Modified;
-
-            // Create a new NicheReservation for the cancellation
-            var nicheReservation = new NicheReservation
-            {
-                NicheId = contract.NicheId,
-                CreatedDate = DateTime.Now,
-                ConfirmationDate = cancellationRequest.ConfirmationDate,
-                Status = "PendingContractCancellation",
-                Note = cancellationRequest.Note,
-                Name = contract.Customer.FullName,
-                PhoneNumber = contract.Customer.Phone,
-                SignAddress = cancellationRequest.SignAddress
-            };
-
-            _context.NicheReservations.Add(nicheReservation);
-
+           
             try
             {
                 await _context.SaveChangesAsync();
@@ -264,9 +241,9 @@ namespace cms_server.Controllers
     public class ContractRenewalRequestDto
     {
         public int ContractId { get; set; }
-        public string? Note { get; set; }
-        public DateTime? ConfirmationDate { get; set; }
-        public string? SignAddress { get; set; }
+        public string Note { get; set; }
+        public DateTime ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
     }
     public class ContractCancellationRequestDto
     {

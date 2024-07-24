@@ -17,24 +17,18 @@ import {
   TableHead,
   TableRow,
   Paper,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  SelectChangeEvent,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
-import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import styled from "@emotion/styled";
 import UpdateCompletionImageDialog from "./UpdateCompletionImageDialog";
-import {
-  Add as AddIcon,
-  Delete as DeleteIcon,
-  Check as CheckIcon,
-} from "@mui/icons-material";
+import ServiceOrderAPI from "@/services/serviceOrderService";
+
+const CenteredTableCell = styled(TableCell)`
+  text-align: center;
+`;
 
 const ViewServiceOrderDialog = ({
   open,
@@ -49,30 +43,14 @@ const ViewServiceOrderDialog = ({
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [selectedServiceOrderDetailId, setSelectedServiceOrderDetailId] =
     useState<number | null>(null);
-  const [allServices, setAllServices] = useState<any[]>([]);
-  const [newServiceId, setNewServiceId] = useState<number | "">("");
-  const [newServiceQuantity, setNewServiceQuantity] = useState<number>(1);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [serviceOrderDetailToDelete, setServiceOrderDetailToDelete] = useState<
     number | null
   >(null);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await ServiceOrderAPI.getAllServices();
-        setAllServices(response.data.$values || response.data);
-      } catch (error) {
-        toast.error("Không thể tải danh sách dịch vụ");
-      }
-    };
-
-    fetchServices();
-  }, []);
-
-  useEffect(() => {
-    if (serviceOrderId !== null) {
-      const fetchServiceOrderDetails = async () => {
+    const fetchServiceOrderDetails = async () => {
+      if (serviceOrderId !== null) {
         try {
           const response = await ServiceOrderAPI.getServiceOrderDetails(
             serviceOrderId
@@ -81,10 +59,10 @@ const ViewServiceOrderDialog = ({
         } catch (error) {
           toast.error("Không thể tải chi tiết đơn đặt dịch vụ");
         }
-      };
+      }
+    };
 
-      fetchServiceOrderDetails();
-    }
+    fetchServiceOrderDetails();
   }, [serviceOrderId]);
 
   const getStatusLabel = (status: string) => {
@@ -133,16 +111,15 @@ const ViewServiceOrderDialog = ({
     setUpdateDialogOpen(true);
   };
 
-  const handleAddService = async () => {
-    if (newServiceId !== null && newServiceId !== "") {
+  const fetchServiceOrderDetails = async () => {
+    if (serviceOrderId !== null) {
       try {
-        await ServiceOrderAPI.addServiceToOrder(serviceOrderId, [
-          { serviceID: newServiceId, quantity: newServiceQuantity },
-        ]);
-        toast.success("Đã thêm dịch vụ thành công");
-        fetchServiceOrderDetails();
+        const response = await ServiceOrderAPI.getServiceOrderDetails(
+          serviceOrderId
+        );
+        setServiceOrder(response.data);
       } catch (error) {
-        toast.error("Không thể thêm dịch vụ");
+        toast.error("Không thể tải chi tiết đơn đặt dịch vụ");
       }
     }
   };
@@ -163,19 +140,6 @@ const ViewServiceOrderDialog = ({
         setConfirmDialogOpen(false);
       } catch (error) {
         toast.error("Không thể xóa dịch vụ");
-      }
-    }
-  };
-
-  const fetchServiceOrderDetails = async () => {
-    if (serviceOrderId !== null) {
-      try {
-        const response = await ServiceOrderAPI.getServiceOrderDetails(
-          serviceOrderId
-        );
-        setServiceOrder(response.data);
-      } catch (error) {
-        toast.error("Không thể tải chi tiết đơn đặt dịch vụ");
       }
     }
   };
@@ -215,35 +179,37 @@ const ViewServiceOrderDialog = ({
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Tên dịch vụ</TableCell>
-                      <TableCell>Số lượng</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Trạng thái</TableCell>
-                      <TableCell>Hình ảnh xác nhận</TableCell>
-                      <TableCell>Hành động</TableCell>
+                      <CenteredTableCell>Tên dịch vụ</CenteredTableCell>
+                      <CenteredTableCell>Giá</CenteredTableCell>
+                      <CenteredTableCell>Số lượng</CenteredTableCell>
+                      <CenteredTableCell>Trạng thái</CenteredTableCell>
+                      <CenteredTableCell>Hình ảnh xác nhận</CenteredTableCell>
+                      <CenteredTableCell>Hành động</CenteredTableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {serviceOrder.serviceOrderDetails.$values.map(
-                      (detail: any, index: number) => (
+                      (detail: any) => (
                         <TableRow key={detail.serviceOrderDetailId}>
-                          <TableCell>
+                          <CenteredTableCell>
                             {detail.service?.serviceName ?? "N/A"}
-                          </TableCell>
-                          <TableCell>{detail.quantity}</TableCell>
-                          <TableCell>
+                          </CenteredTableCell>
+                          <CenteredTableCell>
                             {formatCurrency(
                               (detail.service?.price ?? 0) * detail.quantity
                             )}
-                          </TableCell>
-                          <TableCell>
+                          </CenteredTableCell>
+                          <CenteredTableCell>
+                            {detail.quantity}
+                          </CenteredTableCell>
+                          <CenteredTableCell>
                             <Chip
                               label={getStatusLabel(detail.status)}
                               color={getStatusColor(detail.status)}
                               size="small"
                             />
-                          </TableCell>
-                          <TableCell>
+                          </CenteredTableCell>
+                          <CenteredTableCell>
                             {detail.completionImage ? (
                               <Image
                                 src={detail.completionImage}
@@ -254,103 +220,51 @@ const ViewServiceOrderDialog = ({
                             ) : (
                               "N/A"
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <Tooltip title="Xác nhận">
-                              <span>
-                                <IconButton
-                                  color="primary"
-                                  onClick={() =>
-                                    handleOpenUpdateDialog(
-                                      detail.serviceOrderDetailId
-                                    )
-                                  }
-                                  disabled={detail.status === "Complete"}
-                                >
-                                  <CheckIcon />
-                                </IconButton>
-                              </span>
+                          </CenteredTableCell>
+                          <CenteredTableCell>
+                            <Tooltip title="Xác nhận hoàn thành với hình ảnh">
+                              <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() =>
+                                  handleOpenUpdateDialog(
+                                    detail.serviceOrderDetailId
+                                  )
+                                }
+                                disabled={detail.status === "Complete"}
+                              >
+                                Xác nhận
+                              </Button>
                             </Tooltip>
-                            <Tooltip title="Xóa">
-                              <span>
-                                <IconButton
-                                  color="error"
-                                  onClick={() =>
-                                    handleRemoveService(
-                                      detail.serviceOrderDetailId
-                                    )
-                                  }
-                                  disabled={detail.status === "Complete"}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          </TableCell>
+                          </CenteredTableCell>
                         </TableRow>
                       )
                     )}
                     <TableRow>
-                      <TableCell colSpan={2} variant="head">
+                      <CenteredTableCell
+                        colSpan={1}
+                        variant="head"
+                        className="text-red-500"
+                      >
                         Tổng cộng
-                      </TableCell>
-                      <TableCell variant="head" className="text-red-500">
+                      </CenteredTableCell>
+                      <CenteredTableCell
+                        variant="head"
+                        className="text-red-500"
+                      >
                         {formatCurrency(calculateTotalPrice())}
-                      </TableCell>
-                      <TableCell colSpan={3}></TableCell>
+                      </CenteredTableCell>
+                      <CenteredTableCell colSpan={3}></CenteredTableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
             </Box>
-            <Box
-              mb={2}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <FormControl margin="normal" style={{ flex: 2, marginRight: 8 }}>
-                <InputLabel id="new-service-label">Dịch vụ</InputLabel>
-                <Select
-                  labelId="new-service-label"
-                  value={newServiceId}
-                  onChange={(e: SelectChangeEvent<number | "">) =>
-                    setNewServiceId(e.target.value as number)
-                  }
-                  label="Dịch vụ"
-                >
-                  <MenuItem value="" disabled>
-                    Chọn dịch vụ
-                  </MenuItem>
-                  {allServices.map((service) => (
-                    <MenuItem key={service.serviceId} value={service.serviceId}>
-                      {service.serviceName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                margin="normal"
-                label="Số lượng"
-                name="quantity"
-                type="number"
-                value={newServiceQuantity}
-                onChange={(e) => setNewServiceQuantity(Number(e.target.value))}
-                style={{ flex: 1, marginRight: 8 }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={handleAddService}
-                style={{ flexShrink: 0 }}
-              >
-                Thêm dịch vụ
-              </Button>
-            </Box>
           </Box>
         ) : (
-          <Typography>Loading...</Typography>
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <CircularProgress />
+          </Box>
         )}
       </DialogContent>
       <DialogActions>
