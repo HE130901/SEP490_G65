@@ -1,4 +1,5 @@
 ﻿using cms_server.Models;
+using cms_server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,14 @@ namespace cms_server.Controllers
     public class ServiceOrderForStaffController : ControllerBase
     {
         private readonly CmsContext _context;
+        private readonly INotificationService _notificationService;
+
+        public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
+        {
+            _context = context;
+            _notificationService = notificationService;
+        }
+
 
         private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
         {
@@ -153,6 +162,7 @@ namespace cms_server.Controllers
 
             serviceOrderDetail.CompletionImage = request.CompletionImage;
             serviceOrderDetail.Status = "Complete";
+
             serviceOrder.StaffId = staffId;
 
             _context.ServiceOrderDetails.Update(serviceOrderDetail);
@@ -166,11 +176,10 @@ namespace cms_server.Controllers
                 StaffId = staffId,
                 ServiceOrderId = serviceOrder.ServiceOrderId,
                 NotificationDate = DateTime.Now,
-                Message = "Your service order has been updated with a completion image."
+                Message = $"Your service order detail for {serviceOrderDetail.ServiceOrderDetailId} has been updated with a completion image."
             };
 
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
+            await _notificationService.SendNotificationAsync(notification);
 
             return Ok(serviceOrderDetail);
         }
