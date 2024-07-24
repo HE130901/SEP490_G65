@@ -1,84 +1,64 @@
 ﻿using cms_server.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace cms_server.Services
 {
-    public class ContractStatusUpdateService : IHostedService, IDisposable
+    public class ContractStatusUpdateService : BackgroundService
     {
-        private Timer _timer;
-        private readonly IServiceScopeFactory _scopeFactory;
-        private readonly TimeZoneInfo _vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        private readonly ILogger<ContractStatusUpdateService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ContractStatusUpdateService(IServiceScopeFactory scopeFactory)
+        public ContractStatusUpdateService(ILogger<ContractStatusUpdateService> logger, IServiceProvider serviceProvider)
         {
-            _scopeFactory = scopeFactory;
+            _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // Define the target time (e.g., 2 AM Vietnam time)
-            var targetTime = new TimeSpan(2, 0, 0); // 2:00 AM
+            _logger.LogInformation("ContractStatusUpdateService is starting.");
 
-            // Calculate the initial delay to the next occurrence of the target time
-            var now = TimeZoneInfo.ConvertTime(DateTime.Now, _vietnamTimeZone);
-            var firstRunTime = new DateTime(now.Year, now.Month, now.Day, targetTime.Hours, targetTime.Minutes, targetTime.Seconds);
-
-            if (now > firstRunTime)
+            while (!stoppingToken.IsCancellationRequested)
             {
-                firstRunTime = firstRunTime.AddDays(1);
-            }
+                _logger.LogInformation("ContractStatusUpdateService is running.");
 
-            var initialDelay = firstRunTime - now;
-
-            // Set the timer to run daily at the target time
-            _timer = new Timer(UpdateContractStatus, null, initialDelay, TimeSpan.FromDays(1));
-
-            return Task.CompletedTask;
-        }
-
-        private void UpdateContractStatus(object state)
-        {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var _context = scope.ServiceProvider.GetRequiredService<CmsContext>();
-                var contracts = _context.Contracts.ToList();
-
-                foreach (var contract in contracts)
+                try
                 {
-                    if (contract.EndDate.HasValue)
+                    using (var scope = _serviceProvider.CreateScope())
                     {
-                        var endDate = contract.EndDate.Value.ToDateTime(new TimeOnly(0, 0)); 
-                        var daysUntilEnd = (endDate - DateTime.UtcNow).TotalDays;
+                        var context = scope.ServiceProvider.GetRequiredService<CmsContext>();
+                        var contracts = await context.Contracts.ToListAsync();
 
-                        if (daysUntilEnd <= 0)
+                        foreach (var contract in contracts)
                         {
-                            contract.Status = "Expired";
-                        }
-                        else if (daysUntilEnd <= 30)
-                        {
-                            contract.Status = "Nearly Expired";
-                        }
-                        else
-                        {
-                            contract.Status = "Active";
+                            if (contract.EndDate.HasValue)
+                            {
+                                DateTime contractEndDate = contract.EndDate.Value.ToDateTime(TimeOnly.MinValue);
+                                DateTime now = DateTime.UtcNow;
+
+                                if (contractEndDate < now)
+                                {
+                                    contract.Status = "Expired";
+                                }
+                                else if ((contractEndDate - now).TotalDays <= 30)
+                                {
+                                    contract.Status = "Nearly Expired";
+                                }
+                            }
                         }
 
-                        _context.Contracts.Update(contract);
+                        await context.SaveChangesAsync();
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while updating contract statuses.");
+                }
 
-                _context.SaveChanges();
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Adjust the interval as needed
             }
-        }
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _timer?.Change(Timeout.Infinite, 0);
-            return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            _timer?.Dispose();
+            _logger.LogInformation("ContractStatusUpdateService is stopping.");
         }
     }
 }
