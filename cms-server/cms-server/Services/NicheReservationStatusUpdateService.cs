@@ -30,12 +30,12 @@ namespace cms_server.Services
                         var now = DateTime.UtcNow;
 
                         var reservationsToExpire = await context.NicheReservations
-                        .Where(nr => nr.ConfirmationDate < now && nr.Status != "Đã duyệt" && nr.Status != "Quá hạn")
+                        .Where(nr => nr.ConfirmationDate < now && nr.Status != "Approved" && nr.Status != "Canceled")
                         .ToListAsync(stoppingToken);
 
                         foreach (var reservation in reservationsToExpire)
                         {
-                            reservation.Status = "Quá hạn";
+                            reservation.Status = "Canceled";
                         }
 
                         await context.SaveChangesAsync(stoppingToken);

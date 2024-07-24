@@ -38,11 +38,11 @@ namespace cms_server.Services
 
                                 if (contractEndDate < now)
                                 {
-                                    contract.Status = "Quá hạn";
+                                    contract.Status = "Expired";
                                 }
                                 else if ((contractEndDate - now).TotalDays <= 30)
                                 {
-                                    contract.Status = "Sắp hết hạn";
+                                    contract.Status = "Expired Soon";
                                 }
                             }
                         }

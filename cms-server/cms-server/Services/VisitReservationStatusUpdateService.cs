@@ -30,12 +30,12 @@ namespace cms_server.Services
                         var now = DateTime.UtcNow;
 
                         var reservationsToExpire = await context.VisitRegistrations
-                            .Where(vr => vr.VisitDate < now  && vr.Status != "Quá hạn")
+                            .Where(vr => vr.VisitDate < now  && vr.Status != "Canceled")
                             .ToListAsync(stoppingToken);
 
                         foreach (var reservation in reservationsToExpire)
                         {
-                            reservation.Status = "Quá hạn";
+                            reservation.Status = "Canceled";
                         }
 
                         await context.SaveChangesAsync(stoppingToken);
