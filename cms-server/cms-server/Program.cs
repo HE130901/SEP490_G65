@@ -29,6 +29,7 @@ builder.Services.AddSingleton<IOtpService, OtpService>();
 // Register the background service
 builder.Services.AddHostedService<ContractStatusUpdateService>();
 builder.Services.AddHostedService<NicheReservationStatusUpdateService>();
+builder.Services.AddHostedService<VisitReservationStatusUpdateService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
