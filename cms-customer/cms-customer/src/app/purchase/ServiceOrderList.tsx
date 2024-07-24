@@ -260,6 +260,7 @@ export default function ServiceOrderList({
         <DetailViewDialog
           record={viewingRecord}
           onClose={() => setViewingRecord(null)}
+          onSave={(record) => handleSave(record)}
         />
       )}
     </div>

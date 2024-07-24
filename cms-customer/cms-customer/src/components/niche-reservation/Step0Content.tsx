@@ -29,6 +29,14 @@ const Step0Content = ({
     autoplaySpeed: 3000,
     arrows: false, // Hide arrows
   };
+  // const formattedDescription = selectedNiche.nicheDescription
+  //   .split(" |")
+  //   .map((line: any, index: any) => (
+  //     <span key={index}>
+  //       {line}
+  //       <br />
+  //     </span>
+  //   ));
 
   return (
     <Grid container spacing={2}>
@@ -94,6 +102,7 @@ const Step0Content = ({
           Ô chứa {selectedNiche.nicheName}
         </Typography>
         <Typography variant="body2" color="textSecondary" gutterBottom>
+          {/* {formattedDescription} */}
           {selectedNiche.nicheDescription}
         </Typography>
         <Divider sx={{ my: 2 }} />

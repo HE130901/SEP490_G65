@@ -31,7 +31,7 @@ interface CartModalProps {
 
 interface Niche {
   nicheId: number;
-  nicheName: string;
+  nicheAddress: string;
 }
 
 const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
@@ -199,7 +199,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                   >
                     {niches.map((niche) => (
                       <MenuItem key={niche.nicheId} value={niche.nicheId}>
-                        {niche.nicheName}
+                        {niche.nicheAddress}
                       </MenuItem>
                     ))}
                   </TextField>

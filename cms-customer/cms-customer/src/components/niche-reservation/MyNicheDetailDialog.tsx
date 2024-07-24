@@ -33,7 +33,7 @@ const getStatusVariant = (status: string) => {
       return "green";
     case "Pending":
     case "PendingRenewal":
-    case "PendingCancelation":
+    case "PendingCancellation":
       return "default";
     case "Canceled":
       return "destructive";
@@ -55,7 +55,7 @@ const getStatusText = (status: string) => {
 
     case "PendingRenewal":
       return "Đang chờ gia hạn";
-    case "PendingCancelation":
+    case "PendingCancellation":
       return "Đang chờ hủy";
     default:
       return "Không xác định";
@@ -246,9 +246,9 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                                 <Image
                                   src={detail.completionImage}
                                   alt="Completion"
-                                  style={{ maxWidth: "100%" }}
-                                  width={50}
-                                  height={50}
+                                  width={100}
+                                  height={100}
+                                  className="w-24 h-24 rounded-lg object-cover object-center"
                                 />
                               )}
                             </TableCell>

@@ -31,7 +31,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority={priority} // Add priority prop
+          priority={priority}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
       </div>

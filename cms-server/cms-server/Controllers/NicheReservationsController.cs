@@ -48,7 +48,7 @@ namespace cms_server.Controllers
                     ReservationId = r.ReservationId,
                     Name = r.Name,
                     PhoneNumber = r.PhoneNumber,
-                    NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName}-{r.Niche.Area.Floor.FloorName}-{r.Niche.Area.AreaName}-{r.Niche.NicheName}",
+                    NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - {r.Niche.NicheName}",
                     CreatedDate = r.CreatedDate,
                     ConfirmationDate = r.ConfirmationDate,
                     Note = r.Note,

@@ -4,6 +4,7 @@
     {
         public int NicheId { get; set; }
         public string NicheName { get; set; } = null!;
+        public string? NicheAddress { get; set; }
         public string? ContractStatus { get; set; }
         public string? NicheDescription { get; set; }
         public int? ContractId { get; set; }

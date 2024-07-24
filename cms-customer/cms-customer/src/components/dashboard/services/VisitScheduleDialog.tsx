@@ -20,7 +20,7 @@ import { addMonths, format } from "date-fns";
 
 interface Niche {
   nicheId: number;
-  nicheName: string;
+  nicheAddress: string;
 }
 
 interface VisitScheduleDialogProps {
@@ -166,7 +166,7 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
             ) : (
               niches.map((niche) => (
                 <MenuItem key={niche.nicheId} value={niche.nicheId}>
-                  {niche.nicheName}
+                  {niche.nicheAddress}
                 </MenuItem>
               ))
             )}
