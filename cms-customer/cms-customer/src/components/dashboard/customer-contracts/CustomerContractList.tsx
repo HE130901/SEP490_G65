@@ -197,7 +197,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("contractId")}</div>
+        <div className="text-center">HĐ-{row.getValue("contractId")}</div>
       ),
     },
     {

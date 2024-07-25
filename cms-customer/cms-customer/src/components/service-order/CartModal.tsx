@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useCart } from "@/context/CartContext";
+import { useStateContext } from "@/context/StateContext"; // Import useStateContext
 import Image from "next/image";
 import PaymentService from "@/services/paymentService";
 import { toast } from "react-toastify";
@@ -36,6 +37,7 @@ interface Niche {
 
 const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
   const { items, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { user } = useStateContext(); // Chỉ sử dụng user từ state context
   const [loading, setLoading] = useState(false);
   const [nicheID, setNicheID] = useState<number>(1);
   const [orderDate, setOrderDate] = useState<string>("");
@@ -65,6 +67,10 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
   };
 
   const handleInitiatePayment = async () => {
+    if (!user) {
+      toast.error("Bạn cần đăng nhập để tiếp tục thanh toán");
+      return;
+    }
     setLoading(true);
     try {
       const orderDetails = items.map((item) => ({
@@ -98,19 +104,20 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
 
   useEffect(() => {
     const fetchNiches = async () => {
-      try {
-        const response = await NicheAPI.getNichesForCustomer();
-        setNiches(response.data.$values);
-      } catch (error) {
-        toast.error("Failed to fetch niches. Please try again later.");
-      } finally {
-        setNichesLoading(false);
+      if (isOpen) {
+        setNichesLoading(true);
+        try {
+          const response = await NicheAPI.getNichesForCustomer();
+          setNiches(response.data.$values);
+        } catch (error) {
+          console.error("Failed to fetch niches. Please try again later.");
+        } finally {
+          setNichesLoading(false);
+        }
       }
     };
 
-    if (isOpen) {
-      fetchNiches();
-    }
+    fetchNiches();
   }, [isOpen]);
 
   const totalAmount = calculateTotal();
@@ -183,38 +190,49 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                   {totalAmount.toLocaleString()} ₫
                 </Typography>
               </Box>
-              {isNichesLoading ? (
-                <Box display="flex" justifyContent="center" my={2}>
-                  <CircularProgress />
-                </Box>
+              {user ? (
+                isNichesLoading ? (
+                  <Box display="flex" justifyContent="center" my={2}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <>
+                    <TextField
+                      select
+                      label="Ô chứa"
+                      value={nicheID}
+                      onChange={(e) => setNicheID(Number(e.target.value))}
+                      fullWidth
+                      margin="normal"
+                    >
+                      {niches.map((niche) => (
+                        <MenuItem key={niche.nicheId} value={niche.nicheId}>
+                          {niche.nicheAddress}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      label="Ngày hẹn"
+                      type="datetime-local"
+                      fullWidth
+                      value={orderDate}
+                      onChange={(e) => setOrderDate(e.target.value)}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                    />
+                  </>
+                )
               ) : (
-                <>
-                  <TextField
-                    select
-                    label="Ô chứa"
-                    value={nicheID}
-                    onChange={(e) => setNicheID(Number(e.target.value))}
-                    fullWidth
-                    margin="normal"
-                  >
-                    {niches.map((niche) => (
-                      <MenuItem key={niche.nicheId} value={niche.nicheId}>
-                        {niche.nicheAddress}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    label="Ngày hẹn"
-                    type="datetime-local"
-                    fullWidth
-                    value={orderDate}
-                    onChange={(e) => setOrderDate(e.target.value)}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    margin="normal"
-                  />
-                </>
+                <Typography
+                  variant="body1"
+                  color="error"
+                  align="center"
+                  sx={{ mt: 2 }}
+                >
+                  Bạn cần đăng nhập để có thể tiếp tục thanh toán
+                </Typography>
               )}
             </Box>
           </div>
@@ -232,7 +250,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
           onClick={handleInitiatePayment}
           color="primary"
           variant="contained"
-          disabled={isPaymentDisabled || loading}
+          disabled={!user || isPaymentDisabled || loading}
         >
           {loading ? "Đang xử lý..." : "Thanh toán"}
         </Button>

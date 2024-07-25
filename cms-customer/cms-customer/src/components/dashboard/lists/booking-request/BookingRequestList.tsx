@@ -242,7 +242,7 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("reservationId")}</div>
+        <div className="text-center">ĐC-{row.getValue("reservationId")}</div>
       ),
     },
     {

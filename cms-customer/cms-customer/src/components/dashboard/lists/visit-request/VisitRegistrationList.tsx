@@ -209,7 +209,7 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("visitId")}</div>
+        <div className="text-center">ĐV-{row.getValue("visitId")}</div>
       ),
     },
     {

@@ -26,6 +26,7 @@ import Step0Content from "./Step0Content";
 import Step1Content from "./Step1Content";
 import { schema, calculateCost, getAllowedDates } from "./utils";
 import { formatVND } from "@/utils/formatCurrency";
+import Step2Content from "./Step2Content";
 
 // Step labels
 const steps = ["Xem thông tin ô chứa", "Điền thông tin", "Xác thực"];
@@ -196,9 +197,10 @@ const CombinedDialog = ({
   const type = watch("type");
   const duration = watch("duration", 1);
   const phoneNumber = watch("phoneNumber");
+  const name = watch("name");
 
   return (
-    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle className="text-center">
         Đăng ký đặt chỗ
         <Stepper activeStep={activeStep} alternativeLabel>
@@ -247,61 +249,16 @@ const CombinedDialog = ({
             />
           )}
           {activeStep === 2 && !user && (
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12}>
-                <Typography>Số điện thoại: {phoneNumber}</Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Controller
-                  name="otp"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label={
-                        <span>
-                          Mã OTP <span style={{ color: "red" }}>*</span>
-                        </span>
-                      }
-                      fullWidth
-                      margin="normal"
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          color: "#0e0101",
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#0e0101",
-                        },
-                        "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0e0101",
-                          },
-                        "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0e0101",
-                          },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <Button
-                  onClick={sendOtp}
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    backgroundColor: "#FB8C00",
-                    color: "#ffffff",
-                    "&:hover": { backgroundColor: "#EF6C00" },
-                    height: "56px",
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? <CircularProgress size={24} /> : "Gửi OTP"}
-                </Button>
-              </Grid>
-            </Grid>
+            <Step2Content
+              control={control}
+              errors={errors}
+              sendOtp={sendOtp}
+              isLoading={isLoading}
+              otpSent={otpSent}
+              otpVerified={otpVerified}
+              verifyOtp={verifyOtp}
+              getValues={getValues}
+            />
           )}
         </form>
       </DialogContent>

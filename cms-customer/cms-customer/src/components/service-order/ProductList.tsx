@@ -1,40 +1,38 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { formatVND } from "@/utils/formatCurrency";
-import { useCart } from "@/context/CartContext";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCart } from "@/context/CartContext";
+import { formatVND } from "@/utils/formatCurrency";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { CartButton } from "../ui/CartButton";
 import PaginationControls from "./PaginationControls";
-import { CartButton } from "./CartButton";
 
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { IconButton } from "@mui/material";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
-import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
-import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
 import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartRounded";
+import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
+import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
+import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
 import {
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
-  DialogActions,
   Button as MUIButton,
   Typography,
 } from "@mui/material";
