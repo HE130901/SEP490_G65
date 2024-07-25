@@ -90,7 +90,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
   };
 
   return (
-    <Dialog open={isVisible} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={isVisible} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết Ô chứa của bạn</DialogTitle>
       <DialogContent>
         <Box mb={2}>

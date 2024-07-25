@@ -73,9 +73,9 @@ function Hero() {
               className="mt-2 mb-8 w-full  text-base leading-relaxed tracking-wide text-shadow-md text-gray-300"
             >
               Con người ai cũng phải trải qua sinh-lão-bệnh-tử. <br /> An Bình
-              Viên được xây nên không như là điểm đến cuối cùng của một đời
-              người mà là điểm khởi đầu của một cuộc sống tốt đẹp hơn và để ghi
-              nhớ một cuộc đời đã được sống vẹn tròn.
+              Viên được xây nên không những là điểm đến cuối cùng của một đời
+              người mà còn là nơi khởi đầu của một cuộc sống tốt đẹp hơn và để
+              ghi nhớ một cuộc đời đã được sống vẹn tròn.
             </motion.p>
             <motion.div
               className="flex items-center gap-4"

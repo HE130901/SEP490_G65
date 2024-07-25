@@ -107,7 +107,7 @@ const Step0Content = ({
         </Typography>
         <Divider sx={{ my: 2 }} />
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Controller
               name="type"
               control={control}
@@ -126,7 +126,7 @@ const Step0Content = ({
               )}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <Controller
               name="duration"
               control={control}
