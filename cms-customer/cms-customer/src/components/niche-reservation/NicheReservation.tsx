@@ -236,7 +236,7 @@ const NicheReservationPage = () => {
                           }}
                           className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                             niche.reservedByUser
-                              ? "bg-yellow-400 text-black"
+                              ? "bg-sky-500 text-black"
                               : niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
@@ -274,14 +274,13 @@ const NicheReservationPage = () => {
           {floorRows.map((row, rowIndex) => (
             <div key={rowIndex} className="flex space-x-2">
               {row.map((niche) => {
-                const tooltipMessage =
-                  niche.status === "Booked"
-                    ? "Ô chứa đã được đặt trước!"
-                    : niche.status === "Unavailable"
-                    ? "Ô chứa đã được sử dụng!"
-                    : niche.reservedByUser
-                    ? "Đây là ô chứa của bạn!"
-                    : "Bạn có thể chọn ô chứa này!";
+                const tooltipMessage = niche.reservedByUser
+                  ? "Đây là ô chứa của bạn!"
+                  : niche.status === "Booked"
+                  ? "Ô chứa đã được đặt trước!"
+                  : niche.status === "Unavailable"
+                  ? "Ô chứa đã được sử dụng!"
+                  : "Bạn có thể chọn ô chứa này!";
 
                 return (
                   <TooltipProvider key={niche.nicheId}>
@@ -297,7 +296,7 @@ const NicheReservationPage = () => {
                           }}
                           className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                             niche.reservedByUser
-                              ? "bg-yellow-400 text-black"
+                              ? "bg-sky-500 text-black"
                               : niche.status === "Unavailable"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
@@ -325,14 +324,13 @@ const NicheReservationPage = () => {
             {floorLabels[rowIndex]}
           </div>
           {row.map((niche) => {
-            const tooltipMessage =
-              niche.status === "Booked"
-                ? "Ô chứa đã được đặt trước!"
-                : niche.status === "Unavailable"
-                ? "Ô chứa đã được sử dụng!"
-                : niche.reservedByUser
-                ? "Đây là ô chứa của bạn!"
-                : "Bạn có thể chọn ô chứa này!";
+            const tooltipMessage = niche.reservedByUser
+              ? "Đây là ô chứa của bạn!"
+              : niche.status === "Booked"
+              ? "Ô chứa đã được đặt trước!"
+              : niche.status === "Unavailable"
+              ? "Ô chứa đã được sử dụng!"
+              : "Bạn có thể chọn ô chứa này!";
 
             return (
               <TooltipProvider key={niche.nicheId}>
@@ -348,7 +346,7 @@ const NicheReservationPage = () => {
                       }}
                       className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                         niche.reservedByUser
-                          ? "bg-yellow-400 text-black"
+                          ? "bg-sky-500 text-black"
                           : niche.status === "Unavailable"
                           ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
@@ -431,7 +429,7 @@ const NicheReservationPage = () => {
             </div>
             {user && (
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-yellow-400 rounded-sm"></div>
+                <div className="w-4 h-4 bg-sky-500 rounded-sm"></div>
                 <span className="font-semibold text-white">Ô chứa của bạn</span>
               </div>
             )}
