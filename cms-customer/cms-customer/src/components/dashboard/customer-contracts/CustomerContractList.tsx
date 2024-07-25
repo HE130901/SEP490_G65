@@ -12,7 +12,7 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { Eye, ArrowUpDown } from "lucide-react";
+import { Eye, ArrowUpDown, Ban, History } from "lucide-react";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import HistorySharp from "@mui/icons-material/HistorySharp";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ import ExtendContractDialog from "./ContractRenewalDialog";
 import LiquidateContractDialog from "./ContractTerminationDialog";
 import ContractAPI from "@/services/contractService"; // Import your API service
 import { useStateContext } from "@/context/StateContext";
+import { IconButton } from "@mui/material";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -58,7 +59,7 @@ const getStatusText = (status: string) => {
     case "Active":
       return "Hoạt động";
     case "PendingRenewal":
-      return "Đang chờ gia hạn";
+      return "Chờ gia hạn";
     case "PendingCancellation":
       return "Đang chờ hủy";
     case "Expired":
@@ -147,19 +148,19 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const handleDialogClose = () => {
     setIsDialogOpen(false);
     setSelectedContract(null);
-    fetchContracts(); // Fetch contracts after closing dialog
+    fetchContracts();
   };
 
   const handleExtendDialogClose = () => {
     setExtendDialogOpen(false);
     setSelectedContract(null);
-    fetchContracts(); // Fetch contracts after closing dialog
+    fetchContracts();
   };
 
   const handleLiquidateDialogClose = () => {
     setLiquidateDialogOpen(false);
     setSelectedContract(null);
-    fetchContracts(); // Fetch contracts after closing dialog
+    fetchContracts();
   };
 
   const formatDate = (dateString: string) => {
@@ -329,17 +330,15 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  color="success"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleExtendClick(row.original);
                   }}
-                  className="text-green-600"
                 >
-                  <HistorySharp className="w-4 h-4" />
-                </Button>
+                  <History className="w-4 h-4" />
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Gia hạn hợp đồng</TooltipContent>
             </Tooltip>
@@ -347,17 +346,15 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  color="error"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleLiquidateClick(row.original);
                   }}
-                  className="text-red-600"
                 >
-                  <CancelOutlinedIcon className="w-4 h-4" />
-                </Button>
+                  <Ban className="w-4 h-4" />
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Thanh lý hợp đồng</TooltipContent>
             </Tooltip>

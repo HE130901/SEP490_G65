@@ -276,7 +276,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setIsOpen(false)} color="primary">
+        <Button onClick={() => setIsOpen(false)} variant="outlined">
           Đóng
         </Button>
         <Button

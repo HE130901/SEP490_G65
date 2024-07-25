@@ -1,5 +1,6 @@
 "use client";
 
+import { Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,13 +9,22 @@ export default function ServicesList() {
     <div className="flex flex-col bg-white dark:bg-gray-950 ">
       <div className="py-8 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">
         <section className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-            Danh mục dịch vụ
-          </h1>
-          <p className="mt-4 text-lg text-gray-700 dark:text-gray-300 font-medium ">
-            Tại đây, bạn có thể đặt các dịch vụ liên quan đến chỗ chứa, đăng ký
-            viếng thăm và đặt các dịch vụ khác.
-          </p>
+          <Typography
+            variant="h4"
+            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-200"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
+          >
+            Dịch vụ của chúng tôi
+          </Typography>
+          <Typography
+            variant="body1"
+            className="text-gray-600 max-w-2xl mx-auto font-bold"
+          >
+            Tại đây, bạn có thể đặt các dịch vụ liên quan đến ô chứa và các dịch
+            vụ khác.<br></br>
+            Chúng tôi cam kết mang lại cho bạn trải nghiệm tốt nhất và trang
+            trọng nhất!
+          </Typography>
         </section>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
@@ -26,17 +36,17 @@ export default function ServicesList() {
               link: "/niche-reservation",
             },
             {
-              title: "Đăng ký viếng thăm",
+              title: "Quản lý hợp đồng & ô chứa",
               image: "/images/visit.jpg",
               description:
-                "Dịch vụ đăng ký viếng thăm giúp bạn lên kế hoạch tưởng niệm người thân một cách thuận tiện và chu đáo. Thay vì phải đến trực tiếp, bạn có thể đăng ký trước trên website của chúng tôi.",
+                "Đăng nhập và quản lý các hợp đồng, ô chứa cũng như dịch vụ và thông tin cá nhân của quý khách hàng một cách nhanh chóng và thuận tiện.",
               link: "/dashboard",
             },
             {
               title: "Các dịch vụ khác",
               image: "/images/service.png",
               description:
-                "Nhằm mang đến sự tiện lợi và hỗ trợ tốt nhất cho quý khách đã đặt mua ô chứa tại An Bình Viên, chúng tôi cung cấp các gói lễ theo ngày rằm, lễ tết, giỗ chạp... để gia đình tiện lợi tưởng nhớ người thân",
+                "Nhằm mang đến sự tiện lợi và hỗ trợ tốt nhất cho quý khách đã đặt mua ô chứa tại An Bình Viên, chúng tôi cung cấp các gói lễ theo ngày rằm, lễ tết, giỗ chạp... và các dịch vụ khác.",
               link: "/service-order",
             },
           ].map((item, index) => (
@@ -64,10 +74,6 @@ export default function ServicesList() {
             </div>
           ))}
         </div>
-        <p className="mt-4 font-bold text-gray-700 dark:text-gray-300 text-center pt-8">
-          Chúng tôi cam kết mang lại cho bạn trải nghiệm tốt nhất và trang trọng
-          nhất.
-        </p>
       </div>
     </div>
   );

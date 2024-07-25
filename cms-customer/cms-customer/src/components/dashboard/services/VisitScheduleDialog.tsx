@@ -206,7 +206,12 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
           />
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <DialogActions>
-            <Button onClick={onClose} color="primary" disabled={loading}>
+            <Button
+              onClick={onClose}
+              color="primary"
+              disabled={loading}
+              variant="outlined"
+            >
               Hủy bỏ
             </Button>
             <Button
