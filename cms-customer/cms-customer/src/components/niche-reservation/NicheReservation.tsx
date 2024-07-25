@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense, lazy, useCallback } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { motion } from "framer-motion";
@@ -13,8 +11,8 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import NicheAPI from "@/services/nicheService";
-import CombinedDialog from "./DetailAndBooking";
-import MyNicheDetailDialog from "./MyNicheDetailDialog";
+const CombinedDialog = lazy(() => import("./DetailAndBooking"));
+const MyNicheDetailDialog = lazy(() => import("./MyNicheDetailDialog"));
 
 const revealVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -106,7 +104,7 @@ const NicheReservationPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const openDetailDialog = async (niche: Niche) => {
+  const openDetailDialog = useCallback(async (niche: Niche) => {
     try {
       const response = await NicheAPI.getDetail(niche.nicheId);
       setSelectedNicheDetail(response.data);
@@ -115,9 +113,9 @@ const NicheReservationPage = () => {
     } catch (error) {
       console.error("Error fetching niche details:", error);
     }
-  };
+  }, []);
 
-  const openMyDetailDialog = async (niche: Niche) => {
+  const openMyDetailDialog = useCallback(async (niche: Niche) => {
     try {
       const response = await NicheAPI.getDetailForCustomer(niche.nicheId);
       setSelectedNicheDetail(response.data);
@@ -126,9 +124,9 @@ const NicheReservationPage = () => {
     } catch (error) {
       console.error("Error fetching niche details:", error);
     }
-  };
+  }, []);
 
-  const closeDetailDialog = () => {
+  const closeDetailDialog = useCallback(() => {
     setIsDetailDialogVisible(false);
     setIsMyDetailDialogVisible(false);
     const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
@@ -141,7 +139,15 @@ const NicheReservationPage = () => {
     if (user && user.customerId) {
       fetchReservations(user.customerId);
     }
-  };
+  }, [
+    fetchNiches,
+    fetchNichesForCustomer,
+    fetchReservations,
+    selectedBuilding,
+    selectedFloor,
+    selectedArea,
+    user,
+  ]);
 
   const sortedNiches = [...niches].sort((a, b) => {
     const aName = parseInt(a.nicheName, 10);
@@ -149,13 +155,13 @@ const NicheReservationPage = () => {
     return aName - bName;
   });
 
-  const createRows = (items: Niche[], itemsPerRow: number) => {
+  const createRows = useCallback((items: Niche[], itemsPerRow: number) => {
     const rows = [];
     for (let i = 0; i < items.length; i += itemsPerRow) {
       rows.push(items.slice(i, i + itemsPerRow));
     }
     return rows;
-  };
+  }, []);
 
   const floorLabels: { [key: number]: string } = {
     0: "Hàng 5",
@@ -165,26 +171,29 @@ const NicheReservationPage = () => {
     4: "Hàng 1",
   };
 
-  const renderSkeletonRows = (itemsPerRow: number, rowsCount: number) => {
-    return (
-      <div className="flex flex-col space-y-2">
-        {Array.from({ length: rowsCount }).map((_, rowIndex) => (
-          <div key={rowIndex} className="flex space-x-2">
-            {Array.from({ length: itemsPerRow }).map((_, itemIndex) => (
-              <Skeleton
-                key={itemIndex}
-                height={40}
-                width={40}
-                className="p-2 border rounded-md"
-              />
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const renderSkeletonRows = useCallback(
+    (itemsPerRow: number, rowsCount: number) => {
+      return (
+        <div className="flex flex-col space-y-2">
+          {Array.from({ length: rowsCount }).map((_, rowIndex) => (
+            <div key={rowIndex} className="flex space-x-2">
+              {Array.from({ length: itemsPerRow }).map((_, itemIndex) => (
+                <Skeleton
+                  key={itemIndex}
+                  height={40}
+                  width={40}
+                  className="p-2 border rounded-md"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      );
+    },
+    []
+  );
 
-  const renderRows = () => {
+  const renderRows = useCallback(() => {
     if (screenSize === "small") {
       const rows = createRows(sortedNiches, 5);
       const groupedRows = rows
@@ -358,7 +367,13 @@ const NicheReservationPage = () => {
         </div>
       ));
     }
-  };
+  }, [
+    screenSize,
+    sortedNiches,
+    openDetailDialog,
+    openMyDetailDialog,
+    floorLabels,
+  ]);
 
   return (
     <div className="">
@@ -422,32 +437,25 @@ const NicheReservationPage = () => {
             )}
           </div>
 
-          <CombinedDialog
-            isVisible={isDetailDialogVisible}
-            onClose={closeDetailDialog}
-            selectedNiche={selectedNicheDetail}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <CombinedDialog
+              isVisible={isDetailDialogVisible}
+              onClose={closeDetailDialog}
+              selectedNiche={selectedNicheDetail}
+            />
+          </Suspense>
 
-          {/* <ReservationForm
-            isVisible={isFormVisible}
-            onClose={closeBookingForm}
-            selectedNiche={selectedNicheDetail}
-          />
-          <NicheDetailDialog
-            isVisible={isDetailDialogVisible}
-            onClose={closeDetailDialog}
-            niche={selectedNicheDetail}
-            onProceedToBooking={proceedToBooking}
-          />*/}
-          <MyNicheDetailDialog
-            isVisible={isMyDetailDialogVisible}
-            onClose={closeDetailDialog}
-            niche={selectedNicheDetail}
-          />
+          <Suspense fallback={<div>Loading...</div>}>
+            <MyNicheDetailDialog
+              isVisible={isMyDetailDialogVisible}
+              onClose={closeDetailDialog}
+              niche={selectedNicheDetail}
+            />
+          </Suspense>
         </motion.div>
       </section>
     </div>
   );
 };
 
-export default NicheReservationPage;
+export default React.memo(NicheReservationPage);

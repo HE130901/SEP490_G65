@@ -16,7 +16,6 @@ import { Eye, ArrowUpDown, Ban, History } from "lucide-react";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import HistorySharp from "@mui/icons-material/HistorySharp";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -36,9 +35,19 @@ import { useRouter } from "next/navigation";
 import ContractDetailsDialog from "./ContractDetailsDialog";
 import ExtendContractDialog from "./ContractRenewalDialog";
 import LiquidateContractDialog from "./ContractTerminationDialog";
-import ContractAPI from "@/services/contractService"; // Import your API service
+import ContractAPI from "@/services/contractService";
 import { useStateContext } from "@/context/StateContext";
 import { IconButton } from "@mui/material";
+import { useCallback } from "react";
+import debounce from "lodash.debounce";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { remove as removeDiacritics } from "diacritics";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -94,6 +103,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     { id: "contractId", desc: false },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchField, setSearchField] = useState("all");
   const [filteredData, setFilteredData] = useState<Contract[]>(contracts);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -106,6 +116,59 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
   const [isLiquidateDialogOpen, setLiquidateDialogOpen] = useState(false);
   const router = useRouter();
+
+  // Hàm chuẩn hóa và lọc dữ liệu
+  const normalizeText = (text: string) => {
+    return removeDiacritics(text.toLowerCase());
+  };
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      const normalizedTerm = normalizeText(term);
+      const filtered = contracts.filter((contract: Contract) => {
+        if (searchField === "all") {
+          return (
+            normalizeText(`HĐ-${contract.contractId}`).includes(
+              normalizedTerm
+            ) ||
+            normalizeText(contract.nicheName).includes(normalizedTerm) ||
+            normalizeText(contract.customerName).includes(normalizedTerm) ||
+            normalizeText(contract.deceasedName || "").includes(
+              normalizedTerm
+            ) ||
+            normalizeText(getStatusText(contract.status)).includes(
+              normalizedTerm
+            ) ||
+            normalizeText(
+              contract.deceasedRelationshipWithCustomer || ""
+            ).includes(normalizedTerm) ||
+            normalizeText(formatDate(contract.startDate)).includes(
+              normalizedTerm
+            ) ||
+            normalizeText(contract.duration).includes(normalizedTerm)
+          );
+        } else if (searchField === "contractId") {
+          return normalizeText(`HĐ-${contract.contractId}`).includes(
+            normalizedTerm
+          );
+        } else if (searchField === "status") {
+          return normalizeText(getStatusText(contract.status)).includes(
+            normalizedTerm
+          );
+        } else {
+          const fieldValue = normalizeText(
+            String(contract[searchField as keyof Contract] || "")
+          );
+          return fieldValue.includes(normalizedTerm);
+        }
+      });
+      setFilteredData(filtered);
+    }, 300),
+    [contracts, searchField]
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+  }, [searchTerm, debouncedSearch]);
 
   useEffect(() => {
     setFilteredData(contracts);
@@ -385,15 +448,55 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     setSearchTerm(event.target.value);
   };
 
+  const handleSelectChange = (value: string) => {
+    setSearchField(value);
+  };
+  const getSearchFieldLabel = (value: string) => {
+    switch (value) {
+      case "all":
+        return "Tất cả";
+      case "contractId":
+        return "Mã HĐ";
+      case "nicheName":
+        return "Địa chỉ Ô";
+      case "deceasedName":
+        return "Tên người mất";
+      case "status":
+        return "Trạng thái";
+      default:
+        return "Tất cả";
+    }
+  };
+
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
         <h2 className="text-2xl font-bold text-center">Hợp đồng của tôi</h2>
-        <Input
-          placeholder="Tìm kiếm..."
-          onChange={handleSearch}
-          className="max-w-sm pl-4 ml-auto"
-        />
+        <div className="flex items-center ml-auto space-x-4">
+          <div className="w-36">
+            <Select value={searchField} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <span>{getSearchFieldLabel(searchField)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="contractId">Mã HĐ</SelectItem>
+                <SelectItem value="nicheName">Địa chỉ Ô</SelectItem>
+                <SelectItem value="deceasedName">Tên người mất</SelectItem>
+                <SelectItem value="status">Trạng thái</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-64">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-4"
+            />
+          </div>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ColumnDef,
   SortingState,
@@ -37,10 +37,19 @@ import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
 import EditModal from "./EditModal";
+import debounce from "lodash.debounce";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { remove as removeDiacritics } from "diacritics";
 
 export type NicheReservation = {
   reservationId: number;
   nicheId: number;
+  nicheAddress: string;
   createdDate: string;
   confirmationDate: string;
   status: string;
@@ -101,6 +110,8 @@ export default function BookingRequestList({
     null
   );
   const [currentModal, setCurrentModal] = useState<string | null>(null);
+
+  const [searchField, setSearchField] = useState("all");
 
   useEffect(() => {
     if (user && user.phone) {
@@ -411,15 +422,115 @@ export default function BookingRequestList({
     setSearchTerm(event.target.value);
   };
 
+  const handleSelectChange = (value: string) => {
+    setSearchField(value);
+  };
+  const getSearchFieldLabel = (value: string) => {
+    switch (value) {
+      case "all":
+        return "Tất cả";
+      case "reservationId":
+        return "Mã đơn";
+      case "nicheAddress":
+        return "Địa chỉ Ô";
+      case "createdDate":
+        return "Ngày tạo";
+      case "confirmationDate":
+        return "Ngày hẹn";
+      case "status":
+        return "Trạng thái";
+      default:
+        return "Tất cả";
+    }
+  };
+
+  // Hàm chuẩn hóa và lọc dữ liệu
+  const normalizeText = (text: string) => {
+    return removeDiacritics(text.toLowerCase());
+  };
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      const normalizedTerm = normalizeText(term);
+      const filtered = nicheReservations.filter(
+        (nicheReservation: NicheReservation) => {
+          if (searchField === "all") {
+            return (
+              normalizeText(`ĐC-${nicheReservation.reservationId}`).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.nicheAddress).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.createdDate).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.confirmationDate).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(getStatusText(nicheReservation.status)).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.note || "").includes(
+                normalizedTerm
+              )
+            );
+          } else if (searchField === "reservationId") {
+            return normalizeText(
+              `HĐ-${nicheReservation.reservationId}`
+            ).includes(normalizedTerm);
+          } else if (searchField === "status") {
+            return normalizeText(
+              getStatusText(nicheReservation.status)
+            ).includes(normalizedTerm);
+          } else {
+            const fieldValue = normalizeText(
+              String(
+                nicheReservation[searchField as keyof NicheReservation] || ""
+              )
+            );
+            return fieldValue.includes(normalizedTerm);
+          }
+        }
+      );
+      setFilteredData(filtered);
+    }, 300),
+    [nicheReservations, searchField]
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+  }, [searchTerm, debouncedSearch]);
+
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
         <h2 className="text-2xl font-bold text-center">Đơn đặt ô chứa</h2>
-        <Input
-          placeholder="Tìm kiếm..."
-          onChange={handleSearch}
-          className="max-w-sm pl-4 ml-auto"
-        />
+        <div className="flex items-center ml-auto space-x-4">
+          <div className="w-36">
+            <Select value={searchField} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <span>{getSearchFieldLabel(searchField)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="reservationId">Mã đơn</SelectItem>
+                <SelectItem value="nicheAddress">Địa chỉ Ô</SelectItem>
+                <SelectItem value="createdDate">Ngày tạo</SelectItem>
+                <SelectItem value="confirmationDate">Ngày hẹn</SelectItem>
+                <SelectItem value="status">Trạng thái</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-64">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-4"
+            />
+          </div>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
