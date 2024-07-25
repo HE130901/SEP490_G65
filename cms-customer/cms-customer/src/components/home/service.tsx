@@ -8,7 +8,7 @@ export default function ServicesList() {
   return (
     <div className="flex flex-col bg-white dark:bg-gray-950 ">
       <div className="py-8 px-8 md:px-16 lg:px-24 bg-gray-100 dark:bg-gray-800">
-        <section className="mb-12 text-center">
+        <section className="mb-12 text-center flex flex-col items-center justify-center ">
           <Typography
             variant="h4"
             className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-200"
@@ -18,7 +18,7 @@ export default function ServicesList() {
           </Typography>
           <Typography
             variant="body1"
-            className="text-gray-600 max-w-2xl mx-auto font-bold"
+            className="text-gray-600 max-w-2xl mx-auto font-bold pt-8 "
           >
             Tại đây, bạn có thể đặt các dịch vụ liên quan đến ô chứa và các dịch
             vụ khác.<br></br>

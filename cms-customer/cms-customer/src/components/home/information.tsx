@@ -58,7 +58,7 @@ export default function Information() {
     <Box className="py-20 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         <motion.div
-          className="text-center mb-12"
+          className="flex flex-col items-center justify-center text-center mb-12"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -70,8 +70,8 @@ export default function Information() {
             className="text-4xl sm:text-5xl font-bold mb-4 text-white"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
-            Khám phá những điểm nổi bật <br></br>và giá trị cốt lõi của An Bình
-            Viên
+            Khám phá những điểm nổi bật <br />
+            và giá trị cốt lõi của An Bình Viên
           </Typography>
           <Typography
             variant="subtitle1"
@@ -87,7 +87,7 @@ export default function Information() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           <motion.div
-            className="w-full rounded-lg overflow-hidden shadow-2xl"
+            className="w-full rounded-lg overflow-hidden shadow-2xl flex flex-col items-center justify-center text-center "
             variants={revealVariants}
             custom={2}
             initial="hidden"

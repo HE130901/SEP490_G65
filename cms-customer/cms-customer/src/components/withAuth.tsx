@@ -17,7 +17,7 @@ const withAuth = (WrappedComponent: React.ComponentType) => {
         setShowLoading(true);
         const timer = setTimeout(() => {
           router.push("/auth/login");
-        }, 2000); // Thay đổi thời gian chờ thành 3 giây để người dùng thấy thông báo
+        }, 2000);
         return () => clearTimeout(timer);
       }
     }, [loading, user, router]);

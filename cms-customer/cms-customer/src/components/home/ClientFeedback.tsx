@@ -138,7 +138,7 @@ const ClientFeedback: FC = () => {
           </Typography>
           <Typography
             variant="body1"
-            className=" font-bold mb-4 text-gray-700 pb-10"
+            className=" font-bold mb-4 text-white  pb-10"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Là một dự án mang ý nghĩa tâm linh và nhân văn, An Bình Viên tự hào

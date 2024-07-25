@@ -278,7 +278,7 @@ export default function ProductList({ products }: ProductListProps) {
             </TooltipProvider>
           ))
         ) : (
-          <p>Không tìm thấy sản phẩm</p>
+          <p>Đang tải sản phẩm...</p>
         )}
       </div>
       <PaginationControls
