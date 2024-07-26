@@ -179,8 +179,7 @@ const CombinedDialog = ({
           );
         } else {
           toast.error(
-            (error as any).response.data.error ||
-              "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa"
+            (error as any).response.data.error || "Không thể tạo đơn đặt chỗ"
           );
         }
       } else {

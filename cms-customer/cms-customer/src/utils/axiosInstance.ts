@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "https://cms-server.azurewebsites.net",
-  //baseURL: "https://localhost:7148",
+  //baseURL: "https://cms-server.azurewebsites.net",
+  baseURL: "https://localhost:7148",
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,9 +12,9 @@ const axiosInstance = axios.create({
 // Add a request interceptor to axiosInstance
 axiosInstance.interceptors.request.use(
   function (config) {
-    const token = localStorage.getItem("token"); 
+    const token = localStorage.getItem("token");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; 
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

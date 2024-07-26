@@ -56,6 +56,7 @@ export type VisitRegistration = {
   status: string;
   accompanyingPeople: number;
   note: string;
+  visitCode: string;
 };
 
 const getStatusVariant = (status: string) => {
@@ -209,7 +210,7 @@ export default function VisitRegistrationList({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "visitId",
+      accessorKey: "visitCode",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -220,7 +221,7 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">ĐV-{row.getValue("visitId")}</div>
+        <div className="text-center">{row.getValue("visitCode")}</div>
       ),
     },
     {

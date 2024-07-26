@@ -57,6 +57,7 @@ export type NicheReservation = {
   phoneNumber: string;
   note: string;
   name: string;
+  reservationCode: string;
 };
 
 const getStatusVariant = (status: string) => {
@@ -219,8 +220,8 @@ export default function BookingRequestList({
         dataToUpdate
       );
       toast.success("Cập nhật đơn đặt chỗ thành công!");
-      setCurrentModal(null); // Close the modal
-      fetchNicheReservations(user.phone); // Refetch the data after updating
+      setCurrentModal(null);
+      fetchNicheReservations(user.phone);
     } catch (error) {
       console.error("Error updating niche reservation:", error);
       toast.error("Không thể cập nhật đơn đặt chỗ.");
@@ -242,7 +243,7 @@ export default function BookingRequestList({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "reservationId",
+      accessorKey: "reservationCode",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -253,7 +254,7 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">ĐC-{row.getValue("reservationId")}</div>
+        <div className="text-center">{row.getValue("reservationCode")}</div>
       ),
     },
     {

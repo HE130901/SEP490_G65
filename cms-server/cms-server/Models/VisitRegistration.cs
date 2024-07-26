@@ -23,6 +23,8 @@ public partial class VisitRegistration
 
     public int? AccompanyingPeople { get; set; }
 
+    public string? VisitCode { get; set; }
+
     public virtual Staff? ApprovedByNavigation { get; set; }
 
     public virtual Customer Customer { get; set; } = null!;

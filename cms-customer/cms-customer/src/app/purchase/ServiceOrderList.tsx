@@ -40,6 +40,7 @@ export type ServiceOrder = {
   nicheAddress: string;
   createdDate: string;
   orderDate: string;
+  serviceOrderCode: string;
   serviceOrderDetails: {
     $values: ServiceOrderDetail[];
   };
@@ -122,7 +123,7 @@ export default function ServiceOrderList({
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor("serviceOrderId", {
+      columnHelper.accessor("serviceOrderCode", {
         header: "Mã đơn hàng",
         cell: (info) => info.getValue(),
       }),

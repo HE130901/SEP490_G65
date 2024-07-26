@@ -12,4 +12,6 @@ public partial class Report
     public DateTime? GeneratedDate { get; set; }
 
     public string? Content { get; set; }
+
+    public string? ReportCode { get; set; }
 }

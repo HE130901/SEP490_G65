@@ -1,20 +1,15 @@
-import React, { useEffect, useState } from "react";
+import ContractAPI from "@/services/contractService";
 import {
+  Box,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Button,
-  Typography,
-  Box,
   Grid,
-  Tooltip,
+  Typography,
 } from "@mui/material";
-import ContractAPI from "@/services/contractService";
-import ExtendContractDialog from "./ContractRenewalDialog";
-import LiquidateContractDialog from "./ContractTerminationDialog";
-import HistorySharpIcon from "@mui/icons-material/HistorySharp";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { useEffect, useState } from "react";
 
 interface ContractDetailDialogProps {
   isOpen: boolean;
@@ -65,7 +60,7 @@ export default function ContractDetailsDialog({
             HỢP ĐỒNG GỬI GIỮ TRO CỐT
           </Typography>
           <Typography variant="h6" align="center" gutterBottom>
-            Hợp đồng số: {contractDetails.contractId}
+            Mã hợp đồng : {contractDetails.contractCode}
           </Typography>
           <Typography variant="body1" align="left" gutterBottom>
             Hôm nay, ngày{" "}
@@ -136,7 +131,9 @@ export default function ContractDetailsDialog({
           </Typography>
           <Typography>
             Hợp đồng này nhằm mục đích quy định việc gửi giữ tro cốt của{" "}
-            {contractDetails.deceasedName} giữa Bên A và Bên B.
+            {contractDetails.deceasedName} giữa Bên A và Bên B. <br></br> Tại ô
+            chứa mã số: {contractDetails.nicheCode} ({contractDetails.nicheName}
+            {""}) tại An Bình Viên (Hòa Lạc).
           </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
@@ -213,11 +210,6 @@ export default function ContractDetailsDialog({
               </Grid>
             </Grid>
           </Box>
-
-          <Typography variant="h6" gutterBottom mt={4}>
-            Ghi chú hợp đồng
-          </Typography>
-          {contractDetails.note}
         </Box>
       </DialogContent>
       <DialogActions>

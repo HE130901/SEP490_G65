@@ -15,6 +15,8 @@ public partial class Area
 
     public string? AreaPicture { get; set; }
 
+    public string? AreaCode { get; set; }
+
     public virtual Floor Floor { get; set; } = null!;
 
     public virtual ICollection<Niche> Niches { get; set; } = new List<Niche>();

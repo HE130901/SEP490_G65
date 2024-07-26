@@ -17,6 +17,8 @@ public partial class Floor
 
     public string? FloorPicture { get; set; }
 
+    public string? FloorCode { get; set; }
+
     public virtual ICollection<Area> Areas { get; set; } = new List<Area>();
 
     public virtual Building Building { get; set; } = null!;

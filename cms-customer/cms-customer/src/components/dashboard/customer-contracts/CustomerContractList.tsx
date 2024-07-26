@@ -12,7 +12,7 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { Eye, ArrowUpDown, Ban, History } from "lucide-react";
+import { Eye, ArrowUpDown, Ban, History, FileText } from "lucide-react";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import HistorySharp from "@mui/icons-material/HistorySharp";
 import { Button } from "@/components/ui/button";
@@ -48,16 +48,24 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { remove as removeDiacritics } from "diacritics";
+import { set } from "lodash";
+import ExtendListDialog from "./ExtendListDialog";
+import { ca } from "date-fns/locale";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
     case "Active":
+    case "Extended":
       return "green";
     case "PendingRenewal":
     case "PendingCancellation":
       return "default";
     case "Expired":
+    case "Canceled":
       return "destructive";
+    case "NearlyExpired":
+      return "red";
+
     default:
       return "secondary";
   }
@@ -73,6 +81,12 @@ const getStatusText = (status: string) => {
       return "Đang chờ hủy";
     case "Expired":
       return "Hết hạn";
+    case "Extended":
+      return "Đã gia hạn";
+    case "Canceled":
+      return "Đã thanh lý";
+    case "NearlyExpired":
+      return "Gần hết hạn";
     default:
       return "Không xác định";
   }
@@ -85,9 +99,11 @@ export type Contract = {
   deceasedName?: string;
   status: string;
   deceasedRelationshipWithCustomer?: string;
+  contractCode: string;
   startDate: string;
   endDate: string;
   duration: string;
+  nicheCode: string;
 };
 
 interface CustomerContractListProps {
@@ -115,6 +131,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   );
   const [isExtendDialogOpen, setExtendDialogOpen] = useState(false);
   const [isLiquidateDialogOpen, setLiquidateDialogOpen] = useState(false);
+  const [isExtendListDialogOpen, setExtendListDialogOpen] = useState(false);
   const router = useRouter();
 
   // Hàm chuẩn hóa và lọc dữ liệu
@@ -207,6 +224,10 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     setSelectedContract(contract);
     setLiquidateDialogOpen(true);
   };
+  const handleExtendListCLick = (contract: Contract) => {
+    setSelectedContract(contract);
+    setExtendListDialogOpen(true);
+  };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
@@ -222,6 +243,11 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
 
   const handleLiquidateDialogClose = () => {
     setLiquidateDialogOpen(false);
+    setSelectedContract(null);
+    fetchContracts();
+  };
+  const hendleExtendListDialogClose = () => {
+    setExtendListDialogOpen(false);
     setSelectedContract(null);
     fetchContracts();
   };
@@ -250,7 +276,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "contractId",
+      accessorKey: "contractCode",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -261,7 +287,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">HĐ-{row.getValue("contractId")}</div>
+        <div className="text-center">{row.getValue("contractCode")}</div>
       ),
     },
     {
@@ -390,6 +416,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
               <TooltipContent>Xem chi tiết hợp đồng</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -397,7 +424,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                   color="success"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleExtendClick(row.original);
+                    handleExtendListCLick(row.original);
                   }}
                 >
                   <History className="w-4 h-4" />
@@ -406,6 +433,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
               <TooltipContent>Gia hạn hợp đồng</TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -602,6 +630,14 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           isOpen={isLiquidateDialogOpen}
           onClose={handleLiquidateDialogClose}
           contractId={selectedContract.contractId}
+        />
+      )}
+      {isExtendListDialogOpen && selectedContract && (
+        <ExtendListDialog
+          isOpen={isExtendListDialogOpen}
+          onClose={hendleExtendListDialogClose}
+          contractId={selectedContract.contractId}
+          contractStatus={selectedContract.status}
         />
       )}
     </div>
