@@ -21,6 +21,8 @@ public partial class CmsContext : DbContext
 
     public virtual DbSet<Contract> Contracts { get; set; }
 
+    public virtual DbSet<ContractRenew> ContractRenews { get; set; }
+
     public virtual DbSet<Customer> Customers { get; set; }
 
     public virtual DbSet<Deceased> Deceaseds { get; set; }
@@ -58,10 +60,11 @@ public partial class CmsContext : DbContext
                 .Build();
 
             // Get the connection string from the configuration
-            var connectionString = configuration.GetConnectionString("LocalDB");
+            var connectionString = configuration.GetConnectionString("RemoteDB");
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Area>(entity =>
@@ -71,6 +74,7 @@ public partial class CmsContext : DbContext
             entity.ToTable("Area");
 
             entity.Property(e => e.AreaId).HasColumnName("AreaID");
+            entity.Property(e => e.AreaCode).HasMaxLength(50);
             entity.Property(e => e.AreaName).HasMaxLength(255);
             entity.Property(e => e.FloorId).HasColumnName("FloorID");
 
@@ -87,6 +91,7 @@ public partial class CmsContext : DbContext
             entity.ToTable("Building");
 
             entity.Property(e => e.BuildingId).HasColumnName("BuildingID");
+            entity.Property(e => e.BuildingCode).HasMaxLength(50);
             entity.Property(e => e.BuildingName).HasMaxLength(255);
         });
 
@@ -97,6 +102,7 @@ public partial class CmsContext : DbContext
             entity.ToTable("Contract");
 
             entity.Property(e => e.ContractId).HasColumnName("ContractID");
+            entity.Property(e => e.ContractCode).HasMaxLength(50);
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.DeceasedId).HasColumnName("DeceasedID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
@@ -122,6 +128,21 @@ public partial class CmsContext : DbContext
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Contract__StaffI__5812160E");
+        });
+
+        modelBuilder.Entity<ContractRenew>(entity =>
+        {
+            entity.HasKey(e => e.ContractRenewId).HasName("PK__Contract__F98F8D426A31C1E0");
+
+            entity.ToTable("ContractRenew");
+
+            entity.Property(e => e.ContractRenewCode).HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(20);
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
+
+            entity.HasOne(d => d.Contract).WithMany(p => p.ContractRenews)
+                .HasForeignKey(d => d.ContractId)
+                .HasConstraintName("FK__ContractR__Contr__03F0984C");
         });
 
         modelBuilder.Entity<Customer>(entity =>
@@ -179,6 +200,7 @@ public partial class CmsContext : DbContext
 
             entity.Property(e => e.FloorId).HasColumnName("FloorID");
             entity.Property(e => e.BuildingId).HasColumnName("BuildingID");
+            entity.Property(e => e.FloorCode).HasMaxLength(50);
             entity.Property(e => e.FloorName).HasMaxLength(255);
             entity.Property(e => e.NichePrice).HasColumnType("decimal(18, 0)");
 
@@ -198,6 +220,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.AreaId).HasColumnName("AreaID");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.DeceasedId).HasColumnName("DeceasedID");
+            entity.Property(e => e.NicheCode).HasMaxLength(50);
             entity.Property(e => e.NicheName).HasMaxLength(255);
             entity.Property(e => e.Status).HasMaxLength(50);
 
@@ -250,6 +273,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
+            entity.Property(e => e.ReservationCode).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
 
             entity.HasOne(d => d.ConfirmedByNavigation).WithMany(p => p.NicheReservations)
@@ -305,6 +329,7 @@ public partial class CmsContext : DbContext
 
             entity.Property(e => e.ReportId).HasColumnName("ReportID");
             entity.Property(e => e.GeneratedDate).HasColumnType("datetime");
+            entity.Property(e => e.ReportCode).HasMaxLength(50);
             entity.Property(e => e.ReportType).HasMaxLength(255);
         });
 
@@ -393,6 +418,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.VisitCode).HasMaxLength(50);
             entity.Property(e => e.VisitDate).HasColumnType("datetime");
 
             entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.VisitRegistrations)

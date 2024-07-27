@@ -14,8 +14,8 @@ interface Service {
 }
 
 export default function ServiceOrder() {
-  const [services, setServices] = useState<Service[]>([]); // Added type annotation
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]); // Added type annotation
+  const [services, setServices] = useState<Service[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 

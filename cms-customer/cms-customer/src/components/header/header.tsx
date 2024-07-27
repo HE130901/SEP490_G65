@@ -35,15 +35,8 @@ import Link from "next/link";
 import React from "react";
 import logo from "../../../public/images/logo.png";
 
-export function Header({
-  currentView,
-  setCurrentView,
-}: {
-  currentView: any;
-  setCurrentView: any;
-}) {
+export function Header({}: {}) {
   const { user, logout } = useStateContext();
-
   const ListItem = React.forwardRef<
     HTMLAnchorElement,
     {
@@ -78,7 +71,7 @@ export function Header({
 
   return (
     <header
-      className={`fixed top-0 z-50 w-full transition-colors duration-300 bg-stone-100 shadow-lg text-black`}
+      className={`fixed top-0 z-50 w-full transition-colors duration-300 bg-stone-100 shadow-lg text-black `}
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center">
@@ -98,15 +91,24 @@ export function Header({
             </motion.div>
           </Link>
         </div>
-        <NavigationMenu className=" lg:pr-24">
+        <NavigationMenu className="lg:pr-24 ">
           <NavigationMenuList>
-            <NavigationMenuItem>
+            <NavigationMenuItem className="hidden md:block ">
               <Link href="/" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Trang chủ
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+
+            <NavigationMenuItem className="hidden md:block">
+              <Link href="/niche-reservation" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Đặt ô chứa
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+
             <NavigationMenuItem>
               <NavigationMenuTrigger>Dịch vụ</NavigationMenuTrigger>
               <NavigationMenuContent>
@@ -115,7 +117,7 @@ export function Header({
                     <NavigationMenuLink asChild>
                       <Link
                         className="flex h-full w-full select-none flex-col justify-start  rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href="/services"
+                        href="/dashboard"
                       >
                         <div className="mb-2 text-lg font-medium">Dịch vụ</div>
                         <p className="text-sm leading-tight text-muted-foreground">
@@ -142,14 +144,7 @@ export function Header({
             <NavigationMenuItem>
               <Link href="/about" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Tin tức
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link href="/contact" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Liên hệ
+                  Thông tin liên hệ
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

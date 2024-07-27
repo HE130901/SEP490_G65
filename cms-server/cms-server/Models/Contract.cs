@@ -25,6 +25,10 @@ public partial class Contract
 
     public decimal? TotalAmount { get; set; }
 
+    public string? ContractCode { get; set; }
+
+    public virtual ICollection<ContractRenew> ContractRenews { get; set; } = new List<ContractRenew>();
+
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Deceased? Deceased { get; set; }

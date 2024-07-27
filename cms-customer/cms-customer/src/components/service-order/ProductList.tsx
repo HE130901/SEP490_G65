@@ -1,40 +1,38 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { formatVND } from "@/utils/formatCurrency";
-import { useCart } from "@/context/CartContext";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCart } from "@/context/CartContext";
+import { formatVND } from "@/utils/formatCurrency";
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState, useRef, useCallback } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { CartButton } from "../ui/CartButton";
 import PaginationControls from "./PaginationControls";
-import { CartButton } from "./CartButton";
 
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { IconButton } from "@mui/material";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
-import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
-import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
 import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartRounded";
+import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
+import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
+import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
 import {
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
-  DialogActions,
   Button as MUIButton,
   Typography,
 } from "@mui/material";
@@ -55,8 +53,7 @@ export default function ProductList({ products }: ProductListProps) {
   const itemsPerPage = 8;
 
   const sortedProducts = useMemo(() => {
-    const sorted = [...products];
-    sorted.sort((a, b) => {
+    return [...products].sort((a, b) => {
       switch (sortBy) {
         case "Tăng dần":
           return a.price - b.price;
@@ -66,7 +63,6 @@ export default function ProductList({ products }: ProductListProps) {
           return 0;
       }
     });
-    return sorted;
   }, [sortBy, products]);
 
   const paginatedProducts = useMemo(() => {
@@ -76,74 +72,79 @@ export default function ProductList({ products }: ProductListProps) {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
-  const handleAddToCart = (product: any, event: any, fromModal = false) => {
-    const item = {
-      id: product.serviceId,
-      name: product.serviceName,
-      price: product.price,
-      image: product.servicePicture.startsWith("http")
-        ? product.servicePicture
-        : "default-image-url",
-      quantity: 1,
-    };
-    addToCart(item);
-    setAddedProductId(product.serviceId);
-    toast.success(`${product.serviceName} đã được thêm vào giỏ hàng`);
-    handleCloseDetails();
+  const handleAddToCart = useCallback(
+    (product: any, event: any, fromModal = false) => {
+      const item = {
+        id: product.serviceId,
+        name: product.serviceName,
+        price: product.price,
+        image: product.servicePicture.startsWith("http")
+          ? product.servicePicture
+          : "default-image-url",
+        quantity: 1,
+      };
+      addToCart(item);
+      setAddedProductId(product.serviceId);
+      toast.success(`${product.serviceName} đã được thêm vào giỏ hàng`);
+      handleCloseDetails();
 
-    const imgToFly = fromModal
-      ? document.querySelector(".product-card img")
-      : event.target.closest(".product-card").querySelector("img");
+      const imgToFly = fromModal
+        ? document.querySelector(".product-card img")
+        : event.target.closest(".product-card").querySelector("img");
 
-    if (imgToFly) {
-      const imgClone = imgToFly.cloneNode(true);
-      const cartIcon = cartIconRef.current;
+      if (imgToFly) {
+        const imgClone = imgToFly.cloneNode(true);
+        const cartIcon = cartIconRef.current;
 
-      if (cartIcon) {
-        imgClone.style.position = "absolute";
-        imgClone.style.zIndex = "999";
-        imgClone.style.top = `${imgToFly.getBoundingClientRect().top}px`;
-        imgClone.style.left = `${imgToFly.getBoundingClientRect().left}px`;
-        imgClone.style.width = `${imgToFly.getBoundingClientRect().width}px`;
-        imgClone.style.height = `${imgToFly.getBoundingClientRect().height}px`;
-        document.body.appendChild(imgClone);
-
-        const moveToCart = () => {
-          imgClone.style.transition = "all 1s ease";
-          imgClone.style.top = `${
-            cartIcon.getBoundingClientRect().top + window.scrollY
+        if (cartIcon) {
+          imgClone.style.position = "absolute";
+          imgClone.style.zIndex = "999";
+          imgClone.style.top = `${imgToFly.getBoundingClientRect().top}px`;
+          imgClone.style.left = `${imgToFly.getBoundingClientRect().left}px`;
+          imgClone.style.width = `${imgToFly.getBoundingClientRect().width}px`;
+          imgClone.style.height = `${
+            imgToFly.getBoundingClientRect().height
           }px`;
-          imgClone.style.left = `${
-            cartIcon.getBoundingClientRect().left + window.scrollX
-          }px`;
-          imgClone.style.width = "20px";
-          imgClone.style.height = "20px";
-          imgClone.style.opacity = "0";
-        };
+          document.body.appendChild(imgClone);
 
-        requestAnimationFrame(moveToCart);
+          const moveToCart = () => {
+            imgClone.style.transition = "all 1s ease";
+            imgClone.style.top = `${
+              cartIcon.getBoundingClientRect().top + window.scrollY
+            }px`;
+            imgClone.style.left = `${
+              cartIcon.getBoundingClientRect().left + window.scrollX
+            }px`;
+            imgClone.style.width = "20px";
+            imgClone.style.height = "20px";
+            imgClone.style.opacity = "0";
+          };
 
-        setTimeout(() => {
-          imgClone.remove();
-        }, 1000);
+          requestAnimationFrame(moveToCart);
 
-        setTimeout(() => {
-          setAddedProductId(null);
-        }, 1000);
-      } else {
-        console.error("Cart icon reference is null.");
-        toast.error("Không thể thêm sản phẩm vào giỏ hàng.");
+          setTimeout(() => {
+            imgClone.remove();
+          }, 1000);
+
+          setTimeout(() => {
+            setAddedProductId(null);
+          }, 1000);
+        } else {
+          console.error("Cart icon reference is null.");
+          toast.error("Không thể thêm sản phẩm vào giỏ hàng.");
+        }
       }
-    }
-  };
+    },
+    [addToCart]
+  );
 
-  const handleViewDetails = (product: any) => {
+  const handleViewDetails = useCallback((product: any) => {
     setSelectedProduct(product);
-  };
+  }, []);
 
-  const handleCloseDetails = () => {
+  const handleCloseDetails = useCallback(() => {
     setSelectedProduct(null);
-  };
+  }, []);
 
   return (
     <div>
@@ -280,7 +281,7 @@ export default function ProductList({ products }: ProductListProps) {
             </TooltipProvider>
           ))
         ) : (
-          <p>Không tìm thấy sản phẩm</p>
+          <p>Đang tải sản phẩm...</p>
         )}
       </div>
       <PaginationControls

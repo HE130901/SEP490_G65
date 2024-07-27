@@ -25,7 +25,11 @@ public partial class NicheReservation
 
     public int? ConfirmedBy { get; set; }
 
+    public string? ReservationCode { get; set; }
+
     public virtual Staff? ConfirmedByNavigation { get; set; }
 
     public virtual Niche Niche { get; set; } = null!;
+
+
 }

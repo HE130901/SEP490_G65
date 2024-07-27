@@ -39,6 +39,7 @@ namespace cms_server.Controllers
                 {
                     NicheId = c.NicheId,
                     ContractId = c.ContractId,
+                    ContractCode = c.ContractCode,
                     CustomerName = c.Customer.FullName,
                     DeceasedName = c.Deceased != null ? c.Deceased.FullName : "Không có thông tin",
                     DeceasedRelationshipWithCustomer = c.Deceased != null ? c.Deceased.RelationshipWithCusomer : "Không có thông tin",
@@ -97,13 +98,16 @@ namespace cms_server.Controllers
                 StaffId = contract.StaffId,
                 StaffName = contract.Staff.FullName,
                 NicheId = contract.NicheId,
-                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - {contract.Niche.NicheName}",
+                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - Ô {contract.Niche.NicheName}",
                 DeceasedId = contract.DeceasedId,
                 StartDate = contract.StartDate,
                 EndDate = contract.EndDate,
                 Status = contract.Status,
                 Note = contract.Note,
-                TotalAmount = contract.TotalAmount
+                TotalAmount = contract.TotalAmount,
+                ContractCode = contract.ContractCode,
+                NicheCode = contract.Niche.NicheCode,
+
             };
 
             return Ok(contractDetail);
@@ -237,6 +241,37 @@ namespace cms_server.Controllers
             return _context.Contracts.Any(e => e.ContractId == id);
         }
 
+        [HttpGet("{contractId}/renewals")]
+        public async Task<ActionResult<IEnumerable<ContractRenewalDto>>> GetContractRenewals(int contractId)
+        {
+            var renewals = await _context.ContractRenews
+                .Where(r => r.ContractId == contractId)
+                .Include(r => r.Contract) // Ensure that the related Contract is included
+                .Select(r => new ContractRenewalDto
+                {
+                    ContractId = r.ContractId ?? 0,
+                    ContractRenewalId = r.ContractRenewId,
+                    ContractCode = r.Contract != null ? r.Contract.ContractCode : "Không có thông tin",
+                    ContractRenewCode = r.ContractRenewCode,
+                    EndDate = r.EndDate ?? DateOnly.MinValue,
+                    CreatedDate = r.CreatedDate ?? DateOnly.MinValue,
+                    Status = r.Status,
+                    Amount = r.TotalAmount ?? 0,
+                    Note = r.Note
+                })
+                .ToListAsync();
+
+            if (renewals == null || !renewals.Any())
+            {
+                return NotFound("No renewals found for the specified contract.");
+            }
+
+            return Ok(renewals);
+        }
+
+
+
+
     }
     public class ContractRenewalRequestDto
     {
@@ -252,5 +287,20 @@ namespace cms_server.Controllers
         public DateTime ConfirmationDate { get; set; }
         public string SignAddress { get; set; }
     }
+
+    public class ContractRenewalDto
+    {
+        public int ContractId { get; set; }
+        public int ContractRenewalId { get; set; }
+        public string ContractCode { get; set; }
+        public string ContractRenewCode { get; set; }
+        public DateOnly EndDate { get; set; }
+        public DateOnly CreatedDate { get; set; }
+        public string Status { get; set; }
+        public decimal Amount { get; set; }
+        public string Note { get; set; }
+    }
+
+
 
 }

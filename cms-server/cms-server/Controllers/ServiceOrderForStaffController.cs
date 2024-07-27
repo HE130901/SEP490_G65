@@ -61,7 +61,7 @@ namespace cms_server.Controllers
 
             if (niche == null) return string.Empty;
 
-            return $"{niche.Area.Floor.Building.BuildingName}-{niche.Area.Floor.FloorName}-{niche.Area.AreaName}-{niche.NicheName}";
+            return $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}";
         }
 
         [HttpGet]
@@ -86,6 +86,7 @@ namespace cms_server.Controllers
                     CustomerName = serviceOrder.Customer.FullName,
                     CreatedDate = serviceOrder.CreatedDate,
                     OrderDate = serviceOrder.OrderDate,
+                    ServiceOrderCode = serviceOrder.ServiceOrderCode,
                     ServiceOrderDetails = serviceOrder.ServiceOrderDetails.Select(detail => new ServiceOrderDetailDto
                     {
                         ServiceName = detail.Service.ServiceName,
@@ -161,8 +162,7 @@ namespace cms_server.Controllers
             }
 
             serviceOrderDetail.CompletionImage = request.CompletionImage;
-            serviceOrderDetail.Status = "Complete";
-
+            serviceOrderDetail.Status = "Completed";
             serviceOrder.StaffId = staffId;
 
             _context.ServiceOrderDetails.Update(serviceOrderDetail);
@@ -203,12 +203,20 @@ namespace cms_server.Controllers
                         return BadRequest("Niche not found or does not belong to the customer.");
                     }
 
+                    // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
+                    var currentDate = DateTime.Now.Date;
+                    var ordersTodayCount = await _context.ServiceOrders
+                        .CountAsync(so => so.CreatedDate != null && so.CreatedDate.Value.Date == currentDate);
+
+                    var serviceOrderCode = $"DV-{currentDate:yyyyMMdd}-{(ordersTodayCount + 1):D3}";
+
                     var serviceOrder = new ServiceOrder
                     {
                         CustomerId = request.CustomerID,
                         NicheId = request.NicheID,
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
+                        ServiceOrderCode = serviceOrderCode 
                     };
 
                     _context.ServiceOrders.Add(serviceOrder);
@@ -244,6 +252,7 @@ namespace cms_server.Controllers
                 }
             }
         }
+
 
         [HttpPost("add-service-to-order")]
         public async Task<IActionResult> AddServiceToOrder([FromBody] AddServiceToOrderRequest request)
@@ -393,6 +402,8 @@ namespace cms_server.Controllers
         public int ServiceOrderId { get; set; }
         public string NicheAddress { get; set; }
         public string CustomerName { get; set; }
+
+        public string ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
         public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }

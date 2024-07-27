@@ -27,21 +27,21 @@ const STATS = [
 
 const testimonials = [
   {
-    name: "Jessica Devis",
-    title: "CEO @ Marketing Digital Ltd.",
-    text: "Đây đã là một bước ngoặt cho doanh nghiệp của tôi. Sự tận tâm, chuyên môn và chú ý đến từng chi tiết của họ thực sự đã tạo nên sự khác biệt. Tôi rất khuyến khích sử dụng dịch vụ của họ!",
+    name: "Trịnh Ngọc Mai",
+    title: "TP. Thanh Hóa",
+    text: "Sự tận tâm, dịch vụ tốt và chú ý đến từng chi tiết của họ thực sự đã tạo nên sự khác biệt. Tôi rất khuyến khích sử dụng dịch vụ của họ!",
     image: "/images/avatar1.jpg",
   },
   {
-    name: "Mary Joshiash",
-    title: "Marketing @ Apple Inc.",
-    text: "Họ hiểu nhu cầu độc đáo của tôi và cung cấp một giải pháp tùy chỉnh một cách nhanh chóng. Hỗ trợ khách hàng của họ rất tuyệt vời, và tôi đánh giá cao sự cam kết của họ.",
+    name: "Nguyễn Trung Dũng",
+    title: "TP. Hà Nội",
+    text: "Họ hiểu nhu cầu của tôi và cung cấp một giải pháp một cách nhanh chóng. Hỗ trợ khách hàng của họ rất tuyệt vời, và tôi đánh giá cao sự cam kết của họ.",
     image: "/images/avatar2.jpg",
   },
   {
-    name: "Marcell Glock",
-    title: "CFO @ Apple Inc.",
-    text: "Họ không chỉ đáp ứng mà còn vượt qua mong đợi của chúng tôi. Phương pháp tiếp cận sáng tạo và sự thành thạo kỹ thuật của họ đã đóng vai trò quan trọng trong thành công của chúng tôi.",
+    name: "Lê Văn Cường",
+    title: "TP. Hồ Chí Minh",
+    text: "Họ không chỉ đáp ứng mà còn vượt qua mong đợi của tôi. Sự thành thạo và chuyên nghiệp trong công việc của họ đã giúp tôi giải quyết nhanh chóng các yêu cầu.",
     image: "/images/avatar3.jpg",
   },
 ];
@@ -72,8 +72,9 @@ const ClientFeedback: FC = () => {
       >
         <div className="max-w-7xl mx-auto text-center px-4">
           <Typography
-            variant="h2"
-            className="text-3xl font-semibold mb-6 text-blue-gray-900 pb-12"
+            variant="h4"
+            className="text-4xl sm:text-5xl font-bold mb-4 text-white pb-10"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Khách hàng nói gì về chúng tôi
           </Typography>
@@ -89,8 +90,8 @@ const ClientFeedback: FC = () => {
                 <Image
                   src={testimonial.image}
                   alt={testimonial.name}
-                  width={100}
-                  height={100}
+                  width={200}
+                  height={200}
                   className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-slate-500"
                 />
                 <Typography
@@ -129,14 +130,16 @@ const ClientFeedback: FC = () => {
           custom={5}
         >
           <Typography
-            variant="h2"
-            className="text-3xl font-semibold mb-6 text-center lg:text-left text-blue-gray-900"
+            variant="h3"
+            className="text-4xl sm:text-5xl font-bold mb-4 text-white pb-10"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Các chỉ số nổi bật
           </Typography>
           <Typography
-            variant="caption"
-            className="text-center lg:text-left text-gray-700"
+            variant="body1"
+            className=" font-bold mb-4 text-white  pb-10"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Là một dự án mang ý nghĩa tâm linh và nhân văn, An Bình Viên tự hào
             cung cấp không gian an nghỉ gần gũi với thiên nhiên, thân thiện với

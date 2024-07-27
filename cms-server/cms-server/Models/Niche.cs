@@ -19,6 +19,8 @@ public partial class Niche
 
     public int? DeceasedId { get; set; }
 
+    public string? NicheCode { get; set; }
+
     public virtual Area Area { get; set; } = null!;
 
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();

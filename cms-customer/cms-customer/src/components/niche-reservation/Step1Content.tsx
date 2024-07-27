@@ -5,6 +5,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Typography,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
 
@@ -27,6 +28,9 @@ const Step1Content = ({
   <>
     {!user && (
       <>
+        <Typography variant="h6" gutterBottom>
+          Thông tin cá nhân
+        </Typography>
         <Controller
           name="name"
           control={control}
@@ -97,13 +101,16 @@ const Step1Content = ({
         />
       </>
     )}
+    <Typography variant="h6" gutterBottom>
+      Địa chỉ ký hợp đồng
+    </Typography>
     <Controller
       name="signAddress"
       control={control}
       render={({ field }) => (
         <RadioGroup
           {...field}
-          value={field.value || predefinedAddresses[0]}
+          value={field.value || ""}
           onChange={(e) => field.onChange(e.target.value)}
           sx={{
             "& .MuiFormControlLabel-root .MuiTypography-root": {

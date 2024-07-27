@@ -13,5 +13,7 @@ public partial class Building
 
     public string? BuildingPicture { get; set; }
 
+    public string? BuildingCode { get; set; }
+
     public virtual ICollection<Floor> Floors { get; set; } = new List<Floor>();
 }

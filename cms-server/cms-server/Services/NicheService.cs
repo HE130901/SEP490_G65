@@ -31,6 +31,7 @@ namespace cms_server.Services
                 {
                     NicheId = n.NicheId,
                     NicheName = n.NicheName,
+                    NicheAddress = $"{n.Area.Floor.Building.BuildingName} - {n.Area.Floor.FloorName} - {n.Area.AreaName} - Ô {n.NicheName}",
                     ContractStatus = n.Contracts
                         .OrderByDescending(c => c.StartDate)
                         .Select(c => c.Status)

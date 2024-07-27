@@ -126,13 +126,15 @@ export default function LiquidateContractDialog({
       <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>Thanh lý hợp đồng</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} mt={2}>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <FormControl
                 component="fieldset"
                 error={!!errors.selectedAddress}
               >
-                <FormLabel component="legend">Địa điểm ký hợp đồng</FormLabel>
+                <FormLabel component="legend">
+                  Địa điểm ký thanh lý hợp đồng
+                </FormLabel>
                 <RadioGroup
                   value={selectedAddress}
                   onChange={(e) => setSelectedAddress(e.target.value)}
@@ -154,7 +156,7 @@ export default function LiquidateContractDialog({
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Ngày hẹn thanh lý"
+                label="Ngày hẹn"
                 type="date"
                 value={appointmentDate}
                 onChange={(e) => setAppointmentDate(e.target.value)}

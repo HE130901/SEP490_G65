@@ -29,7 +29,6 @@ namespace cms_server.Controllers
             {
                 return Unauthorized("User ID not found in token");
             }
-
             int customerId = int.Parse(userIdClaim.Value);
 
             var niches = await _nicheService.GetNichesAsync(customerId);

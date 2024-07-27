@@ -29,11 +29,12 @@ interface MyNicheDetailDialogProps {
 const getStatusVariant = (status: string) => {
   switch (status) {
     case "Approved":
-    case "Complete":
+    case "Completed":
+    case "Active":
       return "green";
     case "Pending":
     case "PendingRenewal":
-    case "PendingCancelation":
+    case "PendingCancellation":
       return "default";
     case "Canceled":
       return "destructive";
@@ -46,16 +47,18 @@ const getStatusText = (status: string) => {
   switch (status) {
     case "Approved":
       return "Đã duyệt";
+    case "Active":
+      return "Đang hoạt động";
     case "Pending":
       return "Đang chờ ";
     case "Canceled":
       return "Đã hủy";
-    case "Complete":
+    case "Completed":
       return "Đã hoàn thành";
 
     case "PendingRenewal":
       return "Đang chờ gia hạn";
-    case "PendingCancelation":
+    case "PendingCancellation":
       return "Đang chờ hủy";
     default:
       return "Không xác định";
@@ -90,7 +93,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
   };
 
   return (
-    <Dialog open={isVisible} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={isVisible} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết Ô chứa của bạn</DialogTitle>
       <DialogContent>
         <Box mb={2}>
@@ -159,9 +162,9 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                 <TableHead>
                   <TableRow>
                     <TableCell align="center">Ngày viếng</TableCell>
-                    <TableCell align="center">Trạng thái</TableCell>
-                    <TableCell align="center">Ghi chú</TableCell>
                     <TableCell align="center">Số người đi cùng</TableCell>
+                    <TableCell align="center">Ghi chú</TableCell>
+                    <TableCell align="center">Trạng thái</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -172,14 +175,14 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                           {formatDate(visit.visitDate)}
                         </TableCell>
                         <TableCell align="center">
+                          {visit.accompanyingPeople}
+                        </TableCell>
+                        <TableCell align="center">{visit.note}</TableCell>
+                        <TableCell align="center">
                           <Badge variant={getStatusVariant(visit.status)}>
                             {getStatusText(visit.status) ||
                               "Không có thông tin"}
                           </Badge>
-                        </TableCell>
-                        <TableCell align="center">{visit.note}</TableCell>
-                        <TableCell align="center">
-                          {visit.accompanyingPeople}
                         </TableCell>
                       </TableRow>
                     )
@@ -246,9 +249,9 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                                 <Image
                                   src={detail.completionImage}
                                   alt="Completion"
-                                  style={{ maxWidth: "100%" }}
-                                  width={50}
-                                  height={50}
+                                  width={100}
+                                  height={100}
+                                  className="w-24 h-24 rounded-lg object-cover object-center"
                                 />
                               )}
                             </TableCell>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   ColumnDef,
   SortingState,
@@ -31,16 +31,24 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
-import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
 import EditModal from "./EditModal";
+import debounce from "lodash.debounce";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { remove as removeDiacritics } from "diacritics";
 
 export type NicheReservation = {
   reservationId: number;
   nicheId: number;
+  nicheAddress: string;
   createdDate: string;
   confirmationDate: string;
   status: string;
@@ -48,6 +56,7 @@ export type NicheReservation = {
   phoneNumber: string;
   note: string;
   name: string;
+  reservationCode: string;
 };
 
 const getStatusVariant = (status: string) => {
@@ -81,15 +90,19 @@ export default function BookingRequestList({
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { user } = useStateContext();
-  const [nicheReservations, setNicheReservations] = useState<
-    NicheReservation[]
-  >([]);
+  const {
+    user,
+    nicheReservations,
+    fetchNicheReservations,
+    updateNicheReservation,
+    deleteNicheReservation,
+  } = useStateContext();
+  const [filteredData, setFilteredData] =
+    useState<NicheReservation[]>(nicheReservations);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState(nicheReservations);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [editingRecord, setEditingRecord] = useState<NicheReservation | null>(
     null
@@ -102,15 +115,17 @@ export default function BookingRequestList({
   );
   const [currentModal, setCurrentModal] = useState<string | null>(null);
 
+  const [searchField, setSearchField] = useState("all");
+
   useEffect(() => {
     if (user && user.phone) {
       fetchNicheReservations(user.phone);
     }
-  }, [user, reFetchTrigger]);
+  }, [user, reFetchTrigger, fetchNicheReservations]);
 
   useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = nicheReservations.filter((item) =>
+    const filteredData = nicheReservations.filter((item: any) =>
       Object.keys(item).some((key) =>
         String(item[key as keyof NicheReservation])
           .toLowerCase()
@@ -120,25 +135,14 @@ export default function BookingRequestList({
     setFilteredData(filteredData);
   }, [searchTerm, nicheReservations]);
 
-  const fetchNicheReservations = async (phoneNumber: string) => {
-    try {
-      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
-      setNicheReservations(response.data.$values);
-    } catch (error) {
-      console.error("Error fetching niche reservations:", error);
-    }
-  };
-
   const handleEdit = (record: NicheReservation, event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log("handleEdit called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể sửa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setEditingRecord(record);
     setCurrentModal("edit");
-    console.log("currentModal set to edit");
   };
 
   const handleDeleteConfirmation = (
@@ -146,74 +150,32 @@ export default function BookingRequestList({
     event: React.MouseEvent
   ) => {
     event.stopPropagation();
-    console.log("handleDeleteConfirmation called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setDeleteRecord(record);
     setCurrentModal("delete");
-    console.log("currentModal set to delete");
   };
 
   const handleView = (
     record: NicheReservation,
     event?: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    console.log("handleView called with record:", record);
     setViewingRecord(record);
     setCurrentModal("view");
-    console.log("currentModal set to view");
   };
 
   const handleDelete = async () => {
     if (!deleteRecord) return;
 
-    try {
-      await NicheReservationAPI.delete(deleteRecord.reservationId);
-      toast.success("Hủy đơn đặt chỗ thành công!");
-      setNicheReservations((prev) =>
-        prev.map((reservation) =>
-          reservation.reservationId === deleteRecord.reservationId
-            ? { ...reservation, status: "Canceled" }
-            : reservation
-        )
-      );
-      setCurrentModal(null); // Close the modal
-    } catch (error) {
-      console.error("Error canceling niche reservation:", error);
-      toast.error("Không thể hủy đơn đặt chỗ.");
-    }
+    await deleteNicheReservation(deleteRecord.reservationId);
+    setCurrentModal(null);
   };
 
   const handleSave = async (updatedRecord: NicheReservation) => {
-    try {
-      if (!updatedRecord.reservationId) {
-        console.error("Invalid reservationId:", updatedRecord.reservationId);
-        return;
-      }
-      const dataToUpdate = {
-        reservationId: updatedRecord.reservationId,
-        nicheId: updatedRecord.nicheId,
-        name: updatedRecord.name,
-        confirmationDate: new Date(
-          updatedRecord.confirmationDate
-        ).toISOString(),
-        note: updatedRecord.note,
-        signAddress: updatedRecord.signAddress,
-        phoneNumber: updatedRecord.phoneNumber,
-      };
-      await NicheReservationAPI.update(
-        updatedRecord.reservationId,
-        dataToUpdate
-      );
-      toast.success("Cập nhật đơn đặt chỗ thành công!");
-      setCurrentModal(null); // Close the modal
-      fetchNicheReservations(user.phone); // Refetch the data after updating
-    } catch (error) {
-      console.error("Error updating niche reservation:", error);
-      toast.error("Không thể cập nhật đơn đặt chỗ.");
-    }
+    await updateNicheReservation(updatedRecord);
+    setCurrentModal(null);
   };
 
   const columns: ColumnDef<NicheReservation>[] = [
@@ -231,7 +193,7 @@ export default function BookingRequestList({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "reservationId",
+      accessorKey: "reservationCode",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -242,7 +204,7 @@ export default function BookingRequestList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("reservationId")}</div>
+        <div className="text-center">{row.getValue("reservationCode")}</div>
       ),
     },
     {
@@ -311,21 +273,6 @@ export default function BookingRequestList({
             {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
-      ),
-    },
-    {
-      accessorKey: "note",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ghi Chú
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("note")}</div>
       ),
     },
     {
@@ -411,15 +358,115 @@ export default function BookingRequestList({
     setSearchTerm(event.target.value);
   };
 
+  const handleSelectChange = (value: string) => {
+    setSearchField(value);
+  };
+  const getSearchFieldLabel = (value: string) => {
+    switch (value) {
+      case "all":
+        return "Tất cả";
+      case "reservationId":
+        return "Mã đơn";
+      case "nicheAddress":
+        return "Địa chỉ Ô";
+      case "createdDate":
+        return "Ngày tạo";
+      case "confirmationDate":
+        return "Ngày hẹn";
+      case "status":
+        return "Trạng thái";
+      default:
+        return "Tất cả";
+    }
+  };
+
+  // Hàm chuẩn hóa và lọc dữ liệu
+  const normalizeText = (text: string) => {
+    return removeDiacritics(text.toLowerCase());
+  };
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      const normalizedTerm = normalizeText(term);
+      const filtered = nicheReservations.filter(
+        (nicheReservation: NicheReservation) => {
+          if (searchField === "all") {
+            return (
+              normalizeText(`ĐC-${nicheReservation.reservationId}`).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.nicheAddress).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.createdDate).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.confirmationDate).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(getStatusText(nicheReservation.status)).includes(
+                normalizedTerm
+              ) ||
+              normalizeText(nicheReservation.note || "").includes(
+                normalizedTerm
+              )
+            );
+          } else if (searchField === "reservationId") {
+            return normalizeText(
+              `HĐ-${nicheReservation.reservationId}`
+            ).includes(normalizedTerm);
+          } else if (searchField === "status") {
+            return normalizeText(
+              getStatusText(nicheReservation.status)
+            ).includes(normalizedTerm);
+          } else {
+            const fieldValue = normalizeText(
+              String(
+                nicheReservation[searchField as keyof NicheReservation] || ""
+              )
+            );
+            return fieldValue.includes(normalizedTerm);
+          }
+        }
+      );
+      setFilteredData(filtered);
+    }, 300),
+    [nicheReservations, searchField]
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+  }, [searchTerm, debouncedSearch]);
+
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
         <h2 className="text-2xl font-bold text-center">Đơn đặt ô chứa</h2>
-        <Input
-          placeholder="Tìm kiếm..."
-          onChange={handleSearch}
-          className="max-w-sm pl-4 ml-auto"
-        />
+        <div className="flex items-center ml-auto space-x-4">
+          <div className="w-36">
+            <Select value={searchField} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <span>{getSearchFieldLabel(searchField)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="reservationId">Mã đơn</SelectItem>
+                <SelectItem value="nicheAddress">Địa chỉ Ô</SelectItem>
+                <SelectItem value="createdDate">Ngày tạo</SelectItem>
+                <SelectItem value="confirmationDate">Ngày hẹn</SelectItem>
+                <SelectItem value="status">Trạng thái</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-64">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-4"
+            />
+          </div>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>

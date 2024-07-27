@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import ContractDetailsDialog from "@/components/dashboard/customer-contracts/ContractDetailsDialog";
-import BookingRequestList from "@/components/dashboard/lists/booking-request/BookingRequestList";
-import RegistrationList from "@/components/dashboard/lists/visit-request/VisitRegistrationList";
-import ServicesList from "@/components/dashboard/services/ServicesSection";
-import VisitScheduleDialog from "@/components/dashboard/services/VisitScheduleDialog";
+import React, { Suspense, lazy } from "react";
+
+// Lazy load components
+const ContractDetailsDialog = lazy(
+  () =>
+    import("@/components/dashboard/customer-contracts/ContractDetailsDialog")
+);
+const BookingRequestList = lazy(
+  () =>
+    import("@/components/dashboard/lists/booking-request/BookingRequestList")
+);
+const RegistrationList = lazy(
+  () =>
+    import("@/components/dashboard/lists/visit-request/VisitRegistrationList")
+);
+const ServicesList = lazy(
+  () => import("@/components/dashboard/services/ServicesSection")
+);
+const VisitScheduleDialog = lazy(
+  () => import("@/components/dashboard/services/VisitScheduleDialog")
+);
+const CustomerContractList = lazy(
+  () => import("@/components/dashboard/customer-contracts/CustomerContractList")
+);
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,7 +37,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStateContext } from "@/context/StateContext";
-import CustomerContractList from "@/components/dashboard/customer-contracts/CustomerContractList";
 import withAuth from "@/components/withAuth";
 
 function Dashboard() {
@@ -63,20 +82,28 @@ function Dashboard() {
     }
   }, [user, reFetchTrigger, fetchVisitRegistrations]);
 
-  const handleContainerSelect = (container: any) => {
-    console.log("Selected container: ", container);
-    setSelectedContainer(container);
-    setIsContainerModalOpen(true);
-  };
+  const handleContainerSelect = useCallback(
+    (container: any) => {
+      console.log("Selected container: ", container);
+      setSelectedContainer(container);
+      setIsContainerModalOpen(true);
+    },
+    [setSelectedContainer, setIsContainerModalOpen]
+  );
 
-  const handleVisitScheduleSubmit = () => {
+  const handleVisitScheduleSubmit = useCallback(() => {
     console.log("[Dashboard] Visit schedule submitted");
     setReFetchTrigger((prev) => !prev);
     setIsVisitScheduleModalOpen(false);
-    if (user && user.customerId) {
+    if (user?.customerId) {
       fetchVisitRegistrations(user.customerId);
     }
-  };
+  }, [
+    user?.customerId,
+    fetchVisitRegistrations,
+    setReFetchTrigger,
+    setIsVisitScheduleModalOpen,
+  ]);
 
   useEffect(() => {
     console.log("isContainerModalOpen: ", isContainerModalOpen);
@@ -148,16 +175,18 @@ function Dashboard() {
           </motion.div>
         </div>
       </main>
-      <ContractDetailsDialog
-        isOpen={isContainerModalOpen}
-        onClose={() => setIsContainerModalOpen(false)}
-        contractId={selectedContainer?.nicheId}
-      />
-      <VisitScheduleDialog
-        isOpen={isVisitScheduleModalOpen}
-        onClose={() => setIsVisitScheduleModalOpen(false)}
-        onSubmit={handleVisitScheduleSubmit}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ContractDetailsDialog
+          isOpen={isContainerModalOpen}
+          onClose={() => setIsContainerModalOpen(false)}
+          contractId={selectedContainer?.nicheId}
+        />
+        <VisitScheduleDialog
+          isOpen={isVisitScheduleModalOpen}
+          onClose={() => setIsVisitScheduleModalOpen(false)}
+          onSubmit={handleVisitScheduleSubmit}
+        />
+      </Suspense>
     </div>
   );
 }

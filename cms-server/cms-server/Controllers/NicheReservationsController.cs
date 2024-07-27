@@ -48,7 +48,7 @@ namespace cms_server.Controllers
                     ReservationId = r.ReservationId,
                     Name = r.Name,
                     PhoneNumber = r.PhoneNumber,
-                    NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName}-{r.Niche.Area.Floor.FloorName}-{r.Niche.Area.AreaName}-{r.Niche.NicheName}",
+                    NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - {r.Niche.NicheName}",
                     CreatedDate = r.CreatedDate,
                     ConfirmationDate = r.ConfirmationDate,
                     Note = r.Note,
@@ -90,11 +90,12 @@ namespace cms_server.Controllers
                         ReservationId = nr.ReservationId,
                         Name = nr.Name,
                         PhoneNumber = nr.PhoneNumber,
-                        NicheAddress = $"{nr.Niche.Area.Floor.Building.BuildingName}-{nr.Niche.Area.Floor.FloorName}-{nr.Niche.Area.AreaName}-Ô {nr.Niche.NicheName}",
+                        NicheAddress = $"{nr.Niche.Area.Floor.Building.BuildingName} - {nr.Niche.Area.Floor.FloorName} - {nr.Niche.Area.AreaName} - Ô {nr.Niche.NicheName}",
                         CreatedDate = nr.CreatedDate,
                         ConfirmationDate = nr.ConfirmationDate,
                         Note = nr.Note,
-                        Status = nr.Status
+                        Status = nr.Status,
+                        ReservationCode = nr.ReservationCode
                     })
                     .ToListAsync();
 
@@ -157,81 +158,74 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
         {
-
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var utcNow = DateTime.UtcNow;
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+            var currentDate = localNow.Date;
 
             // Find the niche to check its status
             var niche = await _context.Niches.FindAsync(createDto.NicheId);
             if (niche == null || niche.Status != "Available")
             {
-                return BadRequest(new { error = "Ô chứa không khả dụng để đặt chỗ" });
+                return BadRequest(new { error = "Niche status is unavailable for booking" });
             }
 
-            // Kiểm tra xem số điện thoại có thuộc về một khách hàng hay không
+            // Check if the phone number belongs to a customer
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
 
-            if (customer != null)
+            // Determine the maximum number of reservations allowed
+            int maxReservations = customer != null ? 10 : 3;
+
+            // Count existing reservations for the phone number
+            var existingReservationsCount = await _context.NicheReservations
+                .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
+
+            if (existingReservationsCount >= maxReservations)
             {
-                // Khách hàng không bị giới hạn số lượng chỗ đặt
-                var nicheReservation = new NicheReservation
-                {
-                    NicheId = createDto.NicheId,
-                    Name = createDto.Name,
-                    ConfirmationDate = createDto.ConfirmationDate,
-                    SignAddress = createDto.SignAddress,
-                    PhoneNumber = createDto.PhoneNumber,
-                    Note = createDto.Note,
-                    CreatedDate = localNow,
-                    Status = "Pending"
-                };
-
-                _context.NicheReservations.Add(nicheReservation);
-
-                // Update the status of the niche to "Booked"
-                niche.Status = "Booked";
-                _context.Entry(niche).State = EntityState.Modified;
-
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
+                return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
             }
-            else
+
+            // Count the number of reservations made today to create ReservationCode
+            var reservationsTodayCount = await _context.NicheReservations
+                .CountAsync(nr => nr.CreatedDate != null && nr.CreatedDate.Value.Date == currentDate);
+
+            var reservationCode = $"DC-{currentDate:yyyyMMdd}-{(reservationsTodayCount + 1):D3}";
+
+            // Lấy thông tin StaffId từ token
+            var staffIdClaim = User.FindFirst("StaffId");
+            int? confirmedBy = null;
+            string status = "Pending";
+
+            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
             {
-                // Guest bị giới hạn số lượng chỗ đặt
-                var existingReservationsCount = await _context.NicheReservations
-                    .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
-
-                if (existingReservationsCount >= 3)
-                {
-                    return BadRequest(new { error = "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa" });
-                }
-
-                var nicheReservation = new NicheReservation
-                {
-                    NicheId = createDto.NicheId,
-                    Name = createDto.Name,
-                    ConfirmationDate = createDto.ConfirmationDate,
-                    SignAddress = createDto.SignAddress,
-                    PhoneNumber = createDto.PhoneNumber,
-                    Note = createDto.Note,
-                    CreatedDate = localNow,
-                    Status = "Pending"
-                };
-
-                _context.NicheReservations.Add(nicheReservation);
-
-                // Update the status of the niche to "Booked"
-                niche.Status = "Booked";
-                _context.Entry(niche).State = EntityState.Modified;
-
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
+                confirmedBy = staffId;
+                status = "Approved";
             }
+
+            var nicheReservation = new NicheReservation
+            {
+                NicheId = createDto.NicheId,
+                Name = createDto.Name,
+                ConfirmationDate = createDto.ConfirmationDate,
+                SignAddress = createDto.SignAddress,
+                PhoneNumber = createDto.PhoneNumber,
+                Note = createDto.Note,
+                CreatedDate = localNow,
+                Status = status,
+                ReservationCode = reservationCode,
+                ConfirmedBy = confirmedBy
+            };
+
+            _context.NicheReservations.Add(nicheReservation);
+
+            // Update the status of the niche to "Booked"
+            niche.Status = "Booked";
+            _context.Entry(niche).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
         }
-
 
 
         [HttpDelete("{id}")]
@@ -404,6 +398,7 @@ namespace cms_server.Controllers
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string NicheAddress { get; set; }
+        public string ReservationCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ConfirmationDate { get; set; }
         public string Status { get; set; }

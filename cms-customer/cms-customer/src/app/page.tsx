@@ -3,7 +3,7 @@
 import ClientFeedback from "@/components/home/ClientFeedback";
 import Hero from "@/components/home/hero";
 import Information from "@/components/home/information";
-import ServiceList from "@/components/services/service";
+import ServiceList from "@/components/home/service";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { CartProvider } from "@/context/CartContext";
 export default function Home() {

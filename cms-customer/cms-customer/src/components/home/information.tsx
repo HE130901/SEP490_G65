@@ -5,11 +5,14 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Box,
+  Card,
+  CardMedia,
+  CardContent,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import React from "react";
 import { motion } from "framer-motion";
-import { CarouselPlugin } from "../ui/carouselPlugin";
 
 const FAQS = [
   {
@@ -22,7 +25,7 @@ const FAQS = [
   },
   {
     title: "3. Dịch vụ chăm sóc khách hàng 24/7",
-    desc: "Đầy đủ các dịch vụ tiện ích của hoa viên nghĩa trang cao cấp: Đền trình, Nhà tang lễ, Tịnh xá, Khu lưu trữ tro cốt...",
+    desc: "Với nhiều năm kinh nghiệm trong ngành, chúng tôi luôn sẵn sàng hỗ trợ quý khách 24/7.",
   },
   {
     title: "4. Sứ mệnh của Bình An Viên?",
@@ -36,8 +39,9 @@ const revealVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      delay: i * 0.3,
-      duration: 0.7,
+      delay: i * 0.2,
+      duration: 0.5,
+      ease: "easeOut",
     },
   }),
 };
@@ -51,62 +55,103 @@ export default function Information() {
     };
 
   return (
-    <div className="container mx-auto flex flex-col items-center px-4 py-10 ">
-      <motion.div
-        className="w-full"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={revealVariants}
-        custom={1}
-      >
-        <Typography
-          variant="h2"
-          className="text-3xl font-bold mb-4 text-center text-zinc-50"
-          color="textPrimary"
-        >
-          Giới thiệu tổng quan
-        </Typography>
-      </motion.div>
-
-      <motion.div
-        className="mt-8 w-full grid grid-cols-1 md:grid-cols-2 gap-8"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={revealVariants}
-        custom={2}
-      >
-        <div className="mx-auto flex flex-col space-y-4">
-          {FAQS.map(({ title, desc }, key) => (
-            <motion.div key={key} variants={revealVariants} custom={key + 3}>
-              <Accordion
-                expanded={expanded === key}
-                onChange={handleChange(key)}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls={`panel${key}bh-content`}
-                  id={`panel${key}bh-header`}
-                  className="text-left text-gray-900 bg-white p-4"
-                >
-                  <Typography>{title}</Typography>
-                </AccordionSummary>
-                <AccordionDetails className="bg-gray-50 p-4">
-                  <Typography color="textSecondary">{desc}</Typography>
-                </AccordionDetails>
-              </Accordion>
-            </motion.div>
-          ))}
-        </div>
+    <Box className="py-20 px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto">
         <motion.div
-          className="mx-auto flex items-center justify-center h-96 w-full"
+          className="flex flex-col items-center justify-center text-center mb-12"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
           variants={revealVariants}
-          custom={7}
+          custom={1}
         >
-          <CarouselPlugin />
+          <Typography
+            variant="h4"
+            className="text-4xl sm:text-5xl font-bold mb-4 text-white"
+            sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
+          >
+            Khám phá những điểm nổi bật <br />
+            và giá trị cốt lõi của An Bình Viên
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            className="text-gray-200 max-w-2xl mx-auto"
+          >
+            Nghĩa trang An Bình Viên tọa lạc tại vị trí yên bình, giữa thiên
+            nhiên tươi đẹp, là nơi lưu giữ những ký ức, tình yêu và sự kính
+            trọng của chúng ta dành cho những người thân yêu đã khuất. Với thiết
+            kế hài hòa và không gian thanh tịnh, An Bình Viên mang đến cho quý
+            khách một nơi an nghỉ vĩnh hằng đầy ấm áp và trang nghiêm.
+          </Typography>
         </motion.div>
-      </motion.div>
-    </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          <motion.div
+            className="w-full rounded-lg overflow-hidden shadow-2xl flex flex-col items-center justify-center text-center "
+            variants={revealVariants}
+            custom={2}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <Card>
+              <CardMedia
+                component="img"
+                alt="An Binh Vien"
+                height="300"
+                image="/images/ABV1.png"
+                title="An Binh Vien"
+              />
+              <CardContent>
+                <Typography variant="h5" component="div">
+                  Tại sao chọn An Bình Viên?
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            className="space-y-4 justify-center justify-items-center"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={revealVariants}
+            custom={2}
+          >
+            {FAQS.map(({ title, desc }, key) => (
+              <motion.div key={key} variants={revealVariants} custom={key + 3}>
+                <Accordion
+                  expanded={expanded === key}
+                  onChange={handleChange(key)}
+                  sx={{
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    borderRadius: "8px",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 1)",
+                    },
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`panel${key}bh-content`}
+                    id={`panel${key}bh-header`}
+                  >
+                    <Typography
+                      variant="h6"
+                      className="font-semibold text-gray-800"
+                    >
+                      {title}
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Typography color="textSecondary">{desc}</Typography>
+                  </AccordionDetails>
+                </Accordion>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </div>
+    </Box>
   );
 }

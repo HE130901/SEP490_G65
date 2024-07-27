@@ -62,7 +62,8 @@ namespace cms_server.Controllers
                         Note = vr.Note ?? string.Empty,
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
                         CustomerName = vr.Customer.FullName,
-                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A"
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A",
+                        VisitCode = vr.VisitCode,
                     })
                     .ToListAsync();
 
@@ -100,7 +101,8 @@ namespace cms_server.Controllers
                     Note = vr.Note ?? string.Empty,
                     AccompanyingPeople = (int)vr.AccompanyingPeople,
                     CustomerName = vr.Customer.FullName,
-                    StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
+                    StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A",
+                    VisitCode = vr.VisitCode,
                 })
                 .FirstOrDefaultAsync();
 
@@ -138,7 +140,8 @@ namespace cms_server.Controllers
                         Note = vr.Note ?? string.Empty,
                         AccompanyingPeople = (int)vr.AccompanyingPeople,
                         CustomerName = vr.Customer.FullName,
-                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A" // Include StaffName
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A", // Include StaffName
+                        VisitCode = vr.VisitCode,
                     })
                     .ToListAsync();
 
@@ -202,6 +205,24 @@ namespace cms_server.Controllers
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var utcNow = DateTime.UtcNow;
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+            var currentDate = localNow.Date;
+
+            // Lấy thông tin StaffId từ token
+            var staffIdClaim = User.FindFirst("StaffId");
+            int? approvedBy = null;
+            string status = "Pending";
+
+            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
+            {
+                approvedBy = staffId;
+                status = "Approved";
+            }
+
+            // Đếm số lượng đăng ký trong ngày để tạo mã RegistrationCode
+            var registrationsTodayCount = await _context.VisitRegistrations
+                .CountAsync(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate);
+
+            var registrationCode = $"DV-{currentDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
 
             var visitRegistration = new VisitRegistration
             {
@@ -209,10 +230,11 @@ namespace cms_server.Controllers
                 NicheId = visitRegistrationDto.NicheId,
                 VisitDate = visitRegistrationDto.VisitDate,
                 Note = visitRegistrationDto.Note,
-                Status = "Pending",
-                ApprovedBy = null,
+                Status = status,
+                ApprovedBy = approvedBy,
                 CreatedDate = localNow,
-                AccompanyingPeople = visitRegistrationDto.AccompanyingPeople
+                AccompanyingPeople = visitRegistrationDto.AccompanyingPeople,
+                VisitCode = registrationCode
             };
 
             _context.VisitRegistrations.Add(visitRegistration);
@@ -220,6 +242,8 @@ namespace cms_server.Controllers
 
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
+
+
         // DELETE: api/VisitRegistrations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisitRegistration(int id)
@@ -327,4 +351,6 @@ public class VisitRegistrationDto
     public int? ApprovedBy { get; set; }
     public string? FormattedVisitDate => VisitDate?.ToString("HH:mm dd/MM/yyyy");
     public string? FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
+
+    public string? VisitCode { get; set; }
 }

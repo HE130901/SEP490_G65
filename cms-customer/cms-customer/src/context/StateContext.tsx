@@ -49,6 +49,7 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
   const [contracts, setContracts] = useState<any[]>([]);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [nicheReservations, setNicheReservations] = useState<any[]>([]);
 
   const router = useRouter();
   const isMounted = useRef(false);
@@ -287,6 +288,47 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user?.customerId, fetchContracts, fetchOrders]);
 
+  const fetchNicheReservations = useCallback(async (phoneNumber: string) => {
+    try {
+      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
+      setNicheReservations(response.data.$values);
+    } catch (error) {
+      console.error("Error fetching niche reservations:", error);
+      toast.error("Không thể tải danh sách đặt chỗ.");
+    }
+  }, []);
+
+  const updateNicheReservation = async (updatedRecord: any) => {
+    try {
+      await NicheReservationAPI.update(
+        updatedRecord.reservationId,
+        updatedRecord
+      );
+      toast.success("Cập nhật đơn đặt chỗ thành công!");
+      fetchNicheReservations(user.phone); // Refresh reservations
+    } catch (error) {
+      console.error("Error updating niche reservation:", error);
+      toast.error("Không thể cập nhật đơn đặt chỗ.");
+    }
+  };
+
+  const deleteNicheReservation = async (reservationId: number) => {
+    try {
+      await NicheReservationAPI.delete(reservationId);
+      setNicheReservations((prev) =>
+        prev.map((reservation) =>
+          reservation.reservationId === reservationId
+            ? { ...reservation, status: "Canceled" }
+            : reservation
+        )
+      );
+      toast.success("Hủy đơn đặt chỗ thành công!");
+    } catch (error) {
+      console.error("Error canceling niche reservation:", error);
+      toast.error("Không thể hủy đơn đặt chỗ.");
+    }
+  };
+
   return (
     <StateContext.Provider
       value={{
@@ -338,6 +380,10 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         register,
         logout,
+        nicheReservations,
+        fetchNicheReservations,
+        updateNicheReservation,
+        deleteNicheReservation,
       }}
     >
       {children}

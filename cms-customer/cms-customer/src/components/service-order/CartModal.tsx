@@ -13,8 +13,10 @@ import {
   Box,
   IconButton,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import { useCart } from "@/context/CartContext";
+import { useStateContext } from "@/context/StateContext"; // Import useStateContext
 import Image from "next/image";
 import PaymentService from "@/services/paymentService";
 import { toast } from "react-toastify";
@@ -23,6 +25,7 @@ import ItemType from "./ItemType";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import Link from "next/link";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -31,16 +34,18 @@ interface CartModalProps {
 
 interface Niche {
   nicheId: number;
-  nicheName: string;
+  nicheAddress: string;
 }
 
 const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
-  const { items, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity } = useCart();
+  const { user } = useStateContext();
   const [loading, setLoading] = useState(false);
   const [nicheID, setNicheID] = useState<number>(1);
   const [orderDate, setOrderDate] = useState<string>("");
   const [niches, setNiches] = useState<Niche[]>([]);
   const [isNichesLoading, setNichesLoading] = useState<boolean>(true);
+  const [dateError, setDateError] = useState<string>("");
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -64,7 +69,34 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
     updateQuantity(item.id, item.quantity + 1);
   };
 
+  const validateOrderDate = (date: string): boolean => {
+    const selectedDate = new Date(date);
+    const today = new Date();
+    const oneMonthLater = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      today.getDate()
+    );
+
+    return selectedDate >= today && selectedDate <= oneMonthLater;
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value;
+    setOrderDate(newDate);
+
+    if (!validateOrderDate(newDate)) {
+      setDateError("Ngày hẹn phải trong vòng 1 tháng kể từ hôm nay");
+    } else {
+      setDateError("");
+    }
+  };
+
   const handleInitiatePayment = async () => {
+    if (!user) {
+      toast.error("Bạn cần đăng nhập để tiếp tục thanh toán");
+      return;
+    }
     setLoading(true);
     try {
       const orderDetails = items.map((item) => ({
@@ -98,23 +130,25 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
 
   useEffect(() => {
     const fetchNiches = async () => {
-      try {
-        const response = await NicheAPI.getNichesForCustomer();
-        setNiches(response.data.$values);
-      } catch (error) {
-        toast.error("Failed to fetch niches. Please try again later.");
-      } finally {
-        setNichesLoading(false);
+      if (isOpen) {
+        setNichesLoading(true);
+        try {
+          const response = await NicheAPI.getNichesForCustomer();
+          setNiches(response.data.$values);
+        } catch (error) {
+          console.error("Failed to fetch niches. Please try again later.");
+        } finally {
+          setNichesLoading(false);
+        }
       }
     };
 
-    if (isOpen) {
-      fetchNiches();
-    }
+    fetchNiches();
   }, [isOpen]);
 
   const totalAmount = calculateTotal();
-  const isPaymentDisabled = !nicheID || !orderDate || items.length === 0;
+  const isPaymentDisabled =
+    !nicheID || !orderDate || items.length === 0 || !!dateError;
 
   return (
     <Dialog
@@ -183,38 +217,55 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                   {totalAmount.toLocaleString()} ₫
                 </Typography>
               </Box>
-              {isNichesLoading ? (
-                <Box display="flex" justifyContent="center" my={2}>
-                  <CircularProgress />
-                </Box>
+              {user ? (
+                isNichesLoading ? (
+                  <Box display="flex" justifyContent="center" my={2}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <>
+                    <TextField
+                      select
+                      label="Ô chứa"
+                      value={nicheID}
+                      onChange={(e) => setNicheID(Number(e.target.value))}
+                      fullWidth
+                      margin="normal"
+                    >
+                      {niches.map((niche) => (
+                        <MenuItem key={niche.nicheId} value={niche.nicheId}>
+                          {niche.nicheAddress}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                    <TextField
+                      label="Ngày hẹn"
+                      type="datetime-local"
+                      fullWidth
+                      value={orderDate}
+                      onChange={handleDateChange}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                      error={!!dateError}
+                      helperText={dateError}
+                    />
+                  </>
+                )
               ) : (
-                <>
-                  <TextField
-                    select
-                    label="Ô chứa"
-                    value={nicheID}
-                    onChange={(e) => setNicheID(Number(e.target.value))}
-                    fullWidth
-                    margin="normal"
-                  >
-                    {niches.map((niche) => (
-                      <MenuItem key={niche.nicheId} value={niche.nicheId}>
-                        {niche.nicheName}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    label="Ngày hẹn"
-                    type="datetime-local"
-                    fullWidth
-                    value={orderDate}
-                    onChange={(e) => setOrderDate(e.target.value)}
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    margin="normal"
-                  />
-                </>
+                <Typography
+                  variant="body1"
+                  color="error"
+                  align="center"
+                  sx={{ mt: 2 }}
+                >
+                  <Tooltip title="Đăng nhập">
+                    <Link href="/auth/login">
+                      Bạn cần đăng nhập để có thể tiếp tục thanh toán
+                    </Link>
+                  </Tooltip>
+                </Typography>
               )}
             </Box>
           </div>
@@ -225,14 +276,14 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setIsOpen(false)} color="primary">
+        <Button onClick={() => setIsOpen(false)} variant="outlined">
           Đóng
         </Button>
         <Button
           onClick={handleInitiatePayment}
           color="primary"
           variant="contained"
-          disabled={isPaymentDisabled || loading}
+          disabled={!user || isPaymentDisabled || loading}
         >
           {loading ? "Đang xử lý..." : "Thanh toán"}
         </Button>

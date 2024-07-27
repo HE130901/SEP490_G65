@@ -26,10 +26,12 @@ import Step0Content from "./Step0Content";
 import Step1Content from "./Step1Content";
 import { schema, calculateCost, getAllowedDates } from "./utils";
 import { formatVND } from "@/utils/formatCurrency";
+import Step2Content from "./Step2Content";
 
-// Step labels
-const steps = ["Xem thông tin ô chứa", "Điền thông tin", "Xác thực"];
-
+const getSteps = (isUser: boolean) =>
+  isUser
+    ? ["Xem thông tin ô chứa", "Điền thông tin"]
+    : ["Xem thông tin ô chứa", "Điền thông tin", "Xác thực"];
 const CombinedDialog = ({
   isVisible,
   onClose,
@@ -39,23 +41,18 @@ const CombinedDialog = ({
   onClose: () => void;
   selectedNiche: any;
 }) => {
-  const {
-    selectedBuilding,
-    selectedFloor,
-    selectedArea,
-    fetchNiches,
-    fetchNichesForCustomer,
-    user,
-  } = useStateContext();
+  const { selectedBuilding, selectedFloor, selectedArea, user } =
+    useStateContext();
   const [activeStep, setActiveStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
+  const steps = getSteps(!!user);
+
   const {
     control,
     handleSubmit,
-    setValue,
     getValues,
     watch,
     reset,
@@ -87,27 +84,26 @@ const CombinedDialog = ({
         note: "",
         otp: "",
       });
-      setActiveStep(user ? 1 : 0);
+      setActiveStep(user ? 0 : 0);
       setOtpVerified(!!user);
       setOtpSent(false);
     }
   }, [isVisible, reset, user]);
 
   const handleNext = async () => {
-    if (activeStep === 1) {
-      if (user) {
-        const { signAddress, contractDate } = getValues();
-        if (!signAddress || !contractDate) {
-          toast.error("Vui lòng điền đầy đủ thông tin cần thiết.");
-          return;
-        }
-        await handleSubmit(onSubmit)();
-      } else if (!isValid) {
+    if (user && activeStep === 1) {
+      const { signAddress, contractDate } = getValues();
+      if (!signAddress || !contractDate) {
         toast.error("Vui lòng điền đầy đủ thông tin cần thiết.");
         return;
-      } else {
-        setActiveStep(2);
       }
+      await handleSubmit(onSubmit)();
+    } else if (!user && activeStep === 1) {
+      if (!isValid) {
+        toast.error("Vui lòng điền đầy đủ thông tin cần thiết.");
+        return;
+      }
+      setActiveStep(2);
     } else {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
@@ -183,8 +179,7 @@ const CombinedDialog = ({
           );
         } else {
           toast.error(
-            (error as any).response.data.error ||
-              "Mỗi số điện thoại chỉ được đặt tối đa 3 ô chứa"
+            (error as any).response.data.error || "Không thể tạo đơn đặt chỗ"
           );
         }
       } else {
@@ -195,22 +190,15 @@ const CombinedDialog = ({
 
   const type = watch("type");
   const duration = watch("duration", 1);
-  const phoneNumber = watch("phoneNumber");
 
   return (
-    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle className="text-center">
         Đăng ký đặt chỗ
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label, index) => (
             <Step key={label}>
-              <StepButton
-                onClick={() =>
-                  user
-                    ? setActiveStep(Math.min(index, 1))
-                    : setActiveStep(index)
-                }
-              >
+              <StepButton onClick={() => setActiveStep(index)}>
                 {label}
               </StepButton>
             </Step>
@@ -247,61 +235,16 @@ const CombinedDialog = ({
             />
           )}
           {activeStep === 2 && !user && (
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12}>
-                <Typography>Số điện thoại: {phoneNumber}</Typography>
-              </Grid>
-              <Grid item xs={8}>
-                <Controller
-                  name="otp"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label={
-                        <span>
-                          Mã OTP <span style={{ color: "red" }}>*</span>
-                        </span>
-                      }
-                      fullWidth
-                      margin="normal"
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          color: "#0e0101",
-                        },
-                        "& .MuiInputLabel-root": {
-                          color: "#0e0101",
-                        },
-                        "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0e0101",
-                          },
-                        "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                          {
-                            borderColor: "#0e0101",
-                          },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <Button
-                  onClick={sendOtp}
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    backgroundColor: "#FB8C00",
-                    color: "#ffffff",
-                    "&:hover": { backgroundColor: "#EF6C00" },
-                    height: "56px",
-                  }}
-                  disabled={isLoading}
-                >
-                  {isLoading ? <CircularProgress size={24} /> : "Gửi OTP"}
-                </Button>
-              </Grid>
-            </Grid>
+            <Step2Content
+              control={control}
+              errors={errors}
+              sendOtp={sendOtp}
+              isLoading={isLoading}
+              otpSent={otpSent}
+              otpVerified={otpVerified}
+              verifyOtp={verifyOtp}
+              getValues={getValues}
+            />
           )}
         </form>
       </DialogContent>
@@ -342,7 +285,7 @@ const CombinedDialog = ({
               "&:hover": { backgroundColor: "#EF6C00" },
             }}
           >
-            {user && activeStep === 1 ? "Hoàn tất" : "Tiếp tục"}
+            {user && activeStep === 1 ? "Đặt lịch hẹn" : "Tiếp tục"}
           </Button>
         )}
         {activeStep === 2 && !user && (

@@ -6,6 +6,9 @@ import "./globals.css";
 import CallHotline from "@/components/home/call-hotline";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
+import { ThemeProvider } from "@mui/material";
+import theme from "@/theme";
 
 export const metadata = {
   title: "An Bình Viên",
@@ -21,15 +24,19 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <ToastContainer position="bottom-right" autoClose={5000} />{" "}
-        <StateProvider>
-          <CartProvider>
-            <Header currentView={undefined} setCurrentView={undefined} />
-            {children}
-            <Footer />
-            <CallHotline />
-          </CartProvider>
-        </StateProvider>
+        <AppRouterCacheProvider>
+          <ThemeProvider theme={theme}>
+            <ToastContainer position="bottom-right" autoClose={5000} />{" "}
+            <StateProvider>
+              <CartProvider>
+                <Header />
+                {children}
+                <Footer />
+                <CallHotline />
+              </CartProvider>
+            </StateProvider>
+          </ThemeProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

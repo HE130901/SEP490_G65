@@ -64,9 +64,10 @@ namespace cms_server.Controllers
             var serviceOrderDtos = serviceOrders.Select(so => new ServiceOrderResponseDto
             {
                 ServiceOrderId = so.ServiceOrderId,
-                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName}-{so.Niche.Area.Floor.FloorName}-{so.Niche.Area.AreaName}-{so.Niche.NicheName}",
+                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
                 CreatedDate = so.CreatedDate,
                 OrderDate = so.OrderDate,
+                ServiceOrderCode = so.ServiceOrderCode,
                 ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailResponseDto
                 {
                     ServiceName = sod.Service.ServiceName,
@@ -107,12 +108,20 @@ namespace cms_server.Controllers
                         return BadRequest("Niche not found or does not belong to the customer.");
                     }
 
+                    // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
+                    var currentDate = DateTime.Now.Date;
+                    var ordersTodayCount = await _context.ServiceOrders
+                        .CountAsync(so => so.CreatedDate != null && so.CreatedDate.Value.Date == currentDate);
+
+                    var serviceOrderCode = $"DV-{currentDate:yyyyMMdd}-{(ordersTodayCount + 1):D3}";
+
                     var serviceOrder = new ServiceOrder
                     {
                         CustomerId = customerId,
                         NicheId = request.NicheID,
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
+                        ServiceOrderCode = serviceOrderCode // Thêm mã ServiceOrderCode
                     };
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();
@@ -148,6 +157,8 @@ namespace cms_server.Controllers
                 }
             }
         }
+
+
 
 
         // PUT: api/ServiceOrders/5
@@ -205,8 +216,10 @@ namespace cms_server.Controllers
     {
         public int ServiceOrderId { get; set; }
         public string? NicheAddress { get; set; }
+        public string? ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
+        
         public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
     }
 

@@ -38,6 +38,15 @@ import EditModal from "./EditModal";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
 
+import debounce from "lodash.debounce";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { remove as removeDiacritics } from "diacritics";
+
 export type VisitRegistration = {
   visitId: number;
   customerId: number;
@@ -47,6 +56,7 @@ export type VisitRegistration = {
   status: string;
   accompanyingPeople: number;
   note: string;
+  visitCode: string;
 };
 
 const getStatusVariant = (status: string) => {
@@ -104,6 +114,8 @@ export default function VisitRegistrationList({
   const [viewingRecord, setViewingRecord] = useState<VisitRegistration | null>(
     null
   );
+
+  const [searchField, setSearchField] = useState("all");
 
   useEffect(() => {
     if (user && user.customerId) {
@@ -198,7 +210,7 @@ export default function VisitRegistrationList({
       cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
     },
     {
-      accessorKey: "visitId",
+      accessorKey: "visitCode",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -209,7 +221,7 @@ export default function VisitRegistrationList({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("visitId")}</div>
+        <div className="text-center">{row.getValue("visitCode")}</div>
       ),
     },
     {
@@ -278,21 +290,6 @@ export default function VisitRegistrationList({
             {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
-      ),
-    },
-    {
-      accessorKey: "note",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ghi Chú
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("note")}</div>
       ),
     },
     {
@@ -388,16 +385,58 @@ export default function VisitRegistrationList({
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
+  const handleSelectChange = (value: string) => {
+    setSearchField(value);
+  };
+  const getSearchFieldLabel = (value: string) => {
+    switch (value) {
+      case "all":
+        return "Tất cả";
+      case "reservationId":
+        return "Mã đơn";
+      case "nicheAddress":
+        return "Địa chỉ Ô";
+      case "createdDate":
+        return "Ngày tạo";
+      case "confirmationDate":
+        return "Ngày hẹn";
+      case "status":
+        return "Trạng thái";
+      default:
+        return "Tất cả";
+    }
+  };
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
         <h2 className="text-2xl font-bold text-center">Đơn đăng ký viếng</h2>
-        <Input
-          placeholder="Tìm kiếm..."
-          onChange={handleSearch}
-          className="max-w-sm pl-4 ml-auto"
-        />
+        <div className="flex items-center ml-auto space-x-4">
+          <div className="w-36">
+            <Select value={searchField} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <span>{getSearchFieldLabel(searchField)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="reservationId">Mã đơn</SelectItem>
+                <SelectItem value="nicheAddress">Địa chỉ Ô</SelectItem>
+                <SelectItem value="createdDate">Ngày tạo</SelectItem>
+                <SelectItem value="confirmationDate">Ngày hẹn</SelectItem>
+                <SelectItem value="status">Trạng thái</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-64">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-4"
+            />
+          </div>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
