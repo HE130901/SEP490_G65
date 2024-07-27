@@ -139,7 +139,7 @@ namespace cms_server.Controllers
             }
         }
 
-        // New method to get all contracts
+        // GET: api/ContractForStaff/all-contracts
         [HttpGet("all-contracts")]
         public async Task<IActionResult> GetAllContracts()
         {

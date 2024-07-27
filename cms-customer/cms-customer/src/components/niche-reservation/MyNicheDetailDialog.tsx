@@ -29,7 +29,8 @@ interface MyNicheDetailDialogProps {
 const getStatusVariant = (status: string) => {
   switch (status) {
     case "Approved":
-    case "Complete":
+    case "Completed":
+    case "Active":
       return "green";
     case "Pending":
     case "PendingRenewal":
@@ -46,11 +47,13 @@ const getStatusText = (status: string) => {
   switch (status) {
     case "Approved":
       return "Đã duyệt";
+    case "Active":
+      return "Đang hoạt động";
     case "Pending":
       return "Đang chờ ";
     case "Canceled":
       return "Đã hủy";
-    case "Complete":
+    case "Completed":
       return "Đã hoàn thành";
 
     case "PendingRenewal":
@@ -159,9 +162,9 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                 <TableHead>
                   <TableRow>
                     <TableCell align="center">Ngày viếng</TableCell>
-                    <TableCell align="center">Trạng thái</TableCell>
-                    <TableCell align="center">Ghi chú</TableCell>
                     <TableCell align="center">Số người đi cùng</TableCell>
+                    <TableCell align="center">Ghi chú</TableCell>
+                    <TableCell align="center">Trạng thái</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -172,14 +175,14 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                           {formatDate(visit.visitDate)}
                         </TableCell>
                         <TableCell align="center">
+                          {visit.accompanyingPeople}
+                        </TableCell>
+                        <TableCell align="center">{visit.note}</TableCell>
+                        <TableCell align="center">
                           <Badge variant={getStatusVariant(visit.status)}>
                             {getStatusText(visit.status) ||
                               "Không có thông tin"}
                           </Badge>
-                        </TableCell>
-                        <TableCell align="center">{visit.note}</TableCell>
-                        <TableCell align="center">
-                          {visit.accompanyingPeople}
                         </TableCell>
                       </TableRow>
                     )

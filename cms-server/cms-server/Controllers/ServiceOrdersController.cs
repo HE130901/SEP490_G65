@@ -64,7 +64,7 @@ namespace cms_server.Controllers
             var serviceOrderDtos = serviceOrders.Select(so => new ServiceOrderResponseDto
             {
                 ServiceOrderId = so.ServiceOrderId,
-                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName}-{so.Niche.Area.Floor.FloorName}-{so.Niche.Area.AreaName}-{so.Niche.NicheName}",
+                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
                 CreatedDate = so.CreatedDate,
                 OrderDate = so.OrderDate,
                 ServiceOrderCode = so.ServiceOrderCode,
@@ -79,6 +79,7 @@ namespace cms_server.Controllers
 
             return Ok(serviceOrderDtos);
         }
+
         [HttpPost("create-service-order")]
         [Authorize]
         public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest1 request)
@@ -159,6 +160,7 @@ namespace cms_server.Controllers
 
 
 
+
         // PUT: api/ServiceOrders/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutServiceOrder(int id, UpdateServiceOrderRequest request)
@@ -214,7 +216,6 @@ namespace cms_server.Controllers
     {
         public int ServiceOrderId { get; set; }
         public string? NicheAddress { get; set; }
-
         public string? ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }

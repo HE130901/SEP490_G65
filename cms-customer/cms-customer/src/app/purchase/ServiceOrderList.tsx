@@ -1,32 +1,48 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
+  ColumnDef,
   useReactTable,
   getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
+import { Eye, Edit, ArrowUpDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  TableHeader,
   TableRow,
-  Paper,
-  IconButton,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
   Tooltip,
-  Badge,
-} from "@mui/material";
-import { Edit, Visibility } from "@mui/icons-material";
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useStateContext } from "@/context/StateContext";
-import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EditDateDialog from "./EditDateDialog";
 import DetailViewDialog from "./DetailViewDialog";
+import debounce from "lodash.debounce";
+import { remove as removeDiacritics } from "diacritics";
 
 export type ServiceOrderDetail = {
   serviceName: string;
@@ -46,19 +62,46 @@ export type ServiceOrder = {
   };
 };
 
+const getStatusVariant = (status: string) => {
+  switch (status) {
+    case "Pending":
+      return "red";
+    case "Canceled":
+      return "destructive";
+    case "Completed":
+      return "green";
+    default:
+      return "default";
+  }
+};
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "Completed":
+      return "Đã hoàn thành";
+    case "Pending":
+      return "Đang chờ";
+    case "Canceled":
+      return "Đã hủy";
+    default:
+      return "Không xác định";
+  }
+};
+
 const columnHelper = createColumnHelper<ServiceOrder>();
+
 export default function ServiceOrderList({
   reFetchTrigger,
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { setOrders, fetchOrders, orders = [], user } = useStateContext();
-  const [editingRecord, setEditingRecord] = React.useState<ServiceOrder | null>(
-    null
-  );
-  const [viewingRecord, setViewingRecord] = React.useState<ServiceOrder | null>(
-    null
-  );
+  const { setOrders, fetchOrders, orders, user } = useStateContext();
+  const [editingRecord, setEditingRecord] = useState<ServiceOrder | null>(null);
+  const [viewingRecord, setViewingRecord] = useState<ServiceOrder | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState(orders);
+  const [searchField, setSearchField] = useState("all");
+  // Thêm state cho pagination
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
 
   useEffect(() => {
     if (user) {
@@ -67,19 +110,16 @@ export default function ServiceOrderList({
   }, [user, fetchOrders, reFetchTrigger]);
 
   useEffect(() => {
-    const fetchServiceOrders = async () => {
-      try {
-        const response = await ServiceOrderAPI.getAllByCustomer();
-        console.log("Service orders fetched:", response.data); // Debugging line
-        setOrders(response.data.$values); // Unwrapping the $values
-      } catch (error) {
-        console.error("Error fetching service orders:", error);
-        toast.error("Không thể lấy danh sách đơn đặt hàng.");
-      }
-    };
-
-    fetchServiceOrders();
-  }, [fetchOrders, reFetchTrigger, setOrders]);
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filtered = orders.filter((item: any) =>
+      Object.keys(item).some((key) =>
+        String(item[key as keyof ServiceOrder])
+          .toLowerCase()
+          .includes(lowercasedFilter)
+      )
+    );
+    setFilteredData(filtered);
+  }, [searchTerm, orders]);
 
   const handleEdit = (record: ServiceOrder) => {
     const hasPendingStatus = record.serviceOrderDetails.$values.some(
@@ -87,7 +127,6 @@ export default function ServiceOrderList({
     );
     if (hasPendingStatus) {
       setEditingRecord(record);
-      setViewingRecord(null);
     } else {
       toast.warning(
         "Chỉ có thể chỉnh sửa đơn đặt hàng có trạng thái 'Pending'."
@@ -97,53 +136,69 @@ export default function ServiceOrderList({
 
   const handleView = (record: ServiceOrder) => {
     setViewingRecord(record);
-    setEditingRecord(null);
   };
 
   const handleSave = async (updatedRecord: ServiceOrder) => {
-    try {
-      if (!updatedRecord.serviceOrderId) {
-        console.error("Invalid serviceOrderId:", updatedRecord.serviceOrderId);
-        return;
-      }
-      const dataToUpdate = {
-        serviceOrderId: updatedRecord.serviceOrderId,
-        orderDate: updatedRecord.orderDate,
-      };
-      console.log("Sending update request with data:", dataToUpdate); // Debugging line
-      await ServiceOrderAPI.update(updatedRecord.serviceOrderId, dataToUpdate);
-      toast.success("Cập nhật đơn đặt hàng thành công!");
-      setEditingRecord(null);
-      fetchOrders();
-    } catch (error) {
-      console.error("Error updating order:", error);
-      toast.error("Không thể cập nhật đơn đặt hàng.");
-    }
+    // Logic for updating the record
+    setEditingRecord(null);
+    fetchOrders();
   };
 
   const columns = useMemo(
     () => [
       columnHelper.accessor("serviceOrderCode", {
-        header: "Mã đơn hàng",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Mã đơn hàng
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor("createdDate", {
-        header: "Ngày tạo",
-        cell: (info) => new Date(info.getValue()).toLocaleString(),
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Ngày tạo
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: (info) => new Date(info.getValue()).toLocaleString("vi-VN"),
       }),
       columnHelper.accessor("orderDate", {
-        header: "Ngày hẹn",
-        cell: (info) => new Date(info.getValue()).toLocaleString(),
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Ngày hẹn
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: (info) => new Date(info.getValue()).toLocaleString("vi-VN"),
       }),
       columnHelper.accessor("nicheAddress", {
-        header: "Địa chỉ ô chứa",
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Địa chỉ ô chứa
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor("serviceOrderDetails.$values", {
         header: "Dịch vụ/Sản phẩm",
         cell: (info) => (
           <>
-            {info.getValue().map((detail: ServiceOrderDetail, i: number) => (
+            {info.getValue().map((detail, i) => (
               <div key={i}>
                 {detail.serviceName} x {detail.quantity}
               </div>
@@ -155,12 +210,10 @@ export default function ServiceOrderList({
         header: "Trạng thái",
         cell: (info) => (
           <>
-            {info.getValue().map((detail: ServiceOrderDetail, i: number) => (
+            {info.getValue().map((detail, i) => (
               <div key={i}>
-                <Badge
-                  variant={detail.status === "Pending" ? "standard" : "dot"}
-                >
-                  {detail.status}
+                <Badge variant={getStatusVariant(detail.status)}>
+                  {getStatusText(detail.status)}
                 </Badge>
               </div>
             ))}
@@ -171,61 +224,175 @@ export default function ServiceOrderList({
         id: "actions",
         header: "Hành động",
         cell: (props) => (
-          <>
-            <Tooltip title="Xem chi tiết">
-              <IconButton
-                color="primary"
-                onClick={() => handleView(props.row.original)}
-              >
-                <Visibility />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Chỉnh sửa">
-              <IconButton
-                color="primary"
-                onClick={() => handleEdit(props.row.original)}
-              >
-                <Edit />
-              </IconButton>
-            </Tooltip>
-          </>
+          <div className="flex space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleView(props.row.original)}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Xem chi tiết</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(props.row.original)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Chỉnh sửa</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         ),
       }),
     ],
-    []
+    [handleEdit, handleView]
   );
 
   const table = useReactTable({
-    data: orders,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      pagination,
+    },
+    onPaginationChange: setPagination,
+    manualPagination: false,
+    pageCount: Math.ceil(filteredData.length / pagination.pageSize),
   });
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSelectChange = (value: string) => {
+    setSearchField(value);
+  };
+  const getSearchFieldLabel = (value: string) => {
+    switch (value) {
+      case "all":
+        return "Tất cả";
+      case "serviceOrderCode":
+        return "Mã đơn";
+      case "nicheAddress":
+        return "Địa chỉ Ô";
+      case "createdDate":
+        return "Ngày tạo";
+      case "orderDate":
+        return "Ngày hẹn";
+      case "status":
+        return "Trạng thái";
+      default:
+        return "Tất cả";
+    }
+  };
+
+  const normalizeText = (text: string) => {
+    return removeDiacritics(text.toLowerCase());
+  };
+  const debouncedSearch = useCallback(
+    debounce((term: string) => {
+      const normalizedTerm = normalizeText(term);
+      const filtered = orders.filter((order: ServiceOrder) => {
+        if (searchField === "all") {
+          return (
+            normalizeText(order.serviceOrderCode).includes(normalizedTerm) ||
+            normalizeText(order.nicheAddress).includes(normalizedTerm) ||
+            normalizeText(order.createdDate).includes(normalizedTerm) ||
+            normalizeText(order.orderDate).includes(normalizedTerm) ||
+            order.serviceOrderDetails.$values.some((detail) =>
+              normalizeText(detail.serviceName).includes(normalizedTerm)
+            ) ||
+            order.serviceOrderDetails.$values.some((detail) =>
+              normalizeText(detail.status).includes(normalizedTerm)
+            )
+          );
+        } else {
+          return normalizeText(
+            String(order[searchField as keyof ServiceOrder])
+          ).includes(normalizedTerm);
+        }
+      });
+      setFilteredData(filtered);
+    }, 300),
+    [orders, searchField]
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+  }, [searchTerm, debouncedSearch]);
 
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold">Danh sách đơn đặt hàng</h2>
+        <h2 className="text-2xl font-bold text-center">
+          Danh sách đơn đặt hàng
+        </h2>
+        <div className="flex items-center ml-auto space-x-4">
+          <div className="w-36">
+            <Select value={searchField} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <span>{getSearchFieldLabel(searchField)}</span>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="serviceOrderCode">Mã đơn</SelectItem>
+                <SelectItem value="nicheAddress">Địa chỉ Ô</SelectItem>
+                <SelectItem value="createdDate">Ngày tạo</SelectItem>
+                <SelectItem value="orderDate">Ngày hẹn</SelectItem>
+                <SelectItem value="status">Trạng thái</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-64">
+            <Input
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-4"
+            />
+          </div>
+        </div>
       </div>
-      <TableContainer component={Paper}>
+      <div className="rounded-md border">
         <Table>
-          <TableHead>
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableCell key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableCell>
+                  <TableHead
+                    key={header.id}
+                    className="text-center bg-gray-100"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
                 ))}
               </TableRow>
             ))}
-          </TableHead>
+          </TableHeader>
+
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="text-center">
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -238,14 +405,41 @@ export default function ServiceOrderList({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} align="center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   Bạn chưa có đơn đặt hàng.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+      </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          Tổng số lượng đơn đặt hàng: {table.getFilteredRowModel().rows.length}{" "}
+          đơn
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Trước
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Sau
+          </Button>
+        </div>
+      </div>
 
       {/* Editing Modal */}
       {editingRecord && (

@@ -31,7 +31,6 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
-import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
@@ -91,15 +90,19 @@ export default function BookingRequestList({
 }: {
   reFetchTrigger: boolean;
 }) {
-  const { user } = useStateContext();
-  const [nicheReservations, setNicheReservations] = useState<
-    NicheReservation[]
-  >([]);
+  const {
+    user,
+    nicheReservations,
+    fetchNicheReservations,
+    updateNicheReservation,
+    deleteNicheReservation,
+  } = useStateContext();
+  const [filteredData, setFilteredData] =
+    useState<NicheReservation[]>(nicheReservations);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "createdDate", desc: true },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredData, setFilteredData] = useState(nicheReservations);
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [editingRecord, setEditingRecord] = useState<NicheReservation | null>(
     null
@@ -118,11 +121,11 @@ export default function BookingRequestList({
     if (user && user.phone) {
       fetchNicheReservations(user.phone);
     }
-  }, [user, reFetchTrigger]);
+  }, [user, reFetchTrigger, fetchNicheReservations]);
 
   useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = nicheReservations.filter((item) =>
+    const filteredData = nicheReservations.filter((item: any) =>
       Object.keys(item).some((key) =>
         String(item[key as keyof NicheReservation])
           .toLowerCase()
@@ -132,25 +135,14 @@ export default function BookingRequestList({
     setFilteredData(filteredData);
   }, [searchTerm, nicheReservations]);
 
-  const fetchNicheReservations = async (phoneNumber: string) => {
-    try {
-      const response = await NicheReservationAPI.getByPhoneNumber(phoneNumber);
-      setNicheReservations(response.data.$values);
-    } catch (error) {
-      console.error("Error fetching niche reservations:", error);
-    }
-  };
-
   const handleEdit = (record: NicheReservation, event: React.MouseEvent) => {
     event.stopPropagation();
-    console.log("handleEdit called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể sửa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setEditingRecord(record);
     setCurrentModal("edit");
-    console.log("currentModal set to edit");
   };
 
   const handleDeleteConfirmation = (
@@ -158,74 +150,32 @@ export default function BookingRequestList({
     event: React.MouseEvent
   ) => {
     event.stopPropagation();
-    console.log("handleDeleteConfirmation called with record:", record);
     if (record.status === "Approved" || record.status === "Canceled") {
       toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
     setDeleteRecord(record);
     setCurrentModal("delete");
-    console.log("currentModal set to delete");
   };
 
   const handleView = (
     record: NicheReservation,
     event?: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
-    console.log("handleView called with record:", record);
     setViewingRecord(record);
     setCurrentModal("view");
-    console.log("currentModal set to view");
   };
 
   const handleDelete = async () => {
     if (!deleteRecord) return;
 
-    try {
-      await NicheReservationAPI.delete(deleteRecord.reservationId);
-      toast.success("Hủy đơn đặt chỗ thành công!");
-      setNicheReservations((prev) =>
-        prev.map((reservation) =>
-          reservation.reservationId === deleteRecord.reservationId
-            ? { ...reservation, status: "Canceled" }
-            : reservation
-        )
-      );
-      setCurrentModal(null); // Close the modal
-    } catch (error) {
-      console.error("Error canceling niche reservation:", error);
-      toast.error("Không thể hủy đơn đặt chỗ.");
-    }
+    await deleteNicheReservation(deleteRecord.reservationId);
+    setCurrentModal(null);
   };
 
   const handleSave = async (updatedRecord: NicheReservation) => {
-    try {
-      if (!updatedRecord.reservationId) {
-        console.error("Invalid reservationId:", updatedRecord.reservationId);
-        return;
-      }
-      const dataToUpdate = {
-        reservationId: updatedRecord.reservationId,
-        nicheId: updatedRecord.nicheId,
-        name: updatedRecord.name,
-        confirmationDate: new Date(
-          updatedRecord.confirmationDate
-        ).toISOString(),
-        note: updatedRecord.note,
-        signAddress: updatedRecord.signAddress,
-        phoneNumber: updatedRecord.phoneNumber,
-      };
-      await NicheReservationAPI.update(
-        updatedRecord.reservationId,
-        dataToUpdate
-      );
-      toast.success("Cập nhật đơn đặt chỗ thành công!");
-      setCurrentModal(null);
-      fetchNicheReservations(user.phone);
-    } catch (error) {
-      console.error("Error updating niche reservation:", error);
-      toast.error("Không thể cập nhật đơn đặt chỗ.");
-    }
+    await updateNicheReservation(updatedRecord);
+    setCurrentModal(null);
   };
 
   const columns: ColumnDef<NicheReservation>[] = [
@@ -323,21 +273,6 @@ export default function BookingRequestList({
             {getStatusText(row.getValue("status")) || "Không có thông tin"}
           </Badge>
         </div>
-      ),
-    },
-    {
-      accessorKey: "note",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Ghi Chú
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => (
-        <div className="text-center">{row.getValue("note")}</div>
       ),
     },
     {
