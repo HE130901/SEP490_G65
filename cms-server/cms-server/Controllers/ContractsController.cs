@@ -58,7 +58,7 @@ namespace cms_server.Controllers
             return contracts;
         }
 
-
+        // GET: api/Contracts/{contractId}/detail
         [HttpGet("{contractId}/detail")]
         public async Task<ActionResult<ContractDto>> GetContractDetail(int contractId)
         {
@@ -241,6 +241,7 @@ namespace cms_server.Controllers
             return _context.Contracts.Any(e => e.ContractId == id);
         }
 
+        // GET: api/Contracts/{contractId}/renewals
         [HttpGet("{contractId}/renewals")]
         public async Task<ActionResult<IEnumerable<ContractRenewalDto>>> GetContractRenewals(int contractId)
         {

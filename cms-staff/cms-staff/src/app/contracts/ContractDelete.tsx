@@ -1,4 +1,3 @@
-// ConfirmDialog.tsx
 import React from "react";
 import {
   Dialog,
@@ -8,7 +7,14 @@ import {
   DialogTitle,
   Button,
 } from "@mui/material";
-import { ConfirmDialogProps } from "./interfaces";
+
+interface ConfirmDialogProps {
+  open: boolean;
+  handleClose: () => void;
+  handleConfirm: () => void;
+  title: string;
+  content: string;
+}
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,

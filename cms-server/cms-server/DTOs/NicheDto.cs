@@ -3,6 +3,7 @@
     public class NicheDto
     {
         public int NicheId { get; set; }
+        public string NicheStatus { get; set; } = null!;
         public string NicheName { get; set; } = null!;
         public string? NicheAddress { get; set; }
         public string? ContractStatus { get; set; }

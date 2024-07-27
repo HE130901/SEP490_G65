@@ -1,85 +1,171 @@
-// ContractDetailDialog.tsx
-import React from "react";
+"use client";
+import ContractAPI from "@/services/contractService";
 import {
+  Box,
+  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Button,
-  Typography,
-  Box,
   Grid,
+  Typography,
 } from "@mui/material";
-import { ContractDetailDialogProps } from "./interfaces";
+import { useEffect, useState } from "react";
 
-const ContractDetailDialog: React.FC<ContractDetailDialogProps> = ({
-  open,
-  handleClose,
-  contract,
-}) => {
-  if (!contract) return null;
+interface ContractDetailDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  contractId: number | null;
+}
+
+export default function ContractDetailsDialog({
+  isOpen,
+  onClose,
+  contractId,
+}: ContractDetailDialogProps) {
+  const [contractDetails, setContractDetails] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchContractDetails = async () => {
+      if (!contractId) return;
+
+      setLoading(true);
+      try {
+        const data = await ContractAPI.getContractById(contractId);
+        console.log("API response:", data);
+        setContractDetails(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching contract details:", err);
+        setError("Không thể tải thông tin chi tiết của hợp đồng.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchContractDetails();
+    }
+  }, [isOpen, contractId]);
+
+  if (error) {
+    return <p>{error}</p>;
+  }
+
+  if (!contractDetails) {
+    return null; // Hoặc hiển thị thông báo thích hợp
+  }
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
+    <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>Chi tiết hợp đồng</DialogTitle>
-      <DialogContent>
-        <Box p={3} style={{ width: "100%", height: "100%" }}>
+      <DialogContent className="a4-size">
+        <Box p={3} className="print-a4">
           <Typography variant="h4" align="center" gutterBottom>
             HỢP ĐỒNG GỬI GIỮ TRO CỐT
           </Typography>
           <Typography variant="h6" align="center" gutterBottom>
-            Số: {contract.code}
+            Mã hợp đồng : {contractDetails.contractCode}
           </Typography>
-          <Typography variant="h6" align="center" gutterBottom>
-            Ngày tháng: {contract.startDate}
+          <Typography variant="body1" align="left" gutterBottom>
+            Hôm nay, ngày{" "}
+            {new Date(contractDetails.startDate).toLocaleDateString("vi-VN")} ,
+            tại An Bình Viên (Hòa Lạc) chúng tôi gồm có:
           </Typography>
 
           <Typography variant="h6" gutterBottom>
             BÊN A: Công ty An Bình Viên
           </Typography>
-          <Typography>Địa chỉ: [Địa chỉ của công ty]</Typography>
-          <Typography>Điện thoại: [Số điện thoại công ty]</Typography>
-          <Typography>Đại diện bởi: [Tên người đại diện]</Typography>
-          <Typography>Chức vụ: [Chức vụ người đại diện]</Typography>
+          <Typography>Đại diện bởi: {contractDetails.staffName}</Typography>
+          <Typography>Chức vụ: Nhân viên</Typography>
+          <Typography>Điện thoại: 0999.999.999</Typography>
+          <Typography>Địa chỉ: Hòa Lạc - Hà Nội</Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
-            BÊN B: {contract.customerName}
+            BÊN B: {contractDetails.customerName}
           </Typography>
-          <Typography>Địa chỉ: {contract.address}</Typography>
-          <Typography>Số điện thoại: {contract.phone}</Typography>
-          <Typography>CMND/CCCD: {contract.idNumber}</Typography>
-          <Typography>Ngày cấp: {contract.idDate}</Typography>
-          <Typography>Nơi cấp: {contract.idPlace}</Typography>
+          <Typography>
+            CMND/CCCD: {contractDetails.customerCitizenID}
+          </Typography>
+          <Typography>
+            Ngày cấp:{" "}
+            {new Date(contractDetails.citizenIdissuanceDate).toLocaleDateString(
+              "vi-VN"
+            )}
+          </Typography>
+          <Typography>Nơi cấp: {contractDetails.citizenIdsupplier}</Typography>
+          <Typography>
+            Số điện thoại: {contractDetails.customerPhone}
+          </Typography>
+
+          <Typography>Địa chỉ: {contractDetails.customerAddress}</Typography>
+
+          <Typography variant="h6" gutterBottom mt={4}>
+            THÔNG TIN NGƯỜI MẤT
+          </Typography>
+          <Typography>Tên người mất: {contractDetails.deceasedName}</Typography>
+          <Typography>
+            CMND/CCCD: {contractDetails.deceasedCitizenID}
+          </Typography>
+          <Typography>
+            Ngày sinh:{" "}
+            {new Date(contractDetails.deceasedDateOfBirth).toLocaleDateString(
+              "vi-VN"
+            )}
+          </Typography>
+          <Typography>
+            Ngày mất:{" "}
+            {new Date(contractDetails.deceasedDateOfDeath).toLocaleDateString(
+              "vi-VN"
+            )}
+          </Typography>
+          <Typography>
+            Số giấy chứng tử: {contractDetails.deceasedDeathCertificateNumber}
+          </Typography>
+          <Typography>
+            Nơi cấp giấy chứng tử:{" "}
+            {contractDetails.deceasedDeathCertificateSupplier}
+          </Typography>
+          <Typography>
+            Quan hệ với bên B:{" "}
+            {contractDetails.deceasedRelationshipWithCustomer}
+          </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
             ĐIỀU 1: MỤC ĐÍCH VÀ PHẠM VI HỢP ĐỒNG
           </Typography>
           <Typography>
             Hợp đồng này nhằm mục đích quy định việc gửi giữ tro cốt của{" "}
-            {contract.deceasedName} giữa Bên A và Bên B.
+            {contractDetails.deceasedName} giữa Bên A và Bên B. <br></br> Tại ô
+            chứa mã số: {contractDetails.nicheCode} ({contractDetails.nicheName}
+            {""}) tại An Bình Viên (Hòa Lạc).
           </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
             ĐIỀU 2: THỜI HẠN GỬI GIỮ
           </Typography>
           <Typography>
-            Thời hạn gửi giữ tro cốt là {contract.duration}{" "}
-            {contract.type === "Gửi theo tháng" ? "tháng" : "năm"}, kể từ ngày{" "}
-            {contract.startDate} đến ngày {contract.endDate}.
+            Thời hạn gửi giữ tro cốt là {contractDetails.duration}, kể từ ngày{" "}
+            {new Date(contractDetails.startDate).toLocaleDateString("vi-VN")}{" "}
+            đến ngày{" "}
+            {new Date(contractDetails.endDate).toLocaleDateString("vi-VN")}.
           </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
             ĐIỀU 3: DỊCH VỤ VÀ CHI PHÍ
           </Typography>
           <Typography>
-            3.1. Bên A sẽ cung cấp dịch vụ gửi giữ tro cốt tại [địa điểm gửi
-            giữ] với các điều kiện và dịch vụ sau:
+            3.1. Bên A sẽ cung cấp dịch vụ gửi giữ tro cốt tại An Bình Viên (Hòa
+            Lạc).
           </Typography>
-          <Typography>[Mô tả chi tiết dịch vụ và các điều kiện]</Typography>
           <Typography>
             3.2. Chi phí dịch vụ là{" "}
-            {contract.cost ? contract.cost.toLocaleString() : 0} VND, được thanh
-            toán theo định kỳ [khoảng thời gian thanh toán].
+            {contractDetails.totalAmount
+              ? contractDetails.totalAmount.toLocaleString()
+              : 0}{" "}
+            VND. Đã được thanh toán tại thời điểm ký hợp đồng.
           </Typography>
 
           <Typography variant="h6" gutterBottom mt={4}>
@@ -123,38 +209,21 @@ const ContractDetailDialog: React.FC<ContractDetailDialogProps> = ({
             <Grid container>
               <Grid item xs={6}>
                 <Typography>Đại diện Bên A</Typography>
-                <Typography>[Tên người ký]</Typography>
+                <Typography>{contractDetails.staffName}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography>Đại diện Bên B</Typography>
-                <Typography>{contract.customerName}</Typography>
+                <Typography>{contractDetails.customerName}</Typography>
               </Grid>
             </Grid>
           </Box>
-
-          <Typography variant="h6" gutterBottom mt={4}>
-            Ghi chú
-          </Typography>
-          {contract.notes && contract.notes.length > 0 ? (
-            contract.notes.map((note: string, index: number) => (
-              <Typography key={index} variant="body2" gutterBottom>
-                - {note}
-              </Typography>
-            ))
-          ) : (
-            <Typography variant="body2" gutterBottom>
-              Không có ghi chú.
-            </Typography>
-          )}
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button onClick={onClose} color="primary">
           Đóng
         </Button>
       </DialogActions>
     </Dialog>
   );
-};
-
-export default ContractDetailDialog;
+}

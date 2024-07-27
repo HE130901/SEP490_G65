@@ -150,7 +150,7 @@ const ServiceRequestPage = () => {
     {
       field: "nicheAddress",
       headerName: "Địa chỉ ô chứa",
-      width: 200,
+      width: 210,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "customerName", headerName: "Tên Khách hàng", width: 180 },

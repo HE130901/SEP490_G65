@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 using cms_server.DTOs;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace cms_server.Controllers
 {
@@ -25,14 +27,24 @@ namespace cms_server.Controllers
         }
 
         [HttpPost("create-contract")]
+        [Authorize]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
         {
+            // Get the StaffId from the token
+            var staffIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (staffIdClaim == null || !int.TryParse(staffIdClaim, out int staffId))
+            {
+                return Unauthorized("Invalid or missing Staff ID in token.");
+            }
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
                     var niche = await _context.Niches
-                        .FirstOrDefaultAsync(n => n.NicheId == request.NicheID && n.Status == "Available");
+    .FirstOrDefaultAsync(n => n.NicheId == request.NicheID &&
+                             (n.Status == "Available" || n.Status == "Booked"));
+
 
                     if (niche == null)
                     {
@@ -94,7 +106,7 @@ namespace cms_server.Controllers
                     {
                         ContractCode = contractCode,
                         CustomerId = customer.CustomerId,
-                        StaffId = request.StaffID,
+                        StaffId = staffId, // Use StaffId from token
                         NicheId = niche.NicheId,
                         DeceasedId = deceased.DeceasedId,
                         StartDate = request.StartDate,
@@ -139,6 +151,9 @@ namespace cms_server.Controllers
             }
         }
 
+
+
+
         // GET: api/ContractForStaff/all-contracts
         [HttpGet("all-contracts")]
         public async Task<IActionResult> GetAllContracts()
@@ -158,7 +173,8 @@ namespace cms_server.Controllers
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,
                     Status = c.Status,
-                    ContractCode = c.ContractCode
+                    ContractCode = c.ContractCode,
+                    NicheCode = c.Niche.NicheCode,
                 })
                 .ToListAsync();
             return Ok(contracts);
@@ -192,10 +208,14 @@ namespace cms_server.Controllers
             return Ok(contract);
         }
 
-
         [HttpPost("renew-contract")]
-        public async Task<IActionResult> RenewContract(int contractId, DateOnly newEndDate, decimal totalAmount)
+        public async Task<IActionResult> RenewContract(int contractId, [FromBody] RenewContractRequest request)
         {
+            if (!DateOnly.TryParse(request.NewEndDate, out var parsedEndDate))
+            {
+                return BadRequest("Invalid date format.");
+            }
+
             var contract = await _context.Contracts
                 .Include(c => c.ContractRenews)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
@@ -205,12 +225,10 @@ namespace cms_server.Controllers
                 return NotFound("Contract not found.");
             }
 
-            // Update the existing contract status to "Extended"
             contract.Status = "Extended";
             _context.Contracts.Update(contract);
             await _context.SaveChangesAsync();
 
-            // Create a new ContractRenew entry
             int renewalCount = contract.ContractRenews.Count + 1;
             string renewalCode = GenerateRenewalCode(contract.ContractCode, renewalCount);
 
@@ -220,15 +238,17 @@ namespace cms_server.Controllers
                 ContractRenewCode = renewalCode,
                 Status = "Active",
                 CreatedDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                EndDate = newEndDate,
-                TotalAmount = totalAmount,
-                Note = "Gia hạn "+contract.ContractCode
+                EndDate = parsedEndDate,
+                TotalAmount = request.TotalAmount,
+                Note = "Gia hạn " + contract.ContractCode
             };
             _context.ContractRenews.Add(contractRenew);
             await _context.SaveChangesAsync();
 
             return Ok(contractRenew);
         }
+
+
 
 
         private string GenerateRenewalCode(string contractCode, int renewalCount)
@@ -247,8 +267,9 @@ namespace cms_server.Controllers
             return $"GH{renewalCount:D2}-{datePart}-{suffix}";
         }
 
+        // POST: api/Contracts/cancel-contract
         [HttpPost("cancel-contract")]
-        public async Task<IActionResult> CancelContract(int contractId, string note)
+        public async Task<IActionResult> CancelContract(int contractId)
         {
             var contract = await _context.Contracts
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
@@ -260,12 +281,76 @@ namespace cms_server.Controllers
 
             // Update contract status to 
             contract.Status = "Canceled";
-            contract.Note = note;
+            contract.Note = "Thanh lý hợp đồng "+contract.ContractCode+" vào ngày " + DateOnly.FromDateTime(DateTime.Now);
             _context.Contracts.Update(contract);
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }   
+        }
+
+        // GET: api/Contracts/buildings
+        [HttpGet("buildings")]
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
+        {
+            var buildings = await _context.Buildings
+                .Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName
+                })
+                .ToListAsync();
+
+            return Ok(buildings);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors
+        [HttpGet("buildings/{buildingId}/floors")]
+        public async Task<ActionResult<IEnumerable<FloorDto>>> GetFloors(int buildingId)
+        {
+            var floors = await _context.Floors
+                .Where(f => f.BuildingId == buildingId)
+                .Select(f => new FloorDto
+                {
+                    FloorId = f.FloorId,
+                    FloorName = f.FloorName
+                })
+                .ToListAsync();
+
+            return Ok(floors);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas")]
+        public async Task<ActionResult<IEnumerable<AreaDto>>> GetZones(int buildingId, int floorId)
+        {
+            var areas = await _context.Areas
+                .Where(a => a.FloorId == floorId)
+                .Select(a => new AreaDto
+                {
+                    AreaId = a.AreaId,
+                    AreaName = a.AreaName
+                })
+                .ToListAsync();
+
+            return Ok(areas);
+        }
+
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas/{zoneId}/niches
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId)
+                .Select(n => new NicheDto
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    NicheStatus = n.Status
+                })
+                .ToListAsync();
+
+            return Ok(niches);
+        }
 
 
 
@@ -274,7 +359,6 @@ namespace cms_server.Controllers
     public class CreateContractRequest
     {
         public string CustomerFullName { get; set; }
-        public string? ContractCode { get; set; }
         public string? CustomerPhoneNumber { get; set; }
         public string CustomerEmail { get; set; }
         public string? CustomerAddress { get; set; }
@@ -289,7 +373,6 @@ namespace cms_server.Controllers
         public string? DeathCertificateSupplier { get; set; }
         public string? RelationshipWithCustomer { get; set; }
         public int? NicheID { get; set; }
-        public int StaffID { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public string Note { get; set; }
@@ -308,6 +391,13 @@ public class ContractForStaffDto
         public DateOnly? EndDate { get; set; }
         public string Status { get; set; }
         public string ContractCode { get; set; }
+        public string NicheCode { get; set; }
 
     }
 }
+public class RenewContractRequest
+{
+    public string NewEndDate { get; set; }
+    public decimal TotalAmount { get; set; }
+}
+

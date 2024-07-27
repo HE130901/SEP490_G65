@@ -372,6 +372,44 @@ namespace cms_server.Controllers
         {
             return _context.NicheReservations.Any(e => e.ReservationId == id);
         }
+
+        // GET: api/NicheReservations/approved
+        [HttpGet("approved")]
+        public async Task<ActionResult<IEnumerable<NicheReservationApprovedDto>>> GetApprovedNicheReservations()
+        {
+            try
+            {
+                var approvedReservations = await _context.NicheReservations
+                    .Where(r => r.Status == "Approved")
+                    .Select(r => new NicheReservationApprovedDto
+                    {
+                        ReservationId = r.ReservationId,
+                        ReservationCode = r.ReservationCode,
+                        Status = r.Status,
+                        CustomerName = r.Name,
+                        CustomerPhone = r.PhoneNumber,
+                        SignAddress = r.SignAddress,
+                        NicheId = r.NicheId,
+                        NicheCode = r.Niche.NicheCode,
+                        NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - Ô {r.Niche.NicheName}",
+                        Note = r.Note
+
+                    })
+                    .ToListAsync();
+
+                if (!approvedReservations.Any())
+                {
+                    return NotFound(new { error = "No approved reservations found" });
+                }
+
+                return Ok(approvedReservations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 
     public class CreateNicheReservationDto
@@ -431,5 +469,21 @@ namespace cms_server.Controllers
         public string? PhoneNumber { get; set; }
         public string? Name { get; set; }
     }
+    public class NicheReservationApprovedDto
+    {
+        public int ReservationId { get; set; }
+        public string ReservationCode { get; set; }
+        public int NicheId { get; set; }
+        public string Status { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerPhone { get; set; }
+        public string NicheCode { get; set; }
+        public string NicheAddress { get; set; }
+
+        public string SignAddress { get; set; }
+        public string Note { get; set; }
+
+    }
+
 
 }
