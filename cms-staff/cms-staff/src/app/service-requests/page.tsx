@@ -1,6 +1,7 @@
+// ServiceRequestPage.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -15,12 +16,11 @@ import {
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import ServiceOrderAPI from "@/services/serviceOrderService";
-import { toast } from "react-toastify";
 import AddServiceOrderDialog from "./AddServiceOrderDialog";
 import ViewServiceOrderDialog from "./ViewServiceOrderDialog";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
+import { useServiceOrderContext } from "@/context/ServiceOrderContext"; // Import context
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -69,25 +69,19 @@ const CenteredCell = styled("div")({
 });
 
 const ServiceRequestPage = () => {
-  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
+  const {
+    serviceOrders,
+    fetchServiceOrders,
+    addServiceOrder,
+    updateServiceOrder,
+    deleteServiceOrder,
+  } = useServiceOrderContext();
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedServiceOrderId, setSelectedServiceOrderId] = useState<
     number | null
   >(null);
-
-  const fetchServiceRequests = async () => {
-    try {
-      const response = await ServiceOrderAPI.getAllServiceOrders();
-      setServiceRequests(response.data.$values || response.data);
-    } catch (error) {
-      toast.error("Không thể tải danh sách đơn đặt chỗ");
-    }
-  };
-
-  useEffect(() => {
-    fetchServiceRequests();
-  }, []);
 
   const handleAddServiceRequest = () => {
     setAddDialogOpen(true);
@@ -102,7 +96,7 @@ const ServiceRequestPage = () => {
     switch (status) {
       case "Pending":
         return "Đang chờ";
-      case "Complete":
+      case "Completed":
         return "Hoàn thành";
       case "Canceled":
         return "Đã hủy";
@@ -115,7 +109,7 @@ const ServiceRequestPage = () => {
     switch (status) {
       case "Pending":
         return "warning";
-      case "Complete":
+      case "Completed":
         return "success";
       case "Canceled":
         return "error";
@@ -126,12 +120,12 @@ const ServiceRequestPage = () => {
 
   const handleCloseAddDialog = () => {
     setAddDialogOpen(false);
-    fetchServiceRequests();
+    fetchServiceOrders();
   };
 
   const handleCloseViewDialog = () => {
     setViewDialogOpen(false);
-    fetchServiceRequests();
+    fetchServiceOrders();
   };
 
   const columns: GridColDef[] = [
@@ -142,15 +136,9 @@ const ServiceRequestPage = () => {
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
-      field: "serviceOrderId",
+      field: "serviceOrderCode",
       headerName: "Mã đơn",
-      width: 80,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
-    },
-    {
-      field: "nicheAddress",
-      headerName: "Địa chỉ ô chứa",
-      width: 210,
+      width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "customerName", headerName: "Tên Khách hàng", width: 180 },
@@ -163,7 +151,7 @@ const ServiceRequestPage = () => {
     {
       field: "services",
       headerName: "Dịch vụ",
-      width: 200,
+      width: 250,
       renderCell: (params) => (
         <NoWrapTypography variant="body2">
           {params.value.map((service: any, idx: number) => (
@@ -178,7 +166,7 @@ const ServiceRequestPage = () => {
     {
       field: "statuses",
       headerName: "Trạng thái",
-      width: 120,
+      width: 150,
       renderCell: (params) => (
         <NoWrapTypography>
           {params.value.map((status: any, idx: number) => (
@@ -214,24 +202,14 @@ const ServiceRequestPage = () => {
     },
   ];
 
-  const rows = serviceRequests.map((serviceRequest, index) => ({
+  const rows = serviceOrders.map((serviceOrder, index) => ({
     id: index + 1,
-    serviceOrderId: serviceRequest.serviceOrderId,
-    nicheAddress: serviceRequest.nicheAddress,
-    customerName: serviceRequest.customerName,
-    formattedOrderDate: serviceRequest.formattedOrderDate,
-    formattedCreatedDate: serviceRequest.formattedCreatedDate,
-    services: serviceRequest.serviceOrderDetails.$values.map(
-      (service: any) => ({
-        serviceName: service.serviceName,
-        quantity: service.quantity,
-      })
-    ),
-    statuses: serviceRequest.serviceOrderDetails.$values.map(
-      (service: any) => ({
-        status: service.status,
-      })
-    ),
+    serviceOrderId: serviceOrder.serviceOrderId,
+    serviceOrderCode: serviceOrder.serviceOrderCode,
+    customerName: serviceOrder.customerName,
+    formattedOrderDate: serviceOrder.formattedOrderDate,
+    services: serviceOrder.services,
+    statuses: serviceOrder.statuses,
   }));
 
   return (

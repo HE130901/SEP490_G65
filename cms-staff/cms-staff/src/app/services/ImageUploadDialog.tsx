@@ -1,21 +1,20 @@
 "use client";
 
-import ServiceOrderAPI from "@/services/serviceOrderService";
-import axiosInstance from "@/utils/axiosInstance";
-import styled from "@emotion/styled";
-import { PhotoCamera } from "@mui/icons-material";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Typography,
+  Box,
 } from "@mui/material";
+import { PhotoCamera } from "@mui/icons-material";
+import styled from "@emotion/styled";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 
 const StyledDialogContent = styled(DialogContent)`
@@ -28,16 +27,16 @@ const StyledTypography = styled(Typography)`
   margin-top: 1rem;
 `;
 
-const UpdateCompletionImageDialog = ({
-  open,
-  onClose,
-  serviceOrderDetailId,
-  onUpdateSuccess,
-}: {
+interface ImageUploadDialogProps {
   open: boolean;
   onClose: () => void;
-  serviceOrderDetailId: number | null;
-  onUpdateSuccess: () => void;
+  onImageUpload: (imageUrl: string) => void;
+}
+
+const ImageUploadDialog: React.FC<ImageUploadDialogProps> = ({
+  open,
+  onClose,
+  onImageUpload,
 }) => {
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -61,8 +60,8 @@ const UpdateCompletionImageDialog = ({
     }
   };
 
-  const handleSubmit = async () => {
-    if (serviceOrderDetailId === null || !image) {
+  const handleUpload = async () => {
+    if (!image) {
       toast.error("Vui lòng chọn một hình ảnh để tải lên");
       return;
     }
@@ -72,10 +71,7 @@ const UpdateCompletionImageDialog = ({
     const formData = new FormData();
     formData.append("file", image);
 
-    console.log("FormData:", formData);
-
     try {
-      console.log("Uploading image...");
       const uploadResponse = await axiosInstance.post(
         "/api/Image/upload",
         formData,
@@ -85,33 +81,18 @@ const UpdateCompletionImageDialog = ({
           },
         }
       );
-      console.log("Upload response:", uploadResponse);
 
       if (!uploadResponse.data) {
         throw new Error("Failed to upload image");
       }
 
-      // Extract the image URL directly from the response data
-      const imageUrl = uploadResponse.data.imageUrl || uploadResponse.data; // Ensure this matches the structure of your API response
-      console.log("Image URL:", imageUrl);
-
-      const data = {
-        serviceOrderDetailID: serviceOrderDetailId,
-        completionImage: imageUrl,
-      };
-
-      console.log("Data being sent to update service order:", data);
-
-      console.log("Updating service order...");
-      await ServiceOrderAPI.updateCompletionImage(data);
-      console.log("Service order updated successfully");
-
-      toast.success("Hình ảnh đã được cập nhật");
-      onUpdateSuccess();
+      const imageUrl = uploadResponse.data.imageUrl || uploadResponse.data;
+      toast.success("Hình ảnh đã được tải lên");
+      onImageUpload(imageUrl);
       onClose();
     } catch (error) {
-      console.error("Error updating completion image:", error);
-      toast.error("Không thể cập nhật hình ảnh.");
+      console.error("Error uploading image:", error);
+      toast.error("Không thể tải lên hình ảnh");
     } finally {
       setLoading(false);
     }
@@ -119,7 +100,7 @@ const UpdateCompletionImageDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Tải hình ảnh lên</DialogTitle>
+      <DialogTitle>Chọn hình ảnh</DialogTitle>
       <StyledDialogContent>
         <Button
           variant="contained"
@@ -156,16 +137,16 @@ const UpdateCompletionImageDialog = ({
           Hủy
         </Button>
         <Button
-          onClick={handleSubmit}
+          onClick={handleUpload}
           color="primary"
           variant="contained"
           disabled={!image || loading}
         >
-          {loading ? <CircularProgress size={24} /> : "Cập nhật"}
+          {loading ? <CircularProgress size={24} /> : "Tải lên"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default UpdateCompletionImageDialog;
+export default ImageUploadDialog;

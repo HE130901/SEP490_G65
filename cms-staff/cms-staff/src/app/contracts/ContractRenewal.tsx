@@ -16,10 +16,9 @@ import {
   MenuItem,
 } from "@mui/material";
 import contractService from "@/services/contractService";
-import RenewalListDialog from "./RenewalList"; // Import component mới
+import RenewalListDialog from "./RenewalList";
 import { SelectChangeEvent } from "@mui/material";
 
-// Chuyển đổi ngày tháng thành định dạng YYYY-MM-DD
 const formatDateToYYYYMMDD = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -27,7 +26,11 @@ const formatDateToYYYYMMDD = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Tính toán ngày kết thúc mới dựa trên ngày bắt đầu, thời gian và loại gia hạn
+const formatDateToDDMMYYYY = (dateString: string): string => {
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+};
+
 const calculateNewEndDate = (
   startDate: string,
   duration: string,
@@ -47,7 +50,6 @@ const calculateNewEndDate = (
   return formatDateToYYYYMMDD(date);
 };
 
-// Tính toán giá dựa trên loại và thời gian gia hạn
 const calculateCost = (type: string, duration: number): number => {
   if (type === "Gửi theo tháng") {
     return duration * 200000;
@@ -113,10 +115,7 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
   const handleSubmit = async () => {
     if (contract) {
       try {
-        // Chuyển đổi ngày tháng từ chuỗi ISO 8601 thành định dạng YYYY-MM-DD
         const formattedNewEndDate = formatDateToYYYYMMDD(new Date(newEndDate));
-
-        // Kiểm tra dữ liệu trước khi gửi
         if (formattedNewEndDate === "N/A") {
           console.error("Ngày kết thúc mới không hợp lệ");
           return;
@@ -124,7 +123,7 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
 
         const response = await contractService.renewContract(
           contract.contractId,
-          formattedNewEndDate, // Gửi ngày tháng đã được định dạng
+          formattedNewEndDate,
           cost
         );
         handleClose();
@@ -154,6 +153,7 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
           <Button onClick={handleOpenListDialog} color="secondary">
             Lịch sử gia hạn
           </Button>
+          <Divider />
         </DialogTitle>
         <DialogContent>
           <Box mb={2}>
@@ -161,10 +161,10 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
               <strong>Mã hợp đồng:</strong> {contract.contractCode}
             </Typography>
             <Typography variant="body1">
-              <strong>Ngày kết thúc:</strong> {contract.endDate}
+              <strong>Ngày kết thúc:</strong>{" "}
+              {formatDateToDDMMYYYY(contract.endDate)}
             </Typography>
           </Box>
-          <Divider />
           <Box mt={2}>
             <FormControl fullWidth>
               <InputLabel>Loại Gia Hạn</InputLabel>
@@ -201,15 +201,18 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
           </Box>
           <Box mt={2}>
             <Typography variant="body1">
-              <strong>Ngày kết thúc mới:</strong> {newEndDate}
+              <strong>Ngày kết thúc mới:</strong>{" "}
+              {newEndDate ? formatDateToDDMMYYYY(newEndDate) : "N/A"}
             </Typography>
             <Typography variant="body1">
               <strong>Chi phí:</strong> {cost.toLocaleString()} VND
             </Typography>
           </Box>
+
+          <Divider className="pt-4" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="secondary">
             Đóng
           </Button>
           <Button onClick={handleSubmit} color="primary">

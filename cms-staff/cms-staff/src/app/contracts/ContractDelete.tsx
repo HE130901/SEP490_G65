@@ -6,6 +6,7 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  Divider,
 } from "@mui/material";
 
 interface ConfirmDialogProps {
@@ -30,7 +31,11 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+      <DialogTitle id="alert-dialog-title">
+        {title}
+
+        <Divider />
+      </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           {content}

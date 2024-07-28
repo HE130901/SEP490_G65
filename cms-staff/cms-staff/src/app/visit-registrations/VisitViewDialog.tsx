@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   Typography,
+  Grid,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
@@ -54,7 +55,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         {isEditMode
           ? "Chỉnh sửa đơn đăng ký viếng thăm"
@@ -62,77 +63,100 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
       </DialogTitle>
       <DialogContent dividers>
         {formData && (
-          <>
-            <Typography variant="body1" gutterBottom>
-              <strong>Mã đơn:</strong> {formData.visitId}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Tên khách hàng:</strong> {formData.customerName}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Địa chỉ:</strong> {formData.nicheAddress}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Ngày tạo:</strong> {formData.formattedCreatedDate}
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              <strong>Ngày viếng thăm:</strong> {formData.formattedVisitDate}
-            </Typography>
-
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Mã đơn:</strong> {formData.visitCode}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Tên khách hàng:</strong> {formData.customerName}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Nhân viên tiếp nhận:</strong> {formData.staffName}
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Địa chỉ:</strong> {formData.nicheAddress}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Ngày tạo:</strong> {formData.formattedCreatedDate}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" gutterBottom>
+                <strong>Ngày viếng thăm:</strong> {formData.formattedVisitDate}
+              </Typography>
+            </Grid>
             {isEditMode ? (
               <>
-                <TextField
-                  margin="dense"
-                  label="Ngày viếng thăm"
-                  type="datetime-local"
-                  fullWidth
-                  variant="outlined"
-                  name="visitDate"
-                  value={formData.visitDate}
-                  onChange={handleChange}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                />
-                <TextField
-                  margin="dense"
-                  label="Số lượng người đi cùng"
-                  type="number"
-                  fullWidth
-                  variant="outlined"
-                  name="accompanyingPeople"
-                  value={formData.accompanyingPeople}
-                  onChange={handleChange}
-                />
-                <TextField
-                  margin="dense"
-                  label="Ghi chú"
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  name="note"
-                  value={formData.note}
-                  onChange={handleChange}
-                />
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="dense"
+                    label="Ngày viếng thăm"
+                    type="datetime-local"
+                    fullWidth
+                    variant="outlined"
+                    name="visitDate"
+                    value={formData.visitDate}
+                    onChange={handleChange}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="dense"
+                    label="Số lượng người đi cùng"
+                    type="number"
+                    fullWidth
+                    variant="outlined"
+                    name="accompanyingPeople"
+                    value={formData.accompanyingPeople}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="dense"
+                    label="Ghi chú"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    name="note"
+                    value={formData.note}
+                    onChange={handleChange}
+                  />
+                </Grid>
               </>
             ) : (
               <>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Trạng thái:</strong> {formData.status}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Số lượng người đi cùng:</strong>{" "}
-                  {formData.accompanyingPeople}
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  <strong>Ghi chú:</strong> {formData.note}
-                </Typography>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body1" gutterBottom>
+                    <strong>Trạng thái:</strong> {formData.status}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body1" gutterBottom>
+                    <strong>Số lượng người đi cùng:</strong>{" "}
+                    {formData.accompanyingPeople}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body1" gutterBottom>
+                    <strong>Ghi chú:</strong> {formData.note}
+                  </Typography>
+                </Grid>
               </>
             )}
-            <Typography variant="body1" gutterBottom>
-              <strong>Nhân viên tiếp nhận:</strong> {formData.staffName}
-            </Typography>
-          </>
+          </Grid>
         )}
       </DialogContent>
       <DialogActions>
@@ -140,11 +164,9 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
           Đóng
         </Button>
         {isEditMode ? (
-          <>
-            <Button onClick={handleSave} variant="contained">
-              Lưu
-            </Button>
-          </>
+          <Button onClick={handleSave} variant="contained">
+            Lưu
+          </Button>
         ) : (
           <Button
             onClick={toggleEditMode}

@@ -36,13 +36,21 @@ namespace cms_server.Services
                                 DateTime contractEndDate = contract.EndDate.Value.ToDateTime(TimeOnly.MinValue);
                                 DateTime now = DateTime.UtcNow;
 
-                                if (contractEndDate < now)
+                                if (contract.Status == "Active" && (contractEndDate - now).TotalDays <= 30)
+                                {
+                                    contract.Status = "NearlyExpired";
+                                }
+                                else if (contract.Status == "NearlyExpired" && contractEndDate <= now)
                                 {
                                     contract.Status = "Expired";
                                 }
-                                else if ((contractEndDate - now).TotalDays <= 30)
+                                // Skip status update for these specific statuses
+                                else if (contract.Status == "PendingCancellation" ||
+                                         contract.Status == "PendingRenewal" ||
+                                         contract.Status == "Extended" ||
+                                         contract.Status == "Canceled")
                                 {
-                                    contract.Status = "Expired Soon";
+                                    continue;
                                 }
                             }
                         }
@@ -55,7 +63,7 @@ namespace cms_server.Services
                     _logger.LogError(ex, "An error occurred while updating contract statuses.");
                 }
 
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Adjust the interval as needed
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
 
             _logger.LogInformation("ContractStatusUpdateService is stopping.");

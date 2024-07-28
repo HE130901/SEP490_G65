@@ -1,43 +1,80 @@
+// ServiceProductPage.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   IconButton,
   TextField,
-  MenuItem,
   Select,
+  MenuItem,
   FormControl,
   InputLabel,
-  TableSortLabel,
-  Chip,
+  Tooltip,
+  Paper,
   Avatar,
+  Chip,
+  Typography,
   SelectChangeEvent,
 } from "@mui/material";
 import {
   Add as AddIcon,
+  Visibility as VisibilityIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import ServiceAPI from "@/services/serviceService";
-import { useToast } from "@/components/ui/use-toast";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { styled } from "@mui/material/styles";
 import ServiceDetail from "./ServiceDetail";
 import ServiceEdit from "./ServiceEdit";
 import ServiceDelete from "./ServiceDelete";
 import ServiceAdd from "./ServiceAdd";
-import { Service } from "./interfaces";
+import { formatVND } from "@/utils/formatCurrency";
+import { useServiceContext } from "@/context/ServiceContext";
+import { Service } from "@/context/interfaces";
+import viVN from "@/utils/viVN";
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "Unavailable":
+      return { label: "Đã hết hàng", color: "error" };
+
+    case "Available":
+      return { label: "Sẵn sàng", color: "success" };
+
+    default:
+      return { label: status, color: "default" };
+  }
+};
+
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+    wordBreak: "break-word",
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+}));
 
 const ServiceProductPage: React.FC = () => {
-  const [items, setItems] = useState<Service[]>([]);
+  const { services, addService, updateService, deleteService } =
+    useServiceContext();
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [viewOpen, setViewOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -45,26 +82,6 @@ const ServiceProductPage: React.FC = () => {
   const [addOpen, setAddOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchColumn, setSearchColumn] = useState<string>("all");
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
-  const [orderBy, setOrderBy] = useState<keyof Service>("serviceId");
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await ServiceAPI.getAllServices();
-        setItems(response.data.$values); // Assuming the API response has the data in "$values"
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Lỗi",
-          description: "Không thể tải danh sách dịch vụ",
-        });
-      }
-    };
-
-    fetchServices();
-  }, [toast]);
 
   const handleAddItem = () => {
     setAddOpen(true);
@@ -86,35 +103,10 @@ const ServiceProductPage: React.FC = () => {
   };
 
   const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
-    setSearchColumn(event.target.value as string);
+    setSearchColumn(event.target.value);
   };
 
-  const handleRequestSort = (property: keyof Service) => {
-    const isAscending = orderBy === property && order === "asc";
-    setOrder(isAscending ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const sortedItems = items.sort((a, b) => {
-    if (orderBy === "serviceId") {
-      return order === "asc"
-        ? a.serviceId - b.serviceId
-        : b.serviceId - a.serviceId;
-    } else if (orderBy === "serviceName") {
-      return order === "asc"
-        ? a.serviceName.localeCompare(b.serviceName)
-        : b.serviceName.localeCompare(a.serviceName);
-    } else if (orderBy === "price") {
-      return order === "asc" ? a.price - b.price : b.price - a.price;
-    } else if (orderBy === "category") {
-      return order === "asc"
-        ? a.category.localeCompare(b.category)
-        : b.category.localeCompare(a.category);
-    }
-    return 0;
-  });
-
-  const filteredItems = sortedItems.filter((item) => {
+  const filteredItems = services.filter((item) => {
     const searchTermLower = searchTerm.toLowerCase();
     if (searchColumn === "all") {
       return (
@@ -137,6 +129,94 @@ const ServiceProductPage: React.FC = () => {
     }
     return true;
   });
+
+  const columns: GridColDef[] = [
+    { field: "serviceId", headerName: "ID", width: 80 },
+    { field: "serviceName", headerName: "Tên", width: 200 },
+    {
+      field: "price",
+      headerName: "Giá (VND)",
+      width: 150,
+      renderCell: (params) => (
+        <Box display="flex" alignItems="center">
+          {formatVND(params.value as number)}
+        </Box>
+      ),
+    },
+    { field: "category", headerName: "Phân loại", width: 120 },
+    { field: "tag", headerName: "Thẻ", width: 120 },
+    {
+      field: "servicePicture",
+      headerName: "Ảnh",
+      width: 150,
+      renderCell: (params) => (
+        <Avatar src={params.row.servicePicture} alt={params.row.serviceName} />
+      ),
+    },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 150,
+      renderCell: (params) => {
+        const { label, color } = getStatusLabel(params.value);
+        return (
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Chip
+              label={label}
+              color={
+                color as
+                  | "info"
+                  | "error"
+                  | "primary"
+                  | "secondary"
+                  | "success"
+                  | "warning"
+                  | "default"
+              }
+            />
+          </Box>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 150,
+      renderCell: (params) => (
+        <>
+          <Tooltip title="Xem chi tiết">
+            <IconButton
+              color="primary"
+              onClick={() => handleViewItem(params.row)}
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <IconButton
+              color="secondary"
+              onClick={() => handleEditItem(params.row)}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Xóa">
+            <IconButton
+              color="error"
+              onClick={() => handleDeleteItem(params.row)}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
+
+  const rows = filteredItems.map((item) => ({
+    ...item,
+    id: item.serviceId,
+  }));
 
   const handleCloseView = () => {
     setSelectedService(null);
@@ -174,10 +254,7 @@ const ServiceProductPage: React.FC = () => {
           Thêm mới
         </Button>
         <Box display="flex" alignItems="center">
-          <FormControl
-            variant="outlined"
-            sx={{ minWidth: 120, marginRight: 2 }}
-          >
+          <FormControl variant="outlined" size="small" sx={{ marginRight: 2 }}>
             <InputLabel>Tìm theo</InputLabel>
             <Select
               value={searchColumn}
@@ -195,102 +272,26 @@ const ServiceProductPage: React.FC = () => {
           <TextField
             label="Tìm kiếm"
             variant="outlined"
+            size="small"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </Box>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "serviceId"}
-                  direction={orderBy === "serviceId" ? order : "asc"}
-                  onClick={() => handleRequestSort("serviceId")}
-                >
-                  STT
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "serviceId"}
-                  direction={orderBy === "serviceId" ? order : "asc"}
-                  onClick={() => handleRequestSort("serviceId")}
-                >
-                  ID
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "serviceName"}
-                  direction={orderBy === "serviceName" ? order : "asc"}
-                  onClick={() => handleRequestSort("serviceName")}
-                >
-                  Tên
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "price"}
-                  direction={orderBy === "price" ? order : "asc"}
-                  onClick={() => handleRequestSort("price")}
-                >
-                  Giá
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Ảnh</TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === "category"}
-                  direction={orderBy === "category" ? order : "asc"}
-                  onClick={() => handleRequestSort("category")}
-                >
-                  Phân loại
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>Thẻ</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredItems.map((item, index) => (
-              <TableRow key={item.serviceId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.serviceId}</TableCell>
-                <TableCell>{item.serviceName}</TableCell>
-                <TableCell>{item.price.toLocaleString()} VND</TableCell>
-                <TableCell>
-                  <Avatar alt={item.serviceName} src={item.servicePicture} />
-                </TableCell>
-                <TableCell>{item.category}</TableCell>
-                <TableCell>{item.tag}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleViewItem(item)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="secondary"
-                    onClick={() => handleEditItem(item)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteItem(item)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+        <Paper
+          elevation={3}
+          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+        >
+          <CenteredTable
+            rows={rows}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+          />
+        </Paper>
+      </Box>
       <ServiceDetail
         service={selectedService}
         onClose={handleCloseView}
@@ -301,13 +302,7 @@ const ServiceProductPage: React.FC = () => {
         onClose={handleCloseEdit}
         open={editOpen}
         onSave={(updatedService) => {
-          setItems(
-            items.map((item) =>
-              item.serviceId === updatedService.serviceId
-                ? updatedService
-                : item
-            )
-          );
+          updateService(updatedService);
           handleCloseEdit();
         }}
       />
@@ -316,7 +311,7 @@ const ServiceProductPage: React.FC = () => {
         onClose={handleCloseDelete}
         open={deleteOpen}
         onDelete={(serviceId) => {
-          setItems(items.filter((item) => item.serviceId !== serviceId));
+          deleteService(serviceId);
           handleCloseDelete();
         }}
       />
@@ -324,7 +319,7 @@ const ServiceProductPage: React.FC = () => {
         open={addOpen}
         onClose={handleCloseAdd}
         onAdd={(newService) => {
-          setItems([...items, newService]);
+          addService(newService);
           handleCloseAdd();
         }}
       />

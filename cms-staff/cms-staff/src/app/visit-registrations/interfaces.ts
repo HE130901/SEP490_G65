@@ -14,6 +14,7 @@ export interface VisitRegistrationDto {
     accompanyingPeople: number;
     note: string;
     approvedBy?: number;
+    visitCode: string;
   }
   
   export interface VisitDialogProps {

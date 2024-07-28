@@ -1,6 +1,7 @@
+// VisitRegistrationsList.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -8,7 +9,11 @@ import {
   Tooltip,
   Paper,
   CircularProgress,
-  Typography,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
   Chip,
 } from "@mui/material";
 import {
@@ -18,7 +23,6 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import VisitViewDialog from "./VisitViewDialog";
 import VisitDeleteDialog from "./VisitDeleteDialog";
@@ -26,23 +30,8 @@ import VisitApproveDialog from "./VisitApproveDialog";
 import VisitAddDialog from "./VisitAddDialog";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
-
-interface VisitRegistrationDto {
-  visitId: number;
-  customerId: number;
-  nicheId: number;
-  customerName: string;
-  staffName: string;
-  nicheAddress: string;
-  createdDate: string;
-  visitDate: string;
-  status: string;
-  accompanyingPeople: number;
-  note: string;
-  approvedBy?: number;
-  formattedVisitDate: string;
-  formattedCreatedDate: string;
-}
+import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext"; // Import context
+import { VisitRegistrationDto } from "./interfaces";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -76,12 +65,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
-const NoWrapTypography = styled(Typography)({
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-});
-
 const CenteredCell = styled("div")({
   display: "flex",
   justifyContent: "center",
@@ -94,6 +77,8 @@ const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
       return { label: "Đã hủy", color: "error" };
+    case "Expired":
+      return { label: "Đã hết hạn", color: "error" };
     case "Pending":
       return { label: "Đang chờ", color: "warning" };
     case "Approved":
@@ -104,33 +89,47 @@ const getStatusLabel = (status: string) => {
 };
 
 const VisitRegistrationsList: React.FC = () => {
-  const [visitRegistrations, setVisitRegistrations] = useState<
+  const {
+    visitRegistrations,
+    fetchVisitRegistrations,
+    updateVisitRegistration,
+    deleteVisitRegistration,
+  } = useVisitRegistrationContext();
+
+  const [filteredVisitRegistrations, setFilteredVisitRegistrations] = useState<
     VisitRegistrationDto[]
   >([]);
   const [loading, setLoading] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [selectedVisit, setSelectedVisit] =
     useState<VisitRegistrationDto | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [searchColumn, setSearchColumn] = useState<
+    keyof VisitRegistrationDto | "all"
+  >("all");
 
   useEffect(() => {
     fetchVisitRegistrations();
-  }, []);
+  }, [fetchVisitRegistrations]);
 
-  const fetchVisitRegistrations = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get("/api/VisitRegistrations");
-      setVisitRegistrations(response.data.$values);
-    } catch (error) {
-      toast.error("Không thể tải danh sách đơn đăng ký");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const filtered = visitRegistrations.filter((visit) => {
+      if (searchColumn === "all") {
+        return Object.values(visit).some((value) =>
+          String(value).toLowerCase().includes(searchText.toLowerCase())
+        );
+      } else {
+        const columnValue = visit[searchColumn];
+        return String(columnValue)
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      }
+    });
+    setFilteredVisitRegistrations(filtered);
+  }, [searchText, searchColumn, visitRegistrations]);
 
   const handleView = (visit: VisitRegistrationDto) => {
     setSelectedVisit(visit);
@@ -138,13 +137,13 @@ const VisitRegistrationsList: React.FC = () => {
   };
 
   const handleApprove = (visit: VisitRegistrationDto) => {
-    setSelectedVisit(visit); // Set the selected visit
+    setSelectedVisit(visit);
     setApproveDialogOpen(true);
   };
 
   const handleReject = (visit: VisitRegistrationDto) => {
-    setSelectedVisit(visit); // Set the selected visit
-    setDeleteDialogOpen(true); // Open the delete dialog
+    setSelectedVisit(visit);
+    setDeleteDialogOpen(true);
   };
 
   const handleAdd = () => {
@@ -153,9 +152,8 @@ const VisitRegistrationsList: React.FC = () => {
 
   const closeDialogs = () => {
     setViewDialogOpen(false);
-    setEditDialogOpen(false);
     setDeleteDialogOpen(false);
-    setApproveDialogOpen(false); // Ensure the approve dialog is also closed
+    setApproveDialogOpen(false);
     setAddDialogOpen(false);
     setSelectedVisit(null);
     fetchVisitRegistrations();
@@ -169,12 +167,12 @@ const VisitRegistrationsList: React.FC = () => {
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
-      field: "visitId",
+      field: "visitCode",
       headerName: "Mã đơn",
-      width: 80,
+      width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
+    { field: "customerName", headerName: "Tên khách hàng", width: 150 },
     { field: "staffName", headerName: "Tên nhân viên", width: 150 },
     { field: "nicheAddress", headerName: "Địa chỉ", width: 220 },
     {
@@ -192,14 +190,14 @@ const VisitRegistrationsList: React.FC = () => {
     {
       field: "accompanyingPeople",
       headerName: "Số lượng",
-      width: 150,
+      width: 100,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "note", headerName: "Ghi chú", width: 200 },
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 100,
+      width: 150,
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -239,7 +237,8 @@ const VisitRegistrationsList: React.FC = () => {
                 onClick={() => handleApprove(params.row)}
                 disabled={
                   params.row.status === "Canceled" ||
-                  params.row.status === "Approved"
+                  params.row.status === "Approved" ||
+                  params.row.status === "Expired"
                 }
               >
                 <ApproveIcon />
@@ -253,7 +252,8 @@ const VisitRegistrationsList: React.FC = () => {
                 onClick={() => handleReject(params.row)}
                 disabled={
                   params.row.status === "Canceled" ||
-                  params.row.status === "Approved"
+                  params.row.status === "Approved" ||
+                  params.row.status === "Expired"
                 }
               >
                 <RejectIcon />
@@ -265,9 +265,9 @@ const VisitRegistrationsList: React.FC = () => {
     },
   ];
 
-  const rows = visitRegistrations.map((visit, index) => ({
+  const rows = filteredVisitRegistrations.map((visit, index) => ({
     id: index + 1,
-    visitId: visit.visitId,
+    visitCode: visit.visitCode,
     customerName: visit.customerName,
     staffName: visit.staffName,
     nicheAddress: visit.nicheAddress,
@@ -294,6 +294,42 @@ const VisitRegistrationsList: React.FC = () => {
         >
           Thêm đăng ký viếng thăm
         </Button>
+        <Box display="flex" alignItems="center">
+          <FormControl
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8 }}
+          >
+            <InputLabel id="search-column-label">Chọn cột</InputLabel>
+            <Select
+              labelId="search-column-label"
+              id="search-column"
+              value={searchColumn}
+              onChange={(e) =>
+                setSearchColumn(
+                  e.target.value as keyof VisitRegistrationDto | "all"
+                )
+              }
+              label="Chọn cột"
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="visitCode">Mã đơn</MenuItem>
+              <MenuItem value="customerName">Tên khách hàng</MenuItem>
+              <MenuItem value="staffName">Tên nhân viên</MenuItem>
+              <MenuItem value="nicheAddress">Địa chỉ</MenuItem>
+              <MenuItem value="formattedCreatedDate">Ngày tạo</MenuItem>
+              <MenuItem value="formattedVisitDate">Ngày viếng thăm</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Tìm kiếm"
+            variant="outlined"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </Box>
       </Box>
 
       {loading ? (

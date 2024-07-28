@@ -58,6 +58,9 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({
               <Typography variant="body1" gutterBottom>
                 Thẻ: {service.tag}
               </Typography>
+              <Typography variant="body1" gutterBottom>
+                Trạng thái: {service.status}
+              </Typography>
             </Grid>
           </Grid>
         ) : (

@@ -29,15 +29,18 @@ namespace cms_server.Services
                         var context = scope.ServiceProvider.GetRequiredService<CmsContext>();
                         var now = DateTime.UtcNow;
 
+                        // Truy vấn chỉ lấy các bản ghi "Pending" và ngày thăm quan đã qua
                         var reservationsToExpire = await context.VisitRegistrations
-                            .Where(vr => vr.VisitDate < now  && vr.Status != "Canceled")
+                            .Where(vr => vr.Status == "Pending" && vr.VisitDate < now)
                             .ToListAsync(stoppingToken);
 
+                        // Cập nhật trạng thái các bản ghi "Pending" đã qua ngày thăm quan thành "Expired"
                         foreach (var reservation in reservationsToExpire)
                         {
-                            reservation.Status = "Canceled";
+                            reservation.Status = "Expired";
                         }
 
+                        // Lưu các thay đổi vào cơ sở dữ liệu
                         await context.SaveChangesAsync(stoppingToken);
                     }
                 }
@@ -46,7 +49,7 @@ namespace cms_server.Services
                     _logger.LogError(ex, "An error occurred while updating visit reservation statuses.");
                 }
 
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Adjust the interval as needed
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Điều chỉnh khoảng thời gian khi cần thiết
             }
 
             _logger.LogInformation("VisitReservationStatusUpdateService is stopping.");

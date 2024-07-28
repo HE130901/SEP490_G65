@@ -1,50 +1,57 @@
-// src/components/NicheListWithSelectors.tsx
+// NicheList.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
+  CircularProgress,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
+  Paper,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { Visibility, Edit } from "@mui/icons-material";
-import axiosInstance from "@/utils/axiosInstance";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { toast } from "react-toastify";
+import axiosInstance from "@/utils/axiosInstance";
 import ViewNicheDialog from "./ViewNicheDialog";
 import EditNicheDialog from "./EditNicheDialog";
+import { styled } from "@mui/material/styles";
+import viVN from "@/utils/viVN";
+import { useNiches } from "@/context/NicheContext"; // Import useNiches
 
-interface NicheHistoryDto {
-  contractId: number;
-  startDate: string;
-  endDate: string;
-}
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+    wordBreak: "break-word",
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+}));
 
-interface NicheDtoForStaff {
-  nicheId: number;
-  nicheName: string;
-  customerName?: string;
-  deceasedName?: string;
-  description?: string;
-  nicheHistories: { $values: NicheHistoryDto[] };
-  status?: string;
-}
-
-const NicheListWithSelectors: React.FC = () => {
+const NicheList: React.FC = () => {
+  const { niches, fetchNiches } = useNiches();
   const [buildings, setBuildings] = useState<any[]>([]);
   const [floors, setFloors] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
-  const [niches, setNiches] = useState<NicheDtoForStaff[]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<number | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [selectedArea, setSelectedArea] = useState<number | null>(null);
@@ -63,7 +70,7 @@ const NicheListWithSelectors: React.FC = () => {
           setSelectedBuilding(buildingsData[0].buildingId);
         }
       } catch (error) {
-        toast.error("Unable to fetch buildings");
+        toast.error("Không thể tải danh sách tòa nhà");
       }
     };
 
@@ -83,7 +90,7 @@ const NicheListWithSelectors: React.FC = () => {
             setSelectedFloor(floorsData[0].floorId);
           }
         } catch (error) {
-          toast.error("Unable to fetch floors");
+          toast.error("Không thể tải danh sách tầng");
         }
       };
 
@@ -104,7 +111,7 @@ const NicheListWithSelectors: React.FC = () => {
             setSelectedArea(areasData[0].areaId);
           }
         } catch (error) {
-          toast.error("Unable to fetch areas");
+          toast.error("Không thể tải danh sách khu vực");
         }
       };
 
@@ -114,23 +121,11 @@ const NicheListWithSelectors: React.FC = () => {
 
   useEffect(() => {
     if (selectedArea !== null) {
-      const fetchNiches = async () => {
-        try {
-          setLoading(true);
-          const response = await axiosInstance.get(
-            `/api/StaffNiches/area/${selectedArea}`
-          );
-          setNiches(response.data.$values); // Accessing the $values property
-        } catch (error) {
-          toast.error("Unable to fetch niches");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchNiches();
+      setLoading(true);
+      fetchNiches(selectedArea);
+      setLoading(false);
     }
-  }, [selectedArea]);
+  }, [selectedArea, fetchNiches]);
 
   const handleViewNiche = (nicheId: number) => {
     setSelectedNicheId(nicheId);
@@ -144,33 +139,59 @@ const NicheListWithSelectors: React.FC = () => {
 
   const handleEditSuccess = () => {
     if (selectedArea !== null) {
-      const fetchNiches = async () => {
-        try {
-          setLoading(true);
-          const response = await axiosInstance.get(
-            `/api/StaffNiches/area/${selectedArea}`
-          );
-          setNiches(response.data.$values); // Accessing the $values property
-        } catch (error) {
-          toast.error("Unable to fetch niches");
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchNiches();
+      fetchNiches(selectedArea);
     }
   };
+
+  const columns: GridColDef[] = [
+    { field: "nicheId", headerName: "ID", width: 80 },
+    { field: "nicheName", headerName: "Tên ô chứa", width: 180 },
+    { field: "customerName", headerName: "Tên khách hàng", width: 180 },
+    { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
+    { field: "description", headerName: "Mô tả", width: 250 },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 120,
+      renderCell: (params) => (
+        <>
+          <Tooltip title="Xem chi tiết">
+            <IconButton
+              color="primary"
+              onClick={() => handleViewNiche(params.row.nicheId)}
+            >
+              <Visibility />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Chỉnh sửa">
+            <IconButton
+              color="secondary"
+              onClick={() => handleEditNiche(params.row.nicheId)}
+            >
+              <Edit />
+            </IconButton>
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
+
+  const rows = niches.map((niche, index) => ({
+    id: index + 1,
+    ...niche,
+  }));
 
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" mb={2}>
         <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
-          <InputLabel id="building-select-label">Building</InputLabel>
+          <InputLabel id="building-select-label">Tòa nhà</InputLabel>
           <Select
             labelId="building-select-label"
             value={selectedBuilding || ""}
             onChange={(e) => setSelectedBuilding(e.target.value as number)}
+            label="Tòa nhà"
           >
             {buildings.map((building) => (
               <MenuItem key={building.buildingId} value={building.buildingId}>
@@ -181,8 +202,9 @@ const NicheListWithSelectors: React.FC = () => {
         </FormControl>
 
         <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
-          <InputLabel id="floor-select-label">Floor</InputLabel>
+          <InputLabel id="floor-select-label">Tầng</InputLabel>
           <Select
+            label="Tầng"
             labelId="floor-select-label"
             value={selectedFloor || ""}
             onChange={(e) => setSelectedFloor(e.target.value as number)}
@@ -196,8 +218,9 @@ const NicheListWithSelectors: React.FC = () => {
         </FormControl>
 
         <FormControl margin="normal" style={{ flex: 1 }}>
-          <InputLabel id="area-select-label">Area</InputLabel>
+          <InputLabel id="area-select-label">Khu </InputLabel>
           <Select
+            label="Khu "
             labelId="area-select-label"
             value={selectedArea || ""}
             onChange={(e) => setSelectedArea(e.target.value as number)}
@@ -215,62 +238,15 @@ const NicheListWithSelectors: React.FC = () => {
         <CircularProgress />
       ) : (
         selectedArea && (
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>STT</TableCell>
-                  <TableCell>Niche ID</TableCell>
-                  <TableCell>Niche Name</TableCell>
-                  <TableCell>Customer Name</TableCell>
-                  <TableCell>Deceased Name</TableCell>
-                  <TableCell>Contract History</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {niches.map((niche, index) => (
-                  <TableRow key={niche.nicheId}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{niche.nicheId}</TableCell>
-                    <TableCell>{niche.nicheName}</TableCell>
-                    <TableCell>{niche.customerName ?? "N/A"}</TableCell>
-                    <TableCell>{niche.deceasedName ?? "N/A"}</TableCell>
-                    <TableCell>
-                      {niche.nicheHistories.$values.length > 0
-                        ? niche.nicheHistories.$values.map((history) => (
-                            <div key={history.contractId}>
-                              <p>Contract ID: {history.contractId}</p>
-                              <p>Start Date: {history.startDate}</p>
-                              <p>End Date: {history.endDate}</p>
-                            </div>
-                          ))
-                        : "No history"}
-                    </TableCell>
-                    <TableCell>{niche.status ?? "N/A"}</TableCell>
-                    <TableCell>{niche.description ?? "N/A"}</TableCell>
-
-                    <TableCell>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleViewNiche(niche.nicheId)}
-                      >
-                        <Visibility />
-                      </IconButton>
-                      <IconButton
-                        color="secondary"
-                        onClick={() => handleEditNiche(niche.nicheId)}
-                      >
-                        <Edit />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <Paper elevation={3} style={{ padding: 20 }}>
+            <CenteredTable
+              rows={rows}
+              columns={columns}
+              autoHeight
+              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+              pageSizeOptions={[10]}
+            />
+          </Paper>
         )
       )}
 
@@ -289,4 +265,4 @@ const NicheListWithSelectors: React.FC = () => {
   );
 };
 
-export default NicheListWithSelectors;
+export default NicheList;

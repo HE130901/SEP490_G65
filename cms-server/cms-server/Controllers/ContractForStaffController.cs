@@ -41,8 +41,7 @@ namespace cms_server.Controllers
             {
                 try
                 {
-                    var niche = await _context.Niches
-    .FirstOrDefaultAsync(n => n.NicheId == request.NicheID &&
+                    var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == request.NicheID &&
                              (n.Status == "Available" || n.Status == "Booked"));
 
 

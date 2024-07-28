@@ -12,19 +12,91 @@ import {
   Chip,
   IconButton,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Tooltip,
+  CircularProgress,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import AddContractForm from "./ContractAdd";
 import ConfirmDialog from "./ContractDelete";
 import ContractDetailDialog from "./ContractDetail";
 import RenewalDialog from "./ContractRenewal";
 import ContractContext from "@/context/ContractContext";
 import contractService from "@/services/contractService";
+import { styled } from "@mui/material/styles";
+import viVN from "@/utils/viVN";
+
+const CenteredTable = styled(DataGrid)(({ theme }) => ({
+  "& .MuiDataGrid-root": {
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: theme.shape.borderRadius,
+    boxShadow: theme.shadows[1],
+    padding: theme.spacing(2),
+  },
+  "& .MuiDataGrid-cell": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    whiteSpace: "normal",
+    overflow: "visible",
+    textOverflow: "unset",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitleContainer": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
+  },
+}));
+
+const formatDateToDDMMYYYY = (dateString: string): string => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "Canceled":
+      return { label: "Đã hủy", color: "error" };
+    case "Expired":
+      return { label: "Đã hết hạn", color: "error" };
+    case "Active":
+      return { label: "Còn hiệu lực", color: "success" };
+    case "Extended":
+      return { label: "Đã gia hạn", color: "success" };
+    case "NearlyExpired":
+      return { label: "Gần hết hạn", color: "warning" };
+    case "PendingRenewal":
+      return { label: "Chờ gia hạn", color: "warning" };
+    case "PendingCancellation":
+      return { label: "Chờ thanh lý", color: "warning" };
+    default:
+      return { label: status, color: "default" };
+  }
+};
+
+type SearchableColumns =
+  | "all"
+  | "contractCode"
+  | "customerName"
+  | "startDate"
+  | "endDate"
+  | "status";
 
 const ContractPage: React.FC = () => {
   const {
@@ -40,19 +112,43 @@ const ContractPage: React.FC = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [renewalOpen, setRenewalOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [searchColumn, setSearchColumn] = useState<SearchableColumns>("all");
+  const [filteredContracts, setFilteredContracts] = useState(contracts);
 
   const fetchContracts = async () => {
+    setLoading(true);
     try {
       const data = await contractService.getAllContracts();
       setContracts(data);
+      setFilteredContracts(data);
     } catch (error) {
       console.error("Error fetching contracts:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchContracts();
   }, [setContracts]);
+
+  useEffect(() => {
+    const filtered = contracts.filter((contract) => {
+      if (searchColumn === "all") {
+        return Object.values(contract).some((value) =>
+          String(value).toLowerCase().includes(searchText.toLowerCase())
+        );
+      } else {
+        const columnValue = contract[searchColumn as keyof typeof contract];
+        return String(columnValue)
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      }
+    });
+    setFilteredContracts(filtered);
+  }, [searchText, searchColumn, contracts]);
 
   const handleAddOpen = () => {
     setOpenAddDialog(true);
@@ -92,6 +188,111 @@ const ContractPage: React.FC = () => {
     setConfirmDialogOpen(false);
   };
 
+  const columns: GridColDef[] = [
+    {
+      field: "id",
+      headerName: "STT",
+      width: 100,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          {params.value}
+        </Box>
+      ),
+    },
+    {
+      field: "contractCode",
+      headerName: "Mã Hợp đồng",
+      width: 180,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          {params.value}
+        </Box>
+      ),
+    },
+    { field: "customerName", headerName: "Tên Khách hàng", width: 230 },
+    {
+      field: "startDate",
+      headerName: "Ngày ký hợp đồng",
+      width: 150,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          {formatDateToDDMMYYYY(params.value)}
+        </Box>
+      ),
+    },
+    {
+      field: "endDate",
+      headerName: "Ngày kết thúc",
+      width: 150,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          {formatDateToDDMMYYYY(params.value)}
+        </Box>
+      ),
+    },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 150,
+      renderCell: (params) => {
+        const { label, color } = getStatusLabel(params.value);
+        return (
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Chip
+              label={label}
+              color={
+                color as
+                  | "info"
+                  | "error"
+                  | "primary"
+                  | "secondary"
+                  | "success"
+                  | "warning"
+                  | "default"
+              }
+            />
+          </Box>
+        );
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 150,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          <Tooltip title="Xem chi tiết">
+            <IconButton
+              color="primary"
+              onClick={() => handleViewContract(params.row.contractId)}
+            >
+              <VisibilityIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Gia hạn hợp đồng">
+            <IconButton
+              color="success"
+              onClick={() => handleRenewContract(params.row.contractId)}
+            >
+              <RestorePageIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Thanh lý hợp đồng">
+            <span>
+              <IconButton
+                color="error"
+                onClick={() => handleTerminateContract(params.row.contractId)}
+                disabled={params.row.status === "Canceled"}
+              >
+                <CancelOutlinedIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
   return (
     <Box p={3}>
       <Box
@@ -108,68 +309,74 @@ const ContractPage: React.FC = () => {
         >
           Thêm mới hợp đồng
         </Button>
+        <Box display="flex" alignItems="center">
+          <FormControl
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8 }}
+          >
+            <InputLabel id="search-column-label">Chọn cột</InputLabel>
+            <Select
+              labelId="search-column-label"
+              id="search-column"
+              value={searchColumn}
+              onChange={(e) =>
+                setSearchColumn(e.target.value as SearchableColumns)
+              }
+              label="Chọn cột"
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="contractCode">Mã Hợp đồng</MenuItem>
+              <MenuItem value="customerName">Tên Khách hàng</MenuItem>
+              <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
+              <MenuItem value="endDate">Ngày kết thúc</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Tìm kiếm"
+            variant="outlined"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+        </Box>
       </Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>STT</TableCell>
-              <TableCell>Mã Hợp đồng</TableCell>
-              <TableCell>Tên Khách hàng</TableCell>
-              <TableCell>Ngày ký hợp đồng</TableCell>
-              <TableCell>Ngày kết thúc</TableCell>
-              <TableCell>Trạng thái</TableCell>
-              <TableCell>Hành động</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {contracts.map((contract, index) => (
-              <TableRow key={contract.contractId}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{contract.contractCode}</TableCell>
-                <TableCell>{contract.customerName}</TableCell>
-                <TableCell>{contract.startDate}</TableCell>
-                <TableCell>{contract.endDate}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={contract.status}
-                    color={
-                      contract.status === "Active"
-                        ? "success"
-                        : contract.status === "Expired"
-                        ? "error"
-                        : contract.status === "Pending Renewal" ||
-                          contract.status === "Pending Termination"
-                        ? "warning"
-                        : "default"
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleViewContract(contract.contractId)}
-                  >
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton
-                    color="success"
-                    onClick={() => handleRenewContract(contract.contractId)}
-                  >
-                    <RestorePageIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleTerminateContract(contract.contractId)}
-                  >
-                    <CancelOutlinedIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+
+      {loading ? (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="50vh"
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+          <Paper
+            elevation={3}
+            style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          >
+            <CenteredTable
+              rows={filteredContracts.map((contract, index) => ({
+                ...contract,
+                id: index + 1,
+              }))}
+              columns={columns}
+              autoHeight
+              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+              pageSizeOptions={[10]}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 10 },
+                },
+              }}
+            />
+          </Paper>
+        </Box>
+      )}
+
       <AddContractForm open={openAddDialog} onClose={handleCloseAdd} />
       <ContractDetailDialog
         isOpen={detailOpen}

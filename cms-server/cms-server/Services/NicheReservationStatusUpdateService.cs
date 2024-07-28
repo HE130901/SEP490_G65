@@ -29,13 +29,23 @@ namespace cms_server.Services
                         var context = scope.ServiceProvider.GetRequiredService<CmsContext>();
                         var now = DateTime.UtcNow;
 
+                        // Tính ngày hôm sau của ConfirmationDate
                         var reservationsToExpire = await context.NicheReservations
-                        .Where(nr => nr.ConfirmationDate < now && nr.Status != "Approved" && nr.Status != "Canceled")
-                        .ToListAsync(stoppingToken);
+                            .Where(nr => nr.Status == "Pending" && nr.ConfirmationDate.HasValue && nr.ConfirmationDate.Value.Date < now.Date)
+                            .ToListAsync(stoppingToken);
 
                         foreach (var reservation in reservationsToExpire)
                         {
-                            reservation.Status = "Canceled";
+                            reservation.Status = "Expired";
+                        }
+
+                        var approvedReservationsToExpire = await context.NicheReservations
+                            .Where(nr => nr.Status == "Approved" && nr.ConfirmationDate.HasValue && nr.ConfirmationDate.Value.Date < now.Date)
+                            .ToListAsync(stoppingToken);
+
+                        foreach (var reservation in approvedReservationsToExpire)
+                        {
+                            reservation.Status = "Expired";
                         }
 
                         await context.SaveChangesAsync(stoppingToken);
@@ -46,7 +56,7 @@ namespace cms_server.Services
                     _logger.LogError(ex, "An error occurred while updating niche reservation statuses.");
                 }
 
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken); // Adjust the interval as needed
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
 
             _logger.LogInformation("NicheReservationStatusUpdateService is stopping.");

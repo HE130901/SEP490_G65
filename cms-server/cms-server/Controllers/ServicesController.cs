@@ -95,8 +95,25 @@ namespace cms_server.Controllers
                 return NotFound();
             }
 
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
+           
+            service.Status = "Unavailable";
+            _context.Entry(service).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ServiceExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
             return NoContent();
         }
@@ -105,5 +122,6 @@ namespace cms_server.Controllers
         {
             return _context.Services.Any(e => e.ServiceId == id);
         }
+
     }
 }

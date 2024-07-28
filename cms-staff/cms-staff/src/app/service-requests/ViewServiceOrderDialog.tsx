@@ -69,7 +69,7 @@ const ViewServiceOrderDialog = ({
     switch (status) {
       case "Pending":
         return "Đang chờ";
-      case "Complete":
+      case "Completed":
         return "Hoàn thành";
       case "Canceled":
         return "Đã hủy";
@@ -82,7 +82,7 @@ const ViewServiceOrderDialog = ({
     switch (status) {
       case "Pending":
         return "warning";
-      case "Complete":
+      case "Completed":
         return "success";
       case "Canceled":
         return "error";
@@ -231,7 +231,7 @@ const ViewServiceOrderDialog = ({
                                     detail.serviceOrderDetailId
                                   )
                                 }
-                                disabled={detail.status === "Complete"}
+                                disabled={detail.status === "Completed"}
                               >
                                 Xác nhận
                               </Button>

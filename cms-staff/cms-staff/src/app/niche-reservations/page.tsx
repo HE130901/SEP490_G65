@@ -1,22 +1,38 @@
+// NicheReservationPage.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Box, Button, IconButton, Tooltip, Chip, Paper } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Tooltip,
+  Chip,
+  Paper,
+  TextField,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import {
   Add as AddIcon,
   Visibility as VisibilityIcon,
   CheckCircle as ConfirmIcon,
   CancelOutlined as CancelOutlinedIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 import { toast } from "react-toastify";
-import NicheReservationAPI from "@/services/nicheReservationService";
 import AddBookingRequestDialog from "./NicheReservationAdd";
 import ViewBookingRequestDialog from "./NicheReservationDetail";
 import DeleteBookingRequestDialog from "./NicheReservationDelete";
 import ConfirmBookingRequestDialog from "./NicheReservationConfirm";
 import viVN from "@/utils/viVN";
+import { useNicheReservationContext } from "@/context/NicheReservationContext"; // Import useNicheReservationContext
+import NicheReservationAPI from "@/services/nicheReservationService";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -64,6 +80,12 @@ const getStatusLabel = (status: string) => {
       return "Đã hủy";
     case "Approved":
       return "Đã duyệt";
+    case "Rejected":
+      return "Đã từ chối";
+    case "Signed":
+      return "Đã ký HĐ";
+    case "Expired":
+      return "Đã hết hạn";
     default:
       return "Chờ duyệt";
   }
@@ -72,8 +94,10 @@ const getStatusLabel = (status: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "Canceled":
+    case "Expired":
       return "error";
     case "Approved":
+    case "Signed":
       return "success";
     default:
       return "warning";
@@ -81,7 +105,17 @@ const getStatusColor = (status: string) => {
 };
 
 const NicheReservationPage = () => {
-  const [bookingRequests, setBookingRequests] = useState<any[]>([]);
+  const {
+    reservations,
+    fetchReservations,
+    addReservation,
+    updateReservation,
+    deleteReservation,
+  } = useNicheReservationContext();
+
+  const [filteredRequests, setFilteredRequests] = useState<any[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -90,18 +124,27 @@ const NicheReservationPage = () => {
     any | null
   >(null);
 
-  const fetchBookingRequests = async () => {
-    try {
-      const response = await NicheReservationAPI.getAllNicheReservations();
-      setBookingRequests(response.data.$values || response.data);
-    } catch (error) {
-      toast.error("Không thể tải danh sách đơn đặt chỗ");
-    }
-  };
+  useEffect(() => {
+    setFilteredRequests(reservations);
+  }, [reservations]);
 
   useEffect(() => {
-    fetchBookingRequests();
-  }, []);
+    let filteredData = reservations;
+    if (searchText) {
+      filteredData = reservations.filter((request) => {
+        if (searchColumn === "all") {
+          return Object.values(request).some((value) =>
+            String(value).toLowerCase().includes(searchText.toLowerCase())
+          );
+        } else {
+          return String(request[searchColumn as keyof typeof request])
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        }
+      });
+    }
+    setFilteredRequests(filteredData);
+  }, [searchText, searchColumn, reservations]);
 
   const handleAddBookingRequest = () => {
     setAddDialogOpen(true);
@@ -110,7 +153,7 @@ const NicheReservationPage = () => {
   const handleViewBookingRequest = async (id: number) => {
     try {
       const response = await NicheReservationAPI.getNicheReservationDetails(id);
-      setSelectedBookingRequest(response.data);
+      setSelectedBookingRequest(response.data as any);
       setViewDialogOpen(true);
     } catch (error) {
       toast.error("Không thể tải chi tiết đơn đăng ký đặt chỗ");
@@ -129,33 +172,31 @@ const NicheReservationPage = () => {
 
   const handleAddDialogClose = () => {
     setAddDialogOpen(false);
-    fetchBookingRequests();
+    fetchReservations();
   };
 
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
-    fetchBookingRequests();
+    fetchReservations();
   };
 
   const handleDeleteDialogClose = () => {
     setDeleteDialogOpen(false);
-    fetchBookingRequests();
+    fetchReservations();
   };
 
   const handleConfirmDialogClose = () => {
     setConfirmDialogOpen(false);
-    fetchBookingRequests();
+    fetchReservations();
   };
 
   const handleDeleteConfirmed = async () => {
     try {
       if (selectedBookingRequest) {
-        await NicheReservationAPI.deleteNicheReservation(
-          selectedBookingRequest.reservationId
-        );
+        deleteReservation(selectedBookingRequest.reservationId);
       }
       toast.success("Đã xoá đơn đăng ký đặt chỗ thành công");
-      fetchBookingRequests();
+      fetchReservations();
       setDeleteDialogOpen(false);
       setSelectedBookingRequest(null);
     } catch (error) {
@@ -166,12 +207,10 @@ const NicheReservationPage = () => {
   const handleConfirmConfirmed = async () => {
     try {
       if (selectedBookingRequest) {
-        await NicheReservationAPI.confirmNicheReservation(
-          selectedBookingRequest.reservationId
-        );
+        updateReservation({ ...selectedBookingRequest, status: "Approved" });
       }
       toast.success("Đơn đăng ký đã được xác nhận thành công");
-      fetchBookingRequests();
+      fetchReservations();
       setConfirmDialogOpen(false);
       setSelectedBookingRequest(null);
     } catch (error) {
@@ -187,28 +226,22 @@ const NicheReservationPage = () => {
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
-      field: "reservationId",
+      field: "reservationCode",
       headerName: "Mã đơn",
-      width: 80,
+      width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "nicheAddress",
       headerName: "Địa chỉ ô chứa",
-      width: 200,
+      width: 230,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "name", headerName: "Tên khách hàng", width: 180 },
-    {
-      field: "phoneNumber",
-      headerName: "Số điện thoại",
-      width: 150,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
-    },
+    { field: "name", headerName: "Tên khách hàng", width: 200 },
     {
       field: "formattedConfirmationDate",
       headerName: "Ngày hẹn",
-      width: 150,
+      width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
@@ -242,7 +275,8 @@ const NicheReservationPage = () => {
               onClick={() => handleConfirmBookingRequest(params.row)}
               disabled={
                 params.row.status === "Canceled" ||
-                params.row.status === "Approved"
+                params.row.status === "Approved" ||
+                params.row.status === "Signed"
               }
             >
               <ConfirmIcon />
@@ -254,7 +288,8 @@ const NicheReservationPage = () => {
               onClick={() => handleDeleteBookingRequest(params.row)}
               disabled={
                 params.row.status === "Approved" ||
-                params.row.status === "Canceled"
+                params.row.status === "Canceled" ||
+                params.row.status === "Signed"
               }
             >
               <CancelOutlinedIcon />
@@ -265,9 +300,10 @@ const NicheReservationPage = () => {
     },
   ];
 
-  const rows = bookingRequests.map((bookingRequest, index) => ({
+  const rows = filteredRequests.map((bookingRequest, index) => ({
     id: index + 1,
     reservationId: bookingRequest.reservationId,
+    reservationCode: bookingRequest.reservationCode,
     nicheAddress: bookingRequest.nicheAddress,
     name: bookingRequest.name,
     phoneNumber: bookingRequest.phoneNumber,
@@ -292,6 +328,40 @@ const NicheReservationPage = () => {
         >
           Thêm mới đơn đăng ký đặt chỗ
         </Button>
+        <Box display="flex" alignItems="center">
+          <FormControl
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8 }}
+          >
+            <InputLabel>Chọn cột</InputLabel>
+            <Select
+              value={searchColumn}
+              onChange={(e) => setSearchColumn(e.target.value)}
+              label="Chọn cột"
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="reservationCode">Mã đơn</MenuItem>
+              <MenuItem value="nicheAddress">Địa chỉ ô chứa</MenuItem>
+              <MenuItem value="name">Tên khách hàng</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Tìm kiếm"
+            variant="outlined"
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
       </Box>
       <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
         <Paper
@@ -315,13 +385,13 @@ const NicheReservationPage = () => {
       <AddBookingRequestDialog
         open={addDialogOpen}
         onClose={handleAddDialogClose}
-        onAddSuccess={fetchBookingRequests}
+        onAddSuccess={fetchReservations}
       />
       <ViewBookingRequestDialog
         open={viewDialogOpen}
         bookingRequest={selectedBookingRequest}
         onClose={handleViewDialogClose}
-        onConfirmSuccess={fetchBookingRequests}
+        onConfirmSuccess={fetchReservations}
       />
       <DeleteBookingRequestDialog
         open={deleteDialogOpen}

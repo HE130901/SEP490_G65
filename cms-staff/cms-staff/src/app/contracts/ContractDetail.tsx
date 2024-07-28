@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   Grid,
   Typography,
 } from "@mui/material";
@@ -60,7 +61,10 @@ export default function ContractDetailsDialog({
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="lg">
-      <DialogTitle>Chi tiết hợp đồng</DialogTitle>
+      <DialogTitle>
+        Chi tiết hợp đồng
+        <Divider />
+      </DialogTitle>
       <DialogContent className="a4-size">
         <Box p={3} className="print-a4">
           <Typography variant="h4" align="center" gutterBottom>

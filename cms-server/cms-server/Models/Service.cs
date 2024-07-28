@@ -19,5 +19,7 @@ public partial class Service
 
     public string? Tag { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual ICollection<ServiceOrderDetail> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetail>();
 }

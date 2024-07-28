@@ -46,6 +46,7 @@ namespace cms_server.Controllers
                 .Select(r => new NicheReservationDto
                 {
                     ReservationId = r.ReservationId,
+                    ReservationCode = r.ReservationCode,
                     Name = r.Name,
                     PhoneNumber = r.PhoneNumber,
                     NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - {r.Niche.NicheName}",
@@ -281,6 +282,7 @@ namespace cms_server.Controllers
             var reservationDetail = new NicheReservationDetailDto
             {
                 ReservationId = reservation.ReservationId,
+                ReservationCode = reservation.ReservationCode,
                 Name = reservation.Name,
                 PhoneNumber = reservation.PhoneNumber,
                 NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-{reservation.Niche.NicheName}",
@@ -410,6 +412,35 @@ namespace cms_server.Controllers
             }
         }
 
+        // PUT: api/NicheReservations/signed/5
+        [HttpPut("signed/{id}")]
+        public async Task<IActionResult> MarkAsSigned(int id)
+        {
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+            if (nicheReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
+
+            if (nicheReservation.Status != "Approved")
+            {
+                return BadRequest(new { error = "Only approved reservations can be marked as signed" });
+            }
+
+            nicheReservation.Status = "Signed";
+            _context.Entry(nicheReservation).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
     }
 
     public class CreateNicheReservationDto
@@ -448,6 +479,8 @@ namespace cms_server.Controllers
     public class NicheReservationDetailDto
     {
         public int ReservationId { get; set; }
+        public string ReservationCode { get; set; }
+
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string NicheAddress { get; set; }

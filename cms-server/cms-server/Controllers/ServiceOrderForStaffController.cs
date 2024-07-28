@@ -12,12 +12,13 @@ namespace cms_server.Controllers
     public class ServiceOrderForStaffController : ControllerBase
     {
         private readonly CmsContext _context;
-        private readonly INotificationService _notificationService;
+        //private readonly INotificationService _notificationService;
 
-        public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
+       // public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
+        public ServiceOrderForStaffController(CmsContext context)
         {
             _context = context;
-            _notificationService = notificationService;
+          //  _notificationService = notificationService;
         }
 
 
@@ -46,10 +47,7 @@ namespace cms_server.Controllers
             throw new UnauthorizedAccessException("Invalid token");
         }
 
-        public ServiceOrderForStaffController(CmsContext context)
-        {
-            _context = context;
-        }
+  
 
         private async Task<string> GetNicheAddress(int nicheId)
         {
@@ -179,7 +177,7 @@ namespace cms_server.Controllers
                 Message = $"Your service order detail for {serviceOrderDetail.ServiceOrderDetailId} has been updated with a completion image."
             };
 
-            await _notificationService.SendNotificationAsync(notification);
+            //await _notificationService.SendNotificationAsync(notification);
 
             return Ok(serviceOrderDetail);
         }

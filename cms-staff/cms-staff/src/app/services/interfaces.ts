@@ -5,6 +5,7 @@ export interface Service {
     price: number;
     category: string;
     tag: string;
+    status: string;
     servicePicture: string;
   }
   

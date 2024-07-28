@@ -42,7 +42,6 @@ const ReservationSelect: React.FC<ReservationSelectProps> = ({
         labelId="reservation-select-label"
         value={selectedReservationCode}
         onChange={handleChange}
-        displayEmpty
         label="Chọn đơn đăng ký"
       >
         {reservations.map((reservation) => (
