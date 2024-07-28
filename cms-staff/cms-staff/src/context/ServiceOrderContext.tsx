@@ -1,4 +1,3 @@
-// ServiceOrderContext.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -6,6 +5,7 @@ import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
 
 interface ServiceOrder {
+  serviceOrderDetails: any;
   serviceOrderId: number;
   serviceOrderCode: string;
   customerName: string;
@@ -34,8 +34,13 @@ export const ServiceOrderProvider: React.FC<{ children: React.ReactNode }> = ({
   const fetchServiceOrders = async () => {
     try {
       const response = await ServiceOrderAPI.getAllServiceOrders();
+      console.log(
+        "Fetched Service Orders:",
+        response.data.$values || response.data
+      );
       setServiceOrders(response.data.$values || response.data);
     } catch (error) {
+      console.error("Error fetching service orders:", error);
       toast.error("Không thể tải danh sách đơn dịch vụ");
     }
   };

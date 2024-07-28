@@ -1,7 +1,6 @@
-// ServiceRequestPage.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -76,6 +75,10 @@ const ServiceRequestPage = () => {
     updateServiceOrder,
     deleteServiceOrder,
   } = useServiceOrderContext();
+
+  useEffect(() => {
+    console.log("Service Orders fetched:", serviceOrders);
+  }, [serviceOrders]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -154,12 +157,14 @@ const ServiceRequestPage = () => {
       width: 250,
       renderCell: (params) => (
         <NoWrapTypography variant="body2">
-          {params.value.map((service: any, idx: number) => (
-            <span key={idx}>
-              {service.serviceName} (x{service.quantity})
-              {idx < params.value.length - 1 && ", "}
-            </span>
-          ))}
+          {Array.isArray(params.value)
+            ? params.value.map((service: any, idx: number) => (
+                <span key={idx}>
+                  {service.serviceName} (x{service.quantity})
+                  {idx < params.value.length - 1 && ", "}
+                </span>
+              ))
+            : "Không có dịch vụ"}
         </NoWrapTypography>
       ),
     },
@@ -169,15 +174,17 @@ const ServiceRequestPage = () => {
       width: 150,
       renderCell: (params) => (
         <NoWrapTypography>
-          {params.value.map((status: any, idx: number) => (
-            <Chip
-              key={idx}
-              label={getStatusLabel(status.status)}
-              color={getStatusColor(status.status)}
-              size="small"
-              style={{ marginRight: 4 }}
-            />
-          ))}
+          {Array.isArray(params.value)
+            ? params.value.map((status: any, idx: number) => (
+                <Chip
+                  key={idx}
+                  label={getStatusLabel(status.status)}
+                  color={getStatusColor(status.status)}
+                  size="small"
+                  style={{ marginRight: 4 }}
+                />
+              ))
+            : "Không có trạng thái"}
         </NoWrapTypography>
       ),
     },
@@ -208,8 +215,13 @@ const ServiceRequestPage = () => {
     serviceOrderCode: serviceOrder.serviceOrderCode,
     customerName: serviceOrder.customerName,
     formattedOrderDate: serviceOrder.formattedOrderDate,
-    services: serviceOrder.services,
-    statuses: serviceOrder.statuses,
+    services: serviceOrder.serviceOrderDetails?.$values || [],
+    statuses:
+      serviceOrder.serviceOrderDetails?.$values.map(
+        (detail: { status: any }) => ({
+          status: detail.status,
+        })
+      ) || [],
   }));
 
   return (
