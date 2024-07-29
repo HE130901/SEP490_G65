@@ -13,6 +13,7 @@ import {
   Tooltip,
   TextField,
   SelectChangeEvent,
+  Chip,
 } from "@mui/material";
 import { Visibility, Edit } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -24,6 +25,30 @@ import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
 import { useNiches } from "@/context/NicheContext";
 
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "Active":
+      return { label: "Đang hoạt động", color: "info" };
+    case "Unavailable":
+      return { label: "Không khả dụng", color: "default" };
+
+    case "Available":
+      return { label: "Còn trống", color: "success" };
+    case "Booked":
+      return { label: "Đã được đặt", color: "warning" };
+
+    default:
+      return { label: status, color: "default" };
+  }
+};
+
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -170,7 +195,31 @@ const NicheList: React.FC = () => {
     { field: "nicheCode", headerName: "Mã ô chứa", width: 180 },
     { field: "customerName", headerName: "Tên khách hàng", width: 180 },
     { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
-    { field: "status", headerName: "Trạng thái", width: 150 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 150,
+      renderCell: (params) => {
+        const { label, color } = getStatusLabel(params.value);
+        return (
+          <CenteredCell>
+            <Chip
+              label={label}
+              color={
+                color as
+                  | "info"
+                  | "error"
+                  | "primary"
+                  | "secondary"
+                  | "success"
+                  | "warning"
+                  | "default"
+              }
+            />
+          </CenteredCell>
+        );
+      },
+    },
     { field: "description", headerName: "Mô tả", width: 250 },
     {
       field: "actions",

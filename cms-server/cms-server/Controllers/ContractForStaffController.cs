@@ -117,7 +117,7 @@ namespace cms_server.Controllers
                     _context.Contracts.Add(contract);
                     await _context.SaveChangesAsync();
 
-                    niche.Status = "Unavailable";
+                    niche.Status = "Active";
                     niche.CustomerId = customer.CustomerId;
                     niche.DeceasedId = deceased.DeceasedId;
                     _context.Niches.Update(niche);
@@ -270,6 +270,7 @@ namespace cms_server.Controllers
         [HttpPost("cancel-contract")]
         public async Task<IActionResult> CancelContract(int contractId)
         {
+            // Find the contract by ID
             var contract = await _context.Contracts
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
@@ -278,14 +279,27 @@ namespace cms_server.Controllers
                 return NotFound("Contract not found.");
             }
 
-            // Update contract status to 
+            // Update the contract status to "Canceled"
             contract.Status = "Canceled";
-            contract.Note = "Thanh lý hợp đồng "+contract.ContractCode+" vào ngày " + DateOnly.FromDateTime(DateTime.Now);
+            contract.Note = "Thanh lý hợp đồng " + contract.ContractCode + " vào ngày " + DateOnly.FromDateTime(DateTime.Now);
             _context.Contracts.Update(contract);
+
+            // Find the associated niche and set its status to "Available"
+            var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == contract.NicheId);
+            if (niche != null)
+            {
+                niche.Status = "Available";
+                niche.CustomerId = null; // Reset the CustomerId
+                niche.DeceasedId = null; // Reset the DeceasedId
+                _context.Niches.Update(niche);
+            }
+
+            // Save the changes
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
         // GET: api/Contracts/buildings
         [HttpGet("buildings")]

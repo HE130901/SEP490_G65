@@ -61,7 +61,7 @@ export default function FilterPanel({
             setPriceRange([Math.min(...values), Math.max(...values)]);
           }}
           min={0}
-          max={1000000}
+          max={2000000}
           step={10000}
           className="w-full"
         />

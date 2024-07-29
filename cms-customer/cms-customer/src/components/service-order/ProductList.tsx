@@ -1,5 +1,4 @@
-"use client";
-
+import React, { useState, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,12 +11,10 @@ import { useCart } from "@/context/CartContext";
 import { formatVND } from "@/utils/formatCurrency";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CartButton } from "../ui/CartButton";
 import PaginationControls from "./PaginationControls";
-
 import {
   Tooltip,
   TooltipContent,
@@ -52,6 +49,7 @@ export default function ProductList({ products }: ProductListProps) {
   const cartIconRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
 
+  // Sort products based on the selected criteria
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) => {
       switch (sortBy) {
@@ -74,6 +72,11 @@ export default function ProductList({ products }: ProductListProps) {
 
   const handleAddToCart = useCallback(
     (product: any, event: any, fromModal = false) => {
+      if (product.status !== "Available") {
+        toast.error("Sản phẩm này không thể thêm vào giỏ hàng.");
+        return;
+      }
+
       const item = {
         id: product.serviceId,
         name: product.serviceName,
@@ -231,6 +234,7 @@ export default function ProductList({ products }: ProductListProps) {
                     <div className="p-4 flex-1">
                       <h3 className="text-lg font-semibold mb-1">
                         {product.serviceName}
+                        {product.status === "Unavailable" && " - Đã hết hàng"}
                       </h3>
                       <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
                         {product.category}
@@ -257,6 +261,7 @@ export default function ProductList({ products }: ProductListProps) {
                               ? "button-expanded"
                               : "button-collapsed"
                           }`}
+                          disabled={product.status !== "Available"}
                         >
                           <AddShoppingCartOutlinedIcon />
                           <span
@@ -329,6 +334,7 @@ export default function ProductList({ products }: ProductListProps) {
               variant="contained"
               color="warning"
               onClick={(event) => handleAddToCart(selectedProduct, event, true)}
+              disabled={selectedProduct?.status !== "Available"}
             >
               Thêm vào giỏ hàng
             </MUIButton>

@@ -66,6 +66,7 @@ const getStatusVariant = (status: string) => {
     case "Pending":
       return "default";
     case "Canceled":
+    case "Expired":
       return "destructive";
     default:
       return "secondary";
@@ -80,6 +81,9 @@ const getStatusText = (status: string) => {
       return "Đang chờ duyệt";
     case "Canceled":
       return "Đã hủy";
+    case "Expired":
+      return "Đã hết hạn";
+
     default:
       return "Không xác định";
   }
@@ -150,7 +154,11 @@ export default function BookingRequestList({
     event: React.MouseEvent
   ) => {
     event.stopPropagation();
-    if (record.status === "Approved" || record.status === "Canceled") {
+    if (
+      record.status === "Approved" ||
+      record.status === "Canceled" ||
+      record.status === "Expired"
+    ) {
       toast.error("Không thể xóa đơn đặt chỗ đã được duyệt hoặc hủy");
       return;
     }
@@ -303,7 +311,8 @@ export default function BookingRequestList({
                   onClick={(event) => handleEdit(row.original, event)}
                   disabled={
                     row.original.status === "Approved" ||
-                    row.original.status === "Canceled"
+                    row.original.status === "Canceled" ||
+                    row.original.status === "Expired"
                   }
                   className="text-orange-600"
                 >
@@ -322,7 +331,8 @@ export default function BookingRequestList({
                   }
                   disabled={
                     row.original.status === "Approved" ||
-                    row.original.status === "Canceled"
+                    row.original.status === "Canceled" ||
+                    row.original.status === "Expired"
                   }
                   className="text-red-600"
                 >

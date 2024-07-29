@@ -426,6 +426,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                     e.stopPropagation();
                     handleExtendListCLick(row.original);
                   }}
+                  disabled={row.original.status == "Canceled"}
                 >
                   <History className="w-4 h-4" />
                 </IconButton>
@@ -443,6 +444,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
                     e.stopPropagation();
                     handleLiquidateClick(row.original);
                   }}
+                  disabled={row.original.status == "Canceled"}
                 >
                   <Ban className="w-4 h-4" />
                 </IconButton>

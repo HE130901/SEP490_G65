@@ -276,7 +276,8 @@ const NicheReservationPage = () => {
               disabled={
                 params.row.status === "Canceled" ||
                 params.row.status === "Approved" ||
-                params.row.status === "Signed"
+                params.row.status === "Signed" ||
+                params.row.status === "Expired"
               }
             >
               <ConfirmIcon />
@@ -289,7 +290,8 @@ const NicheReservationPage = () => {
               disabled={
                 params.row.status === "Approved" ||
                 params.row.status === "Canceled" ||
-                params.row.status === "Signed"
+                params.row.status === "Signed" ||
+                params.row.status === "Expired"
               }
             >
               <CancelOutlinedIcon />

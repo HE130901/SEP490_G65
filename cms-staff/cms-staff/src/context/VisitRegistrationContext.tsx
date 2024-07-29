@@ -1,7 +1,6 @@
-// VisitRegistrationContext.tsx
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 
@@ -42,14 +41,14 @@ export const VisitRegistrationProvider: React.FC<{
     VisitRegistrationDto[]
   >([]);
 
-  const fetchVisitRegistrations = async () => {
+  const fetchVisitRegistrations = useCallback(async () => {
     try {
       const response = await axiosInstance.get("/api/VisitRegistrations");
       setVisitRegistrations(response.data.$values || response.data);
     } catch (error) {
       toast.error("Không thể tải danh sách đơn đăng ký");
     }
-  };
+  }, []);
 
   const addVisitRegistration = (visit: VisitRegistrationDto) => {
     setVisitRegistrations((prev) => [...prev, visit]);
@@ -68,10 +67,6 @@ export const VisitRegistrationProvider: React.FC<{
       prev.filter((visit) => visit.visitId !== visitId)
     );
   };
-
-  useEffect(() => {
-    fetchVisitRegistrations();
-  }, []);
 
   return (
     <VisitRegistrationContext.Provider

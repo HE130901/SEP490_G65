@@ -59,9 +59,9 @@ const ViewNicheDialog: React.FC<{
   }, [nicheId]);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Thông tin ô chứa</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         {loading ? (
           <CircularProgress />
         ) : (

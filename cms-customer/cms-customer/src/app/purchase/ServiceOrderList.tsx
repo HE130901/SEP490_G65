@@ -43,6 +43,7 @@ import EditDateDialog from "./EditDateDialog";
 import DetailViewDialog from "./DetailViewDialog";
 import debounce from "lodash.debounce";
 import { remove as removeDiacritics } from "diacritics";
+import { IconButton } from "@mui/material";
 
 export type ServiceOrderDetail = {
   serviceName: string;
@@ -228,25 +229,28 @@ export default function ServiceOrderList({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <IconButton
+                    color="info"
                     onClick={() => handleView(props.row.original)}
                   >
                     <Eye className="w-4 h-4" />
-                  </Button>
+                  </IconButton>
                 </TooltipTrigger>
                 <TooltipContent>Xem chi tiết</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <IconButton
+                    color="warning"
                     onClick={() => handleEdit(props.row.original)}
+                    disabled={props.row.original.serviceOrderDetails.$values.every(
+                      (detail) =>
+                        detail.status == "Completed" ||
+                        detail.status == "Canceled"
+                    )}
                   >
                     <Edit className="h-4 w-4" />
-                  </Button>
+                  </IconButton>
                 </TooltipTrigger>
                 <TooltipContent>Chỉnh sửa</TooltipContent>
               </Tooltip>

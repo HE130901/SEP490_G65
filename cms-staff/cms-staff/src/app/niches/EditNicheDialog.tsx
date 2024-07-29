@@ -1,4 +1,3 @@
-// src/components/EditNicheDialog.tsx
 import React, { useEffect, useState } from "react";
 import {
   Dialog,
@@ -9,6 +8,10 @@ import {
   Box,
   TextField,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
@@ -60,19 +63,19 @@ const EditNicheDialog: React.FC<{
           nicheDescription,
           status,
         });
-        toast.success("Niche updated successfully");
+        toast.success("Cập nhật thông tin thành công");
         onSuccess();
         onClose();
       } catch (error) {
-        toast.error("Unable to update niche");
+        toast.error("Lỗi khi cập nhật");
       }
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Edit Niche</DialogTitle>
-      <DialogContent>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Sửa thông tin ô chứa</DialogTitle>
+      <DialogContent dividers>
         {loading ? (
           <CircularProgress />
         ) : (
@@ -80,28 +83,34 @@ const EditNicheDialog: React.FC<{
             <Box>
               <TextField
                 fullWidth
-                label="Niche Description"
+                label="Mô tả"
                 value={nicheDescription}
                 onChange={(e) => setNicheDescription(e.target.value)}
                 margin="normal"
               />
-              <TextField
-                fullWidth
-                label="Status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                margin="normal"
-              />
+              <FormControl fullWidth margin="normal">
+                <InputLabel>Trạng thái</InputLabel>
+                <Select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as string)}
+                  label="Trạng thái"
+                >
+                  <MenuItem value="Unavailable">Không khả dụng</MenuItem>
+                  <MenuItem value="Active">Đang hoạt động</MenuItem>
+                  <MenuItem value="Available">Còn trống</MenuItem>
+                  <MenuItem value="Booked">Đã được đặt</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
           )
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
+        <Button onClick={onClose} variant="outlined">
+          Đóng
         </Button>
         <Button onClick={handleSave} color="primary" variant="contained">
-          Save
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>

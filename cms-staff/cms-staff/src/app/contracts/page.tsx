@@ -72,7 +72,7 @@ const formatDateToDDMMYYYY = (dateString: string): string => {
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
-      return { label: "Đã hủy", color: "error" };
+      return { label: "Đã thanh lý", color: "error" };
     case "Expired":
       return { label: "Đã hết hạn", color: "error" };
     case "Active":
@@ -273,6 +273,7 @@ const ContractPage: React.FC = () => {
             <IconButton
               color="success"
               onClick={() => handleRenewContract(params.row.contractId)}
+              disabled={params.row.status === "Canceled"}
             >
               <RestorePageIcon />
             </IconButton>

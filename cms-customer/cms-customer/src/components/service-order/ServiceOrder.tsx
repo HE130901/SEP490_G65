@@ -11,6 +11,7 @@ interface Service {
   price: number;
   category: string;
   tag: string;
+  status: string;
 }
 
 export default function ServiceOrder() {

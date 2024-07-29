@@ -5,6 +5,7 @@ interface ItemType {
     name: string;
     price: number;
     quantity: number;
+    status?: string;
     // Add any additional properties here
   }
   

@@ -35,6 +35,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
+        // GET: api/NicheReservations
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservations()
         {

@@ -216,11 +216,9 @@ const NicheReservationPage = () => {
                   ? "Đây là ô chứa của bạn!"
                   : niche.status === "Booked"
                   ? "Ô chứa đã được đặt trước!"
-                  : niche.status === "Unavailable"
-                  ? "Ô chứa đã được sử dụng!"
+                  : niche.status === "Unavailable" || niche.status === "Active"
+                  ? "Ô chứa hiện không khả dụng!"
                   : "Bạn có thể chọn ô chứa này!";
-
-                console.log(niche.nicheName, niche.reservedByUser);
 
                 return (
                   <TooltipProvider key={niche.nicheId}>
@@ -237,7 +235,8 @@ const NicheReservationPage = () => {
                           className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                             niche.reservedByUser
                               ? "bg-sky-500 text-black"
-                              : niche.status === "Unavailable"
+                              : niche.status === "Unavailable" ||
+                                niche.status === "Active"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -278,8 +277,8 @@ const NicheReservationPage = () => {
                   ? "Đây là ô chứa của bạn!"
                   : niche.status === "Booked"
                   ? "Ô chứa đã được đặt trước!"
-                  : niche.status === "Unavailable"
-                  ? "Ô chứa đã được sử dụng!"
+                  : niche.status === "Unavailable" || niche.status === "Active"
+                  ? "Ô chứa hiện không khả dụng!"
                   : "Bạn có thể chọn ô chứa này!";
 
                 return (
@@ -297,7 +296,8 @@ const NicheReservationPage = () => {
                           className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                             niche.reservedByUser
                               ? "bg-sky-500 text-black"
-                              : niche.status === "Unavailable"
+                              : niche.status === "Unavailable" ||
+                                niche.status === "Active"
                               ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                               : niche.status === "Booked"
                               ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -328,8 +328,8 @@ const NicheReservationPage = () => {
               ? "Đây là ô chứa của bạn!"
               : niche.status === "Booked"
               ? "Ô chứa đã được đặt trước!"
-              : niche.status === "Unavailable"
-              ? "Ô chứa đã được sử dụng!"
+              : niche.status === "Unavailable" || niche.status === "Active"
+              ? "Ô chứa hiện không khả dụng!"
               : "Bạn có thể chọn ô chứa này!";
 
             return (
@@ -347,7 +347,8 @@ const NicheReservationPage = () => {
                       className={`p-2 m-2 border rounded-md cursor-pointer transform transition-transform font-bold ${
                         niche.reservedByUser
                           ? "bg-sky-500 text-black"
-                          : niche.status === "Unavailable"
+                          : niche.status === "Unavailable" ||
+                            niche.status === "Active"
                           ? "bg-black text-white hover:cursor-not-allowed cursor-not-allowed"
                           : niche.status === "Booked"
                           ? "bg-orange-400 cursor-not-allowed hover:cursor-not-allowed text-white"
@@ -417,7 +418,7 @@ const NicheReservationPage = () => {
           <div className="mt-4 flex justify-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-black rounded-sm"></div>
-              <span className="font-semibold text-white">Đã sử dụng</span>
+              <span className="font-semibold text-white">Không khả dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>

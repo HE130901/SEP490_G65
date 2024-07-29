@@ -42,6 +42,8 @@ const getStatusLabel = (status: string) => {
 
     case "Available":
       return { label: "Sẵn sàng", color: "success" };
+    case "Others":
+      return { label: "Khác", color: "warning" };
 
     default:
       return { label: status, color: "default" };

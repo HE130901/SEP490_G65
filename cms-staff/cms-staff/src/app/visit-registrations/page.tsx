@@ -1,4 +1,3 @@
-// VisitRegistrationsList.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -30,7 +29,7 @@ import VisitApproveDialog from "./VisitApproveDialog";
 import VisitAddDialog from "./VisitAddDialog";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
-import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext"; // Import context
+import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext";
 import { VisitRegistrationDto } from "./interfaces";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
@@ -89,17 +88,13 @@ const getStatusLabel = (status: string) => {
 };
 
 const VisitRegistrationsList: React.FC = () => {
-  const {
-    visitRegistrations,
-    fetchVisitRegistrations,
-    updateVisitRegistration,
-    deleteVisitRegistration,
-  } = useVisitRegistrationContext();
+  const { visitRegistrations, fetchVisitRegistrations } =
+    useVisitRegistrationContext();
 
   const [filteredVisitRegistrations, setFilteredVisitRegistrations] = useState<
     VisitRegistrationDto[]
   >([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Initial loading state set to true
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
@@ -112,7 +107,11 @@ const VisitRegistrationsList: React.FC = () => {
   >("all");
 
   useEffect(() => {
-    fetchVisitRegistrations();
+    const fetchData = async () => {
+      await fetchVisitRegistrations();
+      setLoading(false); // Set loading to false after fetching
+    };
+    fetchData();
   }, [fetchVisitRegistrations]);
 
   useEffect(() => {

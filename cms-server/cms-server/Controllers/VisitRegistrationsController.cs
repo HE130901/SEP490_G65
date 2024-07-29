@@ -239,7 +239,6 @@ namespace cms_server.Controllers
 
             _context.VisitRegistrations.Add(visitRegistration);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
 
