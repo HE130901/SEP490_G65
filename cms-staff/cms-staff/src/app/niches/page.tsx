@@ -1,4 +1,3 @@
-// NicheList.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -12,6 +11,8 @@ import {
   Paper,
   IconButton,
   Tooltip,
+  TextField,
+  SelectChangeEvent,
 } from "@mui/material";
 import { Visibility, Edit } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -21,7 +22,7 @@ import ViewNicheDialog from "./ViewNicheDialog";
 import EditNicheDialog from "./EditNicheDialog";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
-import { useNiches } from "@/context/NicheContext"; // Import useNiches
+import { useNiches } from "@/context/NicheContext";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -59,6 +60,8 @@ const NicheList: React.FC = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchColumn, setSearchColumn] = useState("nicheCode");
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -122,8 +125,7 @@ const NicheList: React.FC = () => {
   useEffect(() => {
     if (selectedArea !== null) {
       setLoading(true);
-      fetchNiches(selectedArea);
-      setLoading(false);
+      fetchNiches(selectedArea).finally(() => setLoading(false));
     }
   }, [selectedArea, fetchNiches]);
 
@@ -143,9 +145,29 @@ const NicheList: React.FC = () => {
     }
   };
 
+  const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
+    setSearchColumn(event.target.value);
+  };
+
+  const filteredNiches = niches.filter((niche) => {
+    const searchTermLower = searchTerm.toLowerCase();
+    if (searchColumn === "nicheCode") {
+      return niche.nicheCode.toLowerCase().includes(searchTermLower);
+    } else if (searchColumn === "customerName") {
+      return niche.customerName?.toLowerCase().includes(searchTermLower);
+    } else if (searchColumn === "deceasedName") {
+      return niche.deceasedName?.toLowerCase().includes(searchTermLower);
+    } else if (searchColumn === "status") {
+      return niche.status?.toLowerCase().includes(searchTermLower);
+    } else if (searchColumn === "description") {
+      return niche.description?.toLowerCase().includes(searchTermLower);
+    }
+    return true;
+  });
+
   const columns: GridColDef[] = [
     { field: "nicheId", headerName: "ID", width: 80 },
-    { field: "nicheName", headerName: "Tên ô chứa", width: 180 },
+    { field: "nicheCode", headerName: "Mã ô chứa", width: 180 },
     { field: "customerName", headerName: "Tên khách hàng", width: 180 },
     { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
     { field: "status", headerName: "Trạng thái", width: 150 },
@@ -177,61 +199,92 @@ const NicheList: React.FC = () => {
     },
   ];
 
-  const rows = niches.map((niche, index) => ({
+  const rows = filteredNiches.map((niche, index) => ({
     id: index + 1,
     ...niche,
   }));
 
   return (
     <Box p={3}>
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
-          <InputLabel id="building-select-label">Tòa nhà</InputLabel>
-          <Select
-            labelId="building-select-label"
-            value={selectedBuilding || ""}
-            onChange={(e) => setSelectedBuilding(e.target.value as number)}
-            label="Tòa nhà"
-          >
-            {buildings.map((building) => (
-              <MenuItem key={building.buildingId} value={building.buildingId}>
-                {building.buildingName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Box display="flex" alignItems="center">
+          <FormControl margin="normal" style={{ marginRight: 8 }}>
+            <InputLabel id="building-select-label">Tòa nhà</InputLabel>
+            <Select
+              labelId="building-select-label"
+              value={selectedBuilding || ""}
+              onChange={(e) => setSelectedBuilding(e.target.value as number)}
+              label="Tòa nhà"
+            >
+              {buildings.map((building) => (
+                <MenuItem key={building.buildingId} value={building.buildingId}>
+                  {building.buildingName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControl margin="normal" style={{ flex: 1, marginRight: 8 }}>
-          <InputLabel id="floor-select-label">Tầng</InputLabel>
-          <Select
-            label="Tầng"
-            labelId="floor-select-label"
-            value={selectedFloor || ""}
-            onChange={(e) => setSelectedFloor(e.target.value as number)}
-          >
-            {floors.map((floor) => (
-              <MenuItem key={floor.floorId} value={floor.floorId}>
-                {floor.floorName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          <FormControl margin="normal" style={{ marginRight: 8 }}>
+            <InputLabel id="floor-select-label">Tầng</InputLabel>
+            <Select
+              label="Tầng"
+              labelId="floor-select-label"
+              value={selectedFloor || ""}
+              onChange={(e) => setSelectedFloor(e.target.value as number)}
+            >
+              {floors.map((floor) => (
+                <MenuItem key={floor.floorId} value={floor.floorId}>
+                  {floor.floorName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControl margin="normal" style={{ flex: 1 }}>
-          <InputLabel id="area-select-label">Khu </InputLabel>
-          <Select
-            label="Khu "
-            labelId="area-select-label"
-            value={selectedArea || ""}
-            onChange={(e) => setSelectedArea(e.target.value as number)}
-          >
-            {areas.map((area) => (
-              <MenuItem key={area.areaId} value={area.areaId}>
-                {area.areaName}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          <FormControl margin="normal">
+            <InputLabel id="area-select-label">Khu</InputLabel>
+            <Select
+              label="Khu"
+              labelId="area-select-label"
+              value={selectedArea || ""}
+              onChange={(e) => setSelectedArea(e.target.value as number)}
+            >
+              {areas.map((area) => (
+                <MenuItem key={area.areaId} value={area.areaId}>
+                  {area.areaName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        <Box display="flex" alignItems="center">
+          <FormControl variant="outlined" size="small" sx={{ marginRight: 2 }}>
+            <InputLabel>Tìm theo</InputLabel>
+            <Select
+              value={searchColumn}
+              onChange={handleSearchColumnChange}
+              label="Tìm theo"
+            >
+              <MenuItem value="nicheCode">Mã ô chứa</MenuItem>
+              <MenuItem value="customerName">Tên khách hàng</MenuItem>
+              <MenuItem value="deceasedName">Tên người đã mất</MenuItem>
+              <MenuItem value="status">Trạng thái</MenuItem>
+              <MenuItem value="description">Mô tả</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Tìm kiếm"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </Box>
       </Box>
 
       {loading ? (
@@ -245,6 +298,11 @@ const NicheList: React.FC = () => {
               autoHeight
               localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
               pageSizeOptions={[10]}
+              initialState={{
+                pagination: {
+                  paginationModel: { pageSize: 10 },
+                },
+              }}
             />
           </Paper>
         )

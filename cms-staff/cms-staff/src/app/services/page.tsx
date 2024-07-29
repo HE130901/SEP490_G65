@@ -200,14 +200,14 @@ const ServiceProductPage: React.FC = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Xóa">
+          {/* <Tooltip title="Xóa">
             <IconButton
               color="error"
               onClick={() => handleDeleteItem(params.row)}
             >
               <DeleteIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </>
       ),
     },

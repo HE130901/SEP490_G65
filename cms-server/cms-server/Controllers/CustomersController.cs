@@ -52,7 +52,6 @@ namespace cms_server.Controllers
         }
 
         // PUT: api/Customers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCustomer(int id, UpdateCustomerDto updateDto)
         {
@@ -63,9 +62,52 @@ namespace cms_server.Controllers
                 return NotFound();
             }
 
+            customer.FullName = updateDto.FullName;
             customer.Email = updateDto.Email;
             customer.Phone = updateDto.Phone;
             customer.Address = updateDto.Address;
+            customer.CitizenId = updateDto.CitizenId;
+            customer.CitizenIdissuanceDate = updateDto.CitizenIdissuanceDate;
+            customer.CitizenIdsupplier = updateDto.CitizenIdsupplier;
+
+            _context.Entry(customer).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // PUT: api/Customers/5/ChangePassword
+        [HttpPut("{id}/ChangePassword")]
+        public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto2 changePasswordDto)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrEmpty(changePasswordDto.Password))
+            {
+                return BadRequest("Password cannot be empty.");
+            }
+
+            customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.Password);
 
             _context.Entry(customer).State = EntityState.Modified;
 
@@ -89,7 +131,6 @@ namespace cms_server.Controllers
         }
 
         // POST: api/Customers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
@@ -120,11 +161,21 @@ namespace cms_server.Controllers
             return _context.Customers.Any(e => e.CustomerId == id);
         }
     }
+
     public class UpdateCustomerDto
     {
+        public string FullName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
         public string Address { get; set; }
+        public string CitizenId { get; set; }
+        public DateOnly? CitizenIdissuanceDate { get; set; }
+        public string CitizenIdsupplier { get; set; }
+    }
+
+    public class ChangePasswordDto2
+    {
+        public string Password { get; set; }
     }
 
     public class CustomerDto
@@ -136,7 +187,4 @@ namespace cms_server.Controllers
         public string Address { get; set; }
         public string CitizenId { get; set; }
     }
-
-
 }
-

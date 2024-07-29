@@ -153,9 +153,8 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
           <Button onClick={handleOpenListDialog} color="secondary">
             Lịch sử gia hạn
           </Button>
-          <Divider />
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <Box mb={2}>
             <Typography variant="body1">
               <strong>Mã hợp đồng:</strong> {contract.contractCode}
@@ -208,14 +207,12 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
               <strong>Chi phí:</strong> {cost.toLocaleString()} VND
             </Typography>
           </Box>
-
-          <Divider className="pt-4" />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="secondary">
+          <Button onClick={handleClose} variant="outlined">
             Đóng
           </Button>
-          <Button onClick={handleSubmit} color="primary">
+          <Button onClick={handleSubmit} color="primary" variant="contained">
             Lưu
           </Button>
         </DialogActions>

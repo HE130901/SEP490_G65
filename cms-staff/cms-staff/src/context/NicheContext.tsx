@@ -1,12 +1,11 @@
-// NicheContext.tsx
 "use client";
 
 import React, {
   createContext,
   useContext,
   useState,
-  useEffect,
   ReactNode,
+  useCallback,
 } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
@@ -14,6 +13,7 @@ import { toast } from "react-toastify";
 interface NicheDtoForStaff {
   nicheId: number;
   nicheName: string;
+  nicheCode: string;
   customerName?: string;
   deceasedName?: string;
   description?: string;
@@ -23,7 +23,7 @@ interface NicheDtoForStaff {
 interface NicheContextType {
   niches: NicheDtoForStaff[];
   setNiches: React.Dispatch<React.SetStateAction<NicheDtoForStaff[]>>;
-  fetchNiches: (areaId: number) => void;
+  fetchNiches: (areaId: number) => Promise<void>;
 }
 
 const NicheContext = createContext<NicheContextType | undefined>(undefined);
@@ -33,7 +33,7 @@ export const NicheProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [niches, setNiches] = useState<NicheDtoForStaff[]>([]);
 
-  const fetchNiches = async (areaId: number) => {
+  const fetchNiches = useCallback(async (areaId: number) => {
     try {
       const response = await axiosInstance.get(
         `/api/StaffNiches/area/${areaId}`
@@ -42,7 +42,7 @@ export const NicheProvider: React.FC<{ children: ReactNode }> = ({
     } catch (error) {
       toast.error("Không thể tải danh sách ô chứa");
     }
-  };
+  }, []);
 
   return (
     <NicheContext.Provider value={{ niches, setNiches, fetchNiches }}>

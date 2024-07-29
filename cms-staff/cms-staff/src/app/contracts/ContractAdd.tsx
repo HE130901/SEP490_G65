@@ -687,11 +687,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
         </DialogContent>
         <DialogActions>
           {activeStep > 0 && (
-            <Button onClick={handleBack} color="secondary">
+            <Button onClick={handleBack} variant="outlined">
               Quay lại
             </Button>
           )}
-          <Button onClick={handleNext} color="primary">
+          <Button onClick={handleNext} color="primary" variant="contained">
             {activeStep === steps.length - 1 ? "Lưu" : "Tiếp theo"}
           </Button>
         </DialogActions>

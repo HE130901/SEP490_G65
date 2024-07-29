@@ -1,4 +1,3 @@
-// CustomerPage.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -24,7 +23,7 @@ import CustomerViewDialog from "./CustomerDetail";
 import CustomerEditDialog from "./CustomerEdit";
 import viVN from "@/utils/viVN";
 import { SelectChangeEvent } from "@mui/material";
-import { useCustomers } from "@/context/CustomerContext"; // Import useCustomers
+import { useCustomers } from "@/context/CustomerContext";
 import { Customer } from "@/context/interfaces";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
@@ -55,31 +54,32 @@ const CustomerPage: React.FC = () => {
   const { customers, fetchCustomers } = useCustomers();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchColumn, setSearchColumn] = useState("fullName");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handleViewCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
+    setSelectedCustomerId(customer.customerId);
     setViewDialogOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
+    console.log("Selected Customer ID for editing:", customer.customerId);
+    setSelectedCustomerId(customer.customerId);
     setEditDialogOpen(true);
   };
 
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
-    setSelectedCustomer(null);
+    setSelectedCustomerId(null);
   };
 
   const handleEditDialogClose = () => {
     setEditDialogOpen(false);
-    setSelectedCustomer(null);
-    fetchCustomers(); // Fetch customers again after editing
+    setSelectedCustomerId(null);
+    fetchCustomers();
   };
 
   const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
@@ -188,17 +188,22 @@ const CustomerPage: React.FC = () => {
             autoHeight
             localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
             pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
           />
         </Paper>
       </Box>
       <CustomerViewDialog
         open={viewDialogOpen}
-        customer={selectedCustomer}
+        customerId={selectedCustomerId}
         onClose={handleViewDialogClose}
       />
       <CustomerEditDialog
         open={editDialogOpen}
-        customer={selectedCustomer}
+        customerId={selectedCustomerId}
         onClose={handleEditDialogClose}
       />
     </Box>

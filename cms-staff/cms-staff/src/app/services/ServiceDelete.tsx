@@ -10,8 +10,8 @@ import {
   Typography,
 } from "@mui/material";
 import ServiceAPI from "@/services/serviceService";
-import { useToast } from "@/components/ui/use-toast";
 import { Service } from "./interfaces";
+import { ToastContainer, toast } from "react-toastify";
 
 interface ServiceDeleteProps {
   service: Service | null;
@@ -26,25 +26,15 @@ const ServiceDelete: React.FC<ServiceDeleteProps> = ({
   onDelete,
   open,
 }) => {
-  const { toast } = useToast();
-
   const handleDelete = async () => {
     if (!service) return;
     try {
       await ServiceAPI.deleteService(service.serviceId);
-      toast({
-        variant: "default",
-        title: "Thành công",
-        description: "Xóa dịch vụ thành công",
-      });
+      toast.success("Xóa dịch vụ thành công");
       onDelete(service.serviceId);
       onClose();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Xóa dịch vụ thất bại",
-      });
+      toast.error("Xóa dịch vụ thất bại");
     }
   };
 

@@ -34,6 +34,7 @@ namespace cms_server.Controllers
                     CustomerName = _context.Customers.FirstOrDefault(c => c.CustomerId == n.CustomerId).FullName,
                     DeceasedName = _context.Deceaseds.FirstOrDefault(d => d.DeceasedId == n.DeceasedId).FullName,
                     Description = n.NicheDescription,
+                    NicheCode = n.NicheCode,
                     NicheHistories = n.NicheHistories.Select(h => new NicheHistoryDto
                     {
                         ContractId = h.ContractId.Value,
@@ -67,9 +68,11 @@ namespace cms_server.Controllers
                 CustomerName = _context.Customers.FirstOrDefault(c => c.CustomerId == niche.CustomerId)?.FullName,
                 DeceasedName = _context.Deceaseds.FirstOrDefault(d => d.DeceasedId == niche.DeceasedId)?.FullName,
                 Description = niche.NicheDescription,
+                NicheCode = niche.NicheCode,
                 NicheHistories = niche.NicheHistories.Select(h => new NicheHistoryDto
                 {
                     ContractId = h.ContractId.Value,
+                    ContractCode = _context.Contracts.FirstOrDefault(c => c.ContractId == h.ContractId).ContractCode,
                     StartDate = h.StartDate,
                     EndDate = h.EndDate,
                     Status = h.Status
@@ -123,6 +126,8 @@ namespace cms_server.Controllers
         public int NicheId { get; set; }
         public string NicheName { get; set; }
         public string? CustomerName { get; set; }
+        public string? NicheCode { get; set; }
+
         public string? DeceasedName { get; set; }
         public List<NicheHistoryDto> NicheHistories { get; set; } = new List<NicheHistoryDto>();
         public string? Status { get; set; }
@@ -133,6 +138,7 @@ namespace cms_server.Controllers
     public class NicheHistoryDto
     {
         public int ContractId { get; set; }
+        public string ContractCode { get; set; }
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string? Status { get; set; }

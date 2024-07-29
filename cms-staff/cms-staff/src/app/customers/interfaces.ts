@@ -7,17 +7,20 @@ export interface Customer {
     phone: string;
     address: string;
     citizenId: string;
+    citizenIdissuanceDate: string;
+    citizenIdsupplier: string;
+
   }
   
   export interface CustomerViewDialogProps {
     open: boolean;
-    customer: Customer | null;
+    customerId: any;
     onClose: () => void;
   }
   
   export interface CustomerEditDialogProps {
     open: boolean;
-    customer: Customer | null;
+    customerId: any;
     onClose: () => void;
   }
   

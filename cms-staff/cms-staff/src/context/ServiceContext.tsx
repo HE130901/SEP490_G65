@@ -47,7 +47,11 @@ export const ServiceProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteService = (serviceId: number) => {
     setServices((prev) =>
-      prev.filter((service) => service.serviceId !== serviceId)
+      prev.map((service) =>
+        service.serviceId === serviceId
+          ? { ...service, status: "Unavailable" } // Cập nhật trạng thái
+          : service
+      )
     );
   };
 

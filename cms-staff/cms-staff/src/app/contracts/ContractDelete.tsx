@@ -31,12 +31,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        {title}
-
-        <Divider />
-      </DialogTitle>
-      <DialogContent>
+      <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+      <DialogContent dividers>
         <DialogContentText id="alert-dialog-description">
           {content}
         </DialogContentText>
@@ -45,7 +41,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <Button onClick={handleClose} color="primary">
           Hủy
         </Button>
-        <Button onClick={handleConfirm} color="primary" autoFocus>
+        <Button
+          onClick={handleConfirm}
+          color="error"
+          autoFocus
+          variant="contained"
+        >
           Đồng ý
         </Button>
       </DialogActions>
