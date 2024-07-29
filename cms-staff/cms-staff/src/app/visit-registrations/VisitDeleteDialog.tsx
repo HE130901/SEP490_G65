@@ -21,10 +21,10 @@ const VisitDeleteDialog: React.FC<VisitDialogProps> = ({
     if (visit) {
       try {
         await axiosInstance.delete(`/api/VisitRegistrations/${visit.visitId}`);
-        toast.success("Visit registration deleted successfully");
+        toast.success("Từ chối đơn thành công");
         onClose();
       } catch (error) {
-        toast.error("Failed to delete visit registration");
+        toast.error("Từ chối đơn không thành công");
       }
     }
   };

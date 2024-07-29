@@ -31,12 +31,10 @@ const getStatusLabel = (status: string) => {
       return { label: "Đang hoạt động", color: "info" };
     case "Unavailable":
       return { label: "Không khả dụng", color: "default" };
-
     case "Available":
       return { label: "Còn trống", color: "success" };
     case "Booked":
       return { label: "Đã được đặt", color: "warning" };
-
     default:
       return { label: status, color: "default" };
   }
@@ -191,7 +189,7 @@ const NicheList: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "nicheId", headerName: "ID", width: 80 },
+    { field: "nicheId", headerName: "STT", width: 80 },
     { field: "nicheCode", headerName: "Mã ô chứa", width: 180 },
     { field: "customerName", headerName: "Tên khách hàng", width: 180 },
     { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
@@ -364,9 +362,12 @@ const NicheList: React.FC = () => {
       />
       <EditNicheDialog
         open={editDialogOpen}
-        onClose={() => setEditDialogOpen(false)}
+        onClose={() => {
+          setEditDialogOpen(false);
+          handleEditSuccess();
+        }}
         nicheId={selectedNicheId}
-        onSuccess={handleEditSuccess}
+        onSuccess={() => {}}
       />
     </Box>
   );

@@ -152,7 +152,7 @@ const ViewServiceOrderDialog = ({
           <Box>
             <Box mb={2}>
               <Typography variant="h6">
-                Thông tin: Mã đơn hàng {serviceOrderId}{" "}
+                Thông tin: Mã đơn hàng {serviceOrder.serviceOrderCode}{" "}
               </Typography>
               <Typography>
                 Tên khách hàng: {serviceOrder.customerFullName}{" "}

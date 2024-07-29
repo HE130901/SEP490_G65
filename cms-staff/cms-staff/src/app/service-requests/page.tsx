@@ -86,6 +86,9 @@ const ServiceRequestPage = () => {
     number | null
   >(null);
 
+  useEffect(() => {
+    fetchServiceOrders();
+  }, []);
   const handleAddServiceRequest = () => {
     setAddDialogOpen(true);
   };
@@ -133,7 +136,7 @@ const ServiceRequestPage = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "id",
+      field: "stt",
       headerName: "STT",
       width: 70,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
@@ -210,7 +213,8 @@ const ServiceRequestPage = () => {
   ];
 
   const rows = serviceOrders.map((serviceOrder, index) => ({
-    id: index + 1,
+    id: serviceOrder.serviceOrderId,
+    stt: index + 1,
     serviceOrderId: serviceOrder.serviceOrderId,
     serviceOrderCode: serviceOrder.serviceOrderCode,
     customerName: serviceOrder.customerName,

@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -60,13 +59,15 @@ const CustomerPage: React.FC = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
+  useEffect(() => {
+    fetchCustomers(); // Fetch data on initial load
+  }, []);
   const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomerId(customer.customerId);
     setViewDialogOpen(true);
   };
 
   const handleEditCustomer = (customer: Customer) => {
-    console.log("Selected Customer ID for editing:", customer.customerId);
     setSelectedCustomerId(customer.customerId);
     setEditDialogOpen(true);
   };
@@ -74,12 +75,13 @@ const CustomerPage: React.FC = () => {
   const handleViewDialogClose = () => {
     setViewDialogOpen(false);
     setSelectedCustomerId(null);
+    fetchCustomers(); // Fetch dữ liệu sau khi đóng dialog
   };
 
   const handleEditDialogClose = () => {
     setEditDialogOpen(false);
     setSelectedCustomerId(null);
-    fetchCustomers();
+    fetchCustomers(); // Fetch dữ liệu sau khi đóng dialog
   };
 
   const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {

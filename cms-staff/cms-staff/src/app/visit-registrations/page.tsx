@@ -131,16 +131,19 @@ const VisitRegistrationsList: React.FC = () => {
   }, [searchText, searchColumn, visitRegistrations]);
 
   const handleView = (visit: VisitRegistrationDto) => {
+    console.log("Viewing visit:", visit);
     setSelectedVisit(visit);
     setViewDialogOpen(true);
   };
 
   const handleApprove = (visit: VisitRegistrationDto) => {
+    console.log("Approving visit:", visit);
     setSelectedVisit(visit);
     setApproveDialogOpen(true);
   };
 
   const handleReject = (visit: VisitRegistrationDto) => {
+    console.log("Rejecting visit:", visit);
     setSelectedVisit(visit);
     setDeleteDialogOpen(true);
   };
@@ -160,7 +163,7 @@ const VisitRegistrationsList: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "id",
+      field: "stt",
       headerName: "STT",
       width: 80,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
@@ -265,7 +268,9 @@ const VisitRegistrationsList: React.FC = () => {
   ];
 
   const rows = filteredVisitRegistrations.map((visit, index) => ({
-    id: index + 1,
+    id: visit.visitId,
+    visitId: visit.visitId,
+    stt: index + 1,
     visitCode: visit.visitCode,
     customerName: visit.customerName,
     staffName: visit.staffName,

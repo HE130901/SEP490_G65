@@ -198,11 +198,15 @@ namespace cms_server.Controllers
             int? confirmedBy = null;
             string status = "Pending";
 
-            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
+            if (staffIdClaim != null && !string.IsNullOrEmpty(staffIdClaim.Value))
             {
-                confirmedBy = staffId;
-                status = "Approved";
+                if (int.TryParse(staffIdClaim.Value, out int staffId))
+                {
+                    confirmedBy = staffId;
+                    status = "Approved";
+                }
             }
+
 
             var nicheReservation = new NicheReservation
             {
@@ -340,8 +344,6 @@ namespace cms_server.Controllers
             }
         }
 
-
-        // PUT: api/NicheReservations/confirm/5
         [HttpPut("confirm/{id}")]
         public async Task<IActionResult> ConfirmNicheReservation(int id)
         {
@@ -356,8 +358,19 @@ namespace cms_server.Controllers
                 return BadRequest(new { error = "Reservation is already approved" });
             }
 
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest(new { error = "User ID not found" });
+            }
+
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return BadRequest(new { error = "Invalid user ID" });
+            }
+
             nicheReservation.Status = "Approved";
-            nicheReservation.ConfirmedBy = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            nicheReservation.ConfirmedBy = userId;
             _context.Entry(nicheReservation).State = EntityState.Modified;
 
             try
@@ -375,6 +388,7 @@ namespace cms_server.Controllers
         {
             return _context.NicheReservations.Any(e => e.ReservationId == id);
         }
+
 
         // GET: api/NicheReservations/approved
         [HttpGet("approved")]

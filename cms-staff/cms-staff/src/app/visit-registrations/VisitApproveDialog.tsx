@@ -17,16 +17,18 @@ const VisitApproveDialog: React.FC<VisitDialogProps> = ({
   onClose,
 }) => {
   const handleApprove = async () => {
-    if (visit) {
+    if (visit && typeof visit.visitId === "number") {
       try {
         await axiosInstance.put(
           `/api/VisitRegistrations/approve/${visit.visitId}`
         );
-        toast.success("Visit registration approved successfully");
+        toast.success("Xác nhận đơn thành công");
         onClose();
       } catch (error) {
-        toast.error("Failed to approve visit registration");
+        toast.error("Xác nhận đơn không thành công");
       }
+    } else {
+      toast.error("Invalid visit ID");
     }
   };
 

@@ -1,7 +1,7 @@
 // ServiceProductPage.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -75,7 +75,7 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
 }));
 
 const ServiceProductPage: React.FC = () => {
-  const { services, addService, updateService, deleteService } =
+  const { services, addService, updateService, deleteService, fetchServices } =
     useServiceContext();
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [viewOpen, setViewOpen] = useState<boolean>(false);
@@ -84,6 +84,10 @@ const ServiceProductPage: React.FC = () => {
   const [addOpen, setAddOpen] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchColumn, setSearchColumn] = useState<string>("all");
+
+  useEffect(() => {
+    fetchServices(); // Fetch data on initial load
+  }, []);
 
   const handleAddItem = () => {
     setAddOpen(true);

@@ -1,4 +1,3 @@
-// NicheReservationPage.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,7 +30,7 @@ import ViewBookingRequestDialog from "./NicheReservationDetail";
 import DeleteBookingRequestDialog from "./NicheReservationDelete";
 import ConfirmBookingRequestDialog from "./NicheReservationConfirm";
 import viVN from "@/utils/viVN";
-import { useNicheReservationContext } from "@/context/NicheReservationContext"; // Import useNicheReservationContext
+import { useNicheReservationContext } from "@/context/NicheReservationContext";
 import NicheReservationAPI from "@/services/nicheReservationService";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
@@ -108,9 +107,8 @@ const NicheReservationPage = () => {
   const {
     reservations,
     fetchReservations,
-    addReservation,
-    updateReservation,
     deleteReservation,
+    confirmReservation,
   } = useNicheReservationContext();
 
   const [filteredRequests, setFilteredRequests] = useState<any[]>([]);
@@ -123,6 +121,10 @@ const NicheReservationPage = () => {
   const [selectedBookingRequest, setSelectedBookingRequest] = useState<
     any | null
   >(null);
+
+  useEffect(() => {
+    fetchReservations(); // Fetch data on initial load
+  }, []);
 
   useEffect(() => {
     setFilteredRequests(reservations);
@@ -153,10 +155,10 @@ const NicheReservationPage = () => {
   const handleViewBookingRequest = async (id: number) => {
     try {
       const response = await NicheReservationAPI.getNicheReservationDetails(id);
-      setSelectedBookingRequest(response.data as any);
+      setSelectedBookingRequest(response.data);
       setViewDialogOpen(true);
     } catch (error) {
-      toast.error("Không thể tải chi tiết đơn đăng ký đặt chỗ");
+      toast.error("Failed to load booking request details");
     }
   };
 
@@ -193,34 +195,32 @@ const NicheReservationPage = () => {
   const handleDeleteConfirmed = async () => {
     try {
       if (selectedBookingRequest) {
-        deleteReservation(selectedBookingRequest.reservationId);
+        await deleteReservation(selectedBookingRequest.reservationId);
+        fetchReservations();
+        setDeleteDialogOpen(false);
+        setSelectedBookingRequest(null);
       }
-      toast.success("Đã xoá đơn đăng ký đặt chỗ thành công");
-      fetchReservations();
-      setDeleteDialogOpen(false);
-      setSelectedBookingRequest(null);
     } catch (error) {
-      toast.error("Không thể xoá đơn đăng ký đặt chỗ");
+      toast.error("Failed to delete booking request");
     }
   };
 
   const handleConfirmConfirmed = async () => {
     try {
       if (selectedBookingRequest) {
-        updateReservation({ ...selectedBookingRequest, status: "Approved" });
+        await confirmReservation(selectedBookingRequest.reservationId);
+        fetchReservations();
+        setConfirmDialogOpen(false);
+        setSelectedBookingRequest(null);
       }
-      toast.success("Đơn đăng ký đã được xác nhận thành công");
-      fetchReservations();
-      setConfirmDialogOpen(false);
-      setSelectedBookingRequest(null);
     } catch (error) {
-      toast.error("Không thể xác nhận đơn đăng ký");
+      toast.error("Failed to confirm booking request");
     }
   };
 
   const columns: GridColDef[] = [
     {
-      field: "id",
+      field: "stt",
       headerName: "STT",
       width: 80,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
@@ -303,14 +303,14 @@ const NicheReservationPage = () => {
   ];
 
   const rows = filteredRequests.map((bookingRequest, index) => ({
-    id: index + 1,
+    id: bookingRequest.reservationId,
+    stt: index + 1,
     reservationId: bookingRequest.reservationId,
     reservationCode: bookingRequest.reservationCode,
     nicheAddress: bookingRequest.nicheAddress,
     name: bookingRequest.name,
-    phoneNumber: bookingRequest.phoneNumber,
-    formattedCreatedDate: bookingRequest.formattedCreatedDate,
     formattedConfirmationDate: bookingRequest.formattedConfirmationDate,
+    formattedCreatedDate: bookingRequest.formattedCreatedDate,
     status: bookingRequest.status,
   }));
 

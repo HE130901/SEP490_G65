@@ -1,4 +1,3 @@
-// NicheReservationContext.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -22,6 +21,7 @@ interface NicheReservationContextProps {
   addReservation: (reservation: NicheReservation) => void;
   updateReservation: (updatedReservation: NicheReservation) => void;
   deleteReservation: (reservationId: number) => void;
+  confirmReservation: (reservationId: number) => void;
 }
 
 const NicheReservationContext = createContext<
@@ -42,24 +42,47 @@ export const NicheReservationProvider: React.FC<{
     }
   };
 
-  const addReservation = (reservation: NicheReservation) => {
-    setReservations((prev) => [...prev, reservation]);
+  const addReservation = async (reservation: NicheReservation) => {
+    try {
+      await NicheReservationAPI.createNicheReservation(reservation);
+      fetchReservations();
+      toast.success("Đơn đăng ký đã được thêm thành công");
+    } catch (error) {
+      toast.error("Không thể thêm đơn đăng ký");
+    }
   };
 
-  const updateReservation = (updatedReservation: NicheReservation) => {
-    setReservations((prev) =>
-      prev.map((reservation) =>
-        reservation.reservationId === updatedReservation.reservationId
-          ? updatedReservation
-          : reservation
-      )
-    );
+  const updateReservation = async (updatedReservation: NicheReservation) => {
+    try {
+      await NicheReservationAPI.updateNicheReservation(
+        updatedReservation.reservationId,
+        updatedReservation
+      );
+      fetchReservations();
+      toast.success("Đơn đăng ký đã được cập nhật thành công");
+    } catch (error) {
+      toast.error("Không thể cập nhật đơn đăng ký");
+    }
   };
 
-  const deleteReservation = (reservationId: number) => {
-    setReservations((prev) =>
-      prev.filter((reservation) => reservation.reservationId !== reservationId)
-    );
+  const deleteReservation = async (reservationId: number) => {
+    try {
+      await NicheReservationAPI.deleteNicheReservation(reservationId);
+      fetchReservations();
+      toast.success("Đơn đăng ký đã được từ chối");
+    } catch (error) {
+      toast.error("Không thể từ chối đơn đăng ký");
+    }
+  };
+
+  const confirmReservation = async (reservationId: number) => {
+    try {
+      await NicheReservationAPI.confirmNicheReservation(reservationId);
+      fetchReservations();
+      toast.success("Đơn đăng ký đã được xác nhận");
+    } catch (error) {
+      toast.error("Không thể xác nhận đơn đăng ký");
+    }
   };
 
   useEffect(() => {
@@ -74,6 +97,7 @@ export const NicheReservationProvider: React.FC<{
         addReservation,
         updateReservation,
         deleteReservation,
+        confirmReservation,
       }}
     >
       {children}

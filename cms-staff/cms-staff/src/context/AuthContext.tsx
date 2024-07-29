@@ -35,25 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      AuthAPI.getCurrentUser(token)
-        .then((response) => {
-          console.log("Fetched user:", response.data); // Debug log
-          setUser(response.data);
-          setLoading(false);
-          // Điều hướng người dùng dựa trên vai trò
-          if (response.data.role === "Manager") {
-            router.push("/manager-dashboard");
-          } else if (response.data.role === "Staff") {
-            router.push("/dashboard");
-          } else {
-            logout();
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-          setLoading(false);
-        });
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+      setLoading(false);
     } else {
       setLoading(false);
     }
@@ -64,15 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await AuthAPI.login(email, password);
       const data = response.data;
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data)); // Lưu trữ thông tin người dùng
       setUser(data);
 
-      // Điều hướng dựa trên vai trò
       if (data.role === "Manager") {
         router.push("/manager-dashboard");
       } else if (data.role === "Staff") {
         router.push("/dashboard");
       } else {
-        throw new Error("AccessDenied"); // Ném lỗi nếu vai trò không hợp lệ
+        throw new Error("AccessDenied");
       }
     } catch (error) {
       logout();
@@ -82,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user"); // Xóa thông tin người dùng khỏi localStorage
     setUser(null);
     router.push("/auth/login");
   };
