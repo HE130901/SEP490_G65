@@ -225,7 +225,7 @@ export default function ServiceOrderList({
         id: "actions",
         header: "Hành động",
         cell: (props) => (
-          <div className="flex space-x-2">
+          <div className="flex justify-center items-center">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -238,23 +238,8 @@ export default function ServiceOrderList({
                 </TooltipTrigger>
                 <TooltipContent>Xem chi tiết</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <IconButton
-                    color="warning"
-                    onClick={() => handleEdit(props.row.original)}
-                    disabled={props.row.original.serviceOrderDetails.$values.every(
-                      (detail) =>
-                        detail.status == "Completed" ||
-                        detail.status == "Canceled"
-                    )}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </IconButton>
-                </TooltipTrigger>
-                <TooltipContent>Chỉnh sửa</TooltipContent>
-              </Tooltip>
             </TooltipProvider>
+            {/* Thêm các nút khác nếu cần */}
           </div>
         ),
       }),

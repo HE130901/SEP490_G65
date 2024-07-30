@@ -13,11 +13,11 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Badge,
   TextField,
 } from "@mui/material";
 import { ServiceOrder } from "./ServiceOrderList";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 interface DetailViewDialogProps {
   record: ServiceOrder | null;
@@ -54,12 +54,47 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
     (detail) => detail.status === "Complete"
   );
 
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "Approved":
+      case "Signed":
+      case "Completed":
+        return "green";
+      case "Pending":
+        return "default";
+      case "Canceled":
+      case "Expired":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "Approved":
+        return "Đã duyệt";
+      case "Pending":
+        return "Đang chờ duyệt";
+      case "Canceled":
+        return "Đã hủy";
+      case "Expired":
+        return "Đã hết hạn";
+      case "Signed":
+        return "Đã ký hợp đồng";
+      case "Completed":
+        return "Đã hoàn thành";
+      default:
+        return "Không xác định";
+    }
+  };
+
   return (
     <Dialog open={!!record} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Chi tiết đơn đặt hàng</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          <strong>Mã đơn hàng:</strong> {record.serviceOrderId}
+          <strong>Mã đơn hàng:</strong> {record.serviceOrderCode}
         </DialogContentText>
         <DialogContentText>
           <strong>Ngày tạo:</strong>{" "}
@@ -87,10 +122,8 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
                   <TableCell>{detail.serviceName}</TableCell>
                   <TableCell>{detail.quantity}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={detail.status === "Pending" ? "standard" : "dot"}
-                    >
-                      {detail.status}
+                    <Badge variant={getStatusVariant(detail.status)}>
+                      {getStatusText(detail.status) || "Không có thông tin"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -114,14 +147,6 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Đóng
-        </Button>
-        <Button
-          onClick={() => setIsEditOpen(true)}
-          color="primary"
-          variant="contained"
-          disabled={hasCompleteStatus}
-        >
-          Sửa ngày hẹn
         </Button>
       </DialogActions>
       <EditDateDialog

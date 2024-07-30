@@ -62,6 +62,7 @@ export type NicheReservation = {
 const getStatusVariant = (status: string) => {
   switch (status) {
     case "Approved":
+    case "Signed":
       return "green";
     case "Pending":
       return "default";
@@ -83,7 +84,8 @@ const getStatusText = (status: string) => {
       return "Đã hủy";
     case "Expired":
       return "Đã hết hạn";
-
+    case "Signed":
+      return "Đã ký hợp đồng";
     default:
       return "Không xác định";
   }
@@ -186,6 +188,15 @@ export default function BookingRequestList({
     setCurrentModal(null);
   };
 
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
   const columns: ColumnDef<NicheReservation>[] = [
     {
       id: "stt",
@@ -241,11 +252,7 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="text-center">
-          {new Date(row.getValue("createdDate")).toLocaleString("vi-VN")}
-        </div>
-      ),
+      cell: (info) => formatDate(info.getValue() as string),
     },
     {
       accessorKey: "confirmationDate",
@@ -258,11 +265,7 @@ export default function BookingRequestList({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="text-center">
-          {new Date(row.getValue("confirmationDate")).toLocaleString("vi-VN")}
-        </div>
-      ),
+      cell: (info) => formatDate(info.getValue() as string),
     },
     {
       accessorKey: "status",
@@ -312,7 +315,8 @@ export default function BookingRequestList({
                   disabled={
                     row.original.status === "Approved" ||
                     row.original.status === "Canceled" ||
-                    row.original.status === "Expired"
+                    row.original.status === "Expired" ||
+                    row.original.status === "Signed"
                   }
                   className="text-orange-600"
                 >
@@ -332,7 +336,8 @@ export default function BookingRequestList({
                   disabled={
                     row.original.status === "Approved" ||
                     row.original.status === "Canceled" ||
-                    row.original.status === "Expired"
+                    row.original.status === "Expired" ||
+                    row.original.status === "Signed"
                   }
                   className="text-red-600"
                 >
