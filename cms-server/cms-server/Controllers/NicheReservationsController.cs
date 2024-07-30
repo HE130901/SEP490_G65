@@ -54,7 +54,8 @@ namespace cms_server.Controllers
                     CreatedDate = r.CreatedDate,
                     ConfirmationDate = r.ConfirmationDate,
                     Note = r.Note,
-                    Status = r.Status
+                    Status = r.Status,
+                    NicheCode = r.Niche.NicheCode
                 })
                 .ToListAsync();
 
@@ -455,6 +456,8 @@ namespace cms_server.Controllers
     {
         public int ReservationId { get; set; }
         public string Name { get; set; }
+        public string NicheCode { get; set; }
+
         public string PhoneNumber { get; set; }
         public string NicheAddress { get; set; }
         public string ReservationCode { get; set; }

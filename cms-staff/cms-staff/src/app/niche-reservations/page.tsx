@@ -229,12 +229,18 @@ const NicheReservationPage = () => {
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
-      field: "nicheAddress",
-      headerName: "Địa chỉ ô chứa",
-      width: 280,
+      field: "nicheCode",
+      headerName: "Mã ô chứa",
+      width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "name", headerName: "Tên khách hàng", width: 200 },
+    { field: "name", headerName: "Tên khách hàng", width: 180 },
+    {
+      field: "formattedCreatedDate",
+      headerName: "Thời gian tạo",
+      width: 180,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
     {
       field: "formattedConfirmationDate",
       headerName: "Ngày hẹn",
@@ -244,7 +250,7 @@ const NicheReservationPage = () => {
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 140,
+      width: 120,
       renderCell: (params) => (
         <Chip
           label={getStatusLabel(params.value)}
@@ -255,7 +261,7 @@ const NicheReservationPage = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 180,
+      width: 150,
       renderCell: (params) => (
         <CenteredCell>
           <Tooltip title="Xem chi tiết">
@@ -306,9 +312,11 @@ const NicheReservationPage = () => {
     reservationCode: bookingRequest.reservationCode,
     nicheAddress: bookingRequest.nicheAddress,
     name: bookingRequest.name,
-    formattedConfirmationDate: bookingRequest.formattedConfirmationDate,
+    formattedConfirmationDate:
+      bookingRequest.formattedConfirmationDate.split(" ")[1],
     formattedCreatedDate: bookingRequest.formattedCreatedDate,
     status: bookingRequest.status,
+    nicheCode: bookingRequest.nicheCode,
   }));
 
   return (
