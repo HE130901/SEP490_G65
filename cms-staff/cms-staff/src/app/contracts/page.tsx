@@ -29,6 +29,7 @@ import ContractContext from "@/context/ContractContext";
 import contractService from "@/services/contractService";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
+import { SelectChangeEvent } from "@mui/material";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -118,6 +119,13 @@ const ContractPage: React.FC = () => {
   const [searchColumn, setSearchColumn] = useState<SearchableColumns>("all");
   const [filteredContracts, setFilteredContracts] = useState(contracts);
 
+  // New state for date filtering
+  const [dateFilterType, setDateFilterType] = useState<"startDate" | "endDate">(
+    "startDate"
+  );
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
   const fetchContracts = async () => {
     setLoading(true);
     try {
@@ -136,25 +144,36 @@ const ContractPage: React.FC = () => {
   }, [setContracts]);
 
   useEffect(() => {
-    const filtered = contracts.filter((contract) => {
-      if (searchColumn === "all") {
-        return Object.values(contract).some((value) =>
-          String(value).toLowerCase().includes(searchText.toLowerCase())
-        );
-      } else if (searchColumn === "daysLeft") {
-        const daysLeft = calculateDaysLeft(contract.endDate);
-        return String(daysLeft)
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
-      } else {
-        const columnValue = contract[searchColumn as keyof typeof contract];
-        return String(columnValue)
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
-      }
-    });
+    const filtered = contracts
+      .filter((contract) => {
+        // Existing search filter logic
+        if (searchColumn === "all") {
+          return Object.values(contract).some((value) =>
+            String(value).toLowerCase().includes(searchText.toLowerCase())
+          );
+        } else if (searchColumn === "daysLeft") {
+          const daysLeft = calculateDaysLeft(contract.endDate);
+          return String(daysLeft)
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        } else {
+          const columnValue = contract[searchColumn as keyof typeof contract];
+          return String(columnValue)
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        }
+      })
+      .filter((contract) => {
+        // Date range filter logic
+        if (!fromDate || !toDate) return true;
+        const contractDate = new Date(contract[dateFilterType]);
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+        return contractDate >= from && contractDate <= to;
+      });
+
     setFilteredContracts(filtered);
-  }, [searchText, searchColumn, contracts]);
+  }, [searchText, searchColumn, contracts, fromDate, toDate, dateFilterType]);
 
   const handleAddOpen = () => {
     setOpenAddDialog(true);
@@ -325,6 +344,46 @@ const ContractPage: React.FC = () => {
           Thêm mới hợp đồng
         </Button>
         <Box display="flex" alignItems="center">
+          {/* New date filter UI */}
+          <FormControl
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8, width: 200 }}
+          >
+            <InputLabel id="date-filter-type-label">Chọn loại ngày</InputLabel>
+            <Select
+              labelId="date-filter-type-label"
+              value={dateFilterType}
+              onChange={(e: SelectChangeEvent<string>) =>
+                setDateFilterType(e.target.value as "startDate" | "endDate")
+              }
+              label="Chọn loại ngày"
+            >
+              <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
+              <MenuItem value="endDate">Ngày kết thúc</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Từ ngày"
+            variant="outlined"
+            size="small"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            style={{ marginRight: 8 }}
+          />
+          <TextField
+            label="Đến ngày"
+            variant="outlined"
+            size="small"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </Box>
+        <Box display="flex" alignItems="center" style={{ marginLeft: 16 }}>
           <FormControl
             variant="outlined"
             size="small"
