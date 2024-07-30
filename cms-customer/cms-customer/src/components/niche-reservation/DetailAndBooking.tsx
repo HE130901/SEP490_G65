@@ -147,13 +147,7 @@ const CombinedDialog = ({
     }
   };
 
-  const onSubmit = async (data: {
-    contractDate: string;
-    name: any;
-    signAddress: any;
-    phoneNumber: any;
-    note: any;
-  }) => {
+  const onSubmit = async (data: any) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
