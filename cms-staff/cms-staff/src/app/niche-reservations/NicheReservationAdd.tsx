@@ -18,6 +18,7 @@ import {
   Grid,
   SelectChangeEvent,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "react-toastify";
@@ -59,6 +60,7 @@ const AddBookingRequestDialog = ({
   onClose: () => void;
   onAddSuccess: () => void;
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     buildingId: "",
     floorId: "",
@@ -213,6 +215,7 @@ const AddBookingRequestDialog = ({
 
   const handleAdd = async () => {
     try {
+      setIsSubmitting(true);
       formSchema.parse(formData);
       await NicheReservationAPI.createNicheReservation(formData);
       toast.success("Đã thêm đơn đăng ký đặt chỗ mới");
@@ -228,6 +231,8 @@ const AddBookingRequestDialog = ({
       } else {
         toast.error("Không thể thêm đơn đăng ký đặt chỗ");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -431,8 +436,16 @@ const AddBookingRequestDialog = ({
           Đóng
         </Button>
 
-        <Button onClick={handleAdd} color="primary" variant="contained">
+        <Button
+          onClick={handleAdd}
+          color="primary"
+          variant="contained"
+          disabled={isSubmitting}
+        >
           Thêm mới
+          {isSubmitting && (
+            <CircularProgress size={24} sx={{ marginLeft: 2 }} />
+          )}
         </Button>
       </DialogActions>
     </Dialog>

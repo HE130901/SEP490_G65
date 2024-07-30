@@ -14,11 +14,13 @@ import {
   MenuItem,
   SelectChangeEvent,
   FormHelperText,
+  CircularProgress,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import ServiceOrderAPI from "@/services/serviceOrderService";
+import { set } from "react-hook-form";
 
 interface VisitAddDialogProps {
   open: boolean;
@@ -41,6 +43,7 @@ const formSchema = z.object({
 });
 
 const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [contracts, setContracts] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     customerId: 0,
@@ -110,6 +113,7 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
 
   const handleSave = async () => {
     try {
+      setIsSubmitting(true);
       formSchema.parse({
         ...formData,
         accompanyingPeople: Number(formData.accompanyingPeople),
@@ -127,6 +131,8 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       } else {
         toast.error("Không thể thêm đăng ký viếng thăm");
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -197,8 +203,16 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         <Button onClick={onClose} variant="outlined">
           Hủy
         </Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
-          Lưu
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          color="primary"
+          disabled={isSubmitting}
+        >
+          Thêm mới{" "}
+          {isSubmitting && (
+            <CircularProgress size={24} sx={{ marginLeft: 2 }} />
+          )}
         </Button>
       </DialogActions>
     </Dialog>

@@ -15,10 +15,12 @@ import {
   InputLabel,
   IconButton,
   SelectChangeEvent,
+  CircularProgress,
 } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
+import { set } from "react-hook-form";
 
 const AddServiceOrderDialog = ({
   open,
@@ -29,6 +31,7 @@ const AddServiceOrderDialog = ({
   onClose: () => void;
   onAddSuccess: () => void;
 }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [contracts, setContracts] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -107,6 +110,7 @@ const AddServiceOrderDialog = ({
 
   const handleSubmit = async () => {
     try {
+      setIsSubmitting(true);
       const selectedContract = contracts.find(
         (contract) => contract.contractId === formData.contractId
       );
@@ -124,6 +128,8 @@ const AddServiceOrderDialog = ({
       onClose();
     } catch (error) {
       toast.error("Không thể tạo đơn đăng ký dùng dịch vụ");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,8 +218,16 @@ const AddServiceOrderDialog = ({
         <Button onClick={onClose} color="primary">
           Hủy
         </Button>
-        <Button onClick={handleSubmit} color="primary" variant="contained">
-          Thêm mới
+        <Button
+          onClick={handleSubmit}
+          color="primary"
+          variant="contained"
+          disabled={isSubmitting}
+        >
+          Thêm mới{" "}
+          {isSubmitting && (
+            <CircularProgress size={24} sx={{ marginLeft: 2 }} />
+          )}
         </Button>
       </DialogActions>
     </Dialog>
