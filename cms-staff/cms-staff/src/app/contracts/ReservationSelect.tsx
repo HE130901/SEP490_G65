@@ -49,8 +49,8 @@ const ReservationSelect: React.FC<ReservationSelectProps> = ({
             key={reservation.reservationId}
             value={reservation.reservationCode}
           >
-            {reservation.reservationCode} | {reservation.nicheAddress} |{" "}
-            {reservation.customerName}
+            {reservation.reservationCode} | {reservation.nicheCode} |{" "}
+            {reservation.customerName} | {reservation.customerPhone}
           </MenuItem>
         ))}
       </Select>
