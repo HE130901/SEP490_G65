@@ -116,7 +116,8 @@ const ContractPage: React.FC = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [searchColumn, setSearchColumn] = useState<SearchableColumns>("all");
+  const [searchColumn, setSearchColumn] =
+    useState<SearchableColumns>("startDate");
   const [filteredContracts, setFilteredContracts] = useState(contracts);
 
   // New state for date filtering
@@ -144,33 +145,31 @@ const ContractPage: React.FC = () => {
   }, [setContracts]);
 
   useEffect(() => {
-    const filtered = contracts
-      .filter((contract) => {
-        // Existing search filter logic
-        if (searchColumn === "all") {
-          return Object.values(contract).some((value) =>
-            String(value).toLowerCase().includes(searchText.toLowerCase())
-          );
-        } else if (searchColumn === "daysLeft") {
-          const daysLeft = calculateDaysLeft(contract.endDate);
-          return String(daysLeft)
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
-        } else {
-          const columnValue = contract[searchColumn as keyof typeof contract];
-          return String(columnValue)
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
-        }
-      })
-      .filter((contract) => {
+    const filtered = contracts.filter((contract) => {
+      // Existing search filter logic
+      if (searchColumn === "all") {
+        return Object.values(contract).some((value) =>
+          String(value).toLowerCase().includes(searchText.toLowerCase())
+        );
+      } else if (searchColumn === "daysLeft") {
+        const daysLeft = calculateDaysLeft(contract.endDate);
+        return String(daysLeft)
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      } else if (searchColumn === "startDate" || searchColumn === "endDate") {
         // Date range filter logic
         if (!fromDate || !toDate) return true;
-        const contractDate = new Date(contract[dateFilterType]);
+        const contractDate = new Date(contract[searchColumn]);
         const from = new Date(fromDate);
         const to = new Date(toDate);
         return contractDate >= from && contractDate <= to;
-      });
+      } else {
+        const columnValue = contract[searchColumn as keyof typeof contract];
+        return String(columnValue)
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      }
+    });
 
     setFilteredContracts(filtered);
   }, [searchText, searchColumn, contracts, fromDate, toDate, dateFilterType]);
@@ -334,6 +333,8 @@ const ContractPage: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        flexWrap="wrap"
+        gap={2}
       >
         <Button
           variant="contained"
@@ -343,52 +344,8 @@ const ContractPage: React.FC = () => {
         >
           Thêm mới hợp đồng
         </Button>
-        <Box display="flex" alignItems="center">
-          {/* New date filter UI */}
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ marginRight: 8, width: 200 }}
-          >
-            <InputLabel id="date-filter-type-label">Chọn loại ngày</InputLabel>
-            <Select
-              labelId="date-filter-type-label"
-              value={dateFilterType}
-              onChange={(e: SelectChangeEvent<string>) =>
-                setDateFilterType(e.target.value as "startDate" | "endDate")
-              }
-              label="Chọn loại ngày"
-            >
-              <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
-              <MenuItem value="endDate">Ngày kết thúc</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            label="Từ ngày"
-            variant="outlined"
-            size="small"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            style={{ marginRight: 8 }}
-          />
-          <TextField
-            label="Đến ngày"
-            variant="outlined"
-            size="small"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-          />
-        </Box>
-        <Box display="flex" alignItems="center" style={{ marginLeft: 16 }}>
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ marginRight: 8 }}
-          >
+        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+          <FormControl variant="outlined" size="small">
             <InputLabel id="search-column-label">Chọn cột</InputLabel>
             <Select
               labelId="search-column-label"
@@ -408,13 +365,37 @@ const ContractPage: React.FC = () => {
               <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
           </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+          {searchColumn === "startDate" || searchColumn === "endDate" ? (
+            <>
+              <TextField
+                label="Từ ngày"
+                variant="outlined"
+                size="small"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                style={{ marginRight: 8 }}
+              />
+              <TextField
+                label="Đến ngày"
+                variant="outlined"
+                size="small"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </>
+          ) : (
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          )}
         </Box>
       </Box>
 

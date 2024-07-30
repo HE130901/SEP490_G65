@@ -31,7 +31,9 @@ import ConfirmBookingRequestDialog from "./NicheReservationConfirm";
 import viVN from "@/utils/viVN";
 import { useNicheReservationContext } from "@/context/NicheReservationContext";
 import NicheReservationAPI from "@/services/nicheReservationService";
+import { formatISO, parseISO, isWithinInterval } from "date-fns";
 
+// Styled components
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -72,6 +74,7 @@ const CenteredCell = styled("div")({
   height: "100%",
 });
 
+// Helper functions
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
@@ -112,7 +115,15 @@ const NicheReservationPage = () => {
 
   const [filteredRequests, setFilteredRequests] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
-  const [searchColumn, setSearchColumn] = useState("all");
+  const [searchColumn, setSearchColumn] = useState("formattedCreatedDate");
+  const [startDateCreated, setStartDateCreated] = useState<string | null>(null);
+  const [endDateCreated, setEndDateCreated] = useState<string | null>(null);
+  const [startDateConfirmation, setStartDateConfirmation] = useState<
+    string | null
+  >(null);
+  const [endDateConfirmation, setEndDateConfirmation] = useState<string | null>(
+    null
+  );
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -131,8 +142,9 @@ const NicheReservationPage = () => {
 
   useEffect(() => {
     let filteredData = reservations;
+
     if (searchText) {
-      filteredData = reservations.filter((request) => {
+      filteredData = filteredData.filter((request) => {
         if (searchColumn === "all") {
           return Object.values(request).some((value) =>
             String(value).toLowerCase().includes(searchText.toLowerCase())
@@ -148,12 +160,41 @@ const NicheReservationPage = () => {
         }
       });
     }
-    setFilteredRequests(filteredData);
-  }, [searchText, searchColumn, reservations]);
 
-  const handleAddBookingRequest = () => {
-    setAddDialogOpen(true);
-  };
+    if (startDateCreated || endDateCreated) {
+      filteredData = filteredData.filter((request) => {
+        const createdDate = parseISO(request.formattedCreatedDate);
+        return isWithinInterval(createdDate, {
+          start: startDateCreated ? parseISO(startDateCreated) : new Date(0),
+          end: endDateCreated ? parseISO(endDateCreated) : new Date(),
+        });
+      });
+    }
+
+    if (startDateConfirmation || endDateConfirmation) {
+      filteredData = filteredData.filter((request) => {
+        const confirmationDate = parseISO(request.formattedConfirmationDate);
+        return isWithinInterval(confirmationDate, {
+          start: startDateConfirmation
+            ? parseISO(startDateConfirmation)
+            : new Date(0),
+          end: endDateConfirmation ? parseISO(endDateConfirmation) : new Date(),
+        });
+      });
+    }
+
+    setFilteredRequests(filteredData);
+  }, [
+    searchText,
+    searchColumn,
+    startDateCreated,
+    endDateCreated,
+    startDateConfirmation,
+    endDateConfirmation,
+    reservations,
+  ]);
+
+  const handleAddBookingRequest = () => setAddDialogOpen(true);
 
   const handleViewBookingRequest = async (id: number) => {
     try {
@@ -237,7 +278,7 @@ const NicheReservationPage = () => {
     { field: "name", headerName: "Tên khách hàng", width: 180 },
     {
       field: "formattedCreatedDate",
-      headerName: "Thời gian tạo",
+      headerName: "Ngày tạo",
       width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
@@ -314,7 +355,8 @@ const NicheReservationPage = () => {
     name: bookingRequest.name,
     formattedConfirmationDate:
       bookingRequest.formattedConfirmationDate.split(" ")[1],
-    formattedCreatedDate: bookingRequest.formattedCreatedDate,
+    formattedCreatedDate:
+      bookingRequest.formattedConfirmationDate.split(" ")[1],
     status: bookingRequest.status,
     nicheCode: bookingRequest.nicheCode,
   }));
@@ -352,22 +394,67 @@ const NicheReservationPage = () => {
               <MenuItem value="nicheAddress">Địa chỉ ô chứa</MenuItem>
               <MenuItem value="name">Tên khách hàng</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
+              <MenuItem value="formattedCreatedDate">Ngày tạo</MenuItem>
+              <MenuItem value="formattedConfirmationDate">Ngày hẹn</MenuItem>
             </Select>
           </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+          {searchColumn === "formattedCreatedDate" ||
+          searchColumn === "formattedConfirmationDate" ? (
+            <Box display="flex" alignItems="center">
+              <TextField
+                type="date"
+                label="Từ ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={
+                  searchColumn === "formattedCreatedDate"
+                    ? startDateCreated
+                    : startDateConfirmation
+                }
+                onChange={(e) =>
+                  searchColumn === "formattedCreatedDate"
+                    ? setStartDateCreated(e.target.value)
+                    : setStartDateConfirmation(e.target.value)
+                }
+                style={{ marginRight: 8 }}
+              />
+              <TextField
+                type="date"
+                label="Đến ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={
+                  searchColumn === "formattedCreatedDate"
+                    ? endDateCreated
+                    : endDateConfirmation
+                }
+                onChange={(e) =>
+                  searchColumn === "formattedCreatedDate"
+                    ? setEndDateCreated(e.target.value)
+                    : setEndDateConfirmation(e.target.value)
+                }
+                style={{ marginRight: 8 }}
+              />
+            </Box>
+          ) : (
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              style={{ marginRight: 8 }}
+            />
+          )}
         </Box>
       </Box>
       <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
