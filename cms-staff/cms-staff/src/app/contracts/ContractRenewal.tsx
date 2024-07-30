@@ -179,6 +179,10 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
     }
   };
 
+  const isDisabledOrHidden = () => {
+    return contract.status === "Canceled";
+  };
+
   return (
     <>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -220,55 +224,64 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
               />
             </Typography>
           </Box>
-          <Box mt={2}>
-            <FormControl fullWidth>
-              <InputLabel>Loại Gia Hạn</InputLabel>
-              <Select
-                value={type}
-                onChange={handleTypeChange}
-                label="Loại Gia Hạn"
-              >
-                <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
-                <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
-          <Box mt={2}>
-            <TextField
-              label="Thời gian (tháng hoặc năm)"
-              type="number"
-              value={duration}
-              onChange={handleDurationChange}
-              fullWidth
-            />
-          </Box>
-          <Box mt={2}>
-            <TextField
-              label="Ngày bắt đầu"
-              type="date"
-              value={renewalDate}
-              onChange={handleRenewalDateChange}
-              fullWidth
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Box>
-          <Box mt={2}>
-            <Typography variant="body1">
-              <strong>Ngày kết thúc mới:</strong>{" "}
-              {newEndDate ? formatDateToDDMMYYYY(newEndDate) : "N/A"}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Chi phí:</strong> {cost.toLocaleString()} VND
-            </Typography>
-          </Box>
+          {!isDisabledOrHidden() && (
+            <>
+              <Box mt={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Loại Gia Hạn</InputLabel>
+                  <Select
+                    value={type}
+                    onChange={handleTypeChange}
+                    label="Loại Gia Hạn"
+                  >
+                    <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
+                    <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box mt={2}>
+                <TextField
+                  label="Thời gian (tháng hoặc năm)"
+                  type="number"
+                  value={duration}
+                  onChange={handleDurationChange}
+                  fullWidth
+                />
+              </Box>
+              <Box mt={2}>
+                <TextField
+                  label="Ngày bắt đầu"
+                  type="date"
+                  value={renewalDate}
+                  onChange={handleRenewalDateChange}
+                  fullWidth
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Box>
+              <Box mt={2}>
+                <Typography variant="body1">
+                  <strong>Ngày kết thúc mới:</strong>{" "}
+                  {newEndDate ? formatDateToDDMMYYYY(newEndDate) : "N/A"}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Chi phí:</strong> {cost.toLocaleString()} VND
+                </Typography>
+              </Box>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} variant="outlined">
             Đóng
           </Button>
-          <Button onClick={handleSubmit} color="primary" variant="contained">
+          <Button
+            onClick={handleSubmit}
+            color="primary"
+            variant="contained"
+            disabled={isDisabledOrHidden()}
+          >
             Lưu
           </Button>
         </DialogActions>

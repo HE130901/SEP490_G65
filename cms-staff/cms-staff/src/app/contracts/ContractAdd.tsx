@@ -19,7 +19,7 @@ import {
   StepLabel,
   CircularProgress,
 } from "@mui/material";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import ReservationSelect from "./ReservationSelect";
 import { SelectChangeEvent } from "@mui/material";
 import { z } from "zod";
@@ -157,6 +157,65 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
     totalAmount: 0,
     reservationId: 0,
   });
+  const initialState = {
+    customerFullName: "",
+    customerPhoneNumber: "",
+    customerEmail: "",
+    customerAddress: "",
+    customerCitizenId: "",
+    customerCitizenIdIssueDate: "",
+    customerCitizenIdSupplier: "",
+    deceasedFullName: "",
+    deceasedCitizenId: "",
+    deceasedDateOfBirth: "",
+    deceasedDateOfDeath: "",
+    deathCertificateNumber: "",
+    deathCertificateSupplier: "",
+    relationshipWithCustomer: "",
+    nicheID: 0,
+    startDate: "",
+    endDate: "",
+    note: "",
+    totalAmount: 0,
+    reservationId: 0,
+  };
+
+  const resetForm = () => {
+    setContractData(initialState);
+    setSelectedReservationCode("");
+    setDuration("");
+    setType("");
+    setNewEndDate("N/A");
+    setCost(0);
+    setActiveStep(0);
+    setErrors({});
+    setIsSubmitting(false);
+  };
+
+  const fetchReservations = async () => {
+    try {
+      const response = await axiosInstance.get(
+        "/api/NicheReservations/approved"
+      );
+      setReservations(response.data.$values || []);
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+    }
+  };
+  useEffect(() => {
+    if (open) {
+      resetForm();
+      fetchReservations();
+    }
+  }, [open]);
+
+  // ... (phần còn lại của component giữ nguyên)
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+    fetchReservations();
+  };
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [activeStep, setActiveStep] = useState(0);
@@ -650,7 +709,7 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
       <DialogTitle>Thêm Hợp Đồng</DialogTitle>
       <DialogContent dividers>
         <ReservationSelect

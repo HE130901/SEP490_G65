@@ -147,7 +147,7 @@ const CustomerPage: React.FC = () => {
   }));
 
   return (
-    <Box p={3}>
+    <Box>
       <Box
         display="flex"
         justifyContent="space-between"

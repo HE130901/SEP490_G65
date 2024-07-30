@@ -70,6 +70,33 @@ const formatDateToDDMMYYYY = (dateString: string): string => {
   return `${day}/${month}/${year}`;
 };
 
+// Function to get today's date in YYYY-MM-DD format
+const getTodayDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+// Function to get the first day of the current month in YYYY-MM-DD format
+const getCurrentMonthStartDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}-01`;
+};
+
+// Function to get the last day of the current month in YYYY-MM-DD format
+const getCurrentMonthEndDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDay = new Date(year, month, 0).getDate(); // Last day of the current month
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(
+    2,
+    "0"
+  )}`;
+};
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
@@ -124,8 +151,8 @@ const ContractPage: React.FC = () => {
   const [dateFilterType, setDateFilterType] = useState<"startDate" | "endDate">(
     "startDate"
   );
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(getCurrentMonthStartDate());
+  const [toDate, setToDate] = useState(getCurrentMonthEndDate());
 
   const fetchContracts = async () => {
     setLoading(true);
@@ -142,7 +169,7 @@ const ContractPage: React.FC = () => {
 
   useEffect(() => {
     fetchContracts();
-  }, [setContracts]);
+  }, []);
 
   useEffect(() => {
     const filtered = contracts.filter((contract) => {
@@ -151,11 +178,9 @@ const ContractPage: React.FC = () => {
         return Object.values(contract).some((value) =>
           String(value).toLowerCase().includes(searchText.toLowerCase())
         );
-      } else if (searchColumn === "daysLeft") {
-        const daysLeft = calculateDaysLeft(contract.endDate);
-        return String(daysLeft)
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
+      } else if (searchColumn === "status") {
+        const status = getStatusLabel(contract.status).label;
+        return String(status).toLowerCase().includes(searchText.toLowerCase());
       } else if (searchColumn === "startDate" || searchColumn === "endDate") {
         // Date range filter logic
         if (!fromDate || !toDate) return true;
@@ -170,7 +195,6 @@ const ContractPage: React.FC = () => {
           .includes(searchText.toLowerCase());
       }
     });
-
     setFilteredContracts(filtered);
   }, [searchText, searchColumn, contracts, fromDate, toDate, dateFilterType]);
 
@@ -224,18 +248,25 @@ const ContractPage: React.FC = () => {
     {
       field: "contractCode",
       headerName: "Mã Hợp đồng",
-      width: 180,
+      headerClassName: "super-app-theme--header",
+      width: 200,
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {params.value}
         </Box>
       ),
     },
-    { field: "customerName", headerName: "Tên Khách hàng", width: 230 },
+    {
+      field: "customerName",
+      headerName: "Tên Khách hàng",
+      width: 230,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "startDate",
       headerName: "Ngày ký hợp đồng",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {formatDateToDDMMYYYY(params.value)}
@@ -246,6 +277,7 @@ const ContractPage: React.FC = () => {
       field: "endDate",
       headerName: "Ngày kết thúc",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {formatDateToDDMMYYYY(params.value)}
@@ -256,6 +288,7 @@ const ContractPage: React.FC = () => {
       field: "daysLeft",
       headerName: "Còn lại (ngày)",
       width: 130,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {calculateDaysLeft(params.row.endDate)}
@@ -266,6 +299,7 @@ const ContractPage: React.FC = () => {
       field: "status",
       headerName: "Trạng thái",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -290,7 +324,8 @@ const ContractPage: React.FC = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 180,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           <Tooltip title="Xem chi tiết">
@@ -305,7 +340,7 @@ const ContractPage: React.FC = () => {
             <IconButton
               color="success"
               onClick={() => handleRenewContract(params.row.contractId)}
-              disabled={params.row.status === "Canceled"}
+              // disabled={params.row.status === "Canceled"}
             >
               <RestorePageIcon />
             </IconButton>
@@ -327,14 +362,19 @@ const ContractPage: React.FC = () => {
   ];
 
   return (
-    <Box p={3}>
+    <Box
+      sx={{
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
-        flexWrap="wrap"
-        gap={2}
+        style={{ width: "100%" }}
       >
         <Button
           variant="contained"
@@ -346,7 +386,7 @@ const ContractPage: React.FC = () => {
         </Button>
         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
           <FormControl variant="outlined" size="small">
-            <InputLabel id="search-column-label">Chọn cột</InputLabel>
+            <InputLabel id="search-column-label">Tìm kiếm theo</InputLabel>
             <Select
               labelId="search-column-label"
               id="search-column"
@@ -354,14 +394,13 @@ const ContractPage: React.FC = () => {
               onChange={(e) =>
                 setSearchColumn(e.target.value as SearchableColumns)
               }
-              label="Chọn cột"
+              label="Tìm kiếm theo"
             >
               <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="contractCode">Mã Hợp đồng</MenuItem>
               <MenuItem value="customerName">Tên Khách hàng</MenuItem>
               <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
               <MenuItem value="endDate">Ngày kết thúc</MenuItem>
-              <MenuItem value="daysLeft">Còn lại (ngày)</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
           </FormControl>
@@ -412,7 +451,7 @@ const ContractPage: React.FC = () => {
         <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
           <Paper
             elevation={3}
-            style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+            style={{ padding: 4, width: "100%", maxWidth: 1200 }}
           >
             <CenteredTable
               rows={filteredContracts.map((contract, index) => ({

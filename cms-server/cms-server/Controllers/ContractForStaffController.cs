@@ -96,11 +96,10 @@ namespace cms_server.Controllers
                     await _context.SaveChangesAsync();
 
                     // Tạo mã hợp đồng
-                    var today = DateOnly.FromDateTime(DateTime.Now);
-                    var dateStr = today.ToString("yyyyMMdd");
-                    var contractsTodayCount = await _context.Contracts.CountAsync(c => c.StartDate == today);
-                    var contractNumber = (contractsTodayCount + 1).ToString("D3");
-                    var contractCode = $"HD-{dateStr}-{contractNumber}";
+                    var startDateStr = request.StartDate.ToString("yyyyMMdd");
+                    var contractsStartDateCount = await _context.Contracts.CountAsync(c => c.StartDate == request.StartDate);
+                    var contractNumber = (contractsStartDateCount + 1).ToString("D3");
+                    var contractCode = $"HD-{startDateStr}-{contractNumber}";
 
                     // Tạo đối tượng Contract
                     var contract = new Contract

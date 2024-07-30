@@ -45,6 +45,7 @@ const Navbar = () => {
       sx={{
         zIndex: (theme) => theme.zIndex.drawer + 1,
         backgroundColor: "#757575",
+        height: "64px",
       }} // Medium gray
     >
       <Toolbar>
