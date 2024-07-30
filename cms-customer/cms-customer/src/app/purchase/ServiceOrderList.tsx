@@ -239,7 +239,6 @@ export default function ServiceOrderList({
                 <TooltipContent>Xem chi tiết</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {/* Thêm các nút khác nếu cần */}
           </div>
         ),
       }),

@@ -11,27 +11,24 @@ import {
   StepButton,
   Button,
   CircularProgress,
-  Typography,
-  Grid,
-  TextField,
 } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
-import { z } from "zod";
 import { useStateContext } from "@/context/StateContext";
 import OTPVerificationAPI from "@/services/otpVerificationService";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import Step0Content from "./Step0Content";
 import Step1Content from "./Step1Content";
+import Step2Content from "./Step2Content";
 import { schema, calculateCost, getAllowedDates } from "./utils";
 import { formatVND } from "@/utils/formatCurrency";
-import Step2Content from "./Step2Content";
 
 const getSteps = (isUser: boolean) =>
   isUser
     ? ["Xem thông tin ô chứa", "Điền thông tin"]
     : ["Xem thông tin ô chứa", "Điền thông tin", "Xác thực"];
+
 const CombinedDialog = ({
   isVisible,
   onClose,
@@ -44,7 +41,7 @@ const CombinedDialog = ({
   const { selectedBuilding, selectedFloor, selectedArea, user } =
     useStateContext();
   const [activeStep, setActiveStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
 
@@ -84,13 +81,16 @@ const CombinedDialog = ({
         note: "",
         otp: "",
       });
-      setActiveStep(user ? 0 : 0);
+      setActiveStep(0);
       setOtpVerified(!!user);
       setOtpSent(false);
+      setIsSubmitting(false);
     }
   }, [isVisible, reset, user]);
 
   const handleNext = async () => {
+    if (isSubmitting) return;
+
     if (user && activeStep === 1) {
       const { signAddress, contractDate } = getValues();
       if (!signAddress || !contractDate) {
@@ -110,12 +110,14 @@ const CombinedDialog = ({
   };
 
   const handleBack = () => {
+    if (isSubmitting) return;
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
   const sendOtp = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const phoneNumber = getValues("phoneNumber");
-    setIsLoading(true);
     try {
       await OTPVerificationAPI.sendOtp(phoneNumber);
       toast.success("OTP đã được gửi!");
@@ -124,34 +126,44 @@ const CombinedDialog = ({
       console.error("Error sending OTP:", error);
       toast.error("Gửi OTP thất bại. Vui lòng thử lại.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const verifyOtp = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const otp = getValues("otp");
     const phoneNumber = getValues("phoneNumber");
-    setIsLoading(true);
     try {
       await OTPVerificationAPI.verifyOtp(phoneNumber, otp);
       setOtpVerified(true);
-      handleSubmit(onSubmit)();
+      await handleSubmit(onSubmit)();
     } catch (error) {
       console.error("Error verifying OTP:", error);
       toast.error("Xác thực OTP thất bại. Vui lòng thử lại.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: {
+    contractDate: string;
+    name: any;
+    signAddress: any;
+    phoneNumber: any;
+    note: any;
+  }) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     if (!selectedNiche?.nicheId) {
       toast.error("Vui lòng chọn một ô chứa.");
+      setIsSubmitting(false);
       return;
     }
 
     const contractDate = data.contractDate + "T23:59:59";
-
     const dataToSubmit = {
       nicheId: selectedNiche.nicheId,
       name: user ? user.fullName : data.name,
@@ -163,28 +175,14 @@ const CombinedDialog = ({
     };
 
     try {
-      const response = await NicheReservationAPI.createReservation(
-        dataToSubmit
-      );
+      await NicheReservationAPI.createReservation(dataToSubmit);
       toast.success("Đặt ô chứa thành công!");
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
-      if ((error as any).response) {
-        if ((error as any).response.data.errors) {
-          Object.entries((error as any).response.data.errors).forEach(
-            ([key, value]) => {
-              toast.error(`${key}: ${value}`);
-            }
-          );
-        } else {
-          toast.error(
-            (error as any).response.data.error || "Không thể tạo đơn đặt chỗ"
-          );
-        }
-      } else {
-        toast.error("Không thể tạo đơn đặt chỗ.");
-      }
+      toast.error("Không thể tạo đơn đặt chỗ. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -198,7 +196,10 @@ const CombinedDialog = ({
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label, index) => (
             <Step key={label}>
-              <StepButton onClick={() => setActiveStep(index)}>
+              <StepButton
+                onClick={() => setActiveStep(index)}
+                disabled={isSubmitting}
+              >
                 {label}
               </StepButton>
             </Step>
@@ -239,7 +240,7 @@ const CombinedDialog = ({
               control={control}
               errors={errors}
               sendOtp={sendOtp}
-              isLoading={isLoading}
+              isLoading={isSubmitting}
               otpSent={otpSent}
               otpVerified={otpVerified}
               verifyOtp={verifyOtp}
@@ -253,6 +254,7 @@ const CombinedDialog = ({
           <Button
             onClick={onClose}
             variant="outlined"
+            disabled={isSubmitting}
             sx={{
               borderColor: "#0e0101",
               color: "#0e0101",
@@ -266,6 +268,7 @@ const CombinedDialog = ({
           <Button
             onClick={handleBack}
             variant="outlined"
+            disabled={isSubmitting}
             sx={{
               borderColor: "#0e0101",
               color: "#0e0101",
@@ -279,6 +282,7 @@ const CombinedDialog = ({
           <Button
             onClick={handleNext}
             variant="contained"
+            disabled={isSubmitting}
             sx={{
               backgroundColor: "#FB8C00",
               color: "#ffffff",
@@ -293,14 +297,14 @@ const CombinedDialog = ({
             onClick={verifyOtp}
             variant="contained"
             color="primary"
+            disabled={!otpSent || isSubmitting}
             sx={{
               backgroundColor: "#FB8C00",
               color: "#ffffff",
               "&:hover": { backgroundColor: "#EF6C00" },
             }}
-            disabled={!otpSent || isLoading}
           >
-            {isLoading ? <CircularProgress size={24} /> : "Xác thực OTP"}
+            {isSubmitting ? <CircularProgress size={24} /> : "Xác thực OTP"}
           </Button>
         )}
       </DialogActions>
