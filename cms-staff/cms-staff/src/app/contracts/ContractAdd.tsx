@@ -17,7 +17,6 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Divider,
 } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import ReservationSelect from "./ReservationSelect";
@@ -102,6 +101,7 @@ const contractSchema = z.object({
         message: "Ngày bắt đầu tối thiểu phải từ ngày hiện tại.",
       }
     ),
+  reservationId: z.number().min(1, "Reservation ID không hợp lệ"),
 });
 
 const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
@@ -131,6 +131,7 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
     endDate: "",
     note: "",
     totalAmount: 0,
+    reservationId: 0, // Thêm reservationId vào contractData
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -187,6 +188,7 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
         nicheID: reservation.nicheId || 0,
         note: reservation.note || "",
         totalAmount: 0,
+        reservationId: reservation.reservationId, // Gán reservationId từ đối tượng reservation
       }));
     }
   };
@@ -282,28 +284,28 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
 
         console.log("Selected reservation:", selectedReservation);
 
-        if (selectedReservation) {
-          try {
-            console.log(
-              `Updating reservation status to 'Signed' for reservation ID: ${selectedReservation.reservationId}...`
-            );
-            const reservationResponse = await axiosInstance.put(
-              `/api/NicheReservations/signed/${selectedReservation.reservationId}`
-            );
-            console.log(
-              "Reservation status update response:",
-              reservationResponse
-            );
-          } catch (reservationError) {
-            console.error(
-              "Error updating reservation status:",
-              reservationError
-            );
-            toast.error("Đã xảy ra lỗi khi cập nhật trạng thái đơn đặt chỗ.");
-          }
-        } else {
-          console.warn("No reservation found with the selected code.");
-        }
+        // if (selectedReservation) {
+        //   try {
+        //     console.log(
+        //       `Updating reservation status to 'Signed' for reservation ID: ${selectedReservation.reservationId}...`
+        //     );
+        //     const reservationResponse = await axiosInstance.put(
+        //       `/api/NicheReservations/signed/${selectedReservation.reservationId}`
+        //     );
+        //     console.log(
+        //       "Reservation status update response:",
+        //       reservationResponse
+        //     );
+        //   } catch (reservationError) {
+        //     console.error(
+        //       "Error updating reservation status:",
+        //       reservationError
+        //     );
+        //     toast.error("Đã xảy ra lỗi khi cập nhật trạng thái đơn đặt chỗ.");
+        //   }
+        // } else {
+        //   console.warn("No reservation found with the selected code.");
+        // }
 
         toast.success("Hợp đồng đã được tạo thành công!");
         onClose();

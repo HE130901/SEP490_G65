@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -123,7 +122,7 @@ const NicheReservationPage = () => {
   >(null);
 
   useEffect(() => {
-    fetchReservations(); // Fetch data on initial load
+    fetchReservations();
   }, []);
 
   useEffect(() => {
@@ -138,6 +137,10 @@ const NicheReservationPage = () => {
           return Object.values(request).some((value) =>
             String(value).toLowerCase().includes(searchText.toLowerCase())
           );
+        } else if (searchColumn === "status") {
+          return getStatusLabel(request.status)
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
         } else {
           return String(request[searchColumn as keyof typeof request])
             .toLowerCase()
@@ -158,7 +161,7 @@ const NicheReservationPage = () => {
       setSelectedBookingRequest(response.data);
       setViewDialogOpen(true);
     } catch (error) {
-      toast.error("Failed to load booking request details");
+      toast.error("Lỗi khi xem chi tiết đơn đăng ký đặt chỗ");
     }
   };
 
@@ -201,7 +204,7 @@ const NicheReservationPage = () => {
         setSelectedBookingRequest(null);
       }
     } catch (error) {
-      toast.error("Failed to delete booking request");
+      toast.error("Lỗi khi từ chối đơn đăng ký đặt chỗ");
     }
   };
 
@@ -214,7 +217,7 @@ const NicheReservationPage = () => {
         setSelectedBookingRequest(null);
       }
     } catch (error) {
-      toast.error("Failed to confirm booking request");
+      toast.error("Lỗi khi xác nhận đơn đăng ký đặt chỗ");
     }
   };
 

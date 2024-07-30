@@ -25,11 +25,11 @@ const DeleteBookingRequestDialog = ({
 }: DeleteBookingRequestDialogProps) => {
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Xóa đơn đăng ký đặt chỗ</DialogTitle>
+      <DialogTitle>Từ chối đơn đăng ký đặt chỗ</DialogTitle>
       <DialogContent>
         <Typography>
-          Bạn có chắc chắn muốn xóa đơn đăng ký đặt chỗ này không? <br></br>Hành
-          động này không thể hoàn tác.
+          Bạn có chắc chắn muốn từ chối đơn đăng ký đặt chỗ này không? <br></br>
+          Hành động này không thể hoàn tác.
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -37,7 +37,7 @@ const DeleteBookingRequestDialog = ({
           Hủy
         </Button>
         <Button onClick={onDelete} color="error" variant="contained">
-          Xóa
+          Xác nhận
         </Button>
       </DialogActions>
     </Dialog>

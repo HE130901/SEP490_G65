@@ -14,6 +14,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
 } from "@mui/material";
 import contractService from "@/services/contractService";
 import RenewalListDialog from "./RenewalList";
@@ -145,6 +146,39 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
     return null;
   }
 
+  const getStatusLabel = (
+    status: string
+  ): {
+    label: string;
+    color:
+      | "default"
+      | "primary"
+      | "secondary"
+      | "success"
+      | "error"
+      | "info"
+      | "warning";
+  } => {
+    switch (status) {
+      case "Canceled":
+        return { label: "Đã thanh lý", color: "error" };
+      case "Expired":
+        return { label: "Đã hết hạn", color: "error" };
+      case "Active":
+        return { label: "Còn hiệu lực", color: "success" };
+      case "Extended":
+        return { label: "Đã gia hạn", color: "success" };
+      case "NearlyExpired":
+        return { label: "Gần hết hạn", color: "warning" };
+      case "PendingRenewal":
+        return { label: "Chờ gia hạn", color: "warning" };
+      case "PendingCancellation":
+        return { label: "Chờ thanh lý", color: "warning" };
+      default:
+        return { label: status, color: "default" };
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -170,8 +204,20 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
               <strong>Mã hợp đồng:</strong> {contract.contractCode}
             </Typography>
             <Typography variant="body1">
+              <strong>Ngày bắt đầu:</strong>{" "}
+              {formatDateToDDMMYYYY(contract.startDate)}
+            </Typography>
+            <Typography variant="body1">
               <strong>Ngày kết thúc:</strong>{" "}
               {formatDateToDDMMYYYY(contract.endDate)}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Trạng thái HĐ hiện tại:</strong>
+              <Chip
+                label={getStatusLabel(contract.status).label}
+                color={getStatusLabel(contract.status).color}
+                size="small"
+              />
             </Typography>
           </Box>
           <Box mt={2}>

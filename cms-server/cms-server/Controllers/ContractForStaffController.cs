@@ -30,7 +30,7 @@ namespace cms_server.Controllers
         [Authorize]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
         {
-            // Get the StaffId from the token
+            // Lấy StaffId từ token
             var staffIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (staffIdClaim == null || !int.TryParse(staffIdClaim, out int staffId))
             {
@@ -41,21 +41,22 @@ namespace cms_server.Controllers
             {
                 try
                 {
+                    // Kiểm tra và lấy thông tin niche
                     var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == request.NicheID &&
-                             (n.Status == "Available" || n.Status == "Booked"));
-
+                                 (n.Status == "Available" || n.Status == "Booked"));
 
                     if (niche == null)
                     {
                         return BadRequest("Selected niche is not available.");
                     }
 
+                    // Kiểm tra và lấy thông tin khách hàng
                     var customer = await _context.Customers
                         .FirstOrDefaultAsync(c => c.CitizenId == request.CustomerCitizenId);
 
                     if (customer == null)
                     {
-                        // Create and add new customer
+                        // Tạo khách hàng mới nếu không tồn tại
                         customer = new Customer
                         {
                             FullName = request.CustomerFullName,
@@ -65,19 +66,20 @@ namespace cms_server.Controllers
                             CitizenId = request.CustomerCitizenId,
                             CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
                             CitizenIdsupplier = request.CustomerCitizenIdSupplier,
-                            // Default password is "abcdabcd"
-                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
+                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q" // Mật khẩu mặc định
                         };
                         _context.Customers.Add(customer);
                         await _context.SaveChangesAsync();
                     }
 
+                    // Kiểm tra trùng lặp số giấy chứng tử
                     bool isDuplicateDeathCertificate = await IsDuplicateDeathCertificateNumberAsync(request.DeathCertificateNumber);
                     if (isDuplicateDeathCertificate)
                     {
                         return BadRequest("Đã có người mất đăng ký với số giấy chứng tử này!");
                     }
 
+                    // Tạo đối tượng Deceased
                     var deceased = new Deceased
                     {
                         FullName = request.DeceasedFullName,
@@ -93,19 +95,19 @@ namespace cms_server.Controllers
                     _context.Deceaseds.Add(deceased);
                     await _context.SaveChangesAsync();
 
-                    // Generate ContractCode
+                    // Tạo mã hợp đồng
                     var today = DateOnly.FromDateTime(DateTime.Now);
                     var dateStr = today.ToString("yyyyMMdd");
-
                     var contractsTodayCount = await _context.Contracts.CountAsync(c => c.StartDate == today);
-                    var contractNumber = (contractsTodayCount + 1).ToString("D3"); // Pads with zeros to 3 digits
+                    var contractNumber = (contractsTodayCount + 1).ToString("D3");
                     var contractCode = $"HD-{dateStr}-{contractNumber}";
 
+                    // Tạo đối tượng Contract
                     var contract = new Contract
                     {
                         ContractCode = contractCode,
                         CustomerId = customer.CustomerId,
-                        StaffId = staffId, // Use StaffId from token
+                        StaffId = staffId,
                         NicheId = niche.NicheId,
                         DeceasedId = deceased.DeceasedId,
                         StartDate = request.StartDate,
@@ -117,23 +119,21 @@ namespace cms_server.Controllers
                     _context.Contracts.Add(contract);
                     await _context.SaveChangesAsync();
 
+                    // Cập nhật trạng thái niche
                     niche.Status = "Active";
                     niche.CustomerId = customer.CustomerId;
                     niche.DeceasedId = deceased.DeceasedId;
                     _context.Niches.Update(niche);
                     await _context.SaveChangesAsync();
 
-                    var nicheHistory = new NicheHistory
+                    // Tìm đơn đặt chỗ và cập nhật trạng thái
+                    var reservation = await _context.NicheReservations.FirstOrDefaultAsync(r => r.ReservationId == request.ReservationId);
+                    if (reservation != null)
                     {
-                        NicheId = niche.NicheId,
-                        CustomerId = customer.CustomerId,
-                        DeceasedId = deceased.DeceasedId,
-                        ContractId = contract.ContractId,
-                        StartDate = contract.StartDate,
-                        EndDate = contract.EndDate
-                    };
-                    _context.NicheHistories.Add(nicheHistory);
-                    await _context.SaveChangesAsync();
+                        reservation.Status = "Signed";
+                        _context.NicheReservations.Update(reservation);
+                        await _context.SaveChangesAsync();
+                    }
 
                     await transaction.CommitAsync();
 
@@ -142,13 +142,13 @@ namespace cms_server.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    // Log the error (consider using a logging framework like Serilog)
                     var innerExceptionMessage = ex.InnerException?.Message;
                     var detailedErrorMessage = $"Error: {ex.Message}, Inner Exception: {innerExceptionMessage}";
                     return StatusCode(500, detailedErrorMessage);
                 }
             }
         }
+
 
 
 
@@ -390,6 +390,7 @@ namespace cms_server.Controllers
         public DateOnly EndDate { get; set; }
         public string Note { get; set; }
         public decimal TotalAmount { get; set; }
+        public int ReservationId { get; set; }
     }
 
 

@@ -165,20 +165,20 @@ namespace cms_server.Controllers
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
             var currentDate = localNow.Date;
 
-            // Find the niche to check its status
+            // Tìm và kiểm tra trạng thái của niche
             var niche = await _context.Niches.FindAsync(createDto.NicheId);
             if (niche == null || niche.Status != "Available")
             {
-                return BadRequest(new { error = "Niche status is unavailable for booking" });
+                return BadRequest(new { error = "Ô chứa này đã được đặt" });
             }
 
-            // Check if the phone number belongs to a customer
+            // Kiểm tra số điện thoại có thuộc về khách hàng hiện tại hay không
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
 
-            // Determine the maximum number of reservations allowed
+            // Xác định số lượng đơn đặt chỗ tối đa được phép
             int maxReservations = customer != null ? 10 : 3;
 
-            // Count existing reservations for the phone number
+            // Đếm số lượng đơn đặt chỗ hiện có với trạng thái "Pending"
             var existingReservationsCount = await _context.NicheReservations
                 .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
 
@@ -187,13 +187,13 @@ namespace cms_server.Controllers
                 return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
             }
 
-            // Count the number of reservations made today to create ReservationCode
+            // Đếm số lượng đơn đặt chỗ đã được thực hiện trong ngày để tạo mã đặt chỗ
             var reservationsTodayCount = await _context.NicheReservations
                 .CountAsync(nr => nr.CreatedDate != null && nr.CreatedDate.Value.Date == currentDate);
 
             var reservationCode = $"DC-{currentDate:yyyyMMdd}-{(reservationsTodayCount + 1):D3}";
 
-            // Lấy thông tin StaffId từ token
+            // Lấy thông tin StaffId từ token (nếu có)
             var staffIdClaim = User.FindFirst("StaffId");
             int? confirmedBy = null;
             string status = "Pending";
@@ -207,7 +207,7 @@ namespace cms_server.Controllers
                 }
             }
 
-
+            // Tạo mới đơn đặt chỗ
             var nicheReservation = new NicheReservation
             {
                 NicheId = createDto.NicheId,
@@ -224,7 +224,7 @@ namespace cms_server.Controllers
 
             _context.NicheReservations.Add(nicheReservation);
 
-            // Update the status of the niche to "Booked"
+            // Cập nhật trạng thái của niche thành "Booked"
             niche.Status = "Booked";
             _context.Entry(niche).State = EntityState.Modified;
 
@@ -232,6 +232,7 @@ namespace cms_server.Controllers
 
             return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
         }
+
 
 
         [HttpDelete("{id}")]
@@ -302,6 +303,7 @@ namespace cms_server.Controllers
 
             return Ok(reservationDetail);
         }
+
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
         {
@@ -427,34 +429,7 @@ namespace cms_server.Controllers
             }
         }
 
-        // PUT: api/NicheReservations/signed/5
-        [HttpPut("signed/{id}")]
-        public async Task<IActionResult> MarkAsSigned(int id)
-        {
-            var nicheReservation = await _context.NicheReservations.FindAsync(id);
-            if (nicheReservation == null)
-            {
-                return NotFound(new { error = "Reservation not found" });
-            }
-
-            if (nicheReservation.Status != "Approved")
-            {
-                return BadRequest(new { error = "Only approved reservations can be marked as signed" });
-            }
-
-            nicheReservation.Status = "Signed";
-            _context.Entry(nicheReservation).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
+       
 
     }
 

@@ -96,7 +96,8 @@ type SearchableColumns =
   | "customerName"
   | "startDate"
   | "endDate"
-  | "status";
+  | "status"
+  | "daysLeft";
 
 const ContractPage: React.FC = () => {
   const {
@@ -140,6 +141,11 @@ const ContractPage: React.FC = () => {
         return Object.values(contract).some((value) =>
           String(value).toLowerCase().includes(searchText.toLowerCase())
         );
+      } else if (searchColumn === "daysLeft") {
+        const daysLeft = calculateDaysLeft(contract.endDate);
+        return String(daysLeft)
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
       } else {
         const columnValue = contract[searchColumn as keyof typeof contract];
         return String(columnValue)
@@ -188,17 +194,15 @@ const ContractPage: React.FC = () => {
     setConfirmDialogOpen(false);
   };
 
+  const calculateDaysLeft = (endDate: string): number => {
+    const end = new Date(endDate);
+    const now = new Date();
+    const timeDiff = end.getTime() - now.getTime();
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    return Math.max(daysLeft, 0);
+  };
+
   const columns: GridColDef[] = [
-    {
-      field: "id",
-      headerName: "STT",
-      width: 100,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          {params.value}
-        </Box>
-      ),
-    },
     {
       field: "contractCode",
       headerName: "Mã Hợp đồng",
@@ -227,6 +231,16 @@ const ContractPage: React.FC = () => {
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {formatDateToDDMMYYYY(params.value)}
+        </Box>
+      ),
+    },
+    {
+      field: "daysLeft",
+      headerName: "Còn lại (ngày)",
+      width: 150,
+      renderCell: (params) => (
+        <Box display="flex" justifyContent="center" alignItems="center">
+          {calculateDaysLeft(params.row.endDate)}
         </Box>
       ),
     },
@@ -331,6 +345,7 @@ const ContractPage: React.FC = () => {
               <MenuItem value="customerName">Tên Khách hàng</MenuItem>
               <MenuItem value="startDate">Ngày ký hợp đồng</MenuItem>
               <MenuItem value="endDate">Ngày kết thúc</MenuItem>
+              <MenuItem value="daysLeft">Còn lại (ngày)</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
           </FormControl>
