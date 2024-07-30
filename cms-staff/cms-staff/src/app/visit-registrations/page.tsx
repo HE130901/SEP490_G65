@@ -109,7 +109,7 @@ const VisitRegistrationsList: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       await fetchVisitRegistrations();
-      setLoading(false); // Set loading to false after fetching
+      setLoading(false);
     };
     fetchData();
   }, [fetchVisitRegistrations]);
@@ -163,20 +163,14 @@ const VisitRegistrationsList: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "stt",
-      headerName: "STT",
-      width: 80,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
-    },
-    {
       field: "visitCode",
       headerName: "Mã đơn",
       width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "customerName", headerName: "Tên khách hàng", width: 150 },
+    { field: "customerName", headerName: "Tên khách hàng", width: 180 },
     { field: "staffName", headerName: "Tên nhân viên", width: 150 },
-    { field: "nicheAddress", headerName: "Địa chỉ", width: 220 },
+    { field: "nicheAddress", headerName: "Địa chỉ", width: 240 },
     {
       field: "formattedCreatedDate",
       headerName: "Ngày tạo",

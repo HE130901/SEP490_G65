@@ -223,12 +223,6 @@ const NicheReservationPage = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "stt",
-      headerName: "STT",
-      width: 80,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
-    },
-    {
       field: "reservationCode",
       headerName: "Mã đơn",
       width: 150,
@@ -237,20 +231,20 @@ const NicheReservationPage = () => {
     {
       field: "nicheAddress",
       headerName: "Địa chỉ ô chứa",
-      width: 230,
+      width: 280,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "name", headerName: "Tên khách hàng", width: 200 },
     {
       field: "formattedConfirmationDate",
       headerName: "Ngày hẹn",
-      width: 180,
+      width: 200,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 120,
+      width: 140,
       renderCell: (params) => (
         <Chip
           label={getStatusLabel(params.value)}

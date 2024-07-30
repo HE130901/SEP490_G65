@@ -17,8 +17,8 @@ import {
   Radio,
   Grid,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { toast } from "react-toastify";
 import axiosInstance from "@/utils/axiosInstance";
@@ -40,9 +40,14 @@ const formSchema = z.object({
     .string()
     .nonempty("Số điện thoại không được để trống")
     .regex(/^\d{10,11}$/, "Số điện thoại không hợp lệ"),
-  confirmationDate: z.string(),
+  confirmationDate: z.string().refine((date) => {
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selectedDate >= today;
+  }, "Ngày hẹn phải là ngày hiện tại trở đi"),
   signAddress: z.string().nonempty(),
-  note: z.string().optional(),
+  note: z.string().max(300, "Ghi chú không được vượt quá 300 ký tự").optional(),
 });
 
 const AddBookingRequestDialog = ({
@@ -60,14 +65,13 @@ const AddBookingRequestDialog = ({
     areaId: "",
     nicheId: "",
     name: "",
-    confirmationDate: new Date().toISOString(),
+    confirmationDate: new Date().toISOString().substring(0, 16), // Format to "yyyy-MM-ddThh:mm"
     signAddress: predefinedAddresses[0], // Default to the first address
     phoneNumber: "",
     note: "",
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
   const [buildings, setBuildings] = useState<any[]>([]);
   const [floors, setFloors] = useState<
     { floorId: string; floorName: string }[]
@@ -84,10 +88,32 @@ const AddBookingRequestDialog = ({
   ) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
+    validateField(name, value);
+  };
+
+  const handleBlur = (
+    e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    validateField(name, value);
   };
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevData) => ({ ...prevData, signAddress: e.target.value }));
+  };
+
+  const validateField = (name: string, value: string) => {
+    try {
+      (formSchema.shape as Record<string, z.ZodType<any>>)[name].parse(value);
+      setFormErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setFormErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: error.errors[0].message,
+        }));
+      }
+    }
   };
 
   useEffect(() => {
@@ -208,7 +234,7 @@ const AddBookingRequestDialog = ({
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Thêm mới đơn đăng ký đặt chỗ</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <TextField
@@ -220,6 +246,7 @@ const AddBookingRequestDialog = ({
               name="name"
               value={formData.name}
               onChange={handleChange}
+              onBlur={handleBlur}
               error={!!formErrors.name}
               helperText={formErrors.name}
             />
@@ -234,6 +261,7 @@ const AddBookingRequestDialog = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
+              onBlur={handleBlur}
               error={!!formErrors.phoneNumber}
               helperText={formErrors.phoneNumber}
             />
@@ -245,6 +273,7 @@ const AddBookingRequestDialog = ({
                 name="buildingId"
                 value={formData.buildingId}
                 onChange={handleBuildingChange}
+                onBlur={handleBlur}
                 label="Nhà"
                 error={!!formErrors.buildingId}
               >
@@ -269,6 +298,7 @@ const AddBookingRequestDialog = ({
                 name="floorId"
                 value={formData.floorId}
                 onChange={handleFloorChange}
+                onBlur={handleBlur}
                 label="Tầng"
                 disabled={!formData.buildingId}
                 error={!!formErrors.floorId}
@@ -294,6 +324,7 @@ const AddBookingRequestDialog = ({
                 name="areaId"
                 value={formData.areaId}
                 onChange={handleAreaChange}
+                onBlur={handleBlur}
                 label="Khu"
                 disabled={!formData.floorId}
                 error={!!formErrors.areaId}
@@ -321,6 +352,7 @@ const AddBookingRequestDialog = ({
                     nicheId: event.target.value,
                   }))
                 }
+                onBlur={handleBlur}
                 label="Ô chứa"
                 disabled={!formData.areaId}
                 error={!!formErrors.nicheId}
@@ -368,6 +400,7 @@ const AddBookingRequestDialog = ({
               name="confirmationDate"
               value={formData.confirmationDate}
               onChange={handleChange}
+              onBlur={handleBlur}
               error={!!formErrors.confirmationDate}
               helperText={formErrors.confirmationDate}
               InputLabelProps={{
@@ -378,13 +411,17 @@ const AddBookingRequestDialog = ({
           <Grid item xs={12}>
             <TextField
               margin="dense"
-              label="Ghi chú"
+              label="Ghi chú (nếu có)"
               type="text"
               fullWidth
               variant="outlined"
               name="note"
               value={formData.note}
               onChange={handleChange}
+              onBlur={handleBlur}
+              inputProps={{ maxLength: 300 }}
+              helperText={`${formData.note.length}/300`}
+              error={!!formErrors.note}
             />
           </Grid>
         </Grid>
@@ -394,12 +431,7 @@ const AddBookingRequestDialog = ({
           Đóng
         </Button>
 
-        <Button
-          onClick={handleAdd}
-          color="primary"
-          variant="contained"
-          startIcon={<CheckCircleOutlineIcon />}
-        >
+        <Button onClick={handleAdd} color="primary" variant="contained">
           Thêm mới
         </Button>
       </DialogActions>

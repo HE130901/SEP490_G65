@@ -136,12 +136,6 @@ const ServiceRequestPage = () => {
 
   const columns: GridColDef[] = [
     {
-      field: "stt",
-      headerName: "STT",
-      width: 70,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
-    },
-    {
       field: "serviceOrderCode",
       headerName: "Mã đơn",
       width: 150,

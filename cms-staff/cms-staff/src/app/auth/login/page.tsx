@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "react-toastify";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ const schema = z.object({
 
 const Login = () => {
   const { login } = useAuth();
-  const { toast } = useToast();
   const {
     register,
     handleSubmit,
@@ -33,24 +32,16 @@ const Login = () => {
   ) => {
     try {
       await login(data.email, data.password);
-      toast({
-        variant: "default",
-        title: "Đăng nhập thành công",
-        description: "Chào mừng bạn quay trở lại!",
-      });
+      toast.success("Đăng nhập thành công.");
     } catch (error) {
       if ((error as Error).message === "AccessDenied") {
-        toast({
-          variant: "destructive",
-          title: "Đăng nhập thất bại",
-          description: "Bạn không có quyền truy cập vào hệ thống",
-        });
+        toast.error(
+          "Đăng nhập thất bại.  Bạn không có quyền truy cập vào hệ thống"
+        );
       } else {
-        toast({
-          variant: "destructive",
-          title: "Đăng nhập thất bại",
-          description: "Vui lòng kiểm tra lại thông tin đăng nhập",
-        });
+        toast.error(
+          "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập"
+        );
       }
     }
   };

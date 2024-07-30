@@ -189,7 +189,6 @@ const NicheList: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "nicheId", headerName: "STT", width: 80 },
     { field: "nicheCode", headerName: "Mã ô chứa", width: 180 },
     { field: "customerName", headerName: "Tên khách hàng", width: 180 },
     { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
@@ -260,7 +259,7 @@ const NicheList: React.FC = () => {
         mb={2}
       >
         <Box display="flex" alignItems="center">
-          <FormControl margin="normal" style={{ marginRight: 8 }}>
+          <FormControl margin="normal" style={{ marginRight: 8, width: 100 }}>
             <InputLabel id="building-select-label">Tòa nhà</InputLabel>
             <Select
               labelId="building-select-label"
@@ -276,7 +275,7 @@ const NicheList: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl margin="normal" style={{ marginRight: 8 }}>
+          <FormControl margin="normal" style={{ marginRight: 8, width: 100 }}>
             <InputLabel id="floor-select-label">Tầng</InputLabel>
             <Select
               label="Tầng"
@@ -292,7 +291,7 @@ const NicheList: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl margin="normal">
+          <FormControl margin="normal" style={{ marginRight: 8, width: 100 }}>
             <InputLabel id="area-select-label">Khu</InputLabel>
             <Select
               label="Khu"

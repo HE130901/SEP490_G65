@@ -290,11 +290,19 @@ const ServiceProductPage: React.FC = () => {
           style={{ padding: 20, width: "100%", maxWidth: 1200 }}
         >
           <CenteredTable
-            rows={rows}
+            rows={filteredItems.map((items, index) => ({
+              ...items,
+              id: index + 1,
+            }))}
             columns={columns}
             autoHeight
             localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
             pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
           />
         </Paper>
       </Box>

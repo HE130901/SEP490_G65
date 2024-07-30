@@ -237,7 +237,7 @@ const ContractPage: React.FC = () => {
     {
       field: "daysLeft",
       headerName: "Còn lại (ngày)",
-      width: 150,
+      width: 130,
       renderCell: (params) => (
         <Box display="flex" justifyContent="center" alignItems="center">
           {calculateDaysLeft(params.row.endDate)}

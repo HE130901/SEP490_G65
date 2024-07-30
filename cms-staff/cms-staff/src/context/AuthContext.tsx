@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import AuthAPI from "@/services/authService";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 interface User {
   id: number;
@@ -68,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user"); // Xóa thông tin người dùng khỏi localStorage
+    localStorage.removeItem("user");
     setUser(null);
     router.push("/auth/login");
   };
