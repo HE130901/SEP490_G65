@@ -1,51 +1,33 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Typography from "@mui/material/Typography";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-const revealVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: (i = 1) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: i * 0.3,
-      duration: 0.7,
-    },
-  }),
-};
+import { Avatar } from "@mui/material";
 
 export default function Component() {
   return (
-    <div className="flex flex-col min-h-screen pt-18">
+    <div className="flex flex-col min-h-screen pt-28 bg-gradient-to-r from-orange-300 to-orange-200">
       <main className="flex-1">
-        <motion.section
-          className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-primary/80 text-primary-foreground bg-red-200"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={revealVariants}
-          custom={1}
-        >
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <motion.div
-                className="flex flex-col justify-center space-y-6"
-                variants={revealVariants}
-                custom={2}
-              >
+        <section className="w-full text-gray-800">
+          <div className="container mx-auto py-10 px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <Typography
-                    variant="h1"
-                    className="text-4xl font-bold tracking-tighter sm:text-6xl xl:text-7xl text-primary-foreground"
-                  >
-                    An Bình Viên <br /> Tiên phong trong dịch vụ lưu trữ tro cốt
+                  <Typography variant="h2" fontWeight={700} color={"black"}>
+                    An Bình Viên
                   </Typography>
                   <Typography
+                    variant="h4"
+                    fontWeight={600}
+                    fontStyle={"italic"}
+                    className="text-xl font-bold tracking-tighter text-gray-800"
+                  >
+                    Tiên phong trong dịch vụ lưu trữ tro cốt
+                  </Typography>
+
+                  <Typography
                     variant="body1"
-                    className="max-w-[600px] text-lg md:text-xl text-primary-foreground"
+                    className="max-w-[600px] text-lg md:text-xl text-gray-800"
                   >
                     <br />
                     Chúng tôi cung cấp các dịch vụ tiên tiến và chuyên nghiệp
@@ -53,7 +35,7 @@ export default function Component() {
                   </Typography>
                   <Typography
                     variant="body1"
-                    className="max-w-[600px] text-lg md:text-xl text-primary-foreground"
+                    className="max-w-[600px] text-lg md:text-xl text-gray-800"
                   >
                     Với kinh nghiệm lâu năm trong lĩnh vực dịch vụ tang lễ,
                     chúng tôi cam kết cung cấp những giải pháp tốt nhất, từ quản
@@ -61,7 +43,7 @@ export default function Component() {
                   </Typography>
                   <Typography
                     variant="body1"
-                    className="max-w-[600px] text-lg md:text-xl text-primary-foreground"
+                    className="max-w-[600px] text-lg md:text-xl text-gray-800"
                   >
                     Chúng tôi tự hào được đồng hành cùng hàng nghìn gia đình,
                     cung cấp nơi lưu giữ tro cốt an toàn, trang trọng và lâu
@@ -69,12 +51,8 @@ export default function Component() {
                     khuất.
                   </Typography>
                 </div>
-              </motion.div>
-              <motion.div
-                className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last lg:aspect-square"
-                variants={revealVariants}
-                custom={3}
-              >
+              </div>
+              <div className="flex justify-center">
                 <Image
                   src="/images/event1.jpg"
                   width={550}
@@ -82,38 +60,29 @@ export default function Component() {
                   alt="Hero"
                   className="rounded-xl"
                 />
-              </motion.div>
+              </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="w-full py-12 md:py-24  bg-muted"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={revealVariants}
-          custom={4}
-        >
+        <section className="w-full py-12 md:py-24 bg-muted">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <motion.div
-                className="space-y-4"
-                variants={revealVariants}
-                custom={5}
-              >
-                <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-sm text-white">
+              <div className="space-y-4">
+                <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-xl text-white font-extrabold">
                   Lịch sử
                 </div>
                 <Typography
-                  variant="h2"
-                  className="text-3xl font-bold tracking-tighter sm:text-5xl text-gray-800"
+                  variant="h3"
+                  fontWeight={700}
+                  fontStyle={"italic"}
+                  className="text-xl font-bold tracking-tighter text-gray-800"
                 >
                   20 năm phát triển dịch vụ tang lễ
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px] text-muted-foreground md:text-xl lg:text-base xl:text-xl"
                 >
                   Chúng tôi bắt đầu với sứ mệnh cung cấp dịch vụ quản lý nhà
                   chứa tro cốt chất lượng cao. Trải qua 20 năm, chúng tôi đã
@@ -122,30 +91,28 @@ export default function Component() {
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px] text-muted-foreground md:text-xl lg:text-base xl:text-xl"
                 >
                   Với đội ngũ chuyên gia giàu kinh nghiệm, chúng tôi đã vượt qua
                   nhiều thách thức để trở thành đơn vị tiên phong trong lĩnh vực
                   quản lý nhà chứa tro cốt.
                 </Typography>
-              </motion.div>
-              <motion.div
-                className="space-y-4"
-                variants={revealVariants}
-                custom={6}
-              >
-                <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-sm text-white">
+              </div>
+              <div className="space-y-4">
+                <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-xl text-white font-extrabold">
                   Sứ mệnh
                 </div>
                 <Typography
-                  variant="h2"
-                  className="text-3xl font-bold tracking-tighter sm:text-5xl text-gray-800"
+                  variant="h3"
+                  fontWeight={700}
+                  fontStyle={"italic"}
+                  className="text-xl font-bold tracking-tighter text-gray-800"
                 >
-                  Bảo quản tro cốt một cách an toàn và trang trọng
+                  Bảo quản tro cốt trang trọng
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px] text-muted-foreground md:text-xl lg:text-base xl:text-xl"
                 >
                   Chúng tôi cam kết cung cấp các giải pháp quản lý nhà chứa tro
                   cốt an toàn, giúp các gia đình lưu giữ ký ức về người thân một
@@ -153,44 +120,36 @@ export default function Component() {
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed"
+                  className="max-w-[700px] text-muted-foreground md:text-xl lg:text-base xl:text-xl"
                 >
                   Với sự tận tâm và chuyên nghiệp, chúng tôi luôn nỗ lực mang
                   đến những dịch vụ tốt nhất, giúp khách hàng an tâm về nơi an
                   nghỉ cuối cùng của người thân.
                 </Typography>
-              </motion.div>
+              </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
-        <motion.section
-          className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-primary/80"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={revealVariants}
-          custom={7}
-        >
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-orange-200">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
-              <motion.div
-                className="space-y-4"
-                variants={revealVariants}
-                custom={8}
-              >
-                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm text-muted-foreground">
+              <div className="space-y-4">
+                <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-xl text-white font-extrabold">
                   Đội ngũ
                 </div>
+
                 <Typography
-                  variant="h2"
-                  className="text-3xl font-bold tracking-tighter sm:text-5xl text-primary-foreground"
+                  variant="h3"
+                  fontWeight={700}
+                  fontStyle={"italic"}
+                  className="text-xl font-bold tracking-tighter text-gray-800"
                 >
                   Những chuyên gia hàng đầu
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-primary-foreground"
+                  className="max-w-[700px] md:text-xl lg:text-base xl:text-xl text-gray-800"
                 >
                   Đội ngũ của chúng tôi bao gồm những chuyên gia hàng đầu trong
                   lĩnh vực quản lý nhà chứa tro cốt, với kinh nghiệm và chuyên
@@ -199,13 +158,13 @@ export default function Component() {
                 </Typography>
                 <Typography
                   variant="body1"
-                  className="max-w-[700px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed text-primary-foreground"
+                  className="max-w-[700px] md:text-xl lg:text-base xl:text-xl text-gray-800"
                 >
                   Với sự đam mê và tận tâm, chúng tôi luôn nỗ lực để mang đến
                   những giải pháp tốt nhất, đáp ứng nhu cầu lưu giữ tro cốt của
                   khách hàng.
                 </Typography>
-              </motion.div>
+              </div>
               <div className="grid grid-cols-2 gap-6">
                 {[
                   {
@@ -241,42 +200,31 @@ export default function Component() {
                     fallback: "LH",
                   },
                 ].map((member, index) => (
-                  <motion.div
+                  <div
                     className="flex flex-col items-start space-y-2"
                     key={index}
-                    variants={revealVariants}
-                    custom={9 + index}
                   >
-                    <Avatar>
-                      <AvatarImage src={member.image} />
-                      <AvatarFallback>{member.fallback}</AvatarFallback>
-                    </Avatar>
+                    <Avatar src={member.image} alt={member.name} />
                     <div>
                       <Typography
                         variant="h6"
-                        className="text-lg font-bold text-primary-foreground"
+                        className="text-lg font-bold text-gray-800"
                       >
                         {member.name}
                       </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        className="text-primary-foreground"
-                      >
+                      <Typography variant="subtitle2" className="text-gray-800">
                         {member.role}
                       </Typography>
-                      <Typography
-                        variant="body2"
-                        className="text-primary-foreground"
-                      >
+                      <Typography variant="body2" className="text-gray-600">
                         {member.description}
                       </Typography>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
       </main>
     </div>
   );

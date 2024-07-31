@@ -11,7 +11,8 @@ export default function ServicesList() {
         <section className="mb-12 text-center flex flex-col items-center justify-center ">
           <Typography
             variant="h4"
-            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 dark:text-gray-200"
+            fontWeight={700}
+            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Dịch vụ của chúng tôi

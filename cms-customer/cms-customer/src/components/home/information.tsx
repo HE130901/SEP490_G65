@@ -55,7 +55,7 @@ export default function Information() {
     };
 
   return (
-    <Box className="py-20 px-4 sm:px-6 lg:px-8">
+    <Box className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         <motion.div
           className="flex flex-col items-center justify-center text-center mb-12"
@@ -67,7 +67,8 @@ export default function Information() {
         >
           <Typography
             variant="h4"
-            className="text-4xl sm:text-5xl font-bold mb-4 text-white"
+            fontWeight={700}
+            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Khám phá những điểm nổi bật <br />
@@ -75,7 +76,8 @@ export default function Information() {
           </Typography>
           <Typography
             variant="subtitle1"
-            className="text-gray-200 max-w-2xl mx-auto"
+            className="text-gray-800 max-w-2xl mx-auto pt-4"
+            fontStyle={"italic"}
           >
             Nghĩa trang An Bình Viên tọa lạc tại vị trí yên bình, giữa thiên
             nhiên tươi đẹp, là nơi lưu giữ những ký ức, tình yêu và sự kính
@@ -103,7 +105,12 @@ export default function Information() {
                 title="An Binh Vien"
               />
               <CardContent>
-                <Typography variant="h5" component="div">
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800"
+                  sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
+                >
                   Tại sao chọn An Bình Viên?
                 </Typography>
               </CardContent>

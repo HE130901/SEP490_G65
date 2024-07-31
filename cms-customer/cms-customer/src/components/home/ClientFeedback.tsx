@@ -73,7 +73,8 @@ const ClientFeedback: FC = () => {
         <div className="max-w-7xl mx-auto text-center px-4">
           <Typography
             variant="h4"
-            className="text-4xl sm:text-5xl font-bold mb-4 text-white pb-10"
+            fontWeight={700}
+            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 pb-10"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Khách hàng nói gì về chúng tôi
@@ -131,14 +132,15 @@ const ClientFeedback: FC = () => {
         >
           <Typography
             variant="h3"
-            className="text-4xl sm:text-5xl font-bold mb-4 text-white pb-10"
+            fontWeight={700}
+            className="text-4xl sm:text-5xl font-bold mb-4 text-gray-800 pb-10"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Các chỉ số nổi bật
           </Typography>
           <Typography
             variant="body1"
-            className=" font-bold mb-4 text-white  pb-10"
+            className=" font-bold mb-4 text-gray-800  pb-10"
             sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.3)" }}
           >
             Là một dự án mang ý nghĩa tâm linh và nhân văn, An Bình Viên tự hào
