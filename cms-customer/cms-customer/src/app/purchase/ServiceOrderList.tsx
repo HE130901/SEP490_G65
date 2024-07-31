@@ -443,7 +443,7 @@ export default function ServiceOrderList({
         <DetailViewDialog
           record={viewingRecord}
           onClose={() => setViewingRecord(null)}
-          onSave={(record) => handleSave(record)}
+          onSave={(record: ServiceOrder) => handleSave(record)}
         />
       )}
     </div>

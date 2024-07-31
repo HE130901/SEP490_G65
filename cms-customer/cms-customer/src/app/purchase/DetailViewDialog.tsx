@@ -92,7 +92,7 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
   return (
     <Dialog open={!!record} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Chi tiết đơn đặt hàng</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <DialogContentText>
           <strong>Mã đơn hàng:</strong> {record.serviceOrderCode}
         </DialogContentText>
@@ -129,10 +129,11 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
                   <TableCell>
                     {detail.completionImage ? (
                       <Image
-                        width={100}
-                        height={100}
+                        width={50}
+                        height={50}
                         src={detail.completionImage}
                         alt="Completion"
+                        className="rounded"
                       />
                     ) : (
                       "N/A"
@@ -145,7 +146,7 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
         </TableContainer>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} variant="outlined" color="primary">
           Đóng
         </Button>
       </DialogActions>
@@ -194,7 +195,7 @@ const EditDateDialog: React.FC<EditDateDialogProps> = ({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Chỉnh sửa ngày hẹn</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <DialogContentText>
           <strong>Mã đơn hàng:</strong> {record.serviceOrderId}
         </DialogContentText>

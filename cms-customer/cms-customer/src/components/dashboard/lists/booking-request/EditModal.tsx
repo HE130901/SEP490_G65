@@ -19,6 +19,7 @@ import { NicheReservation } from "./BookingRequestList";
 import { z } from "zod";
 import { addDays, format } from "date-fns";
 import { parseISO } from "date-fns";
+import { toast } from "react-toastify";
 
 type EditModalProps = {
   record: NicheReservation;
@@ -67,7 +68,7 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
     setUpdatedRecord({ ...updatedRecord, [field]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const localDateTime = parseISO(updatedRecord.confirmationDate);
     const data = {
@@ -88,7 +89,8 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
 
     try {
       reservationSchema.parse(data);
-      onSave(data);
+      await onSave(data); // Ensure onSave is async
+      onClose(); // Close dialog after successful save
     } catch (err) {
       if (err instanceof z.ZodError) {
         const fieldErrors: {
@@ -103,6 +105,9 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
           }
         });
         setFormErrors(fieldErrors);
+        toast.error("Có lỗi xảy ra khi cập nhật thông tin.");
+      } else {
+        toast.error("Có lỗi xảy ra khi cập nhật thông tin.");
       }
     }
   };
@@ -163,16 +168,16 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
               onChange={(e) => handleChange("note", e.target.value)}
             />
           </Box>
+          <DialogActions>
+            <Button variant="outlined" onClick={onClose}>
+              Hủy
+            </Button>
+            <Button type="submit" variant="contained" color="primary">
+              Lưu
+            </Button>
+          </DialogActions>
         </form>
       </DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={onClose}>
-          Hủy
-        </Button>
-        <Button type="submit" variant="contained" color="primary">
-          Lưu
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

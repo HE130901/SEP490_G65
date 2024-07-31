@@ -148,7 +148,12 @@ const EditModal = ({ record, onSave, onClose }: EditModalProps) => {
         <Button variant="outlined" onClick={onClose}>
           Hủy
         </Button>
-        <Button type="submit" variant="contained" color="primary">
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+        >
           Lưu
         </Button>
       </DialogActions>
