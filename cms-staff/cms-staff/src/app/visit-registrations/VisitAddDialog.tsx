@@ -59,11 +59,17 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       const fetchContracts = async () => {
         try {
           const response = await ServiceOrderAPI.getAllContracts();
-          const contractsData = response.data.$values || response.data;
-          setContracts(contractsData);
+          const allContractsData = response.data.$values || response.data;
+          // Lọc ra các hợp đồng có trạng thái không phải "Expired" hoặc "Canceled"
+          const validContracts = allContractsData.filter(
+            (contract: { status: string }) =>
+              contract.status !== "Expired" && contract.status !== "Canceled"
+          );
 
-          if (contractsData.length > 0) {
-            const firstContract = contractsData[0];
+          setContracts(validContracts);
+
+          if (validContracts.length > 0) {
+            const firstContract = validContracts[0];
             setFormData((prevData) => ({
               ...prevData,
               customerId: firstContract.customerId,
@@ -78,7 +84,6 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       fetchContracts();
     }
   }, [open]);
-
   const handleChange = (
     event:
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
