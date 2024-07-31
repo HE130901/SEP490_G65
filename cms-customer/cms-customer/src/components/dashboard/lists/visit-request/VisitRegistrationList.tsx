@@ -46,6 +46,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { remove as removeDiacritics } from "diacritics";
+import { IconButton } from "@mui/material";
 
 export type VisitRegistration = {
   visitId: number;
@@ -57,6 +58,7 @@ export type VisitRegistration = {
   accompanyingPeople: number;
   note: string;
   visitCode: string;
+  nicheAddress: string;
 };
 
 const getStatusVariant = (status: string) => {
@@ -301,17 +303,16 @@ export default function VisitRegistrationList({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
+                  color="info"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleView(row.original);
                   }}
-                  className="text-blue-600"
                 >
                   <Eye className="w-4 h-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Xem chi tiết</TooltipContent>
             </Tooltip>
@@ -319,21 +320,20 @@ export default function VisitRegistrationList({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleEdit(row.original);
                   }}
-                  className="text-orange-600"
+                  color="warning"
                   disabled={
                     row.original.status === "Canceled" ||
                     row.original.status === "Approved"
                   }
                 >
                   <Edit className="w-4 h-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Chỉnh sửa</TooltipContent>
             </Tooltip>
@@ -341,21 +341,20 @@ export default function VisitRegistrationList({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeleteConfirmation(row.original);
                   }}
-                  className="text-red-600"
+                  color="error"
                   disabled={
                     row.original.status === "Canceled" ||
                     row.original.status === "Approved"
                   }
                 >
                   <Trash className="w-4 h-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Hủy đơn</TooltipContent>
             </Tooltip>
@@ -464,27 +463,18 @@ export default function VisitRegistrationList({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TooltipProvider key={row.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TableRow
-                        onClick={() => handleView(row.original)}
-                        className="cursor-pointer"
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="text-center">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TooltipTrigger>
-                    <TooltipContent>Xem chi tiết</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <>
+                  <TableRow>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="text-center">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </>
               ))
             ) : (
               <TableRow>

@@ -122,7 +122,7 @@ export default function ExtendContractDialog({
     <>
       <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
         <DialogTitle>Gia hạn hợp đồng</DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <Grid container spacing={2} mt={2}>
             <Grid item xs={12}>
               <FormControl

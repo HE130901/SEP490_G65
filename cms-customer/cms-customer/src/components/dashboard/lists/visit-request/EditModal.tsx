@@ -87,9 +87,9 @@ const EditModal = ({ record, onSave, onClose }: EditModalProps) => {
   };
 
   return (
-    <Dialog open={true} onClose={onClose}>
+    <Dialog open={true} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Chỉnh sửa Đơn đăng ký viếng</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <form onSubmit={handleSubmit}>
           <TextField
             label="Ngày Hẹn"
@@ -142,16 +142,16 @@ const EditModal = ({ record, onSave, onClose }: EditModalProps) => {
               {Object.values(formErrors).join(", ")}
             </FormHelperText>
           )}
-          <DialogActions>
-            <Button variant="outlined" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained" color="primary">
-              Lưu
-            </Button>
-          </DialogActions>
         </form>
       </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" onClick={onClose}>
+          Hủy
+        </Button>
+        <Button type="submit" variant="contained" color="primary">
+          Lưu
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

@@ -44,6 +44,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { remove as removeDiacritics } from "diacritics";
+import { IconButton } from "@mui/material";
 
 export type NicheReservation = {
   reservationId: number;
@@ -295,22 +296,20 @@ export default function BookingRequestList({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
                   onClick={(event) => handleView(row.original, event)}
-                  className="text-blue-600"
+                  color="info"
                 >
                   <Eye className="w-4 h-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Xem chi tiết</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
                   onClick={(event) => handleEdit(row.original, event)}
                   disabled={
                     row.original.status === "Approved" ||
@@ -318,18 +317,17 @@ export default function BookingRequestList({
                     row.original.status === "Expired" ||
                     row.original.status === "Signed"
                   }
-                  className="text-orange-600"
+                  color="warning"
                 >
                   <Edit className="h-4 w-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Chỉnh sửa</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <IconButton
+                  size="small"
                   onClick={(event) =>
                     handleDeleteConfirmation(row.original, event)
                   }
@@ -339,10 +337,10 @@ export default function BookingRequestList({
                     row.original.status === "Expired" ||
                     row.original.status === "Signed"
                   }
-                  className="text-red-600"
+                  color="error"
                 >
                   <Trash className="h-4 w-4" />
-                </Button>
+                </IconButton>
               </TooltipTrigger>
               <TooltipContent>Xóa</TooltipContent>
             </Tooltip>
@@ -507,27 +505,18 @@ export default function BookingRequestList({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TooltipProvider key={row.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TableRow
-                        onClick={() => handleView(row.original)}
-                        className="cursor-pointer"
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="text-center">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TooltipTrigger>
-                    <TooltipContent>Xem chi tiết</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <>
+                  <TableRow>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="text-center">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </>
               ))
             ) : (
               <TableRow>

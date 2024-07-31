@@ -53,17 +53,17 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
   return (
     <Dialog open={true} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Chi Tiết Đơn Đăng Ký Viếng</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <Box mt={2}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="body1">
-                <strong>Mã đơn:</strong> {record.visitId}
+                <strong>Mã đơn:</strong> {record.visitCode}
               </Typography>
             </Grid>
             <Grid item xs={12}>
               <Typography variant="body1">
-                <strong>Mã Ô:</strong> {record.nicheId}
+                <strong>Địa chỉ ô chứa:</strong> {record.nicheAddress}
               </Typography>
             </Grid>
             <Grid item xs={12}>
@@ -86,15 +86,15 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
             </Grid>
             <Grid item xs={12}>
               <Typography variant="body1">
-                <strong>Ghi Chú: </strong> {record.note}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
                 <strong>Trạng thái đơn: </strong>
                 <Badge variant={getStatusVariant(record.status)}>
                   {getStatusText(record.status) || "Không có thông tin"}
                 </Badge>
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="body1">
+                <strong>Ghi Chú: </strong> {record.note}
               </Typography>
             </Grid>
           </Grid>

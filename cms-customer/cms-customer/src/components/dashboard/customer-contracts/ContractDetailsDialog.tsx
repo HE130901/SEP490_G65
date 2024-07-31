@@ -54,7 +54,7 @@ export default function ContractDetailsDialog({
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>Chi tiết hợp đồng</DialogTitle>
-      <DialogContent className="a4-size">
+      <DialogContent className="a4-size" dividers>
         <Box p={3} className="print-a4">
           <Typography variant="h4" align="center" gutterBottom>
             HỢP ĐỒNG GỬI GIỮ TRO CỐT
@@ -213,7 +213,7 @@ export default function ContractDetailsDialog({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
       </DialogActions>

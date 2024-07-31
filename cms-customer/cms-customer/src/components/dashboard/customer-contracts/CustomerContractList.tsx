@@ -1,21 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useEffect, useState } from "react";
-import {
-  ColumnDef,
-  SortingState,
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  flexRender,
-} from "@tanstack/react-table";
-import { Eye, ArrowUpDown, Ban, History, FileText } from "lucide-react";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import HistorySharp from "@mui/icons-material/HistorySharp";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -24,33 +17,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useStateContext } from "@/context/StateContext";
+import ContractAPI from "@/services/contractService";
+import { IconButton } from "@mui/material";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { remove as removeDiacritics } from "diacritics";
+import debounce from "lodash.debounce";
+import { ArrowUpDown, Ban, Eye, History } from "lucide-react";
 import { useRouter } from "next/navigation";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import ContractDetailsDialog from "./ContractDetailsDialog";
 import ExtendContractDialog from "./ContractRenewalDialog";
 import LiquidateContractDialog from "./ContractTerminationDialog";
-import ContractAPI from "@/services/contractService";
-import { useStateContext } from "@/context/StateContext";
-import { IconButton } from "@mui/material";
-import { useCallback } from "react";
-import debounce from "lodash.debounce";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { remove as removeDiacritics } from "diacritics";
-import { set } from "lodash";
 import ExtendListDialog from "./ExtendListDialog";
-import { ca } from "date-fns/locale";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -552,30 +547,23 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TooltipProvider key={row.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TableRow
-                        onClick={() => {
-                          setSelectedContract(row.original);
-                          setIsDialogOpen(true);
-                        }}
-                        className="cursor-pointer"
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="text-center">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </TooltipTrigger>
-                    <TooltipContent>Xem chi tiết</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <>
+                  <TableRow
+                    onClick={() => {
+                      setSelectedContract(row.original);
+                    }}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="text-center">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </>
               ))
             ) : (
               <TableRow>

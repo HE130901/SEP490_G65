@@ -1,14 +1,9 @@
-"use client";
-
 import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 
 type DeleteConfirmationDialogProps = {
   open: boolean;
@@ -16,29 +11,26 @@ type DeleteConfirmationDialogProps = {
   onCancel: () => void;
 };
 
-const DeleteConfirmationDialog = ({
+export default function DeleteConfirmationDialog({
   open,
   onConfirm,
   onCancel,
-}: DeleteConfirmationDialogProps) => {
+}: DeleteConfirmationDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onCancel}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Xác nhận hủy</DialogTitle>
-        </DialogHeader>
+    <Dialog open={open} onClose={onCancel}>
+      <DialogTitle>Xác nhận hủy</DialogTitle>
+      <DialogContent dividers>
+        <p>Hành động này không thể hoàn tác</p>
         <p>Bạn có chắc chắn muốn hủy đơn đăng ký này không?</p>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
-            Đóng
-          </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            Xác nhận hủy
-          </Button>
-        </DialogFooter>
       </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" onClick={onCancel}>
+          Quay lại
+        </Button>
+        <Button variant="contained" onClick={onConfirm}>
+          Xác nhận
+        </Button>
+      </DialogActions>
     </Dialog>
   );
-};
-
-export default DeleteConfirmationDialog;
+}

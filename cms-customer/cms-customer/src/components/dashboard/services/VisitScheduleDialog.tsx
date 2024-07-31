@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import { addMonths, format } from "date-fns";
 interface Niche {
   nicheId: number;
   nicheAddress: string;
+  contractStatus: string;
 }
 
 interface VisitScheduleDialogProps {
@@ -67,13 +68,23 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
     accompanyingPeople?: string;
   }>({});
 
+  const noteRef = useRef<HTMLInputElement>(null); // Use useRef for note
+
   useEffect(() => {
     const fetchNiches = async () => {
       setNicheLoading(true);
       try {
         const response = await NicheAPI.getNichesForCustomer();
-        setNiches(response.data.$values);
+        console.log("Niches fetched:", response.data.$values); // Log niches fetched
+        // Lọc niches dựa trên contractStatus
+        const filteredNiches = response.data.$values.filter(
+          (niche: Niche) =>
+            niche.contractStatus !== "Expired" &&
+            niche.contractStatus !== "Canceled"
+        );
+        setNiches(filteredNiches);
       } catch (error) {
+        console.error("Failed to fetch niches:", error); // Log error when fetching niches
         toast.error("Failed to fetch niches. Please try again later.");
       } finally {
         setNicheLoading(false);
@@ -100,13 +111,17 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
     setLoading(true);
     setError(null);
 
+    const note = noteRef.current?.value || ""; // Get note value from useRef
+
     const data = {
       customerId: user.customerId,
       nicheId: nicheID,
       visitDate: selectedDate,
-      note: (e.target as any).note.value,
+      note: note,
       accompanyingPeople: accompanyingPeople,
     };
+
+    console.log("Submitting visit registration with data:", data); // Log data before submitting
 
     try {
       visitSchema.parse({
@@ -114,6 +129,7 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
         accompanyingPeople: data.accompanyingPeople,
       });
       await VisitAPI.create(data);
+      console.log("Visit registration successful."); // Log success
       toast.success("Đăng ký lịch viếng thành công!");
       if (user && user.customerId) {
         await fetchVisitRegistrations(user.customerId);
@@ -134,8 +150,9 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
           }
         });
         setFormErrors(fieldErrors);
+        console.log("Validation errors:", fieldErrors); // Log validation errors
       } else {
-        console.error("[VisitScheduleDialog] Error registering visit:", err);
+        console.error("[VisitScheduleDialog] Error registering visit:", err); // Log other errors
         setError("Đăng ký lịch viếng thất bại.");
         toast.error("Đăng ký lịch viếng thất bại.");
       }
@@ -147,7 +164,7 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>Đăng Ký Lịch Viếng Thăm</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <ToastContainer position="bottom-right" />
         <form onSubmit={handleSubmit}>
           <TextField
@@ -203,28 +220,30 @@ const VisitScheduleDialog: React.FC<VisitScheduleDialogProps> = ({
             fullWidth
             margin="normal"
             name="note"
+            inputRef={noteRef} // Assign ref to note input
           />
           {error && <p className="text-red-600 text-sm">{error}</p>}
-          <DialogActions>
-            <Button
-              onClick={onClose}
-              color="primary"
-              disabled={loading}
-              variant="outlined"
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              type="submit"
-              color="primary"
-              variant="contained"
-              disabled={loading}
-            >
-              {loading ? "Đang lưu..." : "Lưu"}
-            </Button>
-          </DialogActions>
         </form>
       </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={onClose}
+          color="primary"
+          disabled={loading}
+          variant="outlined"
+        >
+          Hủy bỏ
+        </Button>
+        <Button
+          type="submit"
+          color="primary"
+          variant="contained"
+          disabled={loading}
+          onClick={handleSubmit}
+        >
+          {loading ? "Đang lưu..." : "Đăng ký"}
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };

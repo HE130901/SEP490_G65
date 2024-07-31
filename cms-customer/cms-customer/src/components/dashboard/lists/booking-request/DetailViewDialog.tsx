@@ -1,13 +1,17 @@
 "use client";
 
+import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+  Typography,
+  Button,
+  Box,
+  Grid,
+  DialogActions,
+} from "@mui/material";
 import { NicheReservation } from "./BookingRequestList";
-import { Button } from "@/components/ui/button";
 
 type DetailViewDialogProps = {
   open: boolean;
@@ -23,44 +27,60 @@ export default function DetailViewDialog({
   if (!record) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Chi tiết Đơn Đặt Chỗ</DialogTitle>
-        </DialogHeader>
-        <div>
-          <p>
-            <strong>Mã đơn:</strong> {record.reservationId}
-          </p>
-          <p>
-            <strong>Mã Ô:</strong> {record.nicheId}
-          </p>
-          <p>
-            <strong>Ngày Tạo:</strong>{" "}
-            {new Date(record.createdDate).toLocaleString("vi-VN")}
-          </p>
-          <p>
-            <strong>Ngày Xác Nhận:</strong>{" "}
-            {new Date(record.confirmationDate).toLocaleString("vi-VN")}
-          </p>
-          <p>
-            <strong>Trạng Thái:</strong> {record.status}
-          </p>
-          <p>
-            <strong>Địa Chỉ Ký:</strong> {record.signAddress}
-          </p>
-          <p>
-            <strong>Số Điện Thoại:</strong> {record.phoneNumber}
-          </p>
-          <p>
-            <strong>Ghi Chú:</strong> {record.note}
-          </p>
-          <p>
-            <strong>Tên:</strong> {record.name}
-          </p>
-        </div>
-        <Button onClick={onClose}>Đóng</Button>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Chi tiết Đơn Đặt Chỗ</DialogTitle>
+      <DialogContent dividers>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Mã đơn:</strong> {record.reservationCode}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Tên:</strong> {record.name}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Số Điện Thoại:</strong> {record.phoneNumber}
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Ngày Tạo:</strong>{" "}
+              {new Date(record.createdDate).toLocaleString("vi-VN")}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Ngày Xác Nhận:</strong>{" "}
+              {new Date(record.confirmationDate).toLocaleString("vi-VN")}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Trạng Thái:</strong> {record.status}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Địa Chỉ Ký:</strong> {record.signAddress}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Typography variant="body1">
+              <strong>Ghi Chú:</strong> {record.note}
+            </Typography>
+          </Grid>
+        </Grid>
       </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" onClick={onClose}>
+          Đóng
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

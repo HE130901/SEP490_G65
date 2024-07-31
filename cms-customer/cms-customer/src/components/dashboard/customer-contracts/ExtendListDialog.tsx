@@ -155,7 +155,7 @@ export default function ExtendListDialog({
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Gia hạn hợp đồng</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         {renewals.length === 0 ? (
           <></>
         ) : (

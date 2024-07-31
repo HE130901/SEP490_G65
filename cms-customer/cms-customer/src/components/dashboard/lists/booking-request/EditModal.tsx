@@ -108,11 +108,11 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
   };
 
   return (
-    <Dialog open={true} onClose={onClose}>
+    <Dialog open={true} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>
         <Typography variant="h6">Chỉnh sửa Đơn Đặt Chỗ</Typography>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <form onSubmit={handleSubmit}>
           <Box mb={2}>
             <TextField
@@ -163,16 +163,16 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
               onChange={(e) => handleChange("note", e.target.value)}
             />
           </Box>
-          <DialogActions>
-            <Button variant="outlined" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained" color="primary">
-              Lưu
-            </Button>
-          </DialogActions>
         </form>
       </DialogContent>
+      <DialogActions>
+        <Button variant="outlined" onClick={onClose}>
+          Hủy
+        </Button>
+        <Button type="submit" variant="contained" color="primary">
+          Lưu
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }
