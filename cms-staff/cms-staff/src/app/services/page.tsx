@@ -137,7 +137,7 @@ const ServiceProductPage: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "serviceId", headerName: "ID", width: 80 },
+    { field: "serviceId", headerName: "ID", width: 90 },
     { field: "serviceName", headerName: "Tên", width: 220 },
     {
       field: "price",

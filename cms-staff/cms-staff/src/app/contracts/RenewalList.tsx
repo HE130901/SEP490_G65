@@ -14,9 +14,12 @@ import {
   Paper,
   Typography,
   Chip,
+  Box,
+  IconButton,
 } from "@mui/material";
 import contractService from "@/services/contractService";
-
+import RenewalDetailDialog from "./RenewalDetailDialog";
+import { Visibility as VisibilityIcon } from "@mui/icons-material";
 interface Renewal {
   contractId: number;
   contractRenewalId: number;
@@ -42,6 +45,9 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
   contractId,
 }) => {
   const [renewals, setRenewals] = useState<Renewal[]>([]);
+  const [selectedRenewalId, setSelectedRenewalId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     const fetchRenewals = async () => {
@@ -50,11 +56,10 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
           const response = await contractService.getRenewalByContractId(
             contractId
           );
-          // Đảm bảo response không bị undefined hoặc lỗi
           setRenewals(response.$values || []);
         } catch (error) {
           console.error("Error fetching contract renewals:", error);
-          setRenewals([]); // Cài đặt danh sách rỗng nếu có lỗi
+          setRenewals([]);
         }
       }
     };
@@ -70,6 +75,11 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
     return Math.max(daysLeft, 0);
   };
 
+  const formatDateToDDMMYYYY = (dateString: string): string => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
   const getStatusLabel = (
     status: string
   ): {
@@ -103,6 +113,10 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
     }
   };
 
+  const handleViewDetails = (renewalId: number) => {
+    setSelectedRenewalId(renewalId);
+  };
+
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="lg">
       <DialogTitle>Danh Sách Hợp Đồng Gia Hạn</DialogTitle>
@@ -116,29 +130,49 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Mã Gia hạn</TableCell>
-                  <TableCell>Ngày bắt đầu </TableCell>
-                  <TableCell>Ngày kết thúc </TableCell>
-                  <TableCell>Còn lại (ngày) </TableCell>
-                  <TableCell>Số tiền</TableCell>
-                  <TableCell>Trạng thái</TableCell>
+                  <TableCell align="center">Mã Gia hạn</TableCell>
+                  <TableCell align="center">Ngày bắt đầu</TableCell>
+                  <TableCell align="center">Ngày kết thúc</TableCell>
+                  <TableCell align="center">Còn lại (ngày)</TableCell>
+                  <TableCell align="center">Số tiền</TableCell>
+                  <TableCell align="center">Trạng thái</TableCell>
+                  <TableCell align="center">Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {renewals.map((renewal) => (
                   <TableRow key={renewal.contractRenewalId}>
-                    <TableCell>{renewal.contractRenewCode}</TableCell>
-                    <TableCell>{renewal.startDate}</TableCell>
-                    <TableCell>{renewal.endDate}</TableCell>
-                    <TableCell>{calculateDaysLeft(renewal.endDate)}</TableCell>
-                    <TableCell>{renewal.amount.toLocaleString()} VND</TableCell>
-                    <TableCell>
-                      {" "}
+                    <TableCell align="center">
+                      {renewal.contractRenewCode}
+                    </TableCell>
+                    <TableCell align="center">
+                      {formatDateToDDMMYYYY(renewal.createdDate)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {formatDateToDDMMYYYY(renewal.endDate)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {calculateDaysLeft(renewal.endDate)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {renewal.amount.toLocaleString()} VND
+                    </TableCell>
+                    <TableCell align="center">
                       <Chip
                         label={getStatusLabel(renewal.status).label}
                         color={getStatusLabel(renewal.status).color}
                         size="small"
                       />
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        color="primary"
+                        onClick={() =>
+                          handleViewDetails(renewal.contractRenewalId)
+                        }
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -152,6 +186,12 @@ const RenewalListDialog: React.FC<RenewalListDialogProps> = ({
           Đóng
         </Button>
       </DialogActions>
+
+      <RenewalDetailDialog
+        isOpen={!!selectedRenewalId}
+        onClose={() => setSelectedRenewalId(null)}
+        renewalId={selectedRenewalId}
+      />
     </Dialog>
   );
 };

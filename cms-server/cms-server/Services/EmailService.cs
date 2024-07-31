@@ -29,7 +29,7 @@
                 client.Connect(
                     _configuration["SmtpSettings:Server"],
                     int.Parse(_configuration["SmtpSettings:Port"]),
-                    false);
+                    MailKit.Security.SecureSocketOptions.StartTls);
                 client.Authenticate(
                     _configuration["SmtpSettings:Username"],
                     _configuration["SmtpSettings:Password"]);

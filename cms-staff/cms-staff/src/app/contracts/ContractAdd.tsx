@@ -45,9 +45,9 @@ const calculateEndDate = (
   if (!startDate || !duration || isNaN(parseInt(duration, 10))) return "N/A";
 
   const date = new Date(startDate);
-  if (type === "Gửi theo tháng") {
+  if (type === "month") {
     date.setMonth(date.getMonth() + parseInt(duration, 10));
-  } else if (type === "Gửi theo năm") {
+  } else if (type === "year") {
     date.setFullYear(date.getFullYear() + parseInt(duration, 10));
   }
 
@@ -57,14 +57,19 @@ const calculateEndDate = (
 };
 
 const calculateCost = (type: string, duration: number): number => {
-  if (type === "Gửi theo tháng") {
+  if (duration < 0) {
+    return 0;
+  }
+
+  if (type === "month") {
     return duration * 200000;
-  } else if (type === "Gửi theo năm") {
+  } else if (type === "year") {
     if (duration <= 2) return 2000000;
     if (duration <= 5) return 3500000;
     if (duration <= 9) return 5000000;
     return 7000000;
   }
+
   return 0;
 };
 
@@ -88,44 +93,78 @@ const step1Schema = z.object({
     .nonempty("Nơi cấp CMND không được để trống"),
 });
 
-const step2Schema = z.object({
-  deceasedFullName: z.string().nonempty("Tên người quá cố không được để trống"),
-  deceasedCitizenId: z
-    .string()
-    .regex(/^\d{9}|\d{12}$/, "Số CMND phải có 9 hoặc 12 ký tự"),
-  deceasedDateOfBirth: z
-    .string()
-    .refine((date) => new Date(date) <= new Date(), {
-      message: "Ngày sinh phải nhỏ hơn hoặc bằng ngày hiện tại",
-    }),
-  deceasedDateOfDeath: z
-    .string()
-    .refine((date) => new Date(date) <= new Date(), {
-      message: "Ngày mất phải nhỏ hơn hoặc bằng ngày hiện tại",
-    }),
-  deathCertificateNumber: z
-    .string()
-    .nonempty("Số chứng tử không được để trống"),
-  deathCertificateSupplier: z
-    .string()
-    .nonempty("Nơi cấp chứng tử không được để trống"),
-  relationshipWithCustomer: z
-    .string()
-    .nonempty("Mối quan hệ không được để trống"),
-});
+const step2Schema = z
+  .object({
+    deceasedFullName: z
+      .string()
+      .nonempty("Tên người quá cố không được để trống"),
+    deceasedCitizenId: z
+      .string()
+      .regex(/^\d{9}|\d{12}$/, "Số CMND phải có 9 hoặc 12 ký tự"),
+    deceasedDateOfBirth: z
+      .string()
+      .refine((date) => new Date(date) <= new Date(), {
+        message: "Ngày sinh phải sớm hơn hoặc bằng ngày hôm nay",
+      }),
+    deceasedDateOfDeath: z
+      .string()
+      .refine((date) => new Date(date) <= new Date(), {
+        message: "Ngày mất phải sớm hơn hoặc bằng ngày hôm nay",
+      }),
+    deathCertificateNumber: z
+      .string()
+      .nonempty("Số chứng tử không được để trống"),
+    deathCertificateSupplier: z
+      .string()
+      .nonempty("Nơi cấp chứng tử không được để trống"),
+    relationshipWithCustomer: z
+      .string()
+      .nonempty("Mối quan hệ không được để trống"),
+  })
+  .superRefine((data, ctx) => {
+    const dateOfBirth = new Date(data.deceasedDateOfBirth);
+    const dateOfDeath = new Date(data.deceasedDateOfDeath);
+    if (dateOfDeath < dateOfBirth) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["deceasedDateOfDeath"],
+        message: "Ngày mất phải bằng hoặc sau ngày sinh",
+      });
+    }
+  });
 
-const step3Schema = z.object({
-  startDate: z
-    .string()
-    .refine(
-      (date) => new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0)),
-      {
-        message: "Ngày bắt đầu tối thiểu phải từ ngày hiện tại.",
-      }
-    ),
-  type: z.string().nonempty("Loại hình gửi không được để trống"),
-  duration: z.string().nonempty("Thời gian không được để trống"),
-});
+const step3Schema = z
+  .object({
+    startDate: z
+      .string()
+      .refine(
+        (date) => new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0)),
+        {
+          message: "Ngày bắt đầu tối thiểu phải từ ngày hiện tại.",
+        }
+      ),
+    type: z.string().nonempty("Loại hình gửi không được để trống"),
+    duration: z.string().nonempty("Thời gian không được để trống"),
+  })
+  .superRefine((data, ctx) => {
+    const duration = parseInt(data.duration, 10);
+
+    if (data.type === "month" && (duration < 1 || duration > 12)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Thời gian gửi theo tháng tối đa là 12 tháng.",
+        path: ["duration"],
+      });
+    }
+
+    if (data.type === "year" && (duration < 1 || duration > 10)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Thời gian gửi tối đa là 10 năm.",
+        path: ["duration"],
+      });
+    }
+  });
 
 const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -431,11 +470,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
       console.error("Error during contract submission:", error);
       if (error.response) {
         console.error("Error response data:", error.response.data);
-        toast.error(
-          "Đã xảy ra lỗi khi tạo hợp đồng. Vui lòng kiểm tra dữ liệu và thử lại."
-        );
+        toast.error(error.response.data + " Xin vui lòng thử lại");
       } else {
-        toast.error("Unexpected error occurred.");
+        toast.error(
+          "Có lỗi xảy ra khi tạo hợp đồng. Xin vui lòng kiểm tra thông tin và thử lại."
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -660,8 +699,8 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
                   onChange={handleTypeChange}
                   label="Loại hình gửi"
                 >
-                  <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
-                  <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
+                  <MenuItem value="month">Gửi theo tháng</MenuItem>
+                  <MenuItem value="year">Gửi theo năm</MenuItem>
                 </Select>
                 {errors.type && (
                   <Typography color="error">{errors.type}</Typography>

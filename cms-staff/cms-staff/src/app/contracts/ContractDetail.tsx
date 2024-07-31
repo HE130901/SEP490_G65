@@ -11,7 +11,8 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
 
 interface ContractDetailDialogProps {
   isOpen: boolean;
@@ -28,6 +29,18 @@ export default function ContractDetailsDialog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => contentRef.current,
+    onBeforeGetContent: () => {
+      if (!contentRef.current) {
+        return Promise.reject("No content to print");
+      }
+      return Promise.resolve();
+    },
+  });
+
   useEffect(() => {
     const fetchContractDetails = async () => {
       if (!contractId) return;
@@ -35,7 +48,6 @@ export default function ContractDetailsDialog({
       setLoading(true);
       try {
         const data = await ContractAPI.getContractById(contractId);
-        console.log("API response:", data);
         setContractDetails(data);
         setError(null);
       } catch (err) {
@@ -55,18 +67,15 @@ export default function ContractDetailsDialog({
     return <p>{error}</p>;
   }
 
-  if (!contractDetails) {
-    return null; // Hoặc hiển thị thông báo thích hợp
+  if (loading || !contractDetails) {
+    return null; // Or return a loading indicator
   }
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="lg">
-      <DialogTitle>
-        Chi tiết hợp đồng
-        <Divider />
-      </DialogTitle>
-      <DialogContent className="a4-size">
-        <Box p={3} className="print-a4">
+      <DialogTitle>Chi tiết hợp đồng</DialogTitle>
+      <DialogContent dividers>
+        <Box ref={contentRef} p={3}>
           <Typography variant="h4" align="center" gutterBottom>
             HỢP ĐỒNG GỬI GIỮ TRO CỐT
           </Typography>
@@ -226,6 +235,9 @@ export default function ContractDetailsDialog({
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Đóng
+        </Button>
+        <Button onClick={handlePrint} color="primary" variant="contained">
+          In hợp đồng
         </Button>
       </DialogActions>
     </Dialog>

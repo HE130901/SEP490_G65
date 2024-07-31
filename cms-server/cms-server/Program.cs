@@ -25,12 +25,12 @@ builder.Services.AddScoped<INicheService, NicheService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddHttpClient<ImageUploadService>();
 builder.Services.AddSingleton<IOtpService, OtpService>();
+builder.Services.AddSingleton<EmailService>();
 
 // Register the background service
 builder.Services.AddHostedService<ContractStatusUpdateService>();
 builder.Services.AddHostedService<NicheReservationStatusUpdateService>();
 builder.Services.AddHostedService<VisitReservationStatusUpdateService>();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

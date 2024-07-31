@@ -1,12 +1,12 @@
 ﻿using cms_server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
-using System;
 using cms_server.DTOs;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using MimeKit.Text;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace cms_server.Controllers
 {
@@ -16,14 +16,25 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
 
-        public ContractForStaffController(CmsContext context)
+        private readonly IConfiguration _configuration;
+
+        public ContractForStaffController(CmsContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         private async Task<bool> IsDuplicateDeathCertificateNumberAsync(string deathCertificateNumber)
         {
             return await _context.Deceaseds.AnyAsync(d => d.DeathCertificateNumber == deathCertificateNumber);
+        }
+
+        private string GenerateRandomPassword(int length = 12)
+        {
+            const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?_-";
+            var random = new Random();
+            return new string(Enumerable.Repeat(validChars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         [HttpPost("create-contract")]
@@ -47,7 +58,7 @@ namespace cms_server.Controllers
 
                     if (niche == null)
                     {
-                        return BadRequest("Selected niche is not available.");
+                        return BadRequest("Ô chứa không khả dụng để đặt chỗ");
                     }
 
                     // Kiểm tra và lấy thông tin khách hàng
@@ -66,10 +77,17 @@ namespace cms_server.Controllers
                             CitizenId = request.CustomerCitizenId,
                             CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
                             CitizenIdsupplier = request.CustomerCitizenIdSupplier,
-                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q" // Mật khẩu mặc định
-                        };
+                            // Mật khẩu mặc định abcdabcd
+                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
+                            //PasswordHash = BCrypt.Net.BCrypt.HashPassword(GenerateRandomPassword())
+                    };
                         _context.Customers.Add(customer);
                         await _context.SaveChangesAsync();
+
+                        // Gửi email thông báo cho khách hàng mới
+                        var subject = "Chào mừng bạn đến với dịch vụ của An Bình Viên!";
+                        var message = $"Kính gửi {customer.FullName},<br/><br/>Cảm ơn quý khách hàng đã đăng ký dịch vụ của chúng tôi. Tài khoản của bạn là: {customer.Email} - mật khẩu đăng nhập: abcdabcd <br/> Quý khách hàng vui lòng thay đổi mật khẩu sau khi đăng nhập thành công.<br/><br/>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng";
+                        SendEmail(customer.Email, subject, message);
                     }
 
                     // Kiểm tra trùng lặp số giấy chứng tử
@@ -147,9 +165,6 @@ namespace cms_server.Controllers
                 }
             }
         }
-
-
-
 
 
         // GET: api/ContractForStaff/all-contracts
@@ -364,6 +379,60 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
+        [HttpGet("contract-renewal/{renewalId}")]
+        public async Task<IActionResult> GetContractRenewalById(int renewalId)
+        {
+            var renewal = await _context.ContractRenews
+                .Include(cr => cr.Contract)
+                .ThenInclude(c => c.Customer)
+                .Include(cr => cr.Contract)
+                .ThenInclude(c => c.Niche)
+                .Select(cr => new ContractRenewalDetailsDto
+                {
+                    ContractRenewalId = cr.ContractRenewId,
+                    ContractRenewCode = cr.ContractRenewCode,
+                    Status = cr.Status,
+                    CreatedDate = cr.CreatedDate,
+                    EndDate = cr.EndDate,
+                    TotalAmount = cr.TotalAmount,
+                    Note = cr.Note,
+                    CustomerName = cr.Contract.Customer.FullName,
+                    NicheAddress = $"{cr.Contract.Niche.Area.Floor.Building.BuildingName} - {cr.Contract.Niche.Area.Floor.FloorName} - {cr.Contract.Niche.Area.AreaName} - {cr.Contract.Niche.NicheName}",
+                    ContractCode = cr.Contract.ContractCode
+                })
+                .FirstOrDefaultAsync(cr => cr.ContractRenewalId == renewalId);
+
+            if (renewal == null)
+            {
+                return NotFound("Contract renewal not found.");
+            }
+
+            return Ok(renewal);
+        }
+        private void SendEmail(string recipientEmail, string subject, string message)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress(
+                _configuration["SmtpSettings:SenderName"],
+                _configuration["SmtpSettings:SenderEmail"]));
+            emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
+            emailMessage.Subject = subject;
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = message };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(
+                    _configuration["SmtpSettings:Server"],
+                    int.Parse(_configuration["SmtpSettings:Port"]),
+                    MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(
+                    _configuration["SmtpSettings:Username"],
+                    _configuration["SmtpSettings:Password"]);
+                client.Send(emailMessage);
+                client.Disconnect(true);
+            }
+        }
+
 
 
     }
@@ -388,7 +457,7 @@ namespace cms_server.Controllers
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public string Note { get; set; }
-        public decimal TotalAmount { get; set; }
+        public decimal? TotalAmount { get; set; }
         public int ReservationId { get; set; }
     }
 
@@ -413,4 +482,18 @@ public class RenewContractRequest
     public string NewEndDate { get; set; }
     public decimal TotalAmount { get; set; }
 }
+public class ContractRenewalDetailsDto
+{
+    public int ContractRenewalId { get; set; }
+    public string ContractRenewCode { get; set; }
+    public string Status { get; set; }
+    public DateOnly? CreatedDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public decimal? TotalAmount { get; set; }
+    public string Note { get; set; }
+    public string CustomerName { get; set; }
+    public string NicheAddress { get; set; }
+    public string ContractCode { get; set; }
+}
+
 

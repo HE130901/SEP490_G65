@@ -1,5 +1,7 @@
 "use client";
-import React, { useState, useContext, useEffect } from "react";
+import ContractContext from "@/context/ContractContext";
+import contractService from "@/services/contractService";
+import viVN from "@/utils/viVN";
 import {
   Add as AddIcon,
   RestorePage as RestorePageIcon,
@@ -10,27 +12,22 @@ import {
   Box,
   Button,
   Chip,
-  IconButton,
-  Paper,
-  Tooltip,
-  CircularProgress,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
   FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Tooltip,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import React, { useContext, useEffect, useState } from "react";
 import AddContractForm from "./ContractAdd";
 import ConfirmDialog from "./ContractDelete";
 import ContractDetailDialog from "./ContractDetail";
 import RenewalDialog from "./ContractRenewal";
-import ContractContext from "@/context/ContractContext";
-import contractService from "@/services/contractService";
-import { styled } from "@mui/material/styles";
-import viVN from "@/utils/viVN";
-import { SelectChangeEvent } from "@mui/material";
-import { set } from "date-fns";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -71,14 +68,6 @@ const formatDateToDDMMYYYY = (dateString: string): string => {
   return `${day}/${month}/${year}`;
 };
 
-// Function to get today's date in YYYY-MM-DD format
-const getTodayDate = (): string => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
 // Function to get the first day of the current month in YYYY-MM-DD format
 const getCurrentMonthStartDate = (): string => {
   const today = new Date();
@@ -98,6 +87,7 @@ const getCurrentMonthEndDate = (): string => {
     "0"
   )}`;
 };
+
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
@@ -183,7 +173,6 @@ const ContractPage: React.FC = () => {
         const status = getStatusLabel(contract.status).label;
         return String(status).toLowerCase().includes(searchText.toLowerCase());
       } else if (searchColumn === "startDate" || searchColumn === "endDate") {
-        // Date range filter logic
         if (!fromDate || !toDate) return true;
         const contractDate = new Date(contract[searchColumn]);
         const from = new Date(fromDate);
@@ -465,6 +454,9 @@ const ContractPage: React.FC = () => {
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 },
+              },
+              sorting: {
+                sortModel: [{ field: "contractCode", sort: "desc" }],
               },
             }}
           />

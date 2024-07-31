@@ -33,6 +33,32 @@ import { useNicheReservationContext } from "@/context/NicheReservationContext";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { formatISO, parseISO, isWithinInterval } from "date-fns";
 
+const formatDateToDDMMYYYY = (dateString: string): string => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("T")[0].split("-");
+  return `${day}/${month}/${year}`;
+};
+
+// Function to get the first day of the current month in YYYY-MM-DD format
+const getCurrentMonthStartDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}-01`;
+};
+
+// Function to get the last day of the current month in YYYY-MM-DD format
+const getCurrentMonthEndDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDay = new Date(year, month, 0).getDate(); // Last day of the current month
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(
+    2,
+    "0"
+  )}`;
+};
+
 // Styled components
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -115,7 +141,7 @@ const NicheReservationPage = () => {
 
   const [filteredRequests, setFilteredRequests] = useState<any[]>([]);
   const [searchText, setSearchText] = useState("");
-  const [searchColumn, setSearchColumn] = useState("formattedCreatedDate");
+  const [searchColumn, setSearchColumn] = useState("createdDate");
   const [startDateCreated, setStartDateCreated] = useState<string | null>(null);
   const [endDateCreated, setEndDateCreated] = useState<string | null>(null);
   const [startDateConfirmation, setStartDateConfirmation] = useState<
@@ -132,6 +158,13 @@ const NicheReservationPage = () => {
     any | null
   >(null);
 
+  // New state for date filtering
+  const [dateFilterType, setDateFilterType] = useState<
+    "createdDate" | "confirmationDate"
+  >("createdDate");
+  const [fromDate, setFromDate] = useState(getCurrentMonthStartDate());
+  const [toDate, setToDate] = useState(getCurrentMonthEndDate());
+
   useEffect(() => {
     fetchReservations();
   }, []);
@@ -143,6 +176,21 @@ const NicheReservationPage = () => {
   useEffect(() => {
     let filteredData = reservations;
 
+    // Apply date range filter
+    if (fromDate && toDate) {
+      filteredData = filteredData.filter((request) => {
+        const dateToCheck = parseISO(request[dateFilterType]);
+        const from = parseISO(fromDate);
+        const to = parseISO(toDate);
+
+        // Adjust the end date to include the entire day
+        const adjustedTo = new Date(to.getTime() + 86400000); // Add 24 hours (in milliseconds)
+
+        return isWithinInterval(dateToCheck, { start: from, end: adjustedTo });
+      });
+    }
+
+    // Apply text search filter
     if (searchText) {
       filteredData = filteredData.filter((request) => {
         if (searchColumn === "all") {
@@ -161,37 +209,14 @@ const NicheReservationPage = () => {
       });
     }
 
-    if (startDateCreated || endDateCreated) {
-      filteredData = filteredData.filter((request) => {
-        const createdDate = parseISO(request.formattedCreatedDate);
-        return isWithinInterval(createdDate, {
-          start: startDateCreated ? parseISO(startDateCreated) : new Date(0),
-          end: endDateCreated ? parseISO(endDateCreated) : new Date(),
-        });
-      });
-    }
-
-    if (startDateConfirmation || endDateConfirmation) {
-      filteredData = filteredData.filter((request) => {
-        const confirmationDate = parseISO(request.formattedConfirmationDate);
-        return isWithinInterval(confirmationDate, {
-          start: startDateConfirmation
-            ? parseISO(startDateConfirmation)
-            : new Date(0),
-          end: endDateConfirmation ? parseISO(endDateConfirmation) : new Date(),
-        });
-      });
-    }
-
     setFilteredRequests(filteredData);
   }, [
     searchText,
     searchColumn,
-    startDateCreated,
-    endDateCreated,
-    startDateConfirmation,
-    endDateConfirmation,
+    fromDate,
+    toDate,
     reservations,
+    dateFilterType,
   ]);
 
   const handleAddBookingRequest = () => setAddDialogOpen(true);
@@ -277,16 +302,20 @@ const NicheReservationPage = () => {
     },
     { field: "name", headerName: "Tên khách hàng", width: 180 },
     {
-      field: "formattedCreatedDate",
+      field: "createdDate",
       headerName: "Ngày tạo",
       width: 180,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
     },
     {
-      field: "formattedConfirmationDate",
+      field: "confirmationDate",
       headerName: "Ngày hẹn",
       width: 200,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
     },
     {
       field: "status",
@@ -346,17 +375,14 @@ const NicheReservationPage = () => {
     },
   ];
 
-  const rows = filteredRequests.map((bookingRequest, index) => ({
+  const rows = filteredRequests.map((bookingRequest) => ({
     id: bookingRequest.reservationId,
-    stt: index + 1,
     reservationId: bookingRequest.reservationId,
     reservationCode: bookingRequest.reservationCode,
     nicheAddress: bookingRequest.nicheAddress,
     name: bookingRequest.name,
-    formattedConfirmationDate:
-      bookingRequest.formattedConfirmationDate.split(" ")[1],
-    formattedCreatedDate:
-      bookingRequest.formattedConfirmationDate.split(" ")[1],
+    confirmationDate: bookingRequest.confirmationDate,
+    createdDate: bookingRequest.createdDate,
     status: bookingRequest.status,
     nicheCode: bookingRequest.nicheCode,
   }));
@@ -405,12 +431,12 @@ const NicheReservationPage = () => {
               <MenuItem value="nicheAddress">Địa chỉ ô chứa</MenuItem>
               <MenuItem value="name">Tên khách hàng</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
-              <MenuItem value="formattedCreatedDate">Ngày tạo</MenuItem>
-              <MenuItem value="formattedConfirmationDate">Ngày hẹn</MenuItem>
+              <MenuItem value="createdDate">Ngày tạo</MenuItem>
+              <MenuItem value="confirmationDate">Ngày hẹn</MenuItem>
             </Select>
           </FormControl>
-          {searchColumn === "formattedCreatedDate" ||
-          searchColumn === "formattedConfirmationDate" ? (
+          {searchColumn === "createdDate" ||
+          searchColumn === "confirmationDate" ? (
             <Box display="flex" alignItems="center">
               <TextField
                 type="date"
@@ -418,16 +444,8 @@ const NicheReservationPage = () => {
                 variant="outlined"
                 size="small"
                 InputLabelProps={{ shrink: true }}
-                value={
-                  searchColumn === "formattedCreatedDate"
-                    ? startDateCreated
-                    : startDateConfirmation
-                }
-                onChange={(e) =>
-                  searchColumn === "formattedCreatedDate"
-                    ? setStartDateCreated(e.target.value)
-                    : setStartDateConfirmation(e.target.value)
-                }
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
                 style={{ marginRight: 8 }}
               />
               <TextField
@@ -436,16 +454,8 @@ const NicheReservationPage = () => {
                 variant="outlined"
                 size="small"
                 InputLabelProps={{ shrink: true }}
-                value={
-                  searchColumn === "formattedCreatedDate"
-                    ? endDateCreated
-                    : endDateConfirmation
-                }
-                onChange={(e) =>
-                  searchColumn === "formattedCreatedDate"
-                    ? setEndDateCreated(e.target.value)
-                    : setEndDateConfirmation(e.target.value)
-                }
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
                 style={{ marginRight: 8 }}
               />
             </Box>
@@ -458,9 +468,7 @@ const NicheReservationPage = () => {
               onChange={(e) => setSearchText(e.target.value)}
               InputProps={{
                 startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
+                  <InputAdornment position="start"></InputAdornment>
                 ),
               }}
               style={{ marginRight: 8 }}
@@ -487,6 +495,9 @@ const NicheReservationPage = () => {
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 },
+              },
+              sorting: {
+                sortModel: [{ field: "reservationCode", sort: "desc" }],
               },
             }}
           />

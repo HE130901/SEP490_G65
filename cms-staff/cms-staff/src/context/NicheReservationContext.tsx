@@ -10,8 +10,8 @@ interface NicheReservation {
   nicheAddress: string;
   name: string;
   phoneNumber: string;
-  formattedCreatedDate: string;
-  formattedConfirmationDate: string;
+  createdDate: string;
+  confirmationDate: string;
   status: string;
 }
 
