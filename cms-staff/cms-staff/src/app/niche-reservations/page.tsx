@@ -266,13 +266,13 @@ const NicheReservationPage = () => {
     {
       field: "reservationCode",
       headerName: "Mã đơn",
-      width: 150,
+      width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "nicheCode",
       headerName: "Mã ô chứa",
-      width: 150,
+      width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "name", headerName: "Tên khách hàng", width: 180 },
@@ -362,12 +362,23 @@ const NicheReservationPage = () => {
   }));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
         <Button
           variant="contained"
@@ -457,10 +468,15 @@ const NicheReservationPage = () => {
           )}
         </Box>
       </Box>
-      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Paper
           elevation={3}
-          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
           <CenteredTable
             rows={rows}

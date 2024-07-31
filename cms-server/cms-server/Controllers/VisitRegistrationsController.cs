@@ -218,11 +218,20 @@ namespace cms_server.Controllers
                 status = "Approved";
             }
 
-            // Đếm số lượng đăng ký trong ngày để tạo mã RegistrationCode
+            // Giả sử rằng VisitRegistration luôn có CreatedDate hợp lệ
             var registrationsTodayCount = await _context.VisitRegistrations
                 .CountAsync(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate);
 
-            var registrationCode = $"DV-{currentDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
+            // Lấy ngày từ CreatedDate của bản ghi hiện tại để sử dụng trong RegistrationCode
+            var createdDate = registrationsTodayCount > 0
+                ? _context.VisitRegistrations
+                    .Where(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate)
+                    .Select(vr => vr.CreatedDate.Value.Date)
+                    .FirstOrDefault()
+                : currentDate;
+
+            var registrationCode = $"DT-{createdDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
+
 
             var visitRegistration = new VisitRegistration
             {

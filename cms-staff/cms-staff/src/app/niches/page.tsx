@@ -189,13 +189,15 @@ const NicheList: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "nicheCode", headerName: "Mã ô chứa", width: 180 },
-    { field: "customerName", headerName: "Tên khách hàng", width: 180 },
-    { field: "deceasedName", headerName: "Tên người đã mất", width: 180 },
+    { field: "nicheCode", headerName: "Mã ô chứa", width: 200 },
+    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
+    { field: "deceasedName", headerName: "Tên người đã mất", width: 200 },
+
+    { field: "description", headerName: "Mô tả", width: 230 },
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 150,
+      width: 200,
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -217,11 +219,10 @@ const NicheList: React.FC = () => {
         );
       },
     },
-    { field: "description", headerName: "Mô tả", width: 250 },
     {
       field: "actions",
       headerName: "Hành động",
-      width: 120,
+      width: 160,
       renderCell: (params) => (
         <>
           <Tooltip title="Xem chi tiết">
@@ -251,14 +252,25 @@ const NicheList: React.FC = () => {
   }));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
           <FormControl
             margin="normal"
             size="small"
@@ -344,28 +356,30 @@ const NicheList: React.FC = () => {
           />
         </Box>
       </Box>
-
-      {loading ? (
-        <CircularProgress />
-      ) : (
-        selectedArea && (
-          <Paper elevation={3} style={{ padding: 20 }}>
-            <CenteredTable
-              rows={rows}
-              columns={columns}
-              autoHeight
-              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-              pageSizeOptions={[10]}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 10 },
-                },
-              }}
-            />
-          </Paper>
-        )
-      )}
-
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Paper
+          elevation={3}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
+        >
+          <CenteredTable
+            rows={rows}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+          />
+        </Paper>
+      </Box>
       <ViewNicheDialog
         open={viewDialogOpen}
         onClose={() => setViewDialogOpen(false)}

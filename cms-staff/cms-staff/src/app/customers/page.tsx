@@ -109,11 +109,11 @@ const CustomerPage: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "customerId", headerName: "Mã KH", width: 100 },
+    { field: "customerId", headerName: "Mã KH", width: 140 },
     { field: "fullName", headerName: "Tên KH", width: 250 },
     { field: "email", headerName: "Email", width: 200 },
     { field: "phone", headerName: "SĐT", width: 200 },
-    { field: "citizenId", headerName: "CCCD", width: 180 },
+    { field: "citizenId", headerName: "CCCD", width: 200 },
     {
       field: "actions",
       headerName: "Hành động",
@@ -147,14 +147,25 @@ const CustomerPage: React.FC = () => {
   }));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
-        <Box display="flex" alignItems="center" ml="auto">
+        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
           <FormControl variant="outlined" size="small" sx={{ marginRight: 2 }}>
             <InputLabel>Tìm theo</InputLabel>
             <Select
@@ -179,10 +190,16 @@ const CustomerPage: React.FC = () => {
           />
         </Box>
       </Box>
-      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Paper
           elevation={3}
-          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
           <CenteredTable
             rows={rows}

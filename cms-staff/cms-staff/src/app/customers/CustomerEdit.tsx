@@ -88,17 +88,17 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
         citizenIdissuanceDate: customer.citizenIdissuanceDate,
         citizenIdsupplier: customer.citizenIdsupplier,
       });
-      toast.success("Customer information updated successfully");
+      toast.success("Thông tin khách hàng đã được cập nhật");
       onClose();
     } catch (error) {
-      toast.error("Failed to update customer information");
+      toast.error("Lỗi khi cập nhật thông tin khách hàng");
       console.error(error); // Debugging
     }
   };
 
   const handleChangePassword = async () => {
     if (!customer || !newPassword) {
-      toast.error("Please enter a new password.");
+      toast.error("Vui lòng nhập mật khẩu mới");
       return;
     }
     try {
@@ -108,11 +108,11 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
           password: newPassword,
         }
       );
-      toast.success("Password updated successfully");
+      toast.success("Mật khẩu đã được cập nhật");
       setNewPassword(""); // Clear the password field
       onClose();
     } catch (error) {
-      toast.error("Failed to update password");
+      toast.error("Lỗi khi cập nhật mật khẩu");
       console.error(error); // Debugging
     }
   };

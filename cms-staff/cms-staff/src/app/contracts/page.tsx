@@ -30,6 +30,7 @@ import contractService from "@/services/contractService";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
 import { SelectChangeEvent } from "@mui/material";
+import { set } from "date-fns";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -169,7 +170,7 @@ const ContractPage: React.FC = () => {
 
   useEffect(() => {
     fetchContracts();
-  }, []);
+  }, [setContracts]);
 
   useEffect(() => {
     const filtered = contracts.filter((contract) => {
@@ -364,6 +365,10 @@ const ContractPage: React.FC = () => {
   return (
     <Box
       sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
         "& .super-app-theme--header": {
           backgroundColor: "rgba(176, 178, 181)",
         },
@@ -374,7 +379,7 @@ const ContractPage: React.FC = () => {
         justifyContent="space-between"
         alignItems="center"
         mb={2}
-        style={{ width: "100%" }}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
         <Button
           variant="contained"
@@ -438,39 +443,33 @@ const ContractPage: React.FC = () => {
         </Box>
       </Box>
 
-      {loading ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="50vh"
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Paper
+          elevation={3}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
-          <Paper
-            elevation={3}
-            style={{ padding: 4, width: "100%", maxWidth: 1200 }}
-          >
-            <CenteredTable
-              rows={filteredContracts.map((contract, index) => ({
-                ...contract,
-                id: index + 1,
-              }))}
-              columns={columns}
-              autoHeight
-              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-              pageSizeOptions={[10]}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 10 },
-                },
-              }}
-            />
-          </Paper>
-        </Box>
-      )}
+          <CenteredTable
+            rows={filteredContracts.map((contract, index) => ({
+              ...contract,
+              id: index + 1,
+            }))}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+          />
+        </Paper>
+      </Box>
 
       <AddContractForm open={openAddDialog} onClose={handleCloseAdd} />
       <ContractDetailDialog

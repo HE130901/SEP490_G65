@@ -1,13 +1,11 @@
-import React from "react";
-import type { Metadata } from "next";
-import "./globals.css";
-import { AppProviders } from "@/context/AppProviders";
-import { Toaster } from "@/components/ui/toaster";
 import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
-import { CssBaseline, Box, Toolbar } from "@mui/material";
+import { AppProviders } from "@/context/AppProviders";
+import { Box, CssBaseline } from "@mui/material";
+import type { Metadata } from "next";
+import React from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Nhân viên",
@@ -22,21 +20,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ToastContainer />
         <AppProviders>
           <CssBaseline />
-          <Navbar />
+
           <Box sx={{ display: "flex" }}>
             <Sidebar />
             <Box
               component="main"
-              sx={{ flexGrow: 1, p: 3, bgcolor: "transparent" }}
+              sx={{ flexGrow: 1, p: 4, bgcolor: "transparent" }}
             >
-              <Toolbar />
               {children}
             </Box>
           </Box>
-          <Toaster />
-          <ToastContainer />
         </AppProviders>
       </body>
     </html>

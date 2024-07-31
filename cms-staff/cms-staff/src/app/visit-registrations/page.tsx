@@ -165,12 +165,12 @@ const VisitRegistrationsList: React.FC = () => {
     {
       field: "visitCode",
       headerName: "Mã đơn",
-      width: 150,
+      width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "customerName", headerName: "Tên khách hàng", width: 180 },
-    { field: "staffName", headerName: "Tên nhân viên", width: 150 },
-    { field: "nicheAddress", headerName: "Địa chỉ", width: 240 },
+    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
+    { field: "staffName", headerName: "Tên nhân viên", width: 180 },
+    { field: "nicheAddress", headerName: "Địa chỉ", width: 260 },
     {
       field: "formattedCreatedDate",
       headerName: "Ngày tạo",
@@ -277,12 +277,23 @@ const VisitRegistrationsList: React.FC = () => {
   }));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
         <Button
           variant="contained"
@@ -330,43 +341,37 @@ const VisitRegistrationsList: React.FC = () => {
         </Box>
       </Box>
 
-      {loading ? (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="50vh"
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Paper
+          elevation={3}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
-          <Paper
-            elevation={3}
-            style={{ padding: 20, width: "100%", maxWidth: 1200 }}
-          >
-            <CenteredTable
-              rows={rows}
-              columns={columns}
-              autoHeight
-              localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
-              pageSizeOptions={[10]}
-              initialState={{
-                pagination: {
-                  paginationModel: { pageSize: 10 },
+          <CenteredTable
+            rows={rows}
+            columns={columns}
+            autoHeight
+            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            pageSizeOptions={[10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+              columns: {
+                columnVisibilityModel: {
+                  staffName: false,
+                  formattedCreatedDate: false,
+                  note: false,
                 },
-                columns: {
-                  columnVisibilityModel: {
-                    staffName: false,
-                    formattedCreatedDate: false,
-                    note: false,
-                  },
-                },
-              }}
-            />
-          </Paper>
-        </Box>
-      )}
+              },
+            }}
+          />
+        </Paper>
+      </Box>
 
       <VisitViewDialog
         open={viewDialogOpen}

@@ -138,19 +138,19 @@ const ServiceProductPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     { field: "serviceId", headerName: "ID", width: 80 },
-    { field: "serviceName", headerName: "Tên", width: 200 },
+    { field: "serviceName", headerName: "Tên", width: 220 },
     {
       field: "price",
       headerName: "Giá (VND)",
-      width: 150,
+      width: 170,
       renderCell: (params) => (
         <Box display="flex" alignItems="center">
           {formatVND(params.value as number)}
         </Box>
       ),
     },
-    { field: "category", headerName: "Phân loại", width: 120 },
-    { field: "tag", headerName: "Thẻ", width: 120 },
+    { field: "category", headerName: "Phân loại", width: 130 },
+    { field: "tag", headerName: "Thẻ", width: 130 },
     {
       field: "servicePicture",
       headerName: "Ảnh",
@@ -244,12 +244,23 @@ const ServiceProductPage: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
         <Button
           variant="contained"
@@ -259,7 +270,7 @@ const ServiceProductPage: React.FC = () => {
         >
           Thêm mới
         </Button>
-        <Box display="flex" alignItems="center">
+        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
           <FormControl variant="outlined" size="small" sx={{ marginRight: 2 }}>
             <InputLabel>Tìm theo</InputLabel>
             <Select
@@ -284,10 +295,15 @@ const ServiceProductPage: React.FC = () => {
           />
         </Box>
       </Box>
-      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Paper
           elevation={3}
-          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
           <CenteredTable
             rows={filteredItems.map((items, index) => ({

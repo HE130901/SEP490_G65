@@ -31,8 +31,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
-    whiteSpace: "normal",
-    overflow: "visible",
     textOverflow: "unset",
     padding: theme.spacing(1),
   },
@@ -138,7 +136,7 @@ const ServiceRequestPage = () => {
     {
       field: "serviceOrderCode",
       headerName: "Mã đơn",
-      width: 150,
+      width: 200,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     { field: "customerName", headerName: "Tên Khách hàng", width: 180 },
@@ -151,7 +149,7 @@ const ServiceRequestPage = () => {
     {
       field: "services",
       headerName: "Dịch vụ",
-      width: 250,
+      width: 270,
       renderCell: (params) => (
         <NoWrapTypography variant="body2">
           {Array.isArray(params.value)
@@ -168,7 +166,7 @@ const ServiceRequestPage = () => {
     {
       field: "statuses",
       headerName: "Trạng thái",
-      width: 150,
+      width: 220,
       renderCell: (params) => (
         <NoWrapTypography>
           {Array.isArray(params.value)
@@ -223,12 +221,23 @@ const ServiceRequestPage = () => {
   }));
 
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        "& .super-app-theme--header": {
+          backgroundColor: "rgba(176, 178, 181)",
+        },
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
+        style={{ width: "100%", maxWidth: 1200 }}
       >
         <Button
           variant="contained"
@@ -239,10 +248,15 @@ const ServiceRequestPage = () => {
           Thêm mới đơn đăng ký dùng dịch vụ
         </Button>
       </Box>
-      <Box display="flex" justifyContent="center" style={{ width: "100%" }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Paper
           elevation={3}
-          style={{ padding: 20, width: "100%", maxWidth: 1200 }}
+          style={{ padding: 4, width: "100%", maxWidth: 1200 }}
         >
           <CenteredTable
             rows={rows}

@@ -1,5 +1,5 @@
+// Sidebar.js
 "use client";
-
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,6 +14,7 @@ import {
   Box,
   ListItemButton,
   Typography,
+  Button,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -29,16 +30,25 @@ import {
   ClipboardCheckIcon,
   HomeIcon,
 } from "@heroicons/react/outline";
-import { useAuth } from "@/context/AuthContext"; // Điều chỉnh đường dẫn phù hợp với dự án của bạn
+import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 const Sidebar = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const drawerWidth = 240;
 
   const handleDrawerToggle = () => {
     setOpen(!open);
+  };
+
+  const handleMenuItemClick = () => {
+    setOpen(true);
+  };
+
+  const handleLogout = () => {
+    logout(); // Call the logout function from useAuth
   };
 
   const staffMenuItems = [
@@ -106,7 +116,7 @@ const Sidebar = () => {
     user?.role === "Manager" ? managerMenuItems : staffMenuItems;
 
   if (!user) {
-    return null; // Không hiển thị Sidebar nếu chưa đăng nhập
+    return null;
   }
 
   return (
@@ -115,15 +125,13 @@ const Sidebar = () => {
       open={open}
       sx={{
         width: open ? drawerWidth : 64,
-        flexShrink: 0,
+        transition: "width 0.3s",
         "& .MuiDrawer-paper": {
           width: open ? drawerWidth : 64,
-          boxSizing: "border-box",
           transition: "width 0.3s",
           overflowX: "hidden",
-          backgroundColor: "#757575", // Dark gray
-          color: "#fff", // White text
-          zIndex: (theme) => theme.zIndex.drawer + 2, // Ensure Sidebar is on top
+          backgroundColor: "#757575",
+          color: "#fff",
         },
       }}
     >
@@ -151,9 +159,10 @@ const Sidebar = () => {
             <ListItemButton
               component="a"
               selected={pathname === item.path}
+              onClick={handleMenuItemClick}
               sx={{
                 "&.Mui-selected": {
-                  backgroundColor: "#2196f3", // Blue color when selected
+                  backgroundColor: "#2196f3",
                   color: "#fff",
                 },
                 "&.Mui-selected:hover": {
@@ -178,6 +187,43 @@ const Sidebar = () => {
           </Link>
         ))}
       </List>
+      <Box sx={{ flexGrow: 1 }} />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          p: 2,
+        }}
+      >
+        {open && (
+          <>
+            <Image
+              src="/images/FPT.svg"
+              alt="logo"
+              width={150}
+              height={50}
+              className="pb-4"
+            />
+            <Typography variant="caption" color="inherit" fontStyle="oblique">
+              © SEP490-G65
+            </Typography>
+            <Typography variant="caption" color="inherit" fontStyle="initial">
+              Columbarium Management System
+            </Typography>
+          </>
+        )}
+      </Box>
+      <Divider sx={{ borderColor: "#fff" }} />
+      {open && (
+        <>
+          <Box sx={{ p: 2, textAlign: "center" }}>
+            <Button variant="outlined" color="inherit" onClick={handleLogout}>
+              Đăng xuất
+            </Button>
+          </Box>
+        </>
+      )}
     </Drawer>
   );
 };
