@@ -52,7 +52,7 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
 const CustomerPage: React.FC = () => {
   const { customers, fetchCustomers } = useCustomers();
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("fullName");
+  const [searchColumn, setSearchColumn] = useState("all");
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
@@ -62,6 +62,7 @@ const CustomerPage: React.FC = () => {
   useEffect(() => {
     fetchCustomers(); // Fetch data on initial load
   }, []);
+
   const handleViewCustomer = (customer: Customer) => {
     setSelectedCustomerId(customer.customerId);
     setViewDialogOpen(true);
@@ -90,7 +91,16 @@ const CustomerPage: React.FC = () => {
 
   const filteredCustomers = customers.filter((customer) => {
     const searchTermLower = searchTerm.toLowerCase();
-    if (searchColumn === "fullName") {
+    if (searchColumn === "all") {
+      return (
+        customer.fullName.toLowerCase().includes(searchTermLower) ||
+        customer.customerId.toString().includes(searchTerm) ||
+        customer.phone.toLowerCase().includes(searchTermLower) ||
+        customer.email.toLowerCase().includes(searchTermLower) ||
+        customer.address.toLowerCase().includes(searchTermLower) ||
+        customer.citizenId.toLowerCase().includes(searchTermLower)
+      );
+    } else if (searchColumn === "fullName") {
       return customer.fullName.toLowerCase().includes(searchTermLower);
     } else if (searchColumn === "customerId") {
       return customer.customerId.toString().includes(searchTerm);
@@ -109,15 +119,41 @@ const CustomerPage: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "customerId", headerName: "Mã KH", width: 140 },
-    { field: "fullName", headerName: "Tên KH", width: 250 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "phone", headerName: "SĐT", width: 200 },
-    { field: "citizenId", headerName: "CCCD", width: 200 },
+    {
+      field: "customerId",
+      headerName: "Mã KH",
+      width: 140,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "fullName",
+      headerName: "Tên KH",
+      width: 250,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "phone",
+      headerName: "SĐT",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "citizenId",
+      headerName: "CCCD",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "actions",
       headerName: "Hành động",
       width: 200,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <>
           <Tooltip title="Xem chi tiết">
@@ -173,6 +209,7 @@ const CustomerPage: React.FC = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
+              <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="fullName">Tên khách hàng</MenuItem>
               <MenuItem value="customerId">Mã khách hàng</MenuItem>
               <MenuItem value="phone">Số điện thoại</MenuItem>

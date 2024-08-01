@@ -137,24 +137,46 @@ const ServiceProductPage: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "serviceId", headerName: "ID", width: 90 },
-    { field: "serviceName", headerName: "Tên", width: 220 },
+    {
+      field: "serviceId",
+      headerName: "ID",
+      width: 90,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "serviceName",
+      headerName: "Tên",
+      width: 220,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "price",
       headerName: "Giá (VND)",
       width: 170,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Box display="flex" alignItems="center">
           {formatVND(params.value as number)}
         </Box>
       ),
     },
-    { field: "category", headerName: "Phân loại", width: 130 },
-    { field: "tag", headerName: "Thẻ", width: 130 },
+    {
+      field: "category",
+      headerName: "Phân loại",
+      width: 130,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "tag",
+      headerName: "Thẻ",
+      width: 130,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "servicePicture",
       headerName: "Ảnh",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <Avatar src={params.row.servicePicture} alt={params.row.serviceName} />
       ),
@@ -163,6 +185,7 @@ const ServiceProductPage: React.FC = () => {
       field: "status",
       headerName: "Trạng thái",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -188,6 +211,7 @@ const ServiceProductPage: React.FC = () => {
       field: "actions",
       headerName: "Hành động",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <>
           <Tooltip title="Xem chi tiết">

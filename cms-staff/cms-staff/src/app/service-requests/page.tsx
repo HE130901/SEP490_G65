@@ -9,6 +9,11 @@ import {
   Tooltip,
   Typography,
   Paper,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -19,7 +24,33 @@ import AddServiceOrderDialog from "./AddServiceOrderDialog";
 import ViewServiceOrderDialog from "./ViewServiceOrderDialog";
 import { styled } from "@mui/material/styles";
 import viVN from "@/utils/viVN";
-import { useServiceOrderContext } from "@/context/ServiceOrderContext"; // Import context
+import { useServiceOrderContext } from "@/context/ServiceOrderContext";
+import { formatISO, parseISO, isWithinInterval } from "date-fns";
+
+// Helper functions
+const formatDateToDDMMYYYY = (dateString: string): string => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("T")[0].split("-");
+  return `${day}/${month}/${year}`;
+};
+
+const getCurrentMonthStartDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}-01`;
+};
+
+const getCurrentMonthEndDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDay = new Date(year, month, 0).getDate(); // Last day of the current month
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(
+    2,
+    "0"
+  )}`;
+};
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -75,8 +106,8 @@ const ServiceRequestPage = () => {
   } = useServiceOrderContext();
 
   useEffect(() => {
-    console.log("Service Orders fetched:", serviceOrders);
-  }, [serviceOrders]);
+    fetchServiceOrders();
+  }, [fetchServiceOrders]);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -84,9 +115,14 @@ const ServiceRequestPage = () => {
     number | null
   >(null);
 
-  useEffect(() => {
-    fetchServiceOrders();
-  }, []);
+  const [searchText, setSearchText] = useState("");
+  const [searchColumn, setSearchColumn] = useState<
+    keyof (typeof serviceOrders)[0] | "all"
+  >("createdDate");
+
+  const [fromDate, setFromDate] = useState(getCurrentMonthStartDate());
+  const [toDate, setToDate] = useState(getCurrentMonthEndDate());
+
   const handleAddServiceRequest = () => {
     setAddDialogOpen(true);
   };
@@ -132,24 +168,78 @@ const ServiceRequestPage = () => {
     fetchServiceOrders();
   };
 
+  const filteredServiceOrders = serviceOrders.filter((order) => {
+    // Apply date range filter
+    let dateFiltered = true;
+    if (
+      fromDate &&
+      toDate &&
+      (searchColumn === "createdDate" || searchColumn === "orderDate")
+    ) {
+      const dateToCheck = parseISO(order[searchColumn]);
+      const from = parseISO(fromDate);
+      const to = parseISO(toDate);
+      const adjustedTo = new Date(to.getTime() + 86400000); // Add 24 hours
+
+      dateFiltered = isWithinInterval(dateToCheck, {
+        start: from,
+        end: adjustedTo,
+      });
+    }
+
+    // Apply text search filter
+    let textFiltered = true;
+    if (searchText) {
+      textFiltered =
+        searchColumn === "all"
+          ? Object.values(order).some((value) =>
+              String(value).toLowerCase().includes(searchText.toLowerCase())
+            )
+          : String(order[searchColumn])
+              .toLowerCase()
+              .includes(searchText.toLowerCase());
+    }
+
+    return dateFiltered && textFiltered;
+  });
+
   const columns: GridColDef[] = [
     {
       field: "serviceOrderCode",
       headerName: "Mã đơn",
       width: 200,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "customerName", headerName: "Tên Khách hàng", width: 180 },
     {
-      field: "formattedOrderDate",
-      headerName: "Thời gian hẹn",
-      width: 200,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      field: "customerName",
+      headerName: "Tên Khách hàng",
+      width: 180,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "createdDate",
+      headerName: "Ngày tạo",
+      width: 100,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
+    },
+    {
+      field: "orderDate",
+      headerName: "Ngày hẹn",
+      width: 100,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
     },
     {
       field: "services",
       headerName: "Dịch vụ",
-      width: 270,
+      width: 260,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <NoWrapTypography variant="body2">
           {Array.isArray(params.value)
@@ -167,6 +257,7 @@ const ServiceRequestPage = () => {
       field: "statuses",
       headerName: "Trạng thái",
       width: 220,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <NoWrapTypography>
           {Array.isArray(params.value)
@@ -186,7 +277,8 @@ const ServiceRequestPage = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 100,
+      width: 130,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>
           <Tooltip title="Xem chi tiết đơn đặt dịch vụ">
@@ -204,13 +296,14 @@ const ServiceRequestPage = () => {
     },
   ];
 
-  const rows = serviceOrders.map((serviceOrder, index) => ({
+  const rows = filteredServiceOrders.map((serviceOrder, index) => ({
     id: serviceOrder.serviceOrderId,
     stt: index + 1,
     serviceOrderId: serviceOrder.serviceOrderId,
     serviceOrderCode: serviceOrder.serviceOrderCode,
     customerName: serviceOrder.customerName,
-    formattedOrderDate: serviceOrder.formattedOrderDate,
+    orderDate: serviceOrder.orderDate,
+    createdDate: serviceOrder.createdDate,
     services: serviceOrder.serviceOrderDetails?.$values || [],
     statuses:
       serviceOrder.serviceOrderDetails?.$values.map(
@@ -247,6 +340,63 @@ const ServiceRequestPage = () => {
         >
           Thêm mới đơn đăng ký dùng dịch vụ
         </Button>
+        <Box display="flex" alignItems="center">
+          <FormControl
+            variant="outlined"
+            size="small"
+            style={{ marginRight: 8 }}
+          >
+            <InputLabel id="search-column-label">Chọn cột</InputLabel>
+            <Select
+              labelId="search-column-label"
+              id="search-column"
+              value={searchColumn}
+              onChange={(e) =>
+                setSearchColumn(
+                  e.target.value as keyof (typeof serviceOrders)[0] | "all"
+                )
+              }
+              label="Chọn cột"
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="serviceOrderCode">Mã đơn</MenuItem>
+              <MenuItem value="customerName">Tên Khách hàng</MenuItem>
+              <MenuItem value="createdDate">Ngày tạo</MenuItem>
+              <MenuItem value="orderDate">Ngày hẹn</MenuItem>
+            </Select>
+          </FormControl>
+          {searchColumn === "createdDate" || searchColumn === "orderDate" ? (
+            <Box display="flex" alignItems="center">
+              <TextField
+                type="date"
+                label="Từ ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                style={{ marginRight: 8 }}
+              />
+              <TextField
+                type="date"
+                label="Đến ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </Box>
+          ) : (
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          )}
+        </Box>
       </Box>
       <Box
         display="flex"
@@ -267,6 +417,9 @@ const ServiceRequestPage = () => {
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 },
+              },
+              columns: {
+                columnVisibilityModel: {},
               },
             }}
           />

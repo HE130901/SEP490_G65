@@ -293,14 +293,21 @@ const NicheReservationPage = () => {
       headerName: "Mã đơn",
       width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      headerClassName: "super-app-theme--header",
     },
     {
       field: "nicheCode",
       headerName: "Mã ô chứa",
       width: 180,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      headerClassName: "super-app-theme--header",
     },
-    { field: "name", headerName: "Tên khách hàng", width: 180 },
+    {
+      field: "name",
+      headerName: "Tên khách hàng",
+      width: 180,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "createdDate",
       headerName: "Ngày tạo",
@@ -308,6 +315,8 @@ const NicheReservationPage = () => {
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
+
+      headerClassName: "super-app-theme--header",
     },
     {
       field: "confirmationDate",
@@ -316,6 +325,8 @@ const NicheReservationPage = () => {
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
+
+      headerClassName: "super-app-theme--header",
     },
     {
       field: "status",
@@ -327,6 +338,8 @@ const NicheReservationPage = () => {
           color={getStatusColor(params.value)}
         />
       ),
+
+      headerClassName: "super-app-theme--header",
     },
     {
       field: "actions",
@@ -372,6 +385,8 @@ const NicheReservationPage = () => {
           </Tooltip>
         </CenteredCell>
       ),
+
+      headerClassName: "super-app-theme--header",
     },
   ];
 

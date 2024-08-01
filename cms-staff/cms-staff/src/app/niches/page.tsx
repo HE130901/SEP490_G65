@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  CircularProgress,
   FormControl,
   InputLabel,
   Select,
@@ -12,8 +11,8 @@ import {
   IconButton,
   Tooltip,
   TextField,
-  SelectChangeEvent,
   Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import { Visibility, Edit } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -84,7 +83,7 @@ const NicheList: React.FC = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedNicheId, setSelectedNicheId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("nicheCode");
+  const [searchColumn, setSearchColumn] = useState("all");
 
   useEffect(() => {
     const fetchBuildings = async () => {
@@ -174,14 +173,26 @@ const NicheList: React.FC = () => {
 
   const filteredNiches = niches.filter((niche) => {
     const searchTermLower = searchTerm.toLowerCase();
-    if (searchColumn === "nicheCode") {
+    if (searchColumn === "all") {
+      return (
+        niche.nicheCode.toLowerCase().includes(searchTermLower) ||
+        niche.customerName?.toLowerCase().includes(searchTermLower) ||
+        niche.deceasedName?.toLowerCase().includes(searchTermLower) ||
+        getStatusLabel(niche.status ?? "")
+          .label.toLowerCase()
+          .includes(searchTermLower) ||
+        niche.description?.toLowerCase().includes(searchTermLower)
+      );
+    } else if (searchColumn === "nicheCode") {
       return niche.nicheCode.toLowerCase().includes(searchTermLower);
     } else if (searchColumn === "customerName") {
       return niche.customerName?.toLowerCase().includes(searchTermLower);
     } else if (searchColumn === "deceasedName") {
       return niche.deceasedName?.toLowerCase().includes(searchTermLower);
     } else if (searchColumn === "status") {
-      return niche.status?.toLowerCase().includes(searchTermLower);
+      return getStatusLabel(niche.status ?? "")
+        .label.toLowerCase()
+        .includes(searchTermLower);
     } else if (searchColumn === "description") {
       return niche.description?.toLowerCase().includes(searchTermLower);
     }
@@ -189,15 +200,35 @@ const NicheList: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: "nicheCode", headerName: "Mã ô chứa", width: 200 },
-    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
-    { field: "deceasedName", headerName: "Tên người đã mất", width: 200 },
-
-    { field: "description", headerName: "Mô tả", width: 230 },
+    {
+      field: "nicheCode",
+      headerName: "Mã ô chứa",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "customerName",
+      headerName: "Tên khách hàng",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "deceasedName",
+      headerName: "Tên người đã mất",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "description",
+      headerName: "Mô tả",
+      width: 230,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "status",
       headerName: "Trạng thái",
       width: 200,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -223,6 +254,7 @@ const NicheList: React.FC = () => {
       field: "actions",
       headerName: "Hành động",
       width: 160,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <>
           <Tooltip title="Xem chi tiết">
@@ -340,6 +372,7 @@ const NicheList: React.FC = () => {
               onChange={handleSearchColumnChange}
               label="Tìm theo"
             >
+              <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="nicheCode">Mã ô chứa</MenuItem>
               <MenuItem value="customerName">Tên khách hàng</MenuItem>
               <MenuItem value="deceasedName">Tên người đã mất</MenuItem>

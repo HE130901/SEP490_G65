@@ -7,7 +7,6 @@ import {
   IconButton,
   Tooltip,
   Paper,
-  CircularProgress,
   TextField,
   MenuItem,
   Select,
@@ -22,16 +21,43 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { toast } from "react-toastify";
+import { styled } from "@mui/material/styles";
+import { formatISO, parseISO, isWithinInterval } from "date-fns";
 import VisitViewDialog from "./VisitViewDialog";
 import VisitDeleteDialog from "./VisitDeleteDialog";
 import VisitApproveDialog from "./VisitApproveDialog";
 import VisitAddDialog from "./VisitAddDialog";
-import { styled } from "@mui/material/styles";
-import viVN from "@/utils/viVN";
 import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext";
 import { VisitRegistrationDto } from "./interfaces";
+import { toast } from "react-toastify";
+import viVN from "@/utils/viVN";
 
+// Helper functions
+const formatDateToDDMMYYYY = (dateString: string): string => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("T")[0].split("-");
+  return `${day}/${month}/${year}`;
+};
+
+const getCurrentMonthStartDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}-01`;
+};
+
+const getCurrentMonthEndDate = (): string => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const lastDay = new Date(year, month, 0).getDate(); // Last day of the current month
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(
+    2,
+    "0"
+  )}`;
+};
+
+// Styled components
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -42,9 +68,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
-    whiteSpace: "normal",
-    overflow: "visible",
-    textOverflow: "unset",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
@@ -90,11 +113,10 @@ const getStatusLabel = (status: string) => {
 const VisitRegistrationsList: React.FC = () => {
   const { visitRegistrations, fetchVisitRegistrations } =
     useVisitRegistrationContext();
-
   const [filteredVisitRegistrations, setFilteredVisitRegistrations] = useState<
     VisitRegistrationDto[]
   >([]);
-  const [loading, setLoading] = useState(true); // Initial loading state set to true
+  const [loading, setLoading] = useState(true);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
@@ -104,7 +126,9 @@ const VisitRegistrationsList: React.FC = () => {
   const [searchText, setSearchText] = useState("");
   const [searchColumn, setSearchColumn] = useState<
     keyof VisitRegistrationDto | "all"
-  >("all");
+  >("createdDate");
+  const [fromDate, setFromDate] = useState(getCurrentMonthStartDate());
+  const [toDate, setToDate] = useState(getCurrentMonthEndDate());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,35 +139,59 @@ const VisitRegistrationsList: React.FC = () => {
   }, [fetchVisitRegistrations]);
 
   useEffect(() => {
-    const filtered = visitRegistrations.filter((visit) => {
-      if (searchColumn === "all") {
-        return Object.values(visit).some((value) =>
-          String(value).toLowerCase().includes(searchText.toLowerCase())
-        );
-      } else {
-        const columnValue = visit[searchColumn];
-        return String(columnValue)
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
-      }
-    });
-    setFilteredVisitRegistrations(filtered);
-  }, [searchText, searchColumn, visitRegistrations]);
+    let filteredData = visitRegistrations;
+
+    // Apply date range filter
+    if (
+      fromDate &&
+      toDate &&
+      (searchColumn === "createdDate" || searchColumn === "visitDate")
+    ) {
+      filteredData = filteredData.filter((visit) => {
+        const dateToCheck = parseISO(visit[searchColumn]);
+        const from = parseISO(fromDate);
+        const to = parseISO(toDate);
+
+        // Adjust the end date to include the entire day
+        const adjustedTo = new Date(to.getTime() + 86400000); // Add 24 hours (in milliseconds)
+
+        return isWithinInterval(dateToCheck, { start: from, end: adjustedTo });
+      });
+    }
+
+    // Apply text search filter
+    if (searchText) {
+      filteredData = filteredData.filter((visit) => {
+        if (searchColumn === "all") {
+          return Object.values(visit).some((value) =>
+            String(value).toLowerCase().includes(searchText.toLowerCase())
+          );
+        } else if (searchColumn === "status") {
+          return getStatusLabel(visit.status)
+            .label.toLowerCase()
+            .includes(searchText.toLowerCase());
+        } else {
+          return String(visit[searchColumn])
+            .toLowerCase()
+            .includes(searchText.toLowerCase());
+        }
+      });
+    }
+
+    setFilteredVisitRegistrations(filteredData);
+  }, [searchText, searchColumn, fromDate, toDate, visitRegistrations]);
 
   const handleView = (visit: VisitRegistrationDto) => {
-    console.log("Viewing visit:", visit);
     setSelectedVisit(visit);
     setViewDialogOpen(true);
   };
 
   const handleApprove = (visit: VisitRegistrationDto) => {
-    console.log("Approving visit:", visit);
     setSelectedVisit(visit);
     setApproveDialogOpen(true);
   };
 
   const handleReject = (visit: VisitRegistrationDto) => {
-    console.log("Rejecting visit:", visit);
     setSelectedVisit(visit);
     setDeleteDialogOpen(true);
   };
@@ -166,34 +214,64 @@ const VisitRegistrationsList: React.FC = () => {
       field: "visitCode",
       headerName: "Mã đơn",
       width: 180,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "customerName", headerName: "Tên khách hàng", width: 200 },
-    { field: "staffName", headerName: "Tên nhân viên", width: 180 },
-    { field: "nicheAddress", headerName: "Địa chỉ", width: 260 },
     {
-      field: "formattedCreatedDate",
+      field: "customerName",
+      headerName: "Tên khách hàng",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "staffName",
+      headerName: "Tên nhân viên",
+      width: 180,
+      headerClassName: "super-app-theme--header",
+    },
+    {
+      field: "nicheAddress",
+      headerName: "Địa chỉ",
+      width: 260,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+    },
+    {
+      field: "createdDate",
       headerName: "Ngày tạo",
-      width: 150,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      width: 120,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
     },
     {
-      field: "formattedVisitDate",
-      headerName: "Ngày viếng thăm",
-      width: 150,
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      field: "visitDate",
+      headerName: "Ngày hẹn",
+      width: 120,
+      headerClassName: "super-app-theme--header",
+      renderCell: (params) => (
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
+      ),
     },
     {
       field: "accompanyingPeople",
       headerName: "Số lượng",
+      headerClassName: "super-app-theme--header",
       width: 100,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
-    { field: "note", headerName: "Ghi chú", width: 200 },
+    {
+      field: "note",
+      headerName: "Ghi chú",
+      width: 200,
+      headerClassName: "super-app-theme--header",
+    },
     {
       field: "status",
       headerName: "Trạng thái",
       width: 150,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
@@ -218,7 +296,8 @@ const VisitRegistrationsList: React.FC = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 160,
+      headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>
           <Tooltip title="Xem chi tiết">
@@ -269,8 +348,8 @@ const VisitRegistrationsList: React.FC = () => {
     customerName: visit.customerName,
     staffName: visit.staffName,
     nicheAddress: visit.nicheAddress,
-    formattedCreatedDate: visit.formattedCreatedDate,
-    formattedVisitDate: visit.formattedVisitDate,
+    createdDate: visit.createdDate,
+    visitDate: visit.visitDate,
     status: visit.status,
     accompanyingPeople: visit.accompanyingPeople,
     note: visit.note,
@@ -326,18 +405,42 @@ const VisitRegistrationsList: React.FC = () => {
               <MenuItem value="customerName">Tên khách hàng</MenuItem>
               <MenuItem value="staffName">Tên nhân viên</MenuItem>
               <MenuItem value="nicheAddress">Địa chỉ</MenuItem>
-              <MenuItem value="formattedCreatedDate">Ngày tạo</MenuItem>
-              <MenuItem value="formattedVisitDate">Ngày viếng thăm</MenuItem>
+              <MenuItem value="createdDate">Ngày tạo</MenuItem>
+              <MenuItem value="visitDate">Ngày hẹn</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
             </Select>
           </FormControl>
-          <TextField
-            label="Tìm kiếm"
-            variant="outlined"
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+          {searchColumn === "createdDate" || searchColumn === "visitDate" ? (
+            <Box display="flex" alignItems="center">
+              <TextField
+                type="date"
+                label="Từ ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                style={{ marginRight: 8 }}
+              />
+              <TextField
+                type="date"
+                label="Đến ngày"
+                variant="outlined"
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+              />
+            </Box>
+          ) : (
+            <TextField
+              label="Tìm kiếm"
+              variant="outlined"
+              size="small"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+          )}
         </Box>
       </Box>
 
@@ -364,8 +467,8 @@ const VisitRegistrationsList: React.FC = () => {
               columns: {
                 columnVisibilityModel: {
                   staffName: false,
-                  formattedCreatedDate: false,
                   note: false,
+                  accompanyingPeople: false,
                 },
               },
             }}

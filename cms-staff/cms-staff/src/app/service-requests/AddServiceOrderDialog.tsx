@@ -20,7 +20,6 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import ServiceOrderAPI from "@/services/serviceOrderService";
 import { toast } from "react-toastify";
-import { set } from "react-hook-form";
 
 const AddServiceOrderDialog = ({
   open,
@@ -44,7 +43,15 @@ const AddServiceOrderDialog = ({
     const fetchContracts = async () => {
       try {
         const response = await ServiceOrderAPI.getAllContracts();
-        setContracts(response.data.$values || response.data);
+        const fetchedContracts = response.data.$values || response.data;
+
+        // Filter out contracts with "Expired" or "Canceled" statuses
+        const activeContracts = fetchedContracts.filter(
+          (contract: any) =>
+            contract.status !== "Expired" && contract.status !== "Canceled"
+        );
+
+        setContracts(activeContracts);
       } catch (error) {
         toast.error("Không thể tải danh sách hợp đồng");
       }

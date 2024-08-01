@@ -9,7 +9,8 @@ interface ServiceOrder {
   serviceOrderId: number;
   serviceOrderCode: string;
   customerName: string;
-  formattedOrderDate: string;
+  orderDate: string;
+  createdDate: string;
   services: { serviceName: string; quantity: number }[];
   statuses: { status: string }[];
 }
