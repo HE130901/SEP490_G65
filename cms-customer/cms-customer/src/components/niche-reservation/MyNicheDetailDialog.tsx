@@ -86,16 +86,13 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
     .slice(0, 3);
 
   const formatDate = (date: string) => {
-    return format(new Date(date), "HH:mm dd/MM/yyyy");
-  };
-  const formatDate2 = (date: string) => {
     return format(new Date(date), "dd/MM/yyyy");
   };
 
   return (
     <Dialog open={isVisible} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết Ô chứa của bạn</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <Box mb={2}>
           <Box
             display="flex"
@@ -127,11 +124,11 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
           </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Ngày bắt đầu hợp đồng:</strong>{" "}
-            {niche?.startDate ? formatDate2(niche.startDate) : "N/A"}
+            {niche?.startDate ? formatDate(niche.startDate) : "N/A"}
           </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Ngày kết thúc hợp đồng:</strong>{" "}
-            {niche?.endDate ? formatDate2(niche.endDate) : "N/A"}
+            {niche?.endDate ? formatDate(niche.endDate) : "N/A"}
           </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Trạng thái hợp đồng:</strong>

@@ -73,7 +73,6 @@
         public int ContractId { get; set; }
         public int NicheId { get; set; }
         public string NicheName { get; set; } = null!;
-
         public string ContractCode { get; set; } = null!;
         public string CustomerName { get; set; } = null!;
         public string DeceasedName { get; set; } = null!;
@@ -81,6 +80,7 @@
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string? Status { get; set; }
+        public int DaysLeft { get; set; }
 
         // Thêm thuộc tính Duration
         public string? Duration

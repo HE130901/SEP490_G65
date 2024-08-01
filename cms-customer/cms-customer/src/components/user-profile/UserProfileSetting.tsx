@@ -8,19 +8,13 @@ import {
   Button,
   Paper,
   Grid,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
   IconButton,
   InputAdornment,
-  SelectChangeEvent,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import { z } from "zod";
-import vietnamAddress from "@/assets/vietnamAddress.json"; // Load the JSON file
 
 const passwordSchema = z
   .object({
@@ -60,19 +54,20 @@ const UserProfileSetting: React.FC = () => {
     email: "",
     phone: "",
     address: "",
-    province: "",
-    district: "",
-    ward: "",
+    citizenId: "",
+    citizenIdissuanceDate: "",
+    citizenIdsupplier: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<{ [key: string]: boolean }>({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [districts, setDistricts] = useState<any[]>([]);
-  const [wards, setWards] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // Fetch user profile details and populate formData here
     const fetchUserProfile = async () => {
       try {
         const response = await axiosInstance.get("/api/CustomerProfile");
@@ -83,6 +78,9 @@ const UserProfileSetting: React.FC = () => {
           email: data.email,
           phone: data.phone,
           address: data.address,
+          citizenId: data.citizenId,
+          citizenIdissuanceDate: data.citizenIdissuanceDate,
+          citizenIdsupplier: data.citizenIdsupplier,
         }));
       } catch (error) {
         toast.error("Failed to fetch user profile");
@@ -99,22 +97,23 @@ const UserProfileSetting: React.FC = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleSelectChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-
-    if (name === "province") {
-      const selectedProvince = vietnamAddress.find((p) => p.Id === value);
-      setDistricts(selectedProvince?.Districts || []);
-      setWards([]);
-    } else if (name === "district") {
-      const selectedDistrict = districts.find((d) => d.Id === value);
-      setWards(selectedDistrict?.Wards || []);
-    }
+  const formatDisplayDate = (dateString: string) => {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
   };
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const [day, month, year] = value.split("/");
+    const formattedValue = `${year}-${month}-${day}`;
+    setFormData((prevData) => ({ ...prevData, [name]: formattedValue }));
+  };
+
+  const handleClickShowPassword = (field: string) => {
+    setShowPassword((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   const handleMouseDownPassword = (
@@ -168,9 +167,13 @@ const UserProfileSetting: React.FC = () => {
 
     try {
       await axiosInstance.put("/api/CustomerProfile", {
+        fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
+        citizenId: formData.citizenId,
+        citizenIdissuanceDate: formData.citizenIdissuanceDate,
+        citizenIdsupplier: formData.citizenIdsupplier,
       });
       toast.success("Cập nhật thông tin cá nhân thành công");
       setIsEditing(false);
@@ -184,13 +187,8 @@ const UserProfileSetting: React.FC = () => {
   };
 
   return (
-    <Grid
-      container
-      justifyContent="center"
-      alignItems="center"
-      style={{ minHeight: "100vh" }}
-    >
-      <Grid item xs={12} sm={8} md={6} lg={4}>
+    <Grid container style={{ minHeight: "100vh" }} spacing={2}>
+      <Grid item xs={12} md={6}>
         <Paper elevation={3} style={{ padding: "2rem" }}>
           <Typography variant="h5" gutterBottom>
             Thông tin cá nhân
@@ -205,8 +203,46 @@ const UserProfileSetting: React.FC = () => {
               onChange={handleChange}
               variant="outlined"
               required
-              disabled
             />
+            <Grid container spacing={2}>
+              <Grid item md={4} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Số CMND"
+                  name="citizenId"
+                  value={formData.citizenId}
+                  onChange={handleChange}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+              <Grid item md={4} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Ngày cấp"
+                  name="citizenIdissuanceDate"
+                  value={formatDisplayDate(formData.citizenIdissuanceDate)}
+                  onChange={handleDateChange}
+                  variant="outlined"
+                  required
+                  placeholder="dd/mm/yyyy"
+                />
+              </Grid>
+              <Grid item md={4} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Nơi cấp"
+                  name="citizenIdsupplier"
+                  value={formData.citizenIdsupplier}
+                  onChange={handleChange}
+                  variant="outlined"
+                  required
+                />
+              </Grid>
+            </Grid>
             <TextField
               margin="normal"
               fullWidth
@@ -218,7 +254,6 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.email}
               helperText={errors.email}
-              disabled={!isEditing}
             />
             <TextField
               margin="normal"
@@ -231,7 +266,6 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.phone}
               helperText={errors.phone}
-              disabled={!isEditing}
             />
             <TextField
               margin="normal"
@@ -244,7 +278,6 @@ const UserProfileSetting: React.FC = () => {
               required
               error={!!errors.address}
               helperText={errors.address}
-              disabled={!isEditing}
             />
             {isEditing && (
               <Box mt={2}>
@@ -271,7 +304,12 @@ const UserProfileSetting: React.FC = () => {
               </Button>
             </Box>
           )}
-          <Typography variant="h5" gutterBottom style={{ marginTop: "2rem" }}>
+        </Paper>
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <Paper elevation={3} style={{ padding: "2rem" }}>
+          <Typography variant="h5" gutterBottom>
             Đổi mật khẩu
           </Typography>
           <form onSubmit={handleSubmitPasswordChange}>
@@ -279,7 +317,7 @@ const UserProfileSetting: React.FC = () => {
               margin="normal"
               fullWidth
               label="Mật khẩu cũ"
-              type={showPassword ? "text" : "password"}
+              type={showPassword.oldPassword ? "text" : "password"}
               name="oldPassword"
               value={formData.oldPassword}
               onChange={handleChange}
@@ -292,11 +330,15 @@ const UserProfileSetting: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
+                      onClick={() => handleClickShowPassword("oldPassword")}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                     >
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                      {showPassword.oldPassword ? (
+                        <Visibility />
+                      ) : (
+                        <VisibilityOff />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -306,7 +348,7 @@ const UserProfileSetting: React.FC = () => {
               margin="normal"
               fullWidth
               label="Mật khẩu mới"
-              type={showPassword ? "text" : "password"}
+              type={showPassword.newPassword ? "text" : "password"}
               name="newPassword"
               value={formData.newPassword}
               onChange={handleChange}
@@ -319,11 +361,15 @@ const UserProfileSetting: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
+                      onClick={() => handleClickShowPassword("newPassword")}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                     >
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                      {showPassword.newPassword ? (
+                        <Visibility />
+                      ) : (
+                        <VisibilityOff />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -333,7 +379,7 @@ const UserProfileSetting: React.FC = () => {
               margin="normal"
               fullWidth
               label="Xác nhận mật khẩu mới"
-              type={showPassword ? "text" : "password"}
+              type={showPassword.confirmPassword ? "text" : "password"}
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
@@ -346,11 +392,15 @@ const UserProfileSetting: React.FC = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
+                      onClick={() => handleClickShowPassword("confirmPassword")}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
                     >
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                      {showPassword.confirmPassword ? (
+                        <Visibility />
+                      ) : (
+                        <VisibilityOff />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),

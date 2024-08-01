@@ -98,6 +98,7 @@ export type Contract = {
   startDate: string;
   endDate: string;
   duration: string;
+  daysLeft: number;
   nicheCode: string;
 };
 
@@ -111,7 +112,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   onSelect,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "contractId", desc: false },
+    { id: "contractCode", desc: true },
   ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchField, setSearchField] = useState("all");
@@ -155,12 +156,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
             ).includes(normalizedTerm) ||
             normalizeText(formatDate(contract.startDate)).includes(
               normalizedTerm
-            ) ||
-            normalizeText(contract.duration).includes(normalizedTerm)
-          );
-        } else if (searchField === "contractId") {
-          return normalizeText(`HĐ-${contract.contractId}`).includes(
-            normalizedTerm
+            )
           );
         } else if (searchField === "status") {
           return normalizeText(getStatusText(contract.status)).includes(
@@ -210,11 +206,6 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
     }
   };
 
-  const handleExtendClick = (contract: Contract) => {
-    setSelectedContract(contract);
-    setExtendDialogOpen(true);
-  };
-
   const handleLiquidateClick = (contract: Contract) => {
     setSelectedContract(contract);
     setLiquidateDialogOpen(true);
@@ -257,19 +248,6 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   };
 
   const columns: ColumnDef<Contract>[] = [
-    {
-      id: "stt",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          STT
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
-    },
     {
       accessorKey: "contractCode",
       header: ({ column }) => (
@@ -353,18 +331,18 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
       ),
     },
     {
-      accessorKey: "duration",
+      accessorKey: "daysLeft",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Thời hạn
+          Còn lại
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("duration")}</div>
+        <div className="text-center">{row.getValue("daysLeft")}</div>
       ),
     },
     {

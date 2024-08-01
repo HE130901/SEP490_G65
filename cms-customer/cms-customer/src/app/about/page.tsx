@@ -3,14 +3,20 @@
 import Image from "next/image";
 import Typography from "@mui/material/Typography";
 import { Avatar } from "@mui/material";
+import { motion } from "framer-motion";
 
 export default function Component() {
   return (
-    <div className="flex flex-col min-h-screen pt-28 bg-gradient-to-r from-orange-300 to-orange-200">
+    <div className="flex flex-col min-h-screen pt-16 bg-gradient-to-r from-orange-300 to-orange-200">
       <main className="flex-1">
         <section className="w-full text-gray-800">
           <div className="container mx-auto py-10 px-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <motion.div
+              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
                   <Typography variant="h2" fontWeight={700} color={"black"}>
@@ -52,7 +58,12 @@ export default function Component() {
                   </Typography>
                 </div>
               </div>
-              <div className="flex justify-center">
+              <motion.div
+                className="flex justify-center"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 <Image
                   src="/images/event1.jpg"
                   width={550}
@@ -60,14 +71,20 @@ export default function Component() {
                   alt="Hero"
                   className="rounded-xl"
                 />
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
         <section className="w-full py-12 md:py-24 bg-muted">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
+            <motion.div
+              className="grid gap-6 lg:grid-cols-2 lg:gap-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-xl text-white font-extrabold">
                   Lịch sử
@@ -127,13 +144,19 @@ export default function Component() {
                   nghỉ cuối cùng của người thân.
                 </Typography>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
         <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-orange-300 to-orange-200">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
+            <motion.div
+              className="grid gap-6 lg:grid-cols-2 lg:gap-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
               <div className="space-y-4">
                 <div className="inline-block rounded-lg bg-slate-400 px-3 py-1 text-xl text-white font-extrabold">
                   Đội ngũ
@@ -200,9 +223,13 @@ export default function Component() {
                     fallback: "LH",
                   },
                 ].map((member, index) => (
-                  <div
+                  <motion.div
                     className="flex flex-col items-start space-y-2"
                     key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
                   >
                     <Avatar src={member.image} alt={member.name} />
                     <div>
@@ -219,10 +246,10 @@ export default function Component() {
                         {member.description}
                       </Typography>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
       </main>

@@ -182,6 +182,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                       <MenuItem value="Hoa quả">Hoa quả</MenuItem>
                       <MenuItem value="Gói lễ">Gói lễ</MenuItem>
                       <MenuItem value="Đồ cúng viếng">Đồ cúng viếng</MenuItem>
+                      <MenuItem value="Dịch vụ">Dịch vụ</MenuItem>
                       <MenuItem value="Khác">Khác</MenuItem>
                     </TextField>
                   )}
@@ -202,6 +203,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                     >
                       <MenuItem value="Available">Còn hàng</MenuItem>
                       <MenuItem value="Unavailable">Hết hàng</MenuItem>
+                      <MenuItem value="Removed">Ngừng bán</MenuItem>
                       <MenuItem value="Others">Khác</MenuItem>
                     </TextField>
                   )}

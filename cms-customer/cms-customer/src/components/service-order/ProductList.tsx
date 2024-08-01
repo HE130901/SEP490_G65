@@ -22,9 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AddShoppingCartOutlinedIcon from "@mui/icons-material/AddShoppingCartRounded";
-import GridViewOutlinedIcon from "@mui/icons-material/GridViewOutlined";
 import SortOutlinedIcon from "@mui/icons-material/SortOutlined";
-import ViewHeadlineOutlinedIcon from "@mui/icons-material/ViewHeadlineOutlined";
 import {
   Dialog,
   DialogActions,
@@ -49,9 +47,15 @@ export default function ProductList({ products }: ProductListProps) {
   const cartIconRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
 
+  // Filter out products with status "Removed"
+  const filteredProducts = useMemo(
+    () => products.filter((product) => product.status !== "Removed"),
+    [products]
+  );
+
   // Sort products based on the selected criteria
   const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
+    return [...filteredProducts].sort((a, b) => {
       switch (sortBy) {
         case "Tăng dần":
           return a.price - b.price;
@@ -61,7 +65,7 @@ export default function ProductList({ products }: ProductListProps) {
           return 0;
       }
     });
-  }, [sortBy, products]);
+  }, [sortBy, filteredProducts]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -177,20 +181,6 @@ export default function ProductList({ products }: ProductListProps) {
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button
-            variant={viewMode === "grid" ? "outline" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("grid")}
-          >
-            <GridViewOutlinedIcon className="w-5 h-5" />
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "outline" : "ghost"}
-            size="icon"
-            onClick={() => setViewMode("list")}
-          >
-            <ViewHeadlineOutlinedIcon className="w-5 h-5" />
-          </Button>
         </div>
         <div className="flex space-x-4">
           <CartButton ref={cartIconRef} />

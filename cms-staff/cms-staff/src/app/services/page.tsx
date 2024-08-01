@@ -39,6 +39,8 @@ const getStatusLabel = (status: string) => {
   switch (status) {
     case "Unavailable":
       return { label: "Đã hết hàng", color: "error" };
+    case "Removed":
+      return { label: "Ngừng bán", color: "error" };
 
     case "Available":
       return { label: "Sẵn sàng", color: "success" };

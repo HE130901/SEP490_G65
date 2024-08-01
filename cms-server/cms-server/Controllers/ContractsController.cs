@@ -46,7 +46,10 @@ namespace cms_server.Controllers
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,
                     Status = c.Status,
-                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô {c.Niche.NicheName}"
+                    NicheName = $"{c.Niche.Area.Floor.Building.BuildingName} - {c.Niche.Area.Floor.FloorName} - {c.Niche.Area.AreaName} - Ô {c.Niche.NicheName}",
+                    DaysLeft = (c.Status == "Expired" || c.Status == "Canceled" || !c.EndDate.HasValue)
+                        ? 0
+                        : Math.Max((c.EndDate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Now).Days, 0)
                 })
                 .ToListAsync();
 
@@ -58,8 +61,8 @@ namespace cms_server.Controllers
             return contracts;
         }
 
-        // GET: api/Contracts/{contractId}/detail
-        [HttpGet("{contractId}/detail")]
+    // GET: api/Contracts/{contractId}/detail
+    [HttpGet("{contractId}/detail")]
         public async Task<ActionResult<ContractDto>> GetContractDetail(int contractId)
         {
             var contract = await _context.Contracts
