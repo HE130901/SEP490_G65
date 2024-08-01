@@ -94,11 +94,6 @@ const Sidebar = () => {
       icon: <ShoppingCartOutlinedIcon className="h-6 w-6" />,
       path: "/services",
     },
-    {
-      text: "Thiết lập Hệ thống",
-      icon: <SettingsOutlinedIcon className="h-6 w-6" />,
-      path: "/settings",
-    },
   ];
 
   const managerMenuItems = [
@@ -108,14 +103,19 @@ const Sidebar = () => {
       path: "/manager-dashboard",
     },
     {
-      text: "Quản lý nhân viên",
-      icon: <UserIcon className="h-6 w-6" />,
-      path: "/staffs",
+      text: "Số liệu Hợp Đồng",
+      icon: <InsertChartOutlinedSharpIcon className="h-6 w-6" />,
+      path: "/contract-reports",
     },
     {
-      text: "Báo cáo",
+      text: "Số liệu Dịch Vụ",
       icon: <InsertChartOutlinedSharpIcon className="h-6 w-6" />,
-      path: "/reports",
+      path: "/service-reports",
+    },
+    {
+      text: "Số liệu nhà lưu trữ ",
+      icon: <InsertChartOutlinedSharpIcon className="h-6 w-6" />,
+      path: "/niche-reports",
     },
     {
       text: "Thiết lập Hệ thống",
