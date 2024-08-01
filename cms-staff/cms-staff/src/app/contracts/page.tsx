@@ -28,6 +28,8 @@ import AddContractForm from "./ContractAdd";
 import ConfirmDialog from "./ContractDelete";
 import ContractDetailDialog from "./ContractDetail";
 import RenewalDialog from "./ContractRenewal";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -137,6 +139,7 @@ const ContractPage: React.FC = () => {
   const [searchColumn, setSearchColumn] =
     useState<SearchableColumns>("startDate");
   const [filteredContracts, setFilteredContracts] = useState(contracts);
+  const [settings, setSettings] = useState<any[]>([]);
 
   // New state for date filtering
   const [dateFilterType, setDateFilterType] = useState<"startDate" | "endDate">(
@@ -157,10 +160,24 @@ const ContractPage: React.FC = () => {
       setLoading(false);
     }
   };
+  const fetchSettings = async () => {
+    try {
+      const response = await axiosInstance.get(
+        "/api/SystemSettings/byType/KeepingType"
+      );
+      setSettings(response.data.$values || []);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      toast.error("Failed to fetch settings");
+    }
+  };
 
   useEffect(() => {
     fetchContracts();
   }, [setContracts]);
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     const filtered = contracts.filter((contract) => {
@@ -254,7 +271,7 @@ const ContractPage: React.FC = () => {
     },
     {
       field: "startDate",
-      headerName: "Ngày ký hợp đồng",
+      headerName: "Ngày bắt đầu",
       width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (

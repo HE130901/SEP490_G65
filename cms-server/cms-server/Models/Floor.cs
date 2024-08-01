@@ -13,8 +13,6 @@ public partial class Floor
 
     public string? FloorDescription { get; set; }
 
-    public decimal? NichePrice { get; set; }
-
     public string? FloorPicture { get; set; }
 
     public string? FloorCode { get; set; }

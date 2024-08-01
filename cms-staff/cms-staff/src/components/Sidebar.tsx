@@ -1,4 +1,3 @@
-// Sidebar.js
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -32,12 +31,15 @@ import {
 } from "@heroicons/react/outline";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import InsertChartOutlinedSharpIcon from "@mui/icons-material/InsertChartOutlinedSharp";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const drawerWidth = 240;
+  const drawerWidth = 280;
 
   const handleDrawerToggle = () => {
     setOpen(!open);
@@ -48,7 +50,7 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    logout(); // Call the logout function from useAuth
+    logout();
   };
 
   const staffMenuItems = [
@@ -56,6 +58,21 @@ const Sidebar = () => {
       text: "Trang chủ",
       icon: <HomeIcon className="h-6 w-6" />,
       path: "/dashboard",
+    },
+    {
+      text: "Đơn đặt chỗ",
+      icon: <CalendarIcon className="h-6 w-6" />,
+      path: "/niche-reservations",
+    },
+    {
+      text: "Đơn đăng ký viếng",
+      icon: <ClipboardListIcon className="h-6 w-6" />,
+      path: "/visit-registrations",
+    },
+    {
+      text: "Đơn đặt dịch vụ",
+      icon: <ClipboardCheckIcon className="h-6 w-6" />,
+      path: "/service-requests",
     },
     {
       text: "Hợp đồng",
@@ -73,24 +90,14 @@ const Sidebar = () => {
       path: "/niches",
     },
     {
-      text: "Dịch vụ",
-      icon: <ArchiveIcon className="h-6 w-6" />,
+      text: "Dịch vụ & sản phẩm",
+      icon: <ShoppingCartOutlinedIcon className="h-6 w-6" />,
       path: "/services",
     },
     {
-      text: "Đơn đặt chỗ",
-      icon: <CalendarIcon className="h-6 w-6" />,
-      path: "/niche-reservations",
-    },
-    {
-      text: "Đơn đăng ký viếng",
-      icon: <ClipboardListIcon className="h-6 w-6" />,
-      path: "/visit-registrations",
-    },
-    {
-      text: "Đơn đặt dịch vụ",
-      icon: <ClipboardCheckIcon className="h-6 w-6" />,
-      path: "/service-requests",
+      text: "Thiết lập Hệ thống",
+      icon: <SettingsOutlinedIcon className="h-6 w-6" />,
+      path: "/settings",
     },
   ];
 
@@ -102,13 +109,18 @@ const Sidebar = () => {
     },
     {
       text: "Quản lý nhân viên",
-      icon: <DocumentTextIcon className="h-6 w-6" />,
+      icon: <UserIcon className="h-6 w-6" />,
       path: "/staffs",
     },
     {
       text: "Báo cáo",
-      icon: <UserIcon className="h-6 w-6" />,
+      icon: <InsertChartOutlinedSharpIcon className="h-6 w-6" />,
       path: "/reports",
+    },
+    {
+      text: "Thiết lập Hệ thống",
+      icon: <SettingsOutlinedIcon className="h-6 w-6" />,
+      path: "/settings",
     },
   ];
 
@@ -143,8 +155,8 @@ const Sidebar = () => {
           width="100%"
         >
           {open && (
-            <Typography className="pl-12" variant="h6" noWrap>
-              Quản lý
+            <Typography className="pl-8" variant="h6" noWrap>
+              An Bình Viên
             </Typography>
           )}
           <IconButton onClick={handleDrawerToggle} sx={{ color: "#fff" }}>
@@ -154,37 +166,44 @@ const Sidebar = () => {
       </Toolbar>
       <Divider sx={{ borderColor: "#fff" }} />
       <List>
-        {menuItems.map((item) => (
-          <Link href={item.path} passHref key={item.text} legacyBehavior>
-            <ListItemButton
-              component="a"
-              selected={pathname === item.path}
-              onClick={handleMenuItemClick}
-              sx={{
-                "&.Mui-selected": {
-                  backgroundColor: "#2196f3",
-                  color: "#fff",
-                },
-                "&.Mui-selected:hover": {
-                  backgroundColor: "#1976d2",
-                },
-                justifyContent: "center",
-                px: open ? 2.5 : 0,
-              }}
-            >
-              <ListItemIcon
+        {menuItems.map((item, index) => (
+          <React.Fragment key={item.text}>
+            <Link href={item.path} passHref legacyBehavior>
+              <ListItemButton
+                component="a"
+                selected={pathname === item.path}
+                onClick={handleMenuItemClick}
                 sx={{
-                  color: pathname === item.path ? "#fff" : "#fff",
+                  "&.Mui-selected": {
+                    backgroundColor: "#2196f3",
+                    color: "#fff",
+                  },
+                  "&.Mui-selected:hover": {
+                    backgroundColor: "#1976d2",
+                  },
                   justifyContent: "center",
+                  px: open ? 2.5 : 0,
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              {open && (
-                <ListItemText primary={item.text} sx={{ color: "#fff" }} />
-              )}
-            </ListItemButton>
-          </Link>
+                <ListItemIcon
+                  sx={{
+                    color: pathname === item.path ? "#fff" : "#fff",
+                    justifyContent: "center",
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                {open && (
+                  <ListItemText primary={item.text} sx={{ color: "#fff" }} />
+                )}
+              </ListItemButton>
+            </Link>
+            {/* Divider after "Trang chủ" */}
+            {index === 0 && <Divider sx={{ borderColor: "#fff" }} />}{" "}
+            {/* Divider after "Đơn đặt dịch vụ" */}
+            {index === 3 && <Divider sx={{ borderColor: "#fff" }} />}{" "}
+            {index === 7 && <Divider sx={{ borderColor: "#fff" }} />}{" "}
+          </React.Fragment>
         ))}
       </List>
       <Box sx={{ flexGrow: 1 }} />

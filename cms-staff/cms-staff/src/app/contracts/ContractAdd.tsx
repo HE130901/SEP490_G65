@@ -23,54 +23,19 @@ import { toast } from "react-toastify";
 import ReservationSelect from "./ReservationSelect";
 import { SelectChangeEvent } from "@mui/material";
 import { z } from "zod";
-
-const formatDateToYYYYMMDD = (date: Date): string => {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-  return `${year}-${month}-${day}`;
-};
+import dayjs from "dayjs";
+interface Setting {
+  settingId: number;
+  settingName: string;
+  settingNumber: number;
+  settingUnit?: string;
+  settingType?: string;
+}
 
 const formatDateToDDMMYYYY = (dateString: string): string => {
   if (dateString === "N/A") return dateString;
   const [year, month, day] = dateString.split("-");
   return `${day}/${month}/${year}`;
-};
-
-const calculateEndDate = (
-  startDate: string,
-  duration: string,
-  type: string
-): string => {
-  if (!startDate || !duration || isNaN(parseInt(duration, 10))) return "N/A";
-
-  const date = new Date(startDate);
-  if (type === "month") {
-    date.setMonth(date.getMonth() + parseInt(duration, 10));
-  } else if (type === "year") {
-    date.setFullYear(date.getFullYear() + parseInt(duration, 10));
-  }
-
-  if (isNaN(date.getTime())) return "N/A";
-
-  return formatDateToYYYYMMDD(date);
-};
-
-const calculateCost = (type: string, duration: number): number => {
-  if (duration < 0) {
-    return 0;
-  }
-
-  if (type === "month") {
-    return duration * 200000;
-  } else if (type === "year") {
-    if (duration <= 2) return 2000000;
-    if (duration <= 5) return 3500000;
-    if (duration <= 9) return 5000000;
-    return 7000000;
-  }
-
-  return 0;
 };
 
 const step1Schema = z.object({
@@ -133,38 +98,17 @@ const step2Schema = z
     }
   });
 
-const step3Schema = z
-  .object({
-    startDate: z
-      .string()
-      .refine(
-        (date) => new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0)),
-        {
-          message: "Ngày bắt đầu tối thiểu phải từ ngày hiện tại.",
-        }
-      ),
-    type: z.string().nonempty("Loại hình gửi không được để trống"),
-    duration: z.string().nonempty("Thời gian không được để trống"),
-  })
-  .superRefine((data, ctx) => {
-    const duration = parseInt(data.duration, 10);
-
-    if (data.type === "month" && (duration < 1 || duration > 12)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Thời gian gửi theo tháng tối đa là 12 tháng.",
-        path: ["duration"],
-      });
-    }
-
-    if (data.type === "year" && (duration < 1 || duration > 10)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Thời gian gửi tối đa là 10 năm.",
-        path: ["duration"],
-      });
-    }
-  });
+const step3Schema = z.object({
+  startDate: z
+    .string()
+    .refine(
+      (date) => new Date(date) >= new Date(new Date().setHours(0, 0, 0, 0)),
+      {
+        message: "Ngày bắt đầu tối thiểu phải từ ngày hiện tại.",
+      }
+    ),
+  duration: z.string().optional(),
+});
 
 const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
   open,
@@ -174,6 +118,8 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
   const [reservations, setReservations] = useState<any[]>([]);
   const [selectedReservationCode, setSelectedReservationCode] =
     useState<string>("");
+  const [settings, setSettings] = useState<Setting[]>([]);
+  const [selectedSetting, setSelectedSetting] = useState<string>("");
   const [contractData, setContractData] = useState({
     customerFullName: "",
     customerPhoneNumber: "",
@@ -218,6 +164,35 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
     totalAmount: 0,
     reservationId: 0,
   };
+  const calculateContractDetails = (
+    startDate: string,
+    settingId: string,
+    duration: string
+  ) => {
+    const setting = settings.find((s) => s.settingId === parseInt(settingId));
+    if (!setting) return { endDate: "N/A", cost: 0 };
+
+    let cost = setting.settingNumber;
+    let calculatedEndDate = dayjs(startDate);
+
+    if (setting.settingName.includes("Gửi dưới 100 ngày")) {
+      calculatedEndDate = calculatedEndDate.add(100, "days");
+    } else if (setting.settingName.includes("Gửi dưới 1 năm")) {
+      calculatedEndDate = calculatedEndDate.add(1, "year");
+    } else {
+      const durationNumber = parseInt(duration, 10);
+      if (isNaN(durationNumber) || durationNumber <= 0)
+        return { endDate: "N/A", cost: 0 };
+
+      cost *= durationNumber;
+      calculatedEndDate = calculatedEndDate.add(durationNumber, "year");
+    }
+
+    return {
+      endDate: calculatedEndDate.format("YYYY-MM-DD"),
+      cost: cost,
+    };
+  };
 
   const resetForm = () => {
     setContractData(initialState);
@@ -241,14 +216,26 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
       console.error("Error fetching reservations:", error);
     }
   };
+
   useEffect(() => {
     if (open) {
       resetForm();
       fetchReservations();
+      fetchSettings();
     }
   }, [open]);
 
-  // ... (phần còn lại của component giữ nguyên)
+  const fetchSettings = async () => {
+    try {
+      const response = await axiosInstance.get(
+        "/api/SystemSettings/byType/KeepingType"
+      );
+      setSettings(response.data.$values || []);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      toast.error("Failed to fetch settings");
+    }
+  };
 
   const handleClose = () => {
     resetForm();
@@ -315,6 +302,42 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
     }
   };
 
+  const handleTypeChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    setSelectedSetting(value);
+    setContractData((prevState) => ({
+      ...prevState,
+      type: value,
+    }));
+
+    const setting = settings.find((s) => s.settingId === parseInt(value));
+    if (setting) {
+      let newDuration = duration;
+      if (setting.settingName.includes("Gửi dưới 100 ngày")) {
+        newDuration = "100";
+      } else if (setting.settingName.includes("Gửi dưới 1 năm")) {
+        newDuration = "365";
+      }
+
+      if (contractData.startDate) {
+        const { endDate, cost } = calculateContractDetails(
+          contractData.startDate,
+          value,
+          newDuration
+        );
+        setContractData((prevState) => ({
+          ...prevState,
+          endDate: endDate,
+          totalAmount: cost,
+          duration: newDuration,
+        }));
+        setNewEndDate(endDate);
+        setCost(cost);
+        setDuration(newDuration);
+      }
+    }
+  };
+
   const handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setDuration(value);
@@ -322,39 +345,18 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
       ...prevState,
       duration: value,
     }));
-    if (type) {
-      const newEndDate = calculateEndDate(contractData.startDate, value, type);
-      const cost = calculateCost(type, parseInt(value, 10));
-      setContractData((prevState) => ({
-        ...prevState,
-        endDate: newEndDate,
-        totalAmount: cost,
-      }));
-      setNewEndDate(newEndDate);
-      setCost(cost);
-    }
-  };
-
-  const handleTypeChange = (event: SelectChangeEvent<string>) => {
-    const value = event.target.value;
-    setType(value);
-    setContractData((prevState) => ({
-      ...prevState,
-      type: value,
-    }));
-    if (duration) {
-      const newEndDate = calculateEndDate(
+    if (contractData.startDate && selectedSetting) {
+      const { endDate, cost } = calculateContractDetails(
         contractData.startDate,
-        duration,
+        selectedSetting,
         value
       );
-      const cost = calculateCost(value, parseInt(duration, 10));
       setContractData((prevState) => ({
         ...prevState,
-        endDate: newEndDate,
+        endDate: endDate,
         totalAmount: cost,
       }));
-      setNewEndDate(newEndDate);
+      setNewEndDate(endDate);
       setCost(cost);
     }
   };
@@ -691,33 +693,49 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
                 helperText={errors.startDate}
               />
             </Grid>
+
             <Grid item xs={12} md={6}>
               <FormControl fullWidth error={!!errors.type}>
                 <InputLabel>Loại hình gửi</InputLabel>
                 <Select
-                  value={type}
+                  value={selectedSetting}
                   onChange={handleTypeChange}
                   label="Loại hình gửi"
                 >
-                  <MenuItem value="month">Gửi theo tháng</MenuItem>
-                  <MenuItem value="year">Gửi theo năm</MenuItem>
+                  {settings.map((setting) => (
+                    <MenuItem
+                      key={setting.settingId}
+                      value={setting.settingId.toString()}
+                    >
+                      {setting.settingName}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {errors.type && (
                   <Typography color="error">{errors.type}</Typography>
                 )}
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Thời gian (tháng hoặc năm)"
-                type="number"
-                value={duration}
-                onChange={handleDurationChange}
-                error={!!errors.duration}
-                helperText={errors.duration}
-              />
-            </Grid>
+            {selectedSetting &&
+              !settings
+                .find((s) => s.settingId === parseInt(selectedSetting))
+                ?.settingName.includes("Gửi dưới 100 ngày") &&
+              !settings
+                .find((s) => s.settingId === parseInt(selectedSetting))
+                ?.settingName.includes("Gửi dưới 1 năm") && (
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Thời gian (năm)"
+                    type="number"
+                    value={duration}
+                    onChange={handleDurationChange}
+                    error={!!errors.duration}
+                    helperText={errors.duration}
+                  />
+                </Grid>
+              )}
+
             <Grid item xs={12} md={6}>
               <Typography variant="body1">
                 <strong>Ngày kết thúc:</strong>{" "}
@@ -727,7 +745,6 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
                 <strong>Chi phí:</strong> {cost.toLocaleString()} VND
               </Typography>
             </Grid>
-
             <Grid item xs={12}>
               <TextField
                 fullWidth

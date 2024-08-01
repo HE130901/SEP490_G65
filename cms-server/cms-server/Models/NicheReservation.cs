@@ -30,6 +30,4 @@ public partial class NicheReservation
     public virtual Staff? ConfirmedByNavigation { get; set; }
 
     public virtual Niche Niche { get; set; } = null!;
-
-
 }

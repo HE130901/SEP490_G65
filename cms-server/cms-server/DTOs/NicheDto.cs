@@ -22,7 +22,6 @@
         public string FloorName { get; set; } = null!;
         public string? FloorDescription { get; set; }
         public string? FloorPicture { get; set; }
-        public decimal? NichePrice { get; set; }
         public string AreaName { get; set; } = null!;
         public string? AreaDescription { get; set; }
         public string? AreaPicture { get; set; }

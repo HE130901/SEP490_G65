@@ -1,78 +1,154 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import axiosInstance from "@/utils/axiosInstance";
 import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-  CircularProgress,
   Box,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Typography,
 } from "@mui/material";
-import axios from "axios";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
 
-const ReservationSelect: React.FC = () => {
-  const [reservations, setReservations] = useState<
-    Array<{ reservationId: string; reservationCode: string }>
-  >([]);
-  const [selectedReservationCode, setSelectedReservationCode] =
-    useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+// Define the Setting interface
+interface Setting {
+  settingId: number;
+  settingName: string;
+  settingNumber: number;
+  settingUnit?: string;
+  settingType?: string;
+}
+
+function CalculateCost() {
+  const [settings, setSettings] = useState<Setting[]>([]);
+  const [selectedSetting, setSelectedSetting] = useState<string>("");
+  const [duration, setDuration] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>(
+    dayjs().format("YYYY-MM-DD")
+  );
+  const [totalCost, setTotalCost] = useState<number | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const response = await axios.get("/api/NicheReservations/approved");
-        setReservations(response.data.$values || []);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching reservations:", err);
-        setError("Failed to load reservations.");
-        setLoading(false);
-      }
-    };
-
-    fetchReservations();
+    axiosInstance
+      .get("/api/SystemSettings/byType/KeepingType")
+      .then((response) => {
+        const data = response.data.$values as Setting[];
+        setSettings(data);
+      })
+      .catch((error) => {
+        toast.error("Failed to fetch settings");
+        console.error(error);
+      });
   }, []);
 
-  const handleSelectChange = (event: SelectChangeEvent<string>) => {
-    setSelectedReservationCode(event.target.value);
-  };
+  useEffect(() => {
+    if (!selectedSetting) {
+      setTotalCost(null);
+      setEndDate(null);
+      return;
+    }
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center">
-        <CircularProgress />
-      </Box>
+    const setting = settings.find(
+      (s) => s.settingId === parseInt(selectedSetting)
     );
-  }
+    if (!setting) {
+      toast.error("Invalid setting selected");
+      setTotalCost(null);
+      setEndDate(null);
+      return;
+    }
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+    let cost = setting.settingNumber;
+    let calculatedEndDate = dayjs(startDate);
+
+    if (setting.settingName.includes("Gửi dưới 100 ngày")) {
+      calculatedEndDate = calculatedEndDate.add(100, "days");
+    } else if (setting.settingName.includes("Gửi dưới 1 năm")) {
+      calculatedEndDate = calculatedEndDate.add(1, "year");
+    } else {
+      const durationNumber = parseInt(duration);
+      if (isNaN(durationNumber) || durationNumber <= 0) {
+        toast.error("Invalid duration entered");
+        setTotalCost(null);
+        setEndDate(null);
+        return;
+      }
+
+      cost *= durationNumber; // Calculate total cost based on number of years
+      calculatedEndDate = calculatedEndDate.add(durationNumber, "year");
+    }
+
+    setTotalCost(cost);
+    setEndDate(calculatedEndDate.format("DD/MM/YYYY"));
+  }, [selectedSetting, duration, startDate, settings]);
 
   return (
-    <FormControl fullWidth>
-      <InputLabel id="reservation-select-label">Chọn đơn đăng ký</InputLabel>
-      <Select
-        labelId="reservation-select-label"
-        value={selectedReservationCode}
-        onChange={handleSelectChange}
-        displayEmpty
-        label="Chọn đơn đăng ký"
-      >
-        {reservations.map((reservation) => (
-          <MenuItem
-            key={reservation.reservationId}
-            value={reservation.reservationCode}
-          >
-            {reservation.reservationCode}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
+    <Box display="flex" flexDirection="column" alignItems="center" padding={3}>
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel>Chọn loại hình</InputLabel>
+        <Select
+          value={selectedSetting}
+          onChange={(e) => setSelectedSetting(e.target.value)}
+          label="Chọn loại hình"
+        >
+          {settings.map((setting) => (
+            <MenuItem
+              key={setting.settingId}
+              value={setting.settingId.toString()}
+            >
+              {setting.settingName}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-export default ReservationSelect;
+      <TextField
+        fullWidth
+        label="Chọn ngày bắt đầu"
+        type="date"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        sx={{ mb: 2 }}
+      />
+
+      {selectedSetting &&
+        !settings
+          .find((s) => s.settingId === parseInt(selectedSetting))
+          ?.settingName.includes("Gửi dưới 100 ngày") &&
+        !settings
+          .find((s) => s.settingId === parseInt(selectedSetting))
+          ?.settingName.includes("Gửi dưới 1 năm") && (
+          <TextField
+            fullWidth
+            label="Nhập số năm"
+            type="number"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+        )}
+
+      {totalCost !== null && (
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Tổng chi phí:{" "}
+          {totalCost.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
+        </Typography>
+      )}
+
+      {endDate && (
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Ngày kết thúc: {endDate}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
+export default CalculateCost;

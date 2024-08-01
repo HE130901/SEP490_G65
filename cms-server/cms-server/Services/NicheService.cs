@@ -70,7 +70,6 @@ namespace cms_server.Services
                 FloorName = niche.Area.Floor.FloorName,
                 FloorDescription = niche.Area.Floor.FloorDescription,
                 FloorPicture = niche.Area.Floor.FloorPicture,
-                NichePrice = niche.Area.Floor.NichePrice,
                 AreaName = niche.Area.AreaName,
                 AreaDescription = niche.Area.AreaDescription,
                 AreaPicture = niche.Area.AreaPicture,
