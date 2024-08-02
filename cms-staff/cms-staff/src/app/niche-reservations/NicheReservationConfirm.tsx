@@ -27,7 +27,7 @@ const ConfirmBookingRequestDialog: React.FC<
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Hủy
         </Button>
         <Button onClick={onConfirm} color="primary" variant="contained">

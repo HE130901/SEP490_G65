@@ -39,6 +39,22 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
     setEditDialogOpen(false);
     onConfirmSuccess(); // Refresh the list after update
   };
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Canceled":
+        return "Đã hủy";
+      case "Approved":
+        return "Đã duyệt";
+      case "Rejected":
+        return "Đã từ chối";
+      case "Signed":
+        return "Đã ký HĐ";
+      case "Expired":
+        return "Đã hết hạn";
+      default:
+        return "Chờ duyệt";
+    }
+  };
 
   return (
     <>
@@ -47,26 +63,17 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
         <DialogContent>
           {bookingRequest && (
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <TextField
                   margin="dense"
                   label="Mã đơn"
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={bookingRequest.reservationId}
+                  value={bookingRequest.reservationCode}
                 />
               </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  margin="dense"
-                  label="Mã ô chứa"
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  value={bookingRequest.nicheId}
-                />
-              </Grid>
+
               <Grid item xs={12}>
                 <TextField
                   margin="dense"
@@ -146,7 +153,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={bookingRequest.status}
+                  value={getStatusLabel(bookingRequest.status)}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -163,8 +170,8 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="primary">
-            Quay lại
+          <Button onClick={onClose} color="primary" variant="outlined">
+            Đóng
           </Button>
           {bookingRequest && bookingRequest.status !== "Approved" && (
             <Button

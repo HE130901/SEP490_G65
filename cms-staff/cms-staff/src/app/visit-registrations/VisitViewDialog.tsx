@@ -8,10 +8,12 @@ import {
   Button,
   Typography,
   Grid,
+  Chip,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import { VisitDialogProps, VisitRegistrationDto } from "./interfaces";
+import dayjs from "dayjs";
 
 const VisitViewDialog: React.FC<VisitDialogProps> = ({
   open,
@@ -27,6 +29,25 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
       setIsEditMode(false); // Reset edit mode when a new visit is loaded
     }
   }, [visit]);
+
+  function formatDateTime(dateTimeString: any) {
+    return dayjs(dateTimeString).format("HH:mm DD/MM/YYYY");
+  }
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Canceled":
+        return { label: "Đã hủy", color: "error" };
+      case "Expired":
+        return { label: "Đã hết hạn", color: "error" };
+      case "Pending":
+        return { label: "Đang chờ", color: "warning" };
+      case "Approved":
+        return { label: "Đã duyệt", color: "success" };
+      default:
+        return { label: status, color: "default" };
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -86,12 +107,14 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1" gutterBottom>
-                <strong>Ngày tạo:</strong> {formData.formattedCreatedDate}
+                <strong>Ngày tạo:</strong>{" "}
+                {formatDateTime(formData.createdDate)}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1" gutterBottom>
-                <strong>Ngày viếng thăm:</strong> {formData.formattedVisitDate}
+                <strong>Ngày viếng thăm:</strong>{" "}
+                {formatDateTime(formData.visitDate)}
               </Typography>
             </Grid>
             {isEditMode ? (
@@ -140,7 +163,20 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
               <>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body1" gutterBottom>
-                    <strong>Trạng thái:</strong> {formData.status}
+                    <strong>Trạng thái:</strong>{" "}
+                    <Chip
+                      label={getStatusLabel(formData.status).label}
+                      color={
+                        getStatusLabel(formData.status).color as
+                          | "info"
+                          | "error"
+                          | "primary"
+                          | "secondary"
+                          | "success"
+                          | "warning"
+                          | "default"
+                      }
+                    />
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>

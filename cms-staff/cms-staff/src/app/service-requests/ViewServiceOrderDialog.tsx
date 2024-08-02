@@ -147,7 +147,7 @@ const ViewServiceOrderDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Chi tiết đơn đăng ký dùng dịch vụ</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         {serviceOrder ? (
           <Box>
             <Box mb={2}>
@@ -268,7 +268,7 @@ const ViewServiceOrderDialog = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
       </DialogActions>

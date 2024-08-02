@@ -88,19 +88,19 @@ const EditNicheDialog: React.FC<{
                 onChange={(e) => setNicheDescription(e.target.value)}
                 margin="normal"
               />
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Trạng thái</InputLabel>
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as string)}
-                  label="Trạng thái"
-                >
-                  <MenuItem value="Unavailable">Không khả dụng</MenuItem>
-                  <MenuItem value="Active">Đang hoạt động</MenuItem>
-                  <MenuItem value="Available">Còn trống</MenuItem>
-                  <MenuItem value="Booked">Đã được đặt</MenuItem>
-                </Select>
-              </FormControl>
+              {status !== "Active" && status !== "Booked" && (
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Trạng thái</InputLabel>
+                  <Select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as string)}
+                    label="Trạng thái"
+                  >
+                    <MenuItem value="Unavailable">Không khả dụng</MenuItem>
+                    <MenuItem value="Available">Còn trống</MenuItem>
+                  </Select>
+                </FormControl>
+              )}
             </Box>
           )
         )}

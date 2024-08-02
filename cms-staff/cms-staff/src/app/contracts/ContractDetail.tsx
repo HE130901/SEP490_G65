@@ -92,7 +92,6 @@ export default function ContractDetailsDialog({
             BÊN A: Công ty An Bình Viên
           </Typography>
           <Typography>Đại diện bởi: {contractDetails.staffName}</Typography>
-          <Typography>Chức vụ: Nhân viên</Typography>
           <Typography>Điện thoại: 0999.999.999</Typography>
           <Typography>Địa chỉ: Hòa Lạc - Hà Nội</Typography>
 
@@ -233,7 +232,7 @@ export default function ContractDetailsDialog({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
         <Button onClick={handlePrint} color="primary" variant="contained">

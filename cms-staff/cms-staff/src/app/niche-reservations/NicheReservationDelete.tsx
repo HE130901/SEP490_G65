@@ -33,10 +33,10 @@ const DeleteBookingRequestDialog = ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Hủy
         </Button>
-        <Button onClick={onDelete} color="error" variant="contained">
+        <Button onClick={onDelete} variant="contained">
           Xác nhận
         </Button>
       </DialogActions>

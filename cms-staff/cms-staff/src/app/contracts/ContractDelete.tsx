@@ -38,15 +38,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button onClick={handleClose} color="primary" variant="outlined">
           Hủy
         </Button>
-        <Button
-          onClick={handleConfirm}
-          color="error"
-          autoFocus
-          variant="contained"
-        >
+        <Button onClick={handleConfirm} autoFocus variant="contained">
           Đồng ý
         </Button>
       </DialogActions>
