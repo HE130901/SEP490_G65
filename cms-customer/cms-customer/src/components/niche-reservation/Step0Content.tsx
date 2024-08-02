@@ -1,25 +1,91 @@
-import React from "react";
-import { Grid, Typography, Divider, TextField, MenuItem } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Grid,
+  Typography,
+  Divider,
+  TextField,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+} from "@mui/material";
 import { Controller } from "react-hook-form";
 import Slider from "react-slick";
 import Image from "next/image";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import dayjs from "dayjs";
+import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "react-toastify";
 
-const Step0Content = ({
-  selectedNiche,
-  selectedBuilding,
-  selectedFloor,
-  selectedArea,
-  calculateCost,
-  type,
-  duration,
-  formatVND,
-  control,
-  getAllowedDates,
-  errors,
-}: any) => {
-  const settings = {
+interface Setting {
+  settingId: number;
+  settingName: string;
+  settingNumber: number;
+  settingUnit?: string;
+  settingType?: string;
+}
+const Step0Content = ({ selectedNiche, control, errors }: any) => {
+  const [settings, setSettings] = useState<Setting[]>([]);
+  const [selectedSetting, setSelectedSetting] = useState("");
+  const [duration, setDuration] = useState("");
+  const [startDate, setStartDate] = useState(dayjs().format("YYYY-MM-DD"));
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  useEffect(() => {
+    axiosInstance
+      .get("/api/SystemSettings/byType/KeepingType")
+      .then((response) => {
+        const data = response.data.$values;
+        setSettings(data);
+      })
+      .catch((error) => {
+        toast.error("Lỗi khi tải thông tin loại hình lưu trữ");
+        console.error(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSetting) {
+      setTotalCost(0);
+      setEndDate(null);
+      return;
+    }
+
+    const setting = settings.find(
+      (s) => s.settingId === parseInt(selectedSetting)
+    );
+    if (!setting) {
+      toast.error("Không tìm thấy thông tin loại hình lưu trữ");
+      setTotalCost(0);
+      setEndDate(null);
+      return;
+    }
+
+    let cost = setting.settingNumber;
+    let calculatedEndDate = dayjs(startDate);
+
+    if (setting.settingName.includes("Gửi dưới 100 ngày")) {
+      calculatedEndDate = calculatedEndDate.add(100, "days");
+    } else if (setting.settingName.includes("Gửi dưới 1 năm")) {
+      calculatedEndDate = calculatedEndDate.add(1, "year");
+    } else {
+      const durationNumber = parseInt(duration);
+      if (isNaN(durationNumber) || durationNumber <= 0) {
+        setTotalCost(0);
+        setEndDate(null);
+        return;
+      }
+
+      cost *= durationNumber; // Calculate total cost based on number of years
+      calculatedEndDate = calculatedEndDate.add(durationNumber, "year");
+    }
+
+    setTotalCost(cost);
+    setEndDate(calculatedEndDate.format("DD/MM/YYYY"));
+  }, [selectedSetting, duration, startDate, settings]);
+
+  const settingsCarousel = {
     dots: true,
     infinite: true,
     speed: 500,
@@ -29,20 +95,21 @@ const Step0Content = ({
     autoplaySpeed: 3000,
     arrows: false, // Hide arrows
   };
-  // const formattedDescription = selectedNiche.nicheDescription
-  //   .split(" |")
-  //   .map((line: any, index: any) => (
-  //     <span key={index}>
-  //       {line}
-  //       <br />
-  //     </span>
-  //   ));
 
   return (
     <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Typography variant="h6" gutterBottom>
+          {selectedNiche.buildingName}
+          {" -"} {selectedNiche.floorName}
+          {" -"} {selectedNiche.areaName}
+          {" - Ô "} {selectedNiche.nicheName}
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+      </Grid>
       <Grid item xs={12} sm={6}>
         <div className="carousel-container">
-          <Slider {...settings}>
+          <Slider {...settingsCarousel}>
             <div className="carousel-slide">
               <Image
                 src={selectedNiche.buildingPicture || "/placeholder.png"}
@@ -74,12 +141,6 @@ const Step0Content = ({
         </div>
       </Grid>
       <Grid item xs={12} sm={6}>
-        <Typography variant="h6" gutterBottom>
-          {selectedNiche.buildingName}
-          {" -"} {selectedNiche.floorName}
-          {" -"} {selectedNiche.areaName}
-          {" - Ô "} {selectedNiche.nicheName}
-        </Typography>
         <Typography variant="subtitle1" gutterBottom>
           Tòa nhà {selectedNiche.buildingName}
         </Typography>
@@ -102,55 +163,75 @@ const Step0Content = ({
           Ô chứa {selectedNiche.nicheName}
         </Typography>
         <Typography variant="body2" color="textSecondary" gutterBottom>
-          {/* {formattedDescription} */}
           {selectedNiche.nicheDescription}
         </Typography>
+      </Grid>
+      <Grid item xs={12}>
         <Divider sx={{ my: 2 }} />
-        <Grid container spacing={2}>
-          <Grid item xs={8}>
-            <Controller
-              name="type"
-              control={control}
-              defaultValue="Gửi theo tháng"
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="Loại hình gửi"
-                  fullWidth
-                  margin="normal"
-                >
-                  <MenuItem value="Gửi theo tháng">Gửi theo tháng</MenuItem>
-                  <MenuItem value="Gửi theo năm">Gửi theo năm</MenuItem>
-                </TextField>
-              )}
+        <Typography variant="h6" fontWeight={700} sx={{ mt: 2 }}>
+          Dự toán chi phí lưu trữ
+        </Typography>
+        <Grid container spacing={2} mt={1}>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Chọn loại hình</InputLabel>
+              <Select
+                value={selectedSetting}
+                onChange={(e) => setSelectedSetting(e.target.value)}
+                label="Chọn loại hình"
+              >
+                {settings.map((setting) => (
+                  <MenuItem
+                    key={setting.settingId}
+                    value={setting.settingId.toString()}
+                  >
+                    {setting.settingName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Chọn ngày bắt đầu"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              sx={{ mb: 2 }}
             />
           </Grid>
-          <Grid item xs={4}>
-            <Controller
-              name="duration"
-              control={control}
-              defaultValue={1}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  type="number"
-                  label="Thời gian"
-                  fullWidth
-                  margin="normal"
-                  InputProps={{
-                    inputProps: {
-                      min: 1,
-                      max: type === "Gửi theo tháng" ? 12 : 10,
-                    },
-                  }}
-                />
-              )}
+
+          <Grid item xs={12} md={2}>
+            <TextField
+              fullWidth
+              label="Nhập số năm"
+              type="number"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              sx={{ mb: 2 }}
             />
           </Grid>
         </Grid>
-        <Typography variant="h6" gutterBottom>
-          Giá dự tính: {formatVND(calculateCost(type, duration))}
+        <Typography
+          variant="body1"
+          fontWeight={700}
+          sx={{ mt: 2 }}
+          align="center"
+        >
+          Tổng chi phí:{" "}
+          {totalCost.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          })}
+        </Typography>
+        <Typography
+          variant="body1"
+          fontWeight={700}
+          sx={{ mt: 2 }}
+          align="center"
+        >
+          Ngày kết thúc: {endDate}
         </Typography>
       </Grid>
       <style jsx>{`

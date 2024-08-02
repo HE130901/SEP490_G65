@@ -184,8 +184,8 @@ const CombinedDialog = ({
   const duration = watch("duration", 1);
 
   return (
-    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle className="text-center">
+    <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="md">
+      <DialogTitle className="text-center pb-4">
         Đăng ký đặt chỗ
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label, index) => (
@@ -205,15 +205,7 @@ const CombinedDialog = ({
           {activeStep === 0 && (
             <Step0Content
               selectedNiche={selectedNiche}
-              selectedBuilding={selectedBuilding}
-              selectedFloor={selectedFloor}
-              selectedArea={selectedArea}
-              calculateCost={calculateCost}
-              type={type}
-              duration={duration}
-              formatVND={formatVND}
               control={control}
-              getAllowedDates={getAllowedDates}
               errors={errors}
             />
           )}
