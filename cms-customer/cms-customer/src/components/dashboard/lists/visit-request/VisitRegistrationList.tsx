@@ -68,6 +68,8 @@ const getStatusVariant = (status: string) => {
     case "Pending":
       return "default";
     case "Canceled":
+
+    case "Expired":
       return "destructive";
     default:
       return "secondary";
@@ -82,6 +84,8 @@ const getStatusText = (status: string) => {
       return "Đang chờ duyệt";
     case "Canceled":
       return "Đã hủy";
+    case "Expired":
+      return "Đã hết hạn";
     default:
       return "Không xác định";
   }
