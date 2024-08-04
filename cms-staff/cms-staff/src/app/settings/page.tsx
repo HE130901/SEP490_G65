@@ -93,7 +93,10 @@ const SettingPage: React.FC = () => {
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" padding={3}>
+    <Box display="flex" flexDirection="column">
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", mb: 3 }}>
+        Thiết lập giá
+      </Typography>
       <Grid container spacing={2}>
         {loading ? (
           <Typography variant="h6">Đang tải...</Typography>

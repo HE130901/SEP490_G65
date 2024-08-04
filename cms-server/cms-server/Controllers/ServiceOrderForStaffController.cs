@@ -1,4 +1,5 @@
-﻿using cms_server.Models;
+﻿using cms_server.Configuration;
+using cms_server.Models;
 using cms_server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

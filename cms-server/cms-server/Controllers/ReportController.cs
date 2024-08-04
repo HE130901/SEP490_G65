@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using cms_server.Models;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {
@@ -16,6 +16,7 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+
 
         [HttpGet("contract-summary")]
         public ActionResult<ContractSummaryReport> GetContractSummary()
@@ -33,7 +34,7 @@ namespace cms_server.Controllers
                 {
                     Status = g.Key,
                     Count = g.Count(),
-                    TotalAmount = g.Sum(c => c.TotalAmount ?? 0)
+                    TotalAmount = Math.Round(g.Sum(c => c.TotalAmount ?? 0))
                 })
                 .ToList();
 
@@ -42,13 +43,16 @@ namespace cms_server.Controllers
                 TotalContracts = totalContracts,
                 ActiveContracts = activeContracts,
                 InactiveContracts = inactiveContracts,
-                TotalRevenue = totalRevenue,
-                AverageContractValue = averageContractValue,
+                TotalRevenue = Math.Round(totalRevenue),
+                AverageContractValue = Math.Round(averageContractValue),
                 ContractsByStatus = contractsByStatus
             };
 
             return Ok(report);
         }
+
+
+
         [HttpGet("services-summary")]
         public ActionResult<ServiceOverviewDTO> GetServiceOverview()
         {
@@ -89,9 +93,11 @@ namespace cms_server.Controllers
         public ActionResult<NicheDetailsReport> GetNicheDetails()
         {
             var totalNiches = _context.Niches.Count();
-            var occupiedNiches = _context.Niches.Count(n => n.CustomerId != null || n.DeceasedId != null);
-            var reservedNiches = _context.NicheReservations.Select(nr => nr.NicheId).Distinct().Count();
-            var availableNiches = totalNiches - occupiedNiches - reservedNiches;
+            var occupiedNiches = _context.Niches.Count(n => n.Status == "Active");
+            var reservedNiches = _context.Niches.Count(n => n.Status == "Booked");
+            var availableNiches = _context.Niches.Count(n => n.Status == "Available");
+            var unavailableNiches = _context.Niches.Count(n => n.Status == "Unavailable");
+
 
             var nichesByArea = _context.Niches
                 .GroupBy(n => n.AreaId)
@@ -100,9 +106,10 @@ namespace cms_server.Controllers
                     AreaId = g.Key,
                     AreaAddress = $"{g.FirstOrDefault().Area.Floor.Building.BuildingName} - {g.FirstOrDefault().Area.Floor.FloorName} - {g.FirstOrDefault().Area.AreaName}",
                     Count = g.Count(),
-                    Occupied = g.Count(n => n.CustomerId != null || n.DeceasedId != null),
-                    Reserved = _context.NicheReservations.Count(nr => nr.NicheId == g.Key),
-                    Available = g.Count() - g.Count(n => n.CustomerId != null || n.DeceasedId != null) - _context.NicheReservations.Count(nr => nr.NicheId == g.Key)
+                    Occupied = g.Count(n => n.Status == "Active"),
+                    Reserved = g.Count(n => n.Status == "Booked"),
+                    Available = g.Count(n => n.Status == "Available"),
+                    Unavailable = g.Count(n => n.Status == "Unavailable")
                 }).ToList();
 
             var nichesByStatus = _context.Niches
@@ -130,6 +137,9 @@ namespace cms_server.Controllers
 
             return Ok(report);
         }
+
+
+
     }
 }
 
@@ -139,7 +149,9 @@ namespace cms_server.Controllers
         public int OccupiedNiches { get; set; }
         public int ReservedNiches { get; set; }
         public int AvailableNiches { get; set; }
-        public List<AreaReport> NichesByArea { get; set; } = new List<AreaReport>();
+
+    public int UnavailableNiches { get; set; }
+    public List<AreaReport> NichesByArea { get; set; } = new List<AreaReport>();
         public List<StatusReport> NichesByStatus { get; set; } = new List<StatusReport>();
         public int TotalServiceOrders { get; set; }
         public int TotalVisitRegistrations { get; set; }
@@ -153,7 +165,8 @@ namespace cms_server.Controllers
         public int Occupied { get; set; }
         public int Reserved { get; set; }
         public int Available { get; set; }
-    }
+    public int Unavailable { get; set; }
+}
 
     public class StatusReport
     {

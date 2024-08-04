@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using Microsoft.AspNetCore.Authorization;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {

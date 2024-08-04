@@ -1,4 +1,4 @@
-﻿using cms_server.Models;
+﻿using cms_server.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace cms_server.Services

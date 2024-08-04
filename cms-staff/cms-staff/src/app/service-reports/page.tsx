@@ -150,7 +150,7 @@ function ServiceSummaryPage() {
           <Card elevation={3} sx={{ height: "100%" }}>
             <CardContent>
               <Typography variant="h6" color="textSecondary" gutterBottom>
-                Tổng số dịch vụ
+                Tổng số đơn đặt dịch vụ
               </Typography>
               <Typography variant="h4">{reportData.totalServices}</Typography>
             </CardContent>

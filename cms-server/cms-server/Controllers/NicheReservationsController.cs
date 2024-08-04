@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using System.Security.Claims;
 using TimeZoneConverter;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {
@@ -187,6 +188,7 @@ namespace cms_server.Controllers
             {
                 return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
             }
+
 
             // Đếm số lượng đơn đặt chỗ đã được thực hiện trong ngày để tạo mã đặt chỗ
             var reservationsTodayCount = await _context.NicheReservations

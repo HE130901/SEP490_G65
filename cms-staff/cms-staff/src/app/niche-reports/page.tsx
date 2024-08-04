@@ -30,12 +30,14 @@ interface NicheArea {
   occupied: number;
   reserved: number;
   available: number;
+  unavailable: number;
 }
 
 interface NicheReportData {
   availableNiches: number;
   reservedNiches: number;
   occupiedNiches: number;
+  unavailableNiches: number;
   totalNiches: number;
   nichesByArea: NicheArea[];
 }
@@ -86,7 +88,12 @@ function NicheReportPage() {
 
   // Pie chart data
   const pieChartData = {
-    labels: ["Ô chứa Đang sử dụng", "Ô chứa Đã đặt trước", "Ô chứa Trống"],
+    labels: [
+      "Ô chứa Đang sử dụng",
+      "Ô chứa Đã đặt trước",
+      "Ô chứa Trống",
+      "Ô chứa Không khả dụng",
+    ],
     datasets: [
       {
         label: "Số lượng Ô chứa",
@@ -94,16 +101,19 @@ function NicheReportPage() {
           reportData.occupiedNiches,
           reportData.reservedNiches,
           reportData.availableNiches,
+          reportData.unavailableNiches,
         ],
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
           "rgba(75, 192, 192, 0.6)",
+          "rgba(255, 206, 86, 0.6)",
         ],
         borderColor: [
           "rgba(255, 99, 132, 1)",
           "rgba(54, 162, 235, 1)",
           "rgba(75, 192, 192, 1)",
+          "rgba(255, 206, 86, 1)",
         ],
         borderWidth: 1,
       },
@@ -116,7 +126,7 @@ function NicheReportPage() {
         Báo cáo tổng quan Ô chứa
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
               <Typography variant="h6">Tổng số Ô chứa</Typography>
@@ -124,7 +134,7 @@ function NicheReportPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Đang sử dụng</Typography>
@@ -132,7 +142,7 @@ function NicheReportPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Đã đặt trước</Typography>
@@ -140,7 +150,7 @@ function NicheReportPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Trống</Typography>
@@ -148,7 +158,17 @@ function NicheReportPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={12 / 5}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6">Ô chứa Không khả dụng</Typography>
+              <Typography variant="h4">
+                {reportData.unavailableNiches}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
               <Typography variant="h6">Tổng quan Ô chứa</Typography>
@@ -175,10 +195,10 @@ function NicheReportPage() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Phân tích theo Khu vực</Typography>
+              <Typography variant="h6">Số liệu theo Khu</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -188,6 +208,7 @@ function NicheReportPage() {
                       <TableCell align="right">Đang sử dụng</TableCell>
                       <TableCell align="right">Đã đặt trước</TableCell>
                       <TableCell align="right">Trống</TableCell>
+                      <TableCell align="right">Không khả dụng</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -198,6 +219,7 @@ function NicheReportPage() {
                         <TableCell align="right">{area.occupied}</TableCell>
                         <TableCell align="right">{area.reserved}</TableCell>
                         <TableCell align="right">{area.available}</TableCell>
+                        <TableCell align="right">{area.unavailable}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

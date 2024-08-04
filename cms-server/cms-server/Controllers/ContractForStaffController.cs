@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using MimeKit.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {

@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using cms_server.DTOs;
-using cms_server.Models;
 using System.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
 using MimeKit.Text;
 using Microsoft.Extensions.Configuration;
 using Castle.Core.Resource;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {
@@ -27,10 +27,14 @@ namespace cms_server.Controllers
             _configuration = configuration;
         }
 
+
+        // POST: /api/auth/register
         [HttpPost("login")]
         public IActionResult Login(LoginDto loginDto)
         {
             var customer = _context.Customers.SingleOrDefault(c => c.Email == loginDto.Email);
+
+            // Check if the user exists and the password is correct
             if (customer != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, customer.PasswordHash))
             {
                 var token = GenerateJwtToken(customer.CustomerId.ToString(), "Customer", customer.Phone, customer.Address);
@@ -42,6 +46,8 @@ namespace cms_server.Controllers
             }
 
             var staff = _context.Staff.SingleOrDefault(s => s.Email == loginDto.Email);
+
+            // Check if the user exists and the password is correct
             if (staff != null && BCrypt.Net.BCrypt.Verify(loginDto.Password, staff.PasswordHash))
             {
                 var token = GenerateJwtToken(staff.StaffId.ToString(), staff.Role, staff.Phone, staff.Email);
@@ -59,13 +65,14 @@ namespace cms_server.Controllers
         }
 
 
-
+        // POST: /api/auth/get-current-user
         [HttpGet("get-current-user")]
         [Authorize]
         public IActionResult GetCurrentUser()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            // return user info based on the role
             if (int.TryParse(userId, out int parsedUserId))
             {
                 var customer = _context.Customers.SingleOrDefault(c => c.CustomerId == parsedUserId);
@@ -99,10 +106,13 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid user role.");
         }
 
+        // POST: /api/auth/request-password-reset
         [HttpPost("request-password-reset")]
         public IActionResult RequestPasswordReset(RequestPasswordResetDto requestDto)
         {
             var customer = _context.Customers.SingleOrDefault(c => c.Email == requestDto.Email);
+
+            // send email with reset password link
             if (customer == null)
             {
                 var staff = _context.Staff.SingleOrDefault(s => s.Email == requestDto.Email);
@@ -114,11 +124,11 @@ namespace cms_server.Controllers
                 staff.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 _context.SaveChanges();
 
-                var message = $"Your new password is: {newPassword}";
+                var message = $"Mật khẩu mới của bạn là: {newPassword}";
 
-                SendEmail(staff.Email, "Your New Password", message);
+                SendEmail(staff.Email, "Đặt lại mật khẩu", message);
 
-                return Ok("A new password has been sent to your email.");
+                return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
             }
             else
             {
@@ -126,20 +136,22 @@ namespace cms_server.Controllers
                 customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 _context.SaveChanges();
 
-                var message = $"Your new password is: {newPassword}";
+                var message = $"Mật khẩu mới của bạn là: {newPassword}";
 
-                SendEmail(customer.Email, "Your New Password", message);
+                SendEmail(customer.Email, "Đặt lại mật khẩu", message);
 
-                return Ok("A new password has been sent to your email.");
+                return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
             }
         }
 
+        // POST: /api/auth/change-password
         [HttpPost("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            // change password based on the role
             if (int.TryParse(userId, out int customerId))
             {
                 var customer = await _context.Customers.FindAsync(customerId);
@@ -164,24 +176,25 @@ namespace cms_server.Controllers
         }
 
 
+        
         private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, userId),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(ClaimTypes.NameIdentifier, userId),
-        new Claim("Phone", phone),
-        new Claim(ClaimTypes.Role, role)
-    };
+             {
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim("Phone", phone),
+            new Claim(ClaimTypes.Role, role)
+             };
 
             if (role == "Customer")
             {
-                claims.Add(new Claim("CustomerId", userId)); // Ensure this claim is added
+                claims.Add(new Claim("CustomerId", userId)); 
             }
             else if (role == "Staff")
             {
-                claims.Add(new Claim("StaffId", userId)); // Ensure this claim is added
+                claims.Add(new Claim("StaffId", userId));
             }
 
             if (address != null)
@@ -202,9 +215,6 @@ namespace cms_server.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
-
-
 
 
         private string GenerateRandomPassword(int length = 12)

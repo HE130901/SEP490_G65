@@ -1,5 +1,5 @@
-﻿using cms_server.DTOs;
-using cms_server.Models;
+﻿using cms_server.Configuration;
+using cms_server.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

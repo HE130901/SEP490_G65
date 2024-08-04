@@ -1,11 +1,11 @@
 using System.Text;
-using cms_server.Models;
 using cms_server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using cms_server.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +31,10 @@ builder.Services.AddSingleton<EmailService>();
 builder.Services.AddHostedService<ContractStatusUpdateService>();
 builder.Services.AddHostedService<NicheReservationStatusUpdateService>();
 builder.Services.AddHostedService<VisitReservationStatusUpdateService>();
+builder.Services.AddHostedService<MonthlyReportService>();
+
+
+// Swagger API testing
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -63,6 +67,7 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
@@ -73,6 +78,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -88,6 +94,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Add Authorization
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -95,12 +102,14 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+// Enable middleware to serve generated Swagger as a JSON endpoint.
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
 });
 
+// Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowAll");

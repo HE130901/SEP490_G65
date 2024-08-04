@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using cms_server.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Security.Claims;
+using cms_server.Configuration;
 
 namespace cms_server.Controllers
 {
@@ -20,6 +20,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
+        // GET: /api/buildings/all
         [HttpGet("all")]
         public async Task<ActionResult<BuildingsFloorsAreasDto>> GetAllBuildingsFloorsAreas()
         {
@@ -28,6 +29,7 @@ namespace cms_server.Controllers
                     .ThenInclude(f => f.Areas)
                 .ToListAsync();
 
+            
             var dto = new BuildingsFloorsAreasDto
             {
                 Buildings = buildings.Select(b => new BuildingDto
@@ -52,12 +54,15 @@ namespace cms_server.Controllers
             return dto;
         }
 
+        // GET: /api/buildings/1/floors/1/areas/1/nichesForCustomer
         [Authorize]
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/nichesForCustomer")]
         public async Task<ActionResult<IEnumerable<NicheDto1>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value); // Giả sử user ID được lưu trong phần tên của Identity
+            // Get the user ID from the token
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
+            // Get the niches in the area
             var niches = await _context.Niches
                 .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
                 .Select(n => new NicheDto1
@@ -72,10 +77,12 @@ namespace cms_server.Controllers
             return niches;
         }
 
+        // GET: /api/buildings/1/floors/1/areas/1/niches
         [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
         public async Task<ActionResult<IEnumerable<NicheDto2>>> GetNiches(int buildingId, int floorId, int areaId)
         {
 
+            // Get the niches in the area
             var niches = await _context.Niches
                 .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
                 .Select(n => new NicheDto2
