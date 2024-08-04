@@ -29,23 +29,20 @@ namespace cms_server.Services
                         var context = scope.ServiceProvider.GetRequiredService<CmsContext>();
                         var now = DateTime.UtcNow;
 
-                        // Tính ngày hôm sau của ConfirmationDate
+                        // Fetch reservations to expire
                         var reservationsToExpire = await context.NicheReservations
-                            .Where(nr => nr.Status == "Pending" && nr.ConfirmationDate.HasValue && nr.ConfirmationDate.Value.Date < now.Date)
+                            .Where(nr => (nr.Status == "Pending" || nr.Status == "Approved") && nr.ConfirmationDate.HasValue && nr.ConfirmationDate.Value.Date < now.Date)
+                            .Include(nr => nr.Niche) // Include the associated Niche
                             .ToListAsync(stoppingToken);
 
+                        // Update reservation and niche statuses
                         foreach (var reservation in reservationsToExpire)
                         {
                             reservation.Status = "Expired";
-                        }
-
-                        var approvedReservationsToExpire = await context.NicheReservations
-                            .Where(nr => nr.Status == "Approved" && nr.ConfirmationDate.HasValue && nr.ConfirmationDate.Value.Date < now.Date)
-                            .ToListAsync(stoppingToken);
-
-                        foreach (var reservation in approvedReservationsToExpire)
-                        {
-                            reservation.Status = "Expired";
+                            if (reservation.Niche != null)
+                            {
+                                reservation.Niche.Status = "Available";
+                            }
                         }
 
                         await context.SaveChangesAsync(stoppingToken);

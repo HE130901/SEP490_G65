@@ -19,18 +19,7 @@ namespace cms_server.Controllers
         private readonly CmsContext _context;
         private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
 
-        private DateTime ConvertToTimeZone(DateTime utcDateTime)
-        {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZoneInfo);
-        }
-
-        private DateTime ConvertToUtc(DateTime dateTime)
-        {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
-        }
-
+      
         public NicheReservationsController(CmsContext context)
         {
             _context = context;
@@ -40,6 +29,7 @@ namespace cms_server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservations()
         {
+            // Lấy thông tin đơn đặt chỗ
             var reservations = await _context.NicheReservations
                 .Include(r => r.Niche)
                     .ThenInclude(n => n.Area)
@@ -67,6 +57,7 @@ namespace cms_server.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<NicheReservation>> GetNicheReservation(int id)
         {
+            // Lấy thông tin đơn đặt chỗ theo ID
             var nicheReservation = await _context.NicheReservations.FindAsync(id);
 
             if (nicheReservation == null)
@@ -83,6 +74,7 @@ namespace cms_server.Controllers
         {
             try
             {
+                // Lấy thông tin đơn đặt chỗ theo số điện thoại
                 var nicheReservations = await _context.NicheReservations
                     .Where(nr => nr.PhoneNumber == phoneNumber)
                     .Include(nr => nr.Niche)
@@ -120,7 +112,7 @@ namespace cms_server.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
         {
-           
+            // Lấy thông tin đơn đặt chỗ theo ID
             var existingReservation = await _context.NicheReservations.FindAsync(id);
             if (existingReservation == null)
             {
@@ -132,7 +124,7 @@ namespace cms_server.Controllers
                 return BadRequest(new { error = "Cannot update an approved reservation" });
             }
 
-            // Update only the specified properties
+            // Sửa thông tin đơn đặt chỗ
             existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
             existingReservation.Note = updateDto.Note;
             existingReservation.SignAddress = updateDto.SignAddress;
@@ -237,10 +229,11 @@ namespace cms_server.Controllers
         }
 
 
-
+        // DELETE: api/NicheReservations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNicheReservation(int id)
         {
+            // Lấy thông tin đơn đặt chỗ theo ID
             var nicheReservation = await _context.NicheReservations.FindAsync(id);
             if (nicheReservation == null)
             {
@@ -253,11 +246,11 @@ namespace cms_server.Controllers
 
             var originalStatus = nicheReservation.Status;
 
-            // Update the status of the reservation to "Canceled"
+            // Cập nhật trạng thái của đơn đặt chỗ
             nicheReservation.Status = "Canceled";
             _context.Entry(nicheReservation).State = EntityState.Modified;
 
-            // Only update the Niche status if the original reservation status was not "PendingContractRenewal" or "PendingContractCancellation"
+            // Chỉ cập nhật trạng thái của niche nếu trạng thái ban đầu không phải là "PendingContractRenewal" hoặc "PendingContractCancellation"
             if (originalStatus != "PendingContractRenewal" && originalStatus != "PendingContractCancellation")
             {
                 var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
@@ -272,9 +265,11 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // GET: api/NicheReservations/details/5
         [HttpGet("details/{id}")]
         public async Task<ActionResult<NicheReservationDetailDto>> GetNicheReservationDetail(int id)
         {
+            // Lấy thông tin chi tiết đơn đặt chỗ theo ID
             var reservation = await _context.NicheReservations
                 .Include(r => r.Niche)
                     .ThenInclude(n => n.Area)
@@ -307,6 +302,7 @@ namespace cms_server.Controllers
             return Ok(reservationDetail);
         }
 
+        // PUT: api/NicheReservations/update/5
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
         {
@@ -349,6 +345,7 @@ namespace cms_server.Controllers
             }
         }
 
+        // PUT: api/NicheReservations/confirm/5
         [HttpPut("confirm/{id}")]
         public async Task<IActionResult> ConfirmNicheReservation(int id)
         {
@@ -401,6 +398,7 @@ namespace cms_server.Controllers
         {
             try
             {
+                // Lấy thông tin đơn đặt chỗ đã được duyệt
                 var approvedReservations = await _context.NicheReservations
                     .Where(r => r.Status == "Approved")
                     .Select(r => new NicheReservationApprovedDto

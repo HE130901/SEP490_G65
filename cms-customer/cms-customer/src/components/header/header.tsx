@@ -71,7 +71,7 @@ export function Header({}: {}) {
 
   return (
     <header
-      className={`fixed top-0 z-50 w-full transition-colors duration-300 bg-stone-100 shadow-lg text-black `}
+      className={`fixed top-0 z-50 w-full transition-colors duration-300 bg-white shadow-lg text-black `}
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center">

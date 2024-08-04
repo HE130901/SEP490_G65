@@ -38,6 +38,7 @@ namespace cms_server.Controllers
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
+        // POST: api/ContractForStaff/create-contract
         [HttpPost("create-contract")]
         [Authorize]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
@@ -194,7 +195,7 @@ namespace cms_server.Controllers
             return Ok(contracts);
         }
 
-        // New method to get details of a specific contract by ID
+        // Get details of a specific contract by ID
         [HttpGet("contract/{id}")]
         public async Task<IActionResult> GetContractById(int id)
         {
@@ -222,6 +223,7 @@ namespace cms_server.Controllers
             return Ok(contract);
         }
 
+        // POST: api/ContractForStaff/renew-contract
         [HttpPost("renew-contract")]
         public async Task<IActionResult> RenewContract(int contractId, [FromBody] RenewContractRequest request)
         {
@@ -230,6 +232,7 @@ namespace cms_server.Controllers
                 return BadRequest("Invalid date format.");
             }
 
+            // Find the contract by ID and include the associated contract renews
             var contract = await _context.Contracts
                 .Include(c => c.ContractRenews)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
@@ -238,11 +241,9 @@ namespace cms_server.Controllers
             {
                 return NotFound("Contract not found.");
             }
-
             contract.Status = "Extended";
             _context.Contracts.Update(contract);
             await _context.SaveChangesAsync();
-
             int renewalCount = contract.ContractRenews.Count + 1;
             string renewalCode = GenerateRenewalCode(contract.ContractCode, renewalCount);
 
@@ -380,9 +381,11 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
+        // GET: api/Contracts/contract-renewal/{renewalId}
         [HttpGet("contract-renewal/{renewalId}")]
         public async Task<IActionResult> GetContractRenewalById(int renewalId)
         {
+            // Find the contract renewal by ID and include the associated contract, customer, and niche
             var renewal = await _context.ContractRenews
                 .Include(cr => cr.Contract)
                 .ThenInclude(c => c.Customer)
@@ -410,6 +413,7 @@ namespace cms_server.Controllers
 
             return Ok(renewal);
         }
+
         private void SendEmail(string recipientEmail, string subject, string message)
         {
             var emailMessage = new MimeMessage();

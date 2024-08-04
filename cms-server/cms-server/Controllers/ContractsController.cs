@@ -27,6 +27,7 @@ namespace cms_server.Controllers
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
+            // Get contracts for the specified customer
             var contracts = await _context.Contracts
                 .Include(c => c.Customer)
                 .Include(c => c.Deceased)
@@ -141,6 +142,7 @@ namespace cms_server.Controllers
                 return Unauthorized("Invalid user ID in token.");
             }
 
+            // Find the contract to renew
             var contract = await _context.Contracts
                 .Include(c => c.Customer)
                 .Include(c => c.Niche)
@@ -160,8 +162,6 @@ namespace cms_server.Controllers
             contract.Status = "PendingRenewal";
             contract.Note = renewalRequest.Note;
             _context.Entry(contract).State = EntityState.Modified;
-
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -199,6 +199,7 @@ namespace cms_server.Controllers
 
             int customerId = int.Parse(userIdClaim.Value);
 
+            // Find the contract to cancel
             var contract = await _context.Contracts
                 .Include(c => c.Customer)
                 .Include(c => c.Niche)
@@ -239,15 +240,12 @@ namespace cms_server.Controllers
         }
 
 
-        private bool ContractExists(int id)
-        {
-            return _context.Contracts.Any(e => e.ContractId == id);
-        }
 
         // GET: api/Contracts/{contractId}/renewals
         [HttpGet("{contractId}/renewals")]
         public async Task<ActionResult<IEnumerable<ContractRenewalDto>>> GetContractRenewals(int contractId)
         {
+            // Get renewals for the specified contract
             var renewals = await _context.ContractRenews
                 .Where(r => r.ContractId == contractId)
                 .Include(r => r.Contract) // Ensure that the related Contract is included
@@ -272,6 +270,12 @@ namespace cms_server.Controllers
 
             return Ok(renewals);
         }
+
+        private bool ContractExists(int id)
+        {
+            return _context.Contracts.Any(e => e.ContractId == id);
+        }
+
 
 
 

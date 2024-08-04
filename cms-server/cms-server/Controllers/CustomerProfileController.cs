@@ -39,6 +39,7 @@ namespace cms_server.Controllers
                 return BadRequest("Invalid User ID.");
             }
 
+            // Get the current customer's profile
             var customer = await _context.Customers
                 .Where(c => c.CustomerId == customerId)
                 .Select(c => new CustomerDto1

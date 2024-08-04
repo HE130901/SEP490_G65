@@ -418,7 +418,7 @@ const NicheReservationPage = () => {
           <div className="mt-4 flex justify-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-black rounded-sm"></div>
-              <span className="font-semibold text-white">Không khả dụng</span>
+              <span className="font-semibold text-white">Đã được sử dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>
