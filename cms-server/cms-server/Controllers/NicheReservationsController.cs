@@ -194,3 +194,29 @@ try
                     status = "Approved";
                 }
             }
+
+ // Tạo mới đơn đặt chỗ
+            var nicheReservation = new NicheReservation
+            {
+                NicheId = createDto.NicheId,
+                Name = createDto.Name,
+                ConfirmationDate = createDto.ConfirmationDate,
+                SignAddress = createDto.SignAddress,
+                PhoneNumber = createDto.PhoneNumber,
+                Note = createDto.Note,
+                CreatedDate = localNow,
+                Status = status,
+                ReservationCode = reservationCode,
+                ConfirmedBy = confirmedBy
+            };
+
+            _context.NicheReservations.Add(nicheReservation);
+
+            // Cập nhật trạng thái của niche thành "Booked"
+            niche.Status = "Booked";
+            _context.Entry(niche).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
+        }
