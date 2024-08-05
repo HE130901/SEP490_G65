@@ -180,6 +180,66 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // POST: api/Contracts/cancel
+        [HttpPost("cancel")]
+        [Authorize]
+        public async Task<ActionResult> CancelContract(ContractCancellationRequestDto cancellationRequest)
+        {
+            if (cancellationRequest == null)
+            {
+                return BadRequest("Cancellation request cannot be null.");
+            }
+
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int customerId = int.Parse(userIdClaim.Value);
+
+            // Find the contract to cancel
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Niche)
+                .FirstOrDefaultAsync(c => c.ContractId == cancellationRequest.ContractId && c.CustomerId == customerId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+
+            if (contract.Customer == null || contract.Niche == null)
+            {
+                return BadRequest("Invalid contract data.");
+            }
+
+            // Update contract status to PendingCancellation
+            contract.Status = "PendingCancellation";
+            contract.Note = cancellationRequest.Note;
+            _context.Entry(contract).State = EntityState.Modified;
+           
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ContractExists(cancellationRequest.ContractId))
+                {
+                    return NotFound("Contract not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
+
 
     }
 }
