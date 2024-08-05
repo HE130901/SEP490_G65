@@ -361,6 +361,23 @@ namespace cms_server.Controllers
             return Ok(areas);
         }
 
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas/{zoneId}/niches
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas/{areaId}/niches")]
+        public async Task<ActionResult<IEnumerable<NicheDto>>> GetNiches(int buildingId, int floorId, int areaId)
+        {
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId)
+                .Select(n => new NicheDto
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    NicheStatus = n.Status
+                })
+                .ToListAsync();
+
+            return Ok(niches);
+        }
+
 
 
     }
