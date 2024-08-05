@@ -62,6 +62,62 @@ namespace cms_server.Controllers
             return contracts;
         }
 
+    // GET: api/Contracts/{contractId}/detail
+    [HttpGet("{contractId}/detail")]
+        public async Task<ActionResult<ContractDto>> GetContractDetail(int contractId)
+        {
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Staff)
+                .Include(c => c.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(c => c.ContractId == contractId);
+
+            if (contract == null)
+            {
+                return NotFound();
+            }
+
+            var contractDetail = new ContractDetailDto
+            {
+                CustomerName = contract.Customer.FullName,
+                CustomerEmail = contract.Customer.Email,
+                CustomerPhone = contract.Customer.Phone,
+                CustomerCitizenID = contract.Customer.CitizenId,
+                CustomerAddress = contract.Customer.Address,
+                CitizenIdsupplier = contract.Customer.CitizenIdsupplier,
+                CitizenIdissuanceDate = contract.Customer.CitizenIdissuanceDate,
+                DeceasedName = contract.Deceased != null ? contract.Deceased.FullName : "Không có thông tin",
+                DeceasedCitizenID = contract.Deceased?.CitizenId,
+                DeceasedDateOfBirth = contract.Deceased?.DateOfBirth,
+                DeceasedDateOfDeath = contract.Deceased?.DateOfDeath,
+                DeceasedDeathCertificateNumber = contract.Deceased?.DeathCertificateNumber,
+                DeceasedDeathCertificateSupplier = contract.Deceased?.DeathCertificateSupplier,
+                DeceasedRelationshipWithCustomer = contract.Deceased?.RelationshipWithCusomer,
+                ContractId = contract.ContractId,
+                CustomerId = contract.CustomerId,
+                StaffId = contract.StaffId,
+                StaffName = contract.Staff.FullName,
+                NicheId = contract.NicheId,
+                NicheName = $"{contract.Niche.Area.Floor.Building.BuildingName} - {contract.Niche.Area.Floor.FloorName} - {contract.Niche.Area.AreaName} - Ô {contract.Niche.NicheName}",
+                DeceasedId = contract.DeceasedId,
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate,
+                Status = contract.Status,
+                Note = contract.Note,
+                TotalAmount = contract.TotalAmount,
+                ContractCode = contract.ContractCode,
+                NicheCode = contract.Niche.NicheCode,
+
+            };
+
+            return Ok(contractDetail);
+        }
+
+
 
     }
 }
