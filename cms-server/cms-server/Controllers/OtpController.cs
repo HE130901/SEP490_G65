@@ -44,3 +44,12 @@ else
             return StatusCode(500, new { error = "Failed to verify OTP", details = ex.Message });
         }
     }
+// New endpoints for testing with default OTP "123456"
+    [HttpPost("test/send-otp")]
+    public IActionResult SendTestOtp([FromBody] SendOtpRequest request)
+    {
+        try
+        {
+            // Simulate sending the default OTP "123456"
+            return Ok(new { message = "Test OTP '123456' sent successfully" });
+        }
