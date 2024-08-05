@@ -154,4 +154,13 @@ public class StatusReport
         public string Status { get; set; }
         public int Count { get; set; }
     }
+public class ContractSummaryReport
+    {
+        public int TotalContracts { get; set; }
+        public int ActiveContracts { get; set; }
+        public int InactiveContracts { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public decimal AverageContractValue { get; set; }
+        public List<ContractStatusReport> ContractsByStatus { get; set; } = new List<ContractStatusReport>();
+    }
 
