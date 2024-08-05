@@ -57,3 +57,13 @@ namespace cms_server.Controllers
             var servicesByCategory = _context.Services
                 .GroupBy(s => s.Category)
                 .ToDictionary(g => g.Key, g => g.Count());
+var revenueByCategory = _context.ServiceOrderDetails
+                .GroupBy(sod => sod.Service.Category)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(sod => sod.Quantity * sod.Service.Price)
+                );
+
+            var servicesByStatus = _context.ServiceOrderDetails
+                .GroupBy(sod => sod.Status)
+                .ToDictionary(g => g.Key, g => g.Count());
