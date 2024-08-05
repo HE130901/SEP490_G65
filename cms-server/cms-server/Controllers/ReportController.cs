@@ -46,3 +46,14 @@ namespace cms_server.Controllers
 
             return Ok(report);
         }
+[HttpGet("services-summary")]
+        public ActionResult<ServiceOverviewDTO> GetServiceOverview()
+        {
+            var totalServices = _context.ServiceOrders.Count();
+            var totalRevenue = _context.ServiceOrderDetails
+                .Sum(sod => sod.Quantity * sod.Service.Price);
+            var averageOrderValue = totalServices > 0 ? totalRevenue / totalServices : 0;
+
+            var servicesByCategory = _context.Services
+                .GroupBy(s => s.Category)
+                .ToDictionary(g => g.Key, g => g.Count());
