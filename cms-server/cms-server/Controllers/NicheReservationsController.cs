@@ -51,3 +51,17 @@ namespace cms_server.Controllers
 
             return Ok(reservations);
         }
+// GET: api/NicheReservations/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<NicheReservation>> GetNicheReservation(int id)
+        {
+            // Lấy thông tin đơn đặt chỗ theo ID
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+
+            if (nicheReservation == null)
+            {
+                return NotFound();
+            }
+
+            return nicheReservation;
+        }
