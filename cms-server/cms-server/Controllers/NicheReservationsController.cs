@@ -145,3 +145,19 @@ try
 
             return NoContent();
         }
+
+// POST: api/NicheReservations
+        [HttpPost]
+        public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+            var currentDate = localNow.Date;
+
+            // Tìm và kiểm tra trạng thái của niche
+            var niche = await _context.Niches.FindAsync(createDto.NicheId);
+            if (niche == null || niche.Status != "Available")
+            {
+                return BadRequest(new { error = "Ô chứa này đã được đặt" });
+            }
