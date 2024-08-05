@@ -110,3 +110,19 @@ var nichesByStatus = _context.Niches
 
             var totalServiceOrders = _context.ServiceOrders.Count();
             var totalVisitRegistrations = _context.VisitRegistrations.Count();
+ var report = new NicheDetailsReport
+            {
+                TotalNiches = totalNiches,
+                OccupiedNiches = occupiedNiches,
+                ReservedNiches = reservedNiches,
+                AvailableNiches = availableNiches,
+                NichesByArea = nichesByArea,
+                NichesByStatus = nichesByStatus,
+                TotalServiceOrders = totalServiceOrders,
+                TotalVisitRegistrations = totalVisitRegistrations
+            };
+
+            return Ok(report);
+        }
+    }
+}
