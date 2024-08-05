@@ -34,3 +34,17 @@ namespace cms_server.Controllers
             var niches = await _nicheService.GetNichesAsync(customerId);
             return Ok(niches);
         }
+
+  [HttpGet("{nicheId}/details")]
+        public async Task<ActionResult<NicheDetailDto>> GetNicheDetail(int nicheId)
+        {
+            try
+            {
+                var nicheDetail = await _nicheService.GetNicheDetailAsync(nicheId);
+                return Ok(nicheDetail);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
