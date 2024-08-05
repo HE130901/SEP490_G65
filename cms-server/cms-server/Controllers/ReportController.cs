@@ -149,3 +149,9 @@ public class AreaReport
         public int Available { get; set; }
     public int Unavailable { get; set; }
 }
+public class StatusReport
+    {
+        public string Status { get; set; }
+        public int Count { get; set; }
+    }
+
