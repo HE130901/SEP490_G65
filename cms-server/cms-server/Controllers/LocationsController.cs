@@ -14,3 +14,9 @@ namespace cms_server.Controllers
         {
             _locationService = locationService;
         }
+[HttpGet("buildings")]
+        public async Task<ActionResult<IEnumerable<Building>>> GetBuildings()
+        {
+            var buildings = await _locationService.GetBuildingsAsync();
+            return Ok(buildings);
+        }
