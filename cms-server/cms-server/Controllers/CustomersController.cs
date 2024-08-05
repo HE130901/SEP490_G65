@@ -111,3 +111,21 @@ namespace cms_server.Controllers
             customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.Password);
 
             _context.Entry(customer).State = EntityState.Modified;
+ try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
