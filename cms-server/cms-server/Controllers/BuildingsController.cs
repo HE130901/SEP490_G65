@@ -111,5 +111,11 @@ namespace cms_server.Controllers
         public List<FloorDto> Floors { get; set; }
     }
 
+    public class FloorDto
+    {
+        public int FloorId { get; set; }
+        public string FloorName { get; set; }
+        public List<AreaDto> Areas { get; set; }
+    }
 
 }
