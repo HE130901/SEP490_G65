@@ -73,3 +73,16 @@ int customerId = int.Parse(customerIdClaim.Value);
 
             return Ok(serviceOrderDtos);
         }
+ [HttpPost("create-service-order")]
+        [Authorize]
+        public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest1 request)
+        {
+            var customerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "CustomerId");
+            if (customerIdClaim == null)
+            {
+                return Unauthorized("Customer ID not found in token");
+            }
+
+            int customerId = int.Parse(customerIdClaim.Value);
+
+            using (var transaction = await 
