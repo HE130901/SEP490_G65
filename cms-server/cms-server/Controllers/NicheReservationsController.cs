@@ -24,3 +24,30 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+// GET: api/NicheReservations
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservations()
+        {
+            // Lấy thông tin đơn đặt chỗ
+            var reservations = await _context.NicheReservations
+                .Include(r => r.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Select(r => new NicheReservationDto
+                {
+                    ReservationId = r.ReservationId,
+                    ReservationCode = r.ReservationCode,
+                    Name = r.Name,
+                    PhoneNumber = r.PhoneNumber,
+                    NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - {r.Niche.NicheName}",
+                    CreatedDate = r.CreatedDate,
+                    ConfirmationDate = r.ConfirmationDate,
+                    Note = r.Note,
+                    Status = r.Status,
+                    NicheCode = r.Niche.NicheCode
+                })
+                .ToListAsync();
+
+            return Ok(reservations);
+        }
