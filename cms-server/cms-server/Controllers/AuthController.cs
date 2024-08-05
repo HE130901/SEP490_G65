@@ -105,7 +105,43 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid user role.");
         }
 
+	// POST: /api/auth/request-password-reset
+        [HttpPost("request-password-reset")]
+        public IActionResult RequestPasswordReset(RequestPasswordResetDto requestDto)
+        {
+            var customer = _context.Customers.SingleOrDefault(c => c.Email == requestDto.Email);
 
+            // send email with reset password link
+            if (customer == null)
+            {
+                var staff = _context.Staff.SingleOrDefault(s => s.Email == requestDto.Email);
+                if (staff == null)
+                {
+                    return NotFound("Email not found.");
+                }
+                var newPassword = GenerateRandomPassword();
+                staff.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.SaveChanges();
+
+                var message = $"Mật khẩu mới của bạn là: {newPassword}";
+
+                SendEmail(staff.Email, "Đặt lại mật khẩu", message);
+
+                return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
+            }
+            else
+            {
+                var newPassword = GenerateRandomPassword();
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.SaveChanges();
+
+                var message = $"Mật khẩu mới của bạn là: {newPassword}";
+
+                SendEmail(customer.Email, "Đặt lại mật khẩu", message);
+
+                return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
+            }
+        }
 
 
 
@@ -124,4 +160,14 @@ namespace cms_server.Controllers
 
 
     }
+}
+
+namespace cms_server.DTOs
+{
+    public class RequestPasswordResetDto
+    {
+        public string Email { get; set; }
+    }
+
+
 }
