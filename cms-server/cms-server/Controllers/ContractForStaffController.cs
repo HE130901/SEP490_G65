@@ -196,6 +196,33 @@ namespace cms_server.Controllers
             return Ok(contracts);
         }
 
+        // Get details of a specific contract by ID
+        [HttpGet("contract/{id}")]
+        public async Task<IActionResult> GetContractById(int id)
+        {
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Niche)
+                .Select(c => new ContractForStaffDto
+                {
+                    ContractId = c.ContractId,
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-{c.Niche.NicheName}",
+                    CustomerName = c.Customer.FullName,
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    Status = c.Status,
+                    ContractCode = c.ContractCode
+                })
+                .FirstOrDefaultAsync(c => c.ContractId == id);
+
+            if (contract == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(contract);
+        }
 
 
 
