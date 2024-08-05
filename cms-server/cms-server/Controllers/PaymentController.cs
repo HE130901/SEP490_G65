@@ -74,4 +74,9 @@ string vnpSecureHash = queryParameters["vnp_SecureHash"];
             {
                 string vnpResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
                 string vnpTransactionStatus = vnpay.GetResponseData("vnp_TransactionStatus");
+if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
+                {
+                    long orderId = Convert.ToInt64(vnpay.GetResponseData("vnp_TxnRef"));
+                    long vnpayTranId = Convert.ToInt64(vnpay.GetResponseData("vnp_TransactionNo"));
+                    long vnpAmount = Convert.ToInt64(vnpay.GetResponseData("vnp_Amount")) / 100;
 
