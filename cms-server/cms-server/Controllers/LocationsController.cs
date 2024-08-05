@@ -32,3 +32,11 @@ namespace cms_server.Controllers
             var areas = await _locationService.GetAreasByFloorIdAsync(floorId);
             return Ok(areas);
         }
+[HttpGet("niches/{areaId}")]
+        public async Task<ActionResult<IEnumerable<Niche>>> GetNichesByAreaId(int areaId)
+        {
+            var niches = await _locationService.GetNichesByAreaIdAsync(areaId);
+            return Ok(niches);
+        }
+    }
+}
