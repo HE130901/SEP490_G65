@@ -220,3 +220,18 @@ try
 
             return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
         }
+
+// DELETE: api/NicheReservations/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteNicheReservation(int id)
+        {
+            // Lấy thông tin đơn đặt chỗ theo ID
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+            if (nicheReservation == null)
+            {
+                return NotFound();
+            }
+            if (nicheReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Không thể xóa đơn đã được duyệt" });
+            }
