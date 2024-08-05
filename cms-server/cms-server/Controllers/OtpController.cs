@@ -34,3 +34,13 @@ public class OtpController : ControllerBase
             {
                 return Ok(new { message = "OTP verified successfully" });
             }
+else
+            {
+                return BadRequest(new { error = "Invalid OTP" });
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to verify OTP", details = ex.Message });
+        }
+    }
