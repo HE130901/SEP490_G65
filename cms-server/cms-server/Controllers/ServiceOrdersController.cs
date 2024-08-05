@@ -136,3 +136,18 @@ _context.Database.BeginTransactionAsync())
 
                     // Calculate the total price
                     var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
+ return Ok(new
+                    {
+                        ServiceOrder = serviceOrder,
+                        TotalPrice = totalPrice
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, ex.Message);
+                }
+            }
+        }
+
+
