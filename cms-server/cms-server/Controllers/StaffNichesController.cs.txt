@@ -142,3 +142,10 @@ private bool NicheExists(int id)
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string? Status { get; set; }
+}
+    public class UpdateNicheDto
+    {
+        public string? NicheDescription { get; set; }
+        public string Status { get; set; }
+    }
+}
