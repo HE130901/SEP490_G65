@@ -76,3 +76,41 @@ namespace cms_server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+ // GET: api/VisitRegistrations/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<VisitRegistrationDto>> GetVisitRegistration(int id)
+        {
+            var visitRegistration = await _context.VisitRegistrations
+                .Include(vr => vr.Customer)
+                .Include(vr => vr.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
+                .Where(vr => vr.VisitId == id)
+                .Select(vr => new VisitRegistrationDto
+                {
+                    VisitId = vr.VisitId,
+                    CustomerId = vr.CustomerId,
+                    NicheId = vr.NicheId,
+                    VisitDate = vr.VisitDate,
+                    NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                    Status = vr.Status ?? "No information",
+                    ApprovedBy = vr.ApprovedBy,
+                    CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                    Note = vr.Note ?? string.Empty,
+                    AccompanyingPeople = (int)vr.AccompanyingPeople,
+                    CustomerName = vr.Customer.FullName,
+                    StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A",
+                    VisitCode = vr.VisitCode,
+                })
+                .FirstOrDefaultAsync();
+
+            if (visitRegistration == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(visitRegistration);
+        }
