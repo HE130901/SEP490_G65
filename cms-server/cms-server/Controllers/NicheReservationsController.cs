@@ -308,3 +308,28 @@ var reservationDetail = new NicheReservationDetailDto
             {
                 return Unauthorized("User role not found in token.");
             }
+
+var nicheReservation = await _context.NicheReservations.FindAsync(id);
+
+            if (nicheReservation == null)
+            {
+                return NotFound("Reservation not found");
+            }
+
+            // Update only the specified fields
+            nicheReservation.ConfirmationDate = dto.ConfirmationDate;
+            nicheReservation.Note = dto.Note;
+            nicheReservation.SignAddress = dto.SignAddress;
+            nicheReservation.ConfirmedBy = int.Parse(userId); // Extracted from token
+            nicheReservation.Status = "Approved";
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(nicheReservation);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
