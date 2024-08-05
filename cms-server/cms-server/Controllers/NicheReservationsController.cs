@@ -175,3 +175,22 @@ try
             {
                 return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
             }
+// Đếm số lượng đơn đặt chỗ đã được thực hiện trong ngày để tạo mã đặt chỗ
+            var reservationsTodayCount = await _context.NicheReservations
+                .CountAsync(nr => nr.CreatedDate != null && nr.CreatedDate.Value.Date == currentDate);
+
+            var reservationCode = $"DC-{currentDate:yyyyMMdd}-{(reservationsTodayCount + 1):D3}";
+
+            // Lấy thông tin StaffId từ token (nếu có)
+            var staffIdClaim = User.FindFirst("StaffId");
+            int? confirmedBy = null;
+            string status = "Pending";
+
+            if (staffIdClaim != null && !string.IsNullOrEmpty(staffIdClaim.Value))
+            {
+                if (int.TryParse(staffIdClaim.Value, out int staffId))
+                {
+                    confirmedBy = staffId;
+                    status = "Approved";
+                }
+            }
