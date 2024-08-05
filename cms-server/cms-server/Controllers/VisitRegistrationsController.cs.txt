@@ -251,3 +251,37 @@ namespace cms_server.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
+
+// DELETE: api/VisitRegistrations/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteVisitRegistration(int id)
+        {
+            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+            if (visitRegistration == null)
+            {
+                _logger.LogWarning("VisitRegistration not found: {Id}", id); // Log warning
+                return NotFound();
+            }
+
+            // Update the status to "Canceled" instead of deleting the record
+            visitRegistration.Status = "Canceled";
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.VisitRegistrations.Any(e => e.VisitId == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
