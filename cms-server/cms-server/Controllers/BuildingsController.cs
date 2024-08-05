@@ -118,4 +118,11 @@ namespace cms_server.Controllers
         public List<AreaDto> Areas { get; set; }
     }
 
+    public class AreaDto
+    {
+        public int AreaId { get; set; }
+        public string AreaName { get; set; }
+    }
+
+
 }
