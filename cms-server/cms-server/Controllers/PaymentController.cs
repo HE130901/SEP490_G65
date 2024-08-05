@@ -93,3 +93,11 @@ if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
                     return BadRequest(new { message = "Giao dịch không thành công" });
                 }
             }
+else
+            {
+                // Log for debugging
+                Console.WriteLine($"Invalid signature: {string.Join(", ", queryParameters.Select(kv => $"{kv.Key}={kv.Value}"))}");
+                return BadRequest(new { message = "Chữ ký không hợp lệ" });
+            }
+        }
+    }
