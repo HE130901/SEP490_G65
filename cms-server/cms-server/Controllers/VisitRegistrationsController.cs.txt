@@ -114,3 +114,48 @@ namespace cms_server.Controllers
 
             return Ok(visitRegistration);
         }
+
+// GET: api/VisitRegistrations/customer/5
+        [HttpGet("customer/{customerId}")]
+        public async Task<ActionResult<IEnumerable<VisitRegistrationDto>>> GetVisitRegistrationsByCustomer(int customerId)
+        {
+            try
+            {
+                var visitRegistrations = await _context.VisitRegistrations
+                    .Where(vr => vr.CustomerId == customerId)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
+                    .Select(vr => new VisitRegistrationDto
+                    {
+                        VisitId = vr.VisitId,
+                        CustomerId = vr.CustomerId,
+                        NicheId = vr.NicheId,
+                        VisitDate = vr.VisitDate,
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                        Status = vr.Status ?? "No information",
+                        ApprovedBy = vr.ApprovedBy,
+                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                        Note = vr.Note ?? string.Empty,
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A", // Include StaffName
+                        VisitCode = vr.VisitCode,
+                    })
+                    .ToListAsync();
+
+                if (!visitRegistrations.Any())
+                {
+                    return NotFound();
+                }
+
+                return Ok(visitRegistrations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching visit registrations for customer ID: {CustomerId}", customerId);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
