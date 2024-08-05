@@ -20,3 +20,10 @@ namespace cms_server.Controllers
             _context = context;
             _logger = logger;
         }
+
+[HttpGet]
+        public ActionResult<IEnumerable<SystemSetting>> GetAllSettings()
+        {
+            var settings = _context.SystemSettings.ToList();
+            return Ok(settings);
+        }
