@@ -25,6 +25,9 @@ namespace cms_server.Controllers
             _configuration = configuration;
         }
 
-
+        private async Task<bool> IsDuplicateDeathCertificateNumberAsync(string deathCertificateNumber)
+        {
+            return await _context.Deceaseds.AnyAsync(d => d.DeathCertificateNumber == deathCertificateNumber);
+        }
     }
 }
