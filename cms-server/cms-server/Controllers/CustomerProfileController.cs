@@ -23,6 +23,46 @@ namespace cms_server.Controllers
             _context = context;
         }
 
+        // GET: api/CustomerProfile
+        [HttpGet]
+        public async Task<ActionResult<CustomerDto1>> GetCurrentCustomer()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized("User ID is missing.");
+            }
+
+            if (!int.TryParse(userId, out int customerId))
+            {
+                return BadRequest("Invalid User ID.");
+            }
+
+            // Get the current customer's profile
+            var customer = await _context.Customers
+                .Where(c => c.CustomerId == customerId)
+                .Select(c => new CustomerDto1
+                {
+                    CustomerId = c.CustomerId,
+                    FullName = c.FullName,
+                    Email = c.Email,
+                    Phone = c.Phone,
+                    Address = c.Address,
+                    CitizenId = c.CitizenId,
+                    CitizenIdissuanceDate = c.CitizenIdissuanceDate,
+                    CitizenIdsupplier = c.CitizenIdsupplier,
+                })
+                .FirstOrDefaultAsync();
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found.");
+            }
+
+            return Ok(customer);
+        }
+
 
     }
 }
