@@ -129,3 +129,10 @@ _context.Database.BeginTransactionAsync())
                             Status = "Pending"
                         };
                         _context.ServiceOrderDetails.Add(serviceOrderDetail);
+ }
+                    await _context.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+
+                    // Calculate the total price
+                    var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
