@@ -139,3 +139,13 @@ public class NicheDetailsReport
         public int TotalServiceOrders { get; set; }
         public int TotalVisitRegistrations { get; set; }
     }
+public class AreaReport
+    {
+        public int AreaId { get; set; }
+    public string AreaAddress { get; set; }
+    public int Count { get; set; }
+        public int Occupied { get; set; }
+        public int Reserved { get; set; }
+        public int Available { get; set; }
+    public int Unavailable { get; set; }
+}
