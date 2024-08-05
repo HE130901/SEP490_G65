@@ -5,3 +5,18 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Configuration;
+
+namespace cms_server.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SystemSettingsController : ControllerBase
+    {
+        private readonly CmsContext _context;
+        private readonly ILogger<SystemSettingsController> _logger;
+
+        public SystemSettingsController(CmsContext context, ILogger<SystemSettingsController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
