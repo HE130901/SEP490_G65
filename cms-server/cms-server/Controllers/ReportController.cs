@@ -24,3 +24,13 @@ namespace cms_server.Controllers
             var inactiveContracts = _context.Contracts.Count(c => c.Status != "Active");
             var totalRevenue = _context.Contracts.Sum(c => c.TotalAmount ?? 0);
             var averageContractValue = totalContracts > 0 ? totalRevenue / totalContracts : 0;
+// Group by Status (or any other relevant field)
+            var contractsByStatus = _context.Contracts
+                .GroupBy(c => c.Status)
+                .Select(g => new ContractStatusReport
+                {
+                    Status = g.Key,
+                    Count = g.Count(),
+                    TotalAmount = Math.Round(g.Sum(c => c.TotalAmount ?? 0))
+                })
+                .ToList();
