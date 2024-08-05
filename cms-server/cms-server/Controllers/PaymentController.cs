@@ -21,3 +21,11 @@ namespace cms_server.Controllers
 
         // Local return URL
         //private readonly string _returnUrl = "http://localhost:3000/payment/vnpay_return";
+
+ [HttpPost("create-payment")]
+        public IActionResult CreatePayment([FromBody] PaymentRequestModel model)
+        {
+            string amount = (int.Parse(model.Amount) * 100).ToString();
+            string orderId = model.OrderId;
+            string createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
+            string expireDate = DateTime.Now.AddDays(1).ToString("yyyyMMddHHmmss");
