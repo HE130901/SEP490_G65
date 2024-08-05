@@ -280,6 +280,39 @@ namespace cms_server.Controllers
             return $"GH{renewalCount:D2}-{datePart}-{suffix}";
         }
 
+        // POST: api/Contracts/cancel-contract
+        [HttpPost("cancel-contract")]
+        public async Task<IActionResult> CancelContract(int contractId)
+        {
+            // Find the contract by ID
+            var contract = await _context.Contracts
+                .FirstOrDefaultAsync(c => c.ContractId == contractId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+
+            // Update the contract status to "Canceled"
+            contract.Status = "Canceled";
+            contract.Note = "Thanh lý hợp đồng " + contract.ContractCode + " vào ngày " + DateOnly.FromDateTime(DateTime.Now);
+            _context.Contracts.Update(contract);
+
+            // Find the associated niche and set its status to "Available"
+            var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == contract.NicheId);
+            if (niche != null)
+            {
+                niche.Status = "Available";
+                niche.CustomerId = null; // Reset the CustomerId
+                niche.DeceasedId = null; // Reset the DeceasedId
+                _context.Niches.Update(niche);
+            }
+
+            // Save the changes
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
 
     }
