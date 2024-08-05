@@ -474,6 +474,9 @@ namespace cms_server.Controllers
         public string NicheCode { get; set; }
 
     }
-
-
+}
+public class RenewContractRequest
+{
+    public string NewEndDate { get; set; }
+    public decimal TotalAmount { get; set; }
 }
