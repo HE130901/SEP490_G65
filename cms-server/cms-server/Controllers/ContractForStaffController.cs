@@ -314,6 +314,21 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // GET: api/Contracts/buildings
+        [HttpGet("buildings")]
+        public async Task<ActionResult<IEnumerable<BuildingDto>>> GetBuildings()
+        {
+            var buildings = await _context.Buildings
+                .Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName
+                })
+                .ToListAsync();
+
+            return Ok(buildings);
+        }
+
 
     }
 }
