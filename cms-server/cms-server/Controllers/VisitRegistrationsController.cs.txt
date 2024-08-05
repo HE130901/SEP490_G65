@@ -1,0 +1,78 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using cms_server.Models;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Security.Claims;
+using TimeZoneConverter;
+using cms_server.Configuration;
+
+namespace cms_server.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VisitRegistrationsController : ControllerBase
+    {
+        private readonly CmsContext _context;
+        private readonly ILogger<VisitRegistrationsController> _logger;
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+
+        private DateTime ConvertToTimeZone(DateTime utcDateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, timeZoneInfo);
+        }
+
+        private DateTime ConvertToUtc(DateTime dateTime)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
+        }
+        public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
+        {
+            _context = context;
+            _logger = logger;
+        }
+
+
+        // GET: api/VisitRegistrations
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<VisitRegistrationDto>>> GetVisitRegistrations()
+        {
+            try
+            {
+                var visitRegistrations = await _context.VisitRegistrations
+                    .Include(vr => vr.Customer)
+                    .Include(vr => vr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Include(vr => vr.ApprovedByNavigation) // Include the Staff entity
+                    .Select(vr => new VisitRegistrationDto
+                    {
+                        VisitId = vr.VisitId,
+                        CustomerId = vr.CustomerId,
+                        NicheId = vr.NicheId,
+                        VisitDate = vr.VisitDate,
+                        NicheAddress = $"{vr.Niche.Area.Floor.Building.BuildingName} - {vr.Niche.Area.Floor.FloorName} - {vr.Niche.Area.AreaName} - Ô {vr.Niche.NicheName}",
+                        Status = vr.Status ?? "No information",
+                        ApprovedBy = vr.ApprovedBy,
+                        CreatedDate = vr.CreatedDate ?? DateTime.MinValue,
+                        Note = vr.Note ?? string.Empty,
+                        AccompanyingPeople = (int)vr.AccompanyingPeople,
+                        CustomerName = vr.Customer.FullName,
+                        StaffName = vr.ApprovedByNavigation != null ? vr.ApprovedByNavigation.FullName : "N/A",
+                        VisitCode = vr.VisitCode,
+                    })
+                    .ToListAsync();
+
+                return Ok(visitRegistrations);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching visit registrations: {Message}", ex.Message);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
