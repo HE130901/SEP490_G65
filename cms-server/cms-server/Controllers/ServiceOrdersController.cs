@@ -26,3 +26,7 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
 
             return totalPrice;
         }
+ public ServiceOrdersController(CmsContext context)
+        {
+            _context = context;
+        }
