@@ -99,5 +99,23 @@ namespace cms_server.Controllers
                         return BadRequest("Đã có người mất đăng ký với số giấy chứng tử này!");
                     }
 
+
+                    // Tạo đối tượng Deceased
+                    var deceased = new Deceased
+                    {
+                        FullName = request.DeceasedFullName,
+                        DateOfBirth = request.DeceasedDateOfBirth,
+                        DateOfDeath = request.DeceasedDateOfDeath,
+                        NicheId = niche.NicheId,
+                        CustomerId = customer.CustomerId,
+                        DeathCertificateNumber = request.DeathCertificateNumber,
+                        DeathCertificateSupplier = request.DeathCertificateSupplier,
+                        CitizenId = request.DeceasedCitizenId,
+                        RelationshipWithCusomer = request.RelationshipWithCustomer
+                    };
+                    _context.Deceaseds.Add(deceased);
+                    await _context.SaveChangesAsync();
+
+
     }
 }
