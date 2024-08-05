@@ -126,3 +126,16 @@ var nichesByStatus = _context.Niches
         }
     }
 }
+public class NicheDetailsReport
+    {
+        public int TotalNiches { get; set; }
+        public int OccupiedNiches { get; set; }
+        public int ReservedNiches { get; set; }
+        public int AvailableNiches { get; set; }
+
+    public int UnavailableNiches { get; set; }
+    public List<AreaReport> NichesByArea { get; set; } = new List<AreaReport>();
+        public List<StatusReport> NichesByStatus { get; set; } = new List<StatusReport>();
+        public int TotalServiceOrders { get; set; }
+        public int TotalVisitRegistrations { get; set; }
+    }
