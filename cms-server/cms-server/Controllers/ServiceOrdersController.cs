@@ -59,3 +59,17 @@ int customerId = int.Parse(customerIdClaim.Value);
             {
                 ServiceOrderId = so.ServiceOrderId,
                 NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
+ CreatedDate = so.CreatedDate,
+                OrderDate = so.OrderDate,
+                ServiceOrderCode = so.ServiceOrderCode,
+                ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailResponseDto
+                {
+                    ServiceName = sod.Service.ServiceName,
+                    Quantity = sod.Quantity,
+                    CompletionImage = sod.CompletionImage,
+                    Status = sod.Status
+                }).ToList()
+            }).ToList();
+
+            return Ok(serviceOrderDtos);
+        }
