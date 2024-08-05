@@ -10,3 +10,17 @@ public class OtpController : ControllerBase
     {
         _otpService = otpService;
     }
+
+ [HttpPost("send-otp")]
+    public IActionResult SendOtp([FromBody] SendOtpRequest request)
+    {
+        try
+        {
+            _otpService.SendOtp(request.PhoneNumber);
+            return Ok(new { message = "OTP sent successfully" });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to send OTP", details = ex.Message });
+        }
+    }
