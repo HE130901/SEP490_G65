@@ -163,4 +163,10 @@ public class ContractSummaryReport
         public decimal AverageContractValue { get; set; }
         public List<ContractStatusReport> ContractsByStatus { get; set; } = new List<ContractStatusReport>();
     }
+public class ContractStatusReport
+    {
+        public string Status { get; set; }
+        public int Count { get; set; }
+        public decimal TotalAmount { get; set; }
+    }
 
