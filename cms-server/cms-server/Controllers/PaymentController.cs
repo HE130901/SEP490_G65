@@ -79,4 +79,6 @@ if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
                     long orderId = Convert.ToInt64(vnpay.GetResponseData("vnp_TxnRef"));
                     long vnpayTranId = Convert.ToInt64(vnpay.GetResponseData("vnp_TransactionNo"));
                     long vnpAmount = Convert.ToInt64(vnpay.GetResponseData("vnp_Amount")) / 100;
+ // Log for debugging
+                    Console.WriteLine($"Payment success: OrderId={orderId}, VNPAY TranId={vnpayTranId}, Amount={vnpAmount}");
 
