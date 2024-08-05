@@ -199,6 +199,12 @@ namespace cms_server.DTOs
         public string Email { get; set; }
     }
 
+    public class ResetPasswordDto
+    {
+        public string Token { get; set; }
+        public string NewPassword { get; set; }
+    }
+
     public class ChangePasswordDto
     {
         public string OldPassword { get; set; }
