@@ -460,4 +460,20 @@ namespace cms_server.Controllers
         public int ReservationId { get; set; }
     }
 
+    public class ContractForStaffDto
+    {
+        public int ContractId { get; set; }
+        public int NicheId { get; set; }
+        public int CustomerId { get; set; }
+        public string NicheAddress { get; set; }
+        public string CustomerName { get; set; }
+        public DateOnly StartDate { get; set; }
+        public DateOnly? EndDate { get; set; }
+        public string Status { get; set; }
+        public string ContractCode { get; set; }
+        public string NicheCode { get; set; }
+
+    }
+
+
 }
