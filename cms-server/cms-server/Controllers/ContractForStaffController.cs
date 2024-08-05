@@ -345,5 +345,23 @@ namespace cms_server.Controllers
             return Ok(floors);
         }
 
+        // GET: api/Contracts/buildings/{buildingId}/floors/{floorId}/areas
+        [HttpGet("buildings/{buildingId}/floors/{floorId}/areas")]
+        public async Task<ActionResult<IEnumerable<AreaDto>>> GetZones(int buildingId, int floorId)
+        {
+            var areas = await _context.Areas
+                .Where(a => a.FloorId == floorId)
+                .Select(a => new AreaDto
+                {
+                    AreaId = a.AreaId,
+                    AreaName = a.AreaName
+                })
+                .ToListAsync();
+
+            return Ok(areas);
+        }
+
+
+
     }
 }
