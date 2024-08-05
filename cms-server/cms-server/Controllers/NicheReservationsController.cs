@@ -290,3 +290,21 @@ var reservationDetail = new NicheReservationDetailDto
 
             return Ok(reservationDetail);
         }
+
+// PUT: api/NicheReservations/update/5
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (role == null)
+            {
+                return Unauthorized("User role not found in token.");
+            }
