@@ -117,6 +117,68 @@ namespace cms_server.Controllers
             return Ok(contractDetail);
         }
 
+        // POST: api/Contracts/renew
+        [HttpPost("renew")]
+
+        [Authorize]
+        public async Task<ActionResult> RenewContract(ContractRenewalRequestDto renewalRequest)
+        {
+            if (renewalRequest == null)
+            {
+                return BadRequest("Renewal request cannot be null.");
+            }
+
+            // Get customer ID from the logged-in user
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+            {
+                return Unauthorized("User ID not found in token.");
+            }
+
+            int customerId;
+            if (!int.TryParse(userIdClaim.Value, out customerId))
+            {
+                return Unauthorized("Invalid user ID in token.");
+            }
+
+            // Find the contract to renew
+            var contract = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Niche)
+                .FirstOrDefaultAsync(c => c.ContractId == renewalRequest.ContractId && c.CustomerId == customerId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+
+            if (contract.Customer == null || contract.Niche == null)
+            {
+                return BadRequest("Invalid contract data.");
+            }
+
+            // Update contract status to PendingRenewal
+            contract.Status = "PendingRenewal";
+            contract.Note = renewalRequest.Note;
+            _context.Entry(contract).State = EntityState.Modified;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ContractExists(renewalRequest.ContractId))
+                {
+                    return NotFound("Contract not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
 
 
     }
