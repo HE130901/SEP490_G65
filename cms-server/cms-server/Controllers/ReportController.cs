@@ -67,3 +67,15 @@ var revenueByCategory = _context.ServiceOrderDetails
             var servicesByStatus = _context.ServiceOrderDetails
                 .GroupBy(sod => sod.Status)
                 .ToDictionary(g => g.Key, g => g.Count());
+ var overview = new ServiceOverviewDTO
+            {
+                TotalServices = totalServices,
+                TotalRevenue = totalRevenue,
+                AverageOrderValue = averageOrderValue,
+                ServicesByCategory = servicesByCategory,
+                RevenueByCategory = revenueByCategory,
+                ServicesByStatus = servicesByStatus,
+            };
+
+            return Ok(overview);
+        }
