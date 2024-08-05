@@ -161,3 +161,14 @@ namespace cms_server.Controllers
             return _context.Customers.Any(e => e.CustomerId == id);
         }
     }
+
+public class UpdateCustomerDto
+    {
+        public string FullName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public string CitizenId { get; set; }
+        public DateOnly? CitizenIdissuanceDate { get; set; }
+        public string CitizenIdsupplier { get; set; }
+    }
