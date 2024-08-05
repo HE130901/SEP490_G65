@@ -282,4 +282,12 @@ namespace cms_server.Controllers
         public string SignAddress { get; set; }
     }
 
+    public class ContractCancellationRequestDto
+    {
+        public int ContractId { get; set; }
+        public string Note { get; set; }
+        public DateTime ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+    }
+
 }
