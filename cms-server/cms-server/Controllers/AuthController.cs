@@ -143,6 +143,36 @@ namespace cms_server.Controllers
             }
         }
 
+        // POST: /api/auth/change-password
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // change password based on the role
+            if (int.TryParse(userId, out int customerId))
+            {
+                var customer = await _context.Customers.FindAsync(customerId);
+
+                if (customer == null)
+                {
+                    return NotFound("Customer not found.");
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(changePasswordDto.OldPassword, customer.PasswordHash))
+                {
+                    return BadRequest("Old password is incorrect.");
+                }
+
+                customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
+                await _context.SaveChangesAsync();
+
+                return NoContent();
+            }
+
+            return Unauthorized("Invalid user role.");
+        }
 
 
 
@@ -167,6 +197,12 @@ namespace cms_server.DTOs
     public class RequestPasswordResetDto
     {
         public string Email { get; set; }
+    }
+
+    public class ChangePasswordDto
+    {
+        public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
     }
 
 
