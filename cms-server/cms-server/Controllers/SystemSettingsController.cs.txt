@@ -49,3 +49,51 @@ namespace cms_server.Controllers
         {
             public decimal SettingNumber { get; set; }
         }
+
+[HttpPatch("{id}")]
+        public ActionResult UpdateSettingNumber(int id, [FromBody] UpdateSettingNumberRequest request)
+        {
+            if (request == null || !ModelState.IsValid)
+            {
+                _logger.LogWarning("Invalid request body or model state.");
+                return BadRequest("Invalid data.");
+            }
+
+            try
+            {
+                var setting = _context.SystemSettings.FirstOrDefault(s => s.SettingId == id);
+
+                if (setting == null)
+                {
+                    _logger.LogWarning("Setting with ID {Id} not found.", id);
+                    return NotFound(new { message = "Setting not found" });
+                }
+
+                setting.SettingNumber = request.SettingNumber;
+
+                // Optional: Explicitly setting the state to modified
+                _context.Entry(setting).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+
+                _context.SaveChanges();
+                return Ok(setting);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Concurrency error while updating setting with ID {Id}.", id);
+                return StatusCode(409, "Concurrency conflict occurred.");
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "Database update error while updating setting with ID {Id}.", id);
+                return StatusCode(500, "An error occurred while updating the setting.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while updating setting with ID {Id}.", id);
+                return StatusCode(500, "An unexpected error occurred.");
+            }
+        }
+
+
+    }
+}
