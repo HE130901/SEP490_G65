@@ -127,3 +127,21 @@ if (existingReservation.Status == "Approved")
             existingReservation.SignAddress = updateDto.SignAddress;
 
             _context.Entry(existingReservation).State = EntityState.Modified;
+try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!NicheReservationExists(id))
+                {
+                    return NotFound(new { error = "Reservation not found during save" });
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
