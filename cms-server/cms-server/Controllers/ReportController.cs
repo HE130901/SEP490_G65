@@ -87,3 +87,15 @@ var revenueByCategory = _context.ServiceOrderDetails
             var reservedNiches = _context.Niches.Count(n => n.Status == "Booked");
             var availableNiches = _context.Niches.Count(n => n.Status == "Available");
             var unavailableNiches = _context.Niches.Count(n => n.Status == "Unavailable");
+var nichesByArea = _context.Niches
+                .GroupBy(n => n.AreaId)
+                .Select(g => new AreaReport
+                {
+                    AreaId = g.Key,
+                    AreaAddress = $"{g.FirstOrDefault().Area.Floor.Building.BuildingName} - {g.FirstOrDefault().Area.Floor.FloorName} - {g.FirstOrDefault().Area.AreaName}",
+                    Count = g.Count(),
+                    Occupied = g.Count(n => n.Status == "Active"),
+                    Reserved = g.Count(n => n.Status == "Booked"),
+                    Available = g.Count(n => n.Status == "Available"),
+                    Unavailable = g.Count(n => n.Status == "Unavailable")
+                }).ToList();
