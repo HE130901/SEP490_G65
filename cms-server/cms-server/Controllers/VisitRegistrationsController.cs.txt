@@ -159,3 +159,42 @@ namespace cms_server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+// PUT: api/VisitRegistrations/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutVisitRegistration(int id, VisitRegistrationDto visitRegistrationDto)
+        {
+            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+
+            if (visitRegistration == null)
+            {
+                _logger.LogWarning("VisitRegistration not found: {Id}", id); // Log warning
+                return NotFound();
+            }
+
+            // Update only the fields that are allowed
+            visitRegistration.VisitDate = visitRegistrationDto.VisitDate ?? visitRegistration.VisitDate;
+            visitRegistration.Note = visitRegistrationDto.Note ?? visitRegistration.Note;
+            visitRegistration.AccompanyingPeople = visitRegistrationDto.AccompanyingPeople;
+
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!VisitRegistrationExists(id))
+                {
+                    _logger.LogWarning("VisitRegistration not found during save: {Id}", id); // Log warning
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
