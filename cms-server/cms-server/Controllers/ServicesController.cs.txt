@@ -74,3 +74,14 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
+// POST: api/Services
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost]
+        public async Task<ActionResult<Service>> PostService(Service service)
+        {
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
+        }
