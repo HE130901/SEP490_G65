@@ -373,3 +373,8 @@ try
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+private bool NicheReservationExists(int id)
+        {
+            return _context.NicheReservations.Any(e => e.ReservationId == id);
+        }
