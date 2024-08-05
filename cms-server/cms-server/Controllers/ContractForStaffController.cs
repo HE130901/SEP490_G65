@@ -264,6 +264,22 @@ namespace cms_server.Controllers
             return Ok(contractRenew);
         }
 
+        private string GenerateRenewalCode(string contractCode, int renewalCount)
+        {
+            // Extract the date part and suffix from the contract code
+            var parts = contractCode.Split('-');
+            if (parts.Length != 3)
+            {
+                throw new InvalidOperationException("Invalid contract code format.");
+            }
+
+            string datePart = parts[1]; // e.g., "20220725"
+            string suffix = parts[2]; // e.g., "001"
+
+            // Format the renewal code
+            return $"GH{renewalCount:D2}-{datePart}-{suffix}";
+        }
+
 
 
     }
