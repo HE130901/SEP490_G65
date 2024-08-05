@@ -290,4 +290,17 @@ namespace cms_server.Controllers
         public string SignAddress { get; set; }
     }
 
+    public class ContractRenewalDto
+    {
+        public int ContractId { get; set; }
+        public int ContractRenewalId { get; set; }
+        public string ContractCode { get; set; }
+        public string ContractRenewCode { get; set; }
+        public DateOnly EndDate { get; set; }
+        public DateOnly CreatedDate { get; set; }
+        public string Status { get; set; }
+        public decimal Amount { get; set; }
+        public string Note { get; set; }
+    }
+
 }
