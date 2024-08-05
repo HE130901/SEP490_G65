@@ -44,3 +44,53 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
             }
             throw new UnauthorizedAccessException("Invalid token");
         }
+  private async Task<string> GetNicheAddress(int nicheId)
+        {
+            var niche = await _context.Niches
+                .Include(n => n.Area)
+                    .ThenInclude(a => a.Floor)
+                        .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(n => n.NicheId == nicheId);
+
+            if (niche == null) return string.Empty;
+
+            return $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}";
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetServiceOrdersList()
+        {
+            var serviceOrders = await _context.ServiceOrders
+                .Include(so => so.ServiceOrderDetails)
+                    .ThenInclude(sod => sod.Service)
+                .Include(so => so.Customer)
+                .ToListAsync();
+
+            var serviceOrderResponses = new List<ServiceOrderResponseDto1>();
+
+            foreach (var serviceOrder in serviceOrders)
+            {
+                var nicheAddress = await GetNicheAddress(serviceOrder.NicheId);
+
+                var response = new ServiceOrderResponseDto1
+                {
+                    ServiceOrderId = serviceOrder.ServiceOrderId,
+                    NicheAddress = nicheAddress,
+                    CustomerName = serviceOrder.Customer.FullName,
+                    CreatedDate = serviceOrder.CreatedDate,
+                    OrderDate = serviceOrder.OrderDate,
+                    ServiceOrderCode = serviceOrder.ServiceOrderCode,
+                    ServiceOrderDetails = serviceOrder.ServiceOrderDetails.Select(detail => new ServiceOrderDetailDto
+                    {
+                        ServiceName = detail.Service.ServiceName,
+                        Quantity = detail.Quantity,
+                        Status = detail.Status,
+                        CompletionImage = detail.CompletionImage
+                    }).ToList()
+                };
+
+                serviceOrderResponses.Add(response);
+            }
+
+            return Ok(serviceOrderResponses);
+        }
