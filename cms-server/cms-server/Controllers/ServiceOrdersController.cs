@@ -16,3 +16,13 @@ namespace cms_server.Controllers
     public class ServiceOrdersController : ControllerBase
     {
         private readonly CmsContext _context;
+private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
+        {
+            var totalPrice = await _context.ServiceOrderDetails
+                .Where(sod => sod.ServiceOrderId == serviceOrderId)
+                .Join(_context.Services, sod => sod.ServiceId, s => s.ServiceId,
+                      (sod, s) => new { sod.Quantity, s.Price })
+                .SumAsync(x => (decimal?)(x.Quantity * x.Price)) ?? 0;
+
+            return totalPrice;
+        }
