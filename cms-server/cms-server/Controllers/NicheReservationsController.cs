@@ -378,3 +378,35 @@ private bool NicheReservationExists(int id)
         {
             return _context.NicheReservations.Any(e => e.ReservationId == id);
         }
+// GET: api/NicheReservations/approved
+        [HttpGet("approved")]
+        public async Task<ActionResult<IEnumerable<NicheReservationApprovedDto>>> GetApprovedNicheReservations()
+        {
+            try
+            {
+                // Lấy thông tin đơn đặt chỗ đã được duyệt
+                var approvedReservations = await _context.NicheReservations
+                    .Where(r => r.Status == "Approved")
+                    .Select(r => new NicheReservationApprovedDto
+                    {
+                        ReservationId = r.ReservationId,
+                        ReservationCode = r.ReservationCode,
+                        Status = r.Status,
+                        CustomerName = r.Name,
+                        CustomerPhone = r.PhoneNumber,
+                        SignAddress = r.SignAddress,
+                        NicheId = r.NicheId,
+                        NicheCode = r.Niche.NicheCode,
+                        NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - Ô {r.Niche.NicheName}",
+                        Note = r.Note
+
+                    })
+                    .ToListAsync();
+
+                if (!approvedReservations.Any())
+                {
+                    return NotFound(new { error = "No approved reservations found" });
+                }
+
+                return Ok(approvedReservations);
+            }
