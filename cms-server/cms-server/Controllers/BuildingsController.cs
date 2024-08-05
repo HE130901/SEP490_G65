@@ -20,6 +20,39 @@ namespace cms_server.Controllers
             _context = context;
         }
 
+        // GET: /api/buildings/all
+        [HttpGet("all")]
+        public async Task<ActionResult<BuildingsFloorsAreasDto>> GetAllBuildingsFloorsAreas()
+        {
+            var buildings = await _context.Buildings
+                .Include(b => b.Floors)
+                    .ThenInclude(f => f.Areas)
+                .ToListAsync();
+
+            
+            var dto = new BuildingsFloorsAreasDto
+            {
+                Buildings = buildings.Select(b => new BuildingDto
+                {
+                    BuildingId = b.BuildingId,
+                    BuildingName = b.BuildingName,
+                    BuildingDescription = b.BuildingDescription,
+                    BuildingPicture = b.BuildingPicture,
+                    Floors = b.Floors.Select(f => new FloorDto
+                    {
+                        FloorId = f.FloorId,
+                        FloorName = f.FloorName,
+                        Areas = f.Areas.Select(a => new AreaDto
+                        {
+                            AreaId = a.AreaId,
+                            AreaName = a.AreaName
+                        }).ToList()
+                    }).ToList()
+                }).ToList()
+            };
+
+            return dto;
+        }
 
 
     }
