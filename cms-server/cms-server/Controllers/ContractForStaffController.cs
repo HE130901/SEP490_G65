@@ -116,6 +116,29 @@ namespace cms_server.Controllers
                     _context.Deceaseds.Add(deceased);
                     await _context.SaveChangesAsync();
 
+                    // Tạo mã hợp đồng
+                    var startDateStr = request.StartDate.ToString("yyyyMMdd");
+                    var contractsStartDateCount = await _context.Contracts.CountAsync(c => c.StartDate == request.StartDate);
+                    var contractNumber = (contractsStartDateCount + 1).ToString("D3");
+                    var contractCode = $"HD-{startDateStr}-{contractNumber}";
+
+                    // Tạo đối tượng Contract
+                    var contract = new Contract
+                    {
+                        ContractCode = contractCode,
+                        CustomerId = customer.CustomerId,
+                        StaffId = staffId,
+                        NicheId = niche.NicheId,
+                        DeceasedId = deceased.DeceasedId,
+                        StartDate = request.StartDate,
+                        EndDate = request.EndDate,
+                        Status = "Active",
+                        Note = request.Note,
+                        TotalAmount = request.TotalAmount
+                    };
+                    _context.Contracts.Add(contract);
+                    await _context.SaveChangesAsync();
+
 
     }
 }
