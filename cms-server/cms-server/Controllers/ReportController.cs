@@ -169,4 +169,14 @@ public class ContractStatusReport
         public int Count { get; set; }
         public decimal TotalAmount { get; set; }
     }
+ public class ServiceOverviewDTO
+    {
+        public int TotalServices { get; set; }
+        public decimal? TotalRevenue { get; set; }
+        public decimal? AverageOrderValue { get; set; }
+        public Dictionary<string, int> ServicesByCategory { get; set; }
+        public Dictionary<string, decimal?> RevenueByCategory { get; set; }
+        public Dictionary<string, int> ServicesByStatus { get; set; }
+    }
+
 
