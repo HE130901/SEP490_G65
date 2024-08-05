@@ -20,3 +20,20 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+
+// GET: api/Customers
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
+        {
+            return await _context.Customers
+                .Select(customer => new CustomerDto
+                {
+                    CustomerId = customer.CustomerId,
+                    FullName = customer.FullName,
+                    Email = customer.Email,
+                    Phone = customer.Phone,
+                    Address = customer.Address,
+                    CitizenId = customer.CitizenId
+                })
+                .ToListAsync();
+        }
