@@ -105,3 +105,14 @@ ReservationId = nr.ReservationId,
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+// PUT: api/NicheReservations/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
+        {
+            // Lấy thông tin đơn đặt chỗ theo ID
+            var existingReservation = await _context.NicheReservations.FindAsync(id);
+            if (existingReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
