@@ -333,3 +333,33 @@ var nicheReservation = await _context.NicheReservations.FindAsync(id);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
+// PUT: api/NicheReservations/confirm/5
+        [HttpPut("confirm/{id}")]
+        public async Task<IActionResult> ConfirmNicheReservation(int id)
+        {
+            var nicheReservation = await _context.NicheReservations.FindAsync(id);
+            if (nicheReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
+
+            if (nicheReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Reservation is already approved" });
+            }
+
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return BadRequest(new { error = "User ID not found" });
+            }
+
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return BadRequest(new { error = "Invalid user ID" });
+            }
+
+            nicheReservation.Status = "Approved";
+            nicheReservation.ConfirmedBy = userId;
+            _context.Entry(nicheReservation).State = EntityState.Modified;
