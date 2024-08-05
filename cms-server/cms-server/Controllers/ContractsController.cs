@@ -272,10 +272,14 @@ namespace cms_server.Controllers
         {
             return _context.Contracts.Any(e => e.ContractId == id);
         }
-
-
-
-
-
     }
+
+    public class ContractRenewalRequestDto
+    {
+        public int ContractId { get; set; }
+        public string Note { get; set; }
+        public DateTime ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+    }
+
 }
