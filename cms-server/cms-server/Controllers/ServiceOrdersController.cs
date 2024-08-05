@@ -183,4 +183,9 @@ try
 
             return NoContent();
         }
+ private bool ServiceOrderExists(int id)
+        {
+            return _context.ServiceOrders.Any(e => e.ServiceOrderId == id);
+        }
+    }
 
