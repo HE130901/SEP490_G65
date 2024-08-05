@@ -95,6 +95,21 @@ namespace cms_server.Controllers
 
             return niches;
         }
-    
+    }
+
+    public class BuildingsFloorsAreasDto
+    {
+        public List<BuildingDto> Buildings { get; set; }
+    }
+
+    public class BuildingDto
+    {
+        public int BuildingId { get; set; }
+        public string BuildingName { get; set; }
+        public string BuildingDescription { get; set; }
+        public string BuildingPicture { get; set; }
+        public List<FloorDto> Floors { get; set; }
+    }
+
 
 }
