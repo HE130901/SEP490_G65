@@ -272,3 +272,21 @@ var originalStatus = nicheReservation.Status;
             {
                 return NotFound();
             }
+var reservationDetail = new NicheReservationDetailDto
+            {
+                ReservationId = reservation.ReservationId,
+                ReservationCode = reservation.ReservationCode,
+                Name = reservation.Name,
+                PhoneNumber = reservation.PhoneNumber,
+                NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-{reservation.Niche.NicheName}",
+                NicheId = reservation.NicheId,
+                CreatedDate = reservation.CreatedDate,
+                ConfirmationDate = reservation.ConfirmationDate,
+                Status = reservation.Status,
+                Note = reservation.Note,
+                SignAddress = reservation.SignAddress,
+                NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName
+            };
+
+            return Ok(reservationDetail);
+        }
