@@ -174,6 +174,53 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid user role.");
         }
 
+        private string GenerateJwtToken(string userId, string role, string phone, string address = null)
+        {
+            var claims = new List<Claim>
+             {
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, userId),
+            new Claim("Phone", phone),
+            new Claim(ClaimTypes.Role, role)
+             };
+
+            if (role == "Customer")
+            {
+                claims.Add(new Claim("CustomerId", userId)); 
+            }
+            else if (role == "Staff")
+            {
+                claims.Add(new Claim("StaffId", userId));
+            }
+
+            if (address != null)
+            {
+                claims.Add(new Claim("Address", address));
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+
+        private string GenerateRandomPassword(int length = 12)
+        {
+            const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?_-";
+            var random = new Random();
+            return new string(Enumerable.Repeat(validChars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
 
 
 
