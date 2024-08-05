@@ -198,3 +198,56 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
+// POST: api/VisitRegistrations
+        [HttpPost]
+        public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
+        {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+            var currentDate = localNow.Date;
+
+            // Lấy thông tin StaffId từ token
+            var staffIdClaim = User.FindFirst("StaffId");
+            int? approvedBy = null;
+            string status = "Pending";
+
+            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
+            {
+                approvedBy = staffId;
+                status = "Approved";
+            }
+
+            // Giả sử rằng VisitRegistration luôn có CreatedDate hợp lệ
+            var registrationsTodayCount = await _context.VisitRegistrations
+                .CountAsync(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate);
+
+            // Lấy ngày từ CreatedDate của bản ghi hiện tại để sử dụng trong RegistrationCode
+            var createdDate = registrationsTodayCount > 0
+                ? _context.VisitRegistrations
+                    .Where(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate)
+                    .Select(vr => vr.CreatedDate.Value.Date)
+                    .FirstOrDefault()
+                : currentDate;
+
+            var registrationCode = $"DT-{createdDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
+
+
+            var visitRegistration = new VisitRegistration
+            {
+                CustomerId = visitRegistrationDto.CustomerId,
+                NicheId = visitRegistrationDto.NicheId,
+                VisitDate = visitRegistrationDto.VisitDate,
+                Note = visitRegistrationDto.Note,
+                Status = status,
+                ApprovedBy = approvedBy,
+                CreatedDate = localNow,
+                AccompanyingPeople = visitRegistrationDto.AccompanyingPeople,
+                VisitCode = registrationCode
+            };
+
+            _context.VisitRegistrations.Add(visitRegistration);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
+        }
