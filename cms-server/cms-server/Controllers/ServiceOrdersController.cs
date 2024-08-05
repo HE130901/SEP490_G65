@@ -158,4 +158,11 @@ _context.Database.BeginTransactionAsync())
             {
                 return BadRequest();
             }
+ var serviceOrder = await _context.ServiceOrders.FindAsync(id);
+            if (serviceOrder == null)
+            {
+                return NotFound();
+            }
+
+            serviceOrder.OrderDate = request.OrderDate;
 
