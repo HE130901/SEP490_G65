@@ -48,3 +48,23 @@ namespace cms_server.Controllers
                 return NotFound();
             }
         }
+
+[HttpGet("{nicheId}/details-for-customer")]
+        public async Task<ActionResult<NicheDetailDto3>> GetNicheDetail3(int nicheId)
+        {
+            try
+            {
+                var nicheDetail = await _nicheService.GetNicheDetailAsync3(nicheId);
+                return Ok(nicheDetail);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+    }
+
+
+       
+
+}
