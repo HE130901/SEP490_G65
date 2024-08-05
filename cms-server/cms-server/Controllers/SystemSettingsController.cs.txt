@@ -43,3 +43,9 @@ namespace cms_server.Controllers
 
             return Ok(settings);
         }
+
+// DTO class for the update request
+        public class UpdateSettingNumberRequest
+        {
+            public decimal SettingNumber { get; set; }
+        }
