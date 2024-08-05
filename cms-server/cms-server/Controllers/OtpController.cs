@@ -68,3 +68,14 @@ catch (Exception ex)
             {
                 return Ok(new { message = "Test OTP verified successfully" });
             }
+else
+            {
+                return BadRequest(new { error = "Invalid OTP" });
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to verify test OTP", details = ex.Message });
+        }
+    }
+}
