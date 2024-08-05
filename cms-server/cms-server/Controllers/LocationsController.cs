@@ -26,3 +26,9 @@ namespace cms_server.Controllers
             var floors = await _locationService.GetFloorsByBuildingIdAsync(buildingId);
             return Ok(floors);
         }
+ [HttpGet("areas/{floorId}")]
+        public async Task<ActionResult<IEnumerable<Area>>> GetAreasByFloorId(int floorId)
+        {
+            var areas = await _locationService.GetAreasByFloorIdAsync(floorId);
+            return Ok(areas);
+        }
