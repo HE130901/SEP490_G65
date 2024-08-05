@@ -79,3 +79,11 @@ var revenueByCategory = _context.ServiceOrderDetails
 
             return Ok(overview);
         }
+[HttpGet("niche-summary")]
+        public ActionResult<NicheDetailsReport> GetNicheDetails()
+        {
+            var totalNiches = _context.Niches.Count();
+            var occupiedNiches = _context.Niches.Count(n => n.Status == "Active");
+            var reservedNiches = _context.Niches.Count(n => n.Status == "Booked");
+            var availableNiches = _context.Niches.Count(n => n.Status == "Available");
+            var unavailableNiches = _context.Niches.Count(n => n.Status == "Unavailable");
