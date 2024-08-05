@@ -30,3 +30,12 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
         {
             _context = context;
         }
+ [HttpGet("customer")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<ServiceOrderResponseDto>>> GetServiceOrdersByCustomer()
+        {
+            var customerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "CustomerId");
+            if (customerIdClaim == null)
+            {
+                return Unauthorized("Customer ID not found in token");
+            }
