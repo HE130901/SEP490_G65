@@ -129,3 +129,35 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
+// POST: api/Customers
+        [HttpPost]
+        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        {
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetCustomer", new { id = customer.CustomerId }, customer);
+        }
+
+        // DELETE: api/Customers/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteCustomer(int id)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            _context.Customers.Remove(customer);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool CustomerExists(int id)
+        {
+            return _context.Customers.Any(e => e.CustomerId == id);
+        }
+    }
