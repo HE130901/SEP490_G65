@@ -86,3 +86,18 @@ int customerId = int.Parse(customerIdClaim.Value);
             int customerId = int.Parse(customerIdClaim.Value);
 
             using (var transaction = await 
+_context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var customer = await _context.Customers.FindAsync(customerId);
+                    if (customer == null)
+                    {
+                        return NotFound("Customer not found.");
+                    }
+
+                    var niche = await _context.Niches.FindAsync(request.NicheID);
+                    if (niche == null || niche.CustomerId != customer.CustomerId)
+                    {
+                        return BadRequest("Niche not found or does not belong to the customer.");
+                    }
