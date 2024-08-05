@@ -255,3 +255,20 @@ var originalStatus = nicheReservation.Status;
             await _context.SaveChangesAsync();
             return NoContent();
         }
+// GET: api/NicheReservations/details/5
+        [HttpGet("details/{id}")]
+        public async Task<ActionResult<NicheReservationDetailDto>> GetNicheReservationDetail(int id)
+        {
+            // Lấy thông tin chi tiết đơn đặt chỗ theo ID
+            var reservation = await _context.NicheReservations
+                .Include(r => r.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Include(r => r.ConfirmedByNavigation)
+                .FirstOrDefaultAsync(r => r.ReservationId == id);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
