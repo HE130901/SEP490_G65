@@ -34,3 +34,15 @@ namespace cms_server.Controllers
                     TotalAmount = Math.Round(g.Sum(c => c.TotalAmount ?? 0))
                 })
                 .ToList();
+ var report = new ContractSummaryReport
+            {
+                TotalContracts = totalContracts,
+                ActiveContracts = activeContracts,
+                InactiveContracts = inactiveContracts,
+                TotalRevenue = Math.Round(totalRevenue),
+                AverageContractValue = Math.Round(averageContractValue),
+                ContractsByStatus = contractsByStatus
+            };
+
+            return Ok(report);
+        }
