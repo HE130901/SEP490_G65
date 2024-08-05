@@ -224,6 +224,46 @@ namespace cms_server.Controllers
             return Ok(contract);
         }
 
+        // POST: api/ContractForStaff/renew-contract
+        [HttpPost("renew-contract")]
+        public async Task<IActionResult> RenewContract(int contractId, [FromBody] RenewContractRequest request)
+        {
+            if (!DateOnly.TryParse(request.NewEndDate, out var parsedEndDate))
+            {
+                return BadRequest("Invalid date format.");
+            }
+
+            // Find the contract by ID and include the associated contract renews
+            var contract = await _context.Contracts
+                .Include(c => c.ContractRenews)
+                .FirstOrDefaultAsync(c => c.ContractId == contractId);
+
+            if (contract == null)
+            {
+                return NotFound("Contract not found.");
+            }
+            contract.Status = "Extended";
+            _context.Contracts.Update(contract);
+            await _context.SaveChangesAsync();
+            int renewalCount = contract.ContractRenews.Count + 1;
+            string renewalCode = GenerateRenewalCode(contract.ContractCode, renewalCount);
+
+            var contractRenew = new ContractRenew
+            {
+                ContractId = contract.ContractId,
+                ContractRenewCode = renewalCode,
+                Status = "Active",
+                CreatedDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                EndDate = parsedEndDate,
+                TotalAmount = request.TotalAmount,
+                Note = "Gia hạn " + contract.ContractCode
+            };
+            _context.ContractRenews.Add(contractRenew);
+            await _context.SaveChangesAsync();
+
+            return Ok(contractRenew);
+        }
+
 
 
     }
