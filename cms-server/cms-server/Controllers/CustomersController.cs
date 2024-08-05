@@ -51,3 +51,43 @@ namespace cms_server.Controllers
 
             return customer;
         }
+
+// PUT: api/Customers/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCustomer(int id, UpdateCustomerDto updateDto)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            customer.FullName = updateDto.FullName;
+            customer.Email = updateDto.Email;
+            customer.Phone = updateDto.Phone;
+            customer.Address = updateDto.Address;
+            customer.CitizenId = updateDto.CitizenId;
+            customer.CitizenIdissuanceDate = updateDto.CitizenIdissuanceDate;
+            customer.CitizenIdsupplier = updateDto.CitizenIdsupplier;
+
+            _context.Entry(customer).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
