@@ -48,3 +48,37 @@ namespace cms_server.Controllers
 
             return Ok(niches);
         }
+
+[HttpGet("{nicheId}")]
+        public async Task<ActionResult<NicheDtoForStaff>> GetNicheDetail(int nicheId)
+        {
+            var niche = await _context.Niches
+                .Include(n => n.NicheHistories)
+                .FirstOrDefaultAsync(n => n.NicheId == nicheId);
+
+            if (niche == null)
+            {
+                return NotFound();
+            }
+
+            var nicheDto = new NicheDtoForStaff
+            {
+                NicheId = niche.NicheId,
+                NicheName = niche.NicheName,
+                CustomerName = _context.Customers.FirstOrDefault(c => c.CustomerId == niche.CustomerId)?.FullName,
+                DeceasedName = _context.Deceaseds.FirstOrDefault(d => d.DeceasedId == niche.DeceasedId)?.FullName,
+                Description = niche.NicheDescription,
+                NicheCode = niche.NicheCode,
+                NicheHistories = niche.NicheHistories.Select(h => new NicheHistoryDto
+                {
+                    ContractId = h.ContractId.Value,
+                    ContractCode = _context.Contracts.FirstOrDefault(c => c.ContractId == h.ContractId).ContractCode,
+                    StartDate = h.StartDate,
+                    EndDate = h.EndDate,
+                    Status = h.Status
+                }).ToList(),
+                Status = niche.Status
+            };
+
+            return Ok(nicheDto);
+        }
