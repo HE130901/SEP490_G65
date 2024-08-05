@@ -53,3 +53,8 @@ else
             // Simulate sending the default OTP "123456"
             return Ok(new { message = "Test OTP '123456' sent successfully" });
         }
+catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Failed to send test OTP", details = ex.Message });
+        }
+    }
