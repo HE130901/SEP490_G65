@@ -116,3 +116,14 @@ ReservationId = nr.ReservationId,
             {
                 return NotFound(new { error = "Reservation not found" });
             }
+if (existingReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Cannot update an approved reservation" });
+            }
+
+            // Sửa thông tin đơn đặt chỗ
+            existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
+            existingReservation.Note = updateDto.Note;
+            existingReservation.SignAddress = updateDto.SignAddress;
+
+            _context.Entry(existingReservation).State = EntityState.Modified;
