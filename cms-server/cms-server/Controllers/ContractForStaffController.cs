@@ -329,6 +329,21 @@ namespace cms_server.Controllers
             return Ok(buildings);
         }
 
+        // GET: api/Contracts/buildings/{buildingId}/floors
+        [HttpGet("buildings/{buildingId}/floors")]
+        public async Task<ActionResult<IEnumerable<FloorDto>>> GetFloors(int buildingId)
+        {
+            var floors = await _context.Floors
+                .Where(f => f.BuildingId == buildingId)
+                .Select(f => new FloorDto
+                {
+                    FloorId = f.FloorId,
+                    FloorName = f.FloorName
+                })
+                .ToListAsync();
+
+            return Ok(floors);
+        }
 
     }
 }
