@@ -14,3 +14,9 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
         //private readonly INotificationService _notificationService;
+// public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
+        public ServiceOrderForStaffController(CmsContext context)
+        {
+            _context = context;
+          //  _notificationService = notificationService;
+        }
