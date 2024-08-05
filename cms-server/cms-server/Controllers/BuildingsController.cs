@@ -132,4 +132,10 @@ namespace cms_server.Controllers
         public bool ReservedByUser { get; set; } 
     }
 
+    public class NicheDto2
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
+        public string Status { get; set; }
+    }
 }
