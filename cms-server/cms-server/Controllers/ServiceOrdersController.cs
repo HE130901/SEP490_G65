@@ -212,4 +212,10 @@ public class ServiceOrderResponseDto
         public string? CompletionImage { get; set; }
         public string? Status { get; set; }
     }
+ public class CreateServiceOrderRequest1
+    {
+        public int NicheID { get; set; }
+        public DateTime OrderDate { get; set; }
+        public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
+    }
 
