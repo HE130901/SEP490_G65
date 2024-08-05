@@ -195,4 +195,14 @@ try
         public DateTime OrderDate { get; set; }
         public string? ServiceList { get; set; }
     }
+public class ServiceOrderResponseDto
+    {
+        public int ServiceOrderId { get; set; }
+        public string? NicheAddress { get; set; }
+        public string? ServiceOrderCode { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? OrderDate { get; set; }
+        
+        public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
+    }
 
