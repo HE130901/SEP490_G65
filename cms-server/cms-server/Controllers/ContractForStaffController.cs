@@ -86,6 +86,12 @@ namespace cms_server.Controllers
                         _context.Customers.Add(customer);
                         await _context.SaveChangesAsync();
 
+                        // Gửi email thông báo cho khách hàng mới
+                        var subject = "Chào mừng bạn đến với dịch vụ của An Bình Viên!";
+                        var message = $"Kính gửi {customer.FullName},<br/><br/>Cảm ơn quý khách hàng đã đăng ký dịch vụ của chúng tôi. Tài khoản của bạn là: {customer.Email} - mật khẩu đăng nhập: abcdabcd <br/> Quý khách hàng vui lòng thay đổi mật khẩu sau khi đăng nhập thành công.<br/><br/>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng";
+                        SendEmail(customer.Email, subject, message);
+                    }
+
 
     }
 }
