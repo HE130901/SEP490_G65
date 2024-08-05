@@ -81,3 +81,27 @@ namespace cms_server.Controllers
                                 .ThenInclude(f => f.Building)
                     .Select(nr => new NicheReservationDto
                     {
+ReservationId = nr.ReservationId,
+                        Name = nr.Name,
+                        PhoneNumber = nr.PhoneNumber,
+                        NicheAddress = $"{nr.Niche.Area.Floor.Building.BuildingName} - {nr.Niche.Area.Floor.FloorName} - {nr.Niche.Area.AreaName} - Ô {nr.Niche.NicheName}",
+                        CreatedDate = nr.CreatedDate,
+                        ConfirmationDate = nr.ConfirmationDate,
+                        Note = nr.Note,
+                        Status = nr.Status,
+                        ReservationCode = nr.ReservationCode
+                    })
+                    .ToListAsync();
+
+                if (!nicheReservations.Any())
+                {
+                    return NotFound(new { error = "Không tìm thấy đơn đặt chỗ nào cho số điện thoại này" });
+                }
+
+                return Ok(nicheReservations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
