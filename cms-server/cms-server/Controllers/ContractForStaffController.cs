@@ -170,6 +170,31 @@ namespace cms_server.Controllers
             }
         }
 
+        // GET: api/ContractForStaff/all-contracts
+        [HttpGet("all-contracts")]
+        public async Task<IActionResult> GetAllContracts()
+        {
+            var contracts = await _context.Contracts
+                .Include(c => c.Customer)
+                .Include(c => c.Deceased)
+                .Include(c => c.Niche)
+
+                .Select(c => new ContractForStaffDto
+                {
+                    ContractId = c.ContractId,
+                    NicheId = c.NicheId,
+                    CustomerId = c.CustomerId,
+                    NicheAddress = $"{c.Niche.Area.Floor.Building.BuildingName}-{c.Niche.Area.Floor.FloorName}-{c.Niche.Area.AreaName}-Ô {c.Niche.NicheName}",
+                    CustomerName = c.Customer.FullName,
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    Status = c.Status,
+                    ContractCode = c.ContractCode,
+                    NicheCode = c.Niche.NicheCode,
+                })
+                .ToListAsync();
+            return Ok(contracts);
+        }
 
 
 
