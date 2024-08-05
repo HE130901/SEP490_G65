@@ -9,3 +9,18 @@ using cms_server.Models;
 using System.Security.Claims;
 using TimeZoneConverter;
 using cms_server.Configuration;
+
+namespace cms_server.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class NicheReservationsController : ControllerBase
+    {
+        private readonly CmsContext _context;
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+
+      
+        public NicheReservationsController(CmsContext context)
+        {
+            _context = context;
+        }
