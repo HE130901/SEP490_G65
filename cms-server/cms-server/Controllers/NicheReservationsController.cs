@@ -363,3 +363,13 @@ var nicheReservation = await _context.NicheReservations.FindAsync(id);
             nicheReservation.Status = "Approved";
             nicheReservation.ConfirmedBy = userId;
             _context.Entry(nicheReservation).State = EntityState.Modified;
+try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
