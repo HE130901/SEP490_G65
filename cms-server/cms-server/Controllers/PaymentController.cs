@@ -43,3 +43,9 @@ vnpay.AddRequestData("vnp_OrderType", "other");
             vnpay.AddRequestData("vnp_CreateDate", createDate);
             vnpay.AddRequestData("vnp_Locale", "vn");
             vnpay.AddRequestData("vnp_ExpireDate", expireDate);
+
+ string paymentUrl = vnpay.CreateRequestUrl(_vnpUrl, _hashSecret);
+            var response = new PaymentResponseModel { PaymentUrl = paymentUrl };
+
+            return Ok(response);
+        }
