@@ -19,3 +19,32 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
+
+// Get all niches within a specific area
+        [HttpGet("area/{areaId}")]
+        public async Task<ActionResult<IEnumerable<NicheDtoForStaff>>> GetNichesByArea(int areaId)
+        {
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId)
+                .Include(n => n.NicheHistories)
+                .Select(n => new NicheDtoForStaff
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    CustomerName = _context.Customers.FirstOrDefault(c => c.CustomerId == n.CustomerId).FullName,
+                    DeceasedName = _context.Deceaseds.FirstOrDefault(d => d.DeceasedId == n.DeceasedId).FullName,
+                    Description = n.NicheDescription,
+                    NicheCode = n.NicheCode,
+                    NicheHistories = n.NicheHistories.Select(h => new NicheHistoryDto
+                    {
+                        ContractId = h.ContractId.Value,
+                        StartDate = h.StartDate,
+                        EndDate = h.EndDate,
+                        Status = h.Status
+                    }).ToList(),
+                    Status = n.Status
+                })
+                .ToListAsync();
+
+            return Ok(niches);
+        }
