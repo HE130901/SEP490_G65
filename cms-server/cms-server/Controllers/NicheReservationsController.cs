@@ -235,3 +235,23 @@ try
             {
                 return BadRequest(new { error = "Không thể xóa đơn đã được duyệt" });
             }
+var originalStatus = nicheReservation.Status;
+
+            // Cập nhật trạng thái của đơn đặt chỗ
+            nicheReservation.Status = "Canceled";
+            _context.Entry(nicheReservation).State = EntityState.Modified;
+
+            // Chỉ cập nhật trạng thái của niche nếu trạng thái ban đầu không phải là "PendingContractRenewal" hoặc "PendingContractCancellation"
+            if (originalStatus != "PendingContractRenewal" && originalStatus != "PendingContractCancellation")
+            {
+                var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
+                if (niche != null)
+                {
+                    niche.Status = "Available";
+                    _context.Entry(niche).State = EntityState.Modified;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
