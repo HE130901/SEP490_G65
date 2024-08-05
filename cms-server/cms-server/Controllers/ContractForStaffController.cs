@@ -139,6 +139,40 @@ namespace cms_server.Controllers
                     _context.Contracts.Add(contract);
                     await _context.SaveChangesAsync();
 
+                    // Cập nhật trạng thái niche
+                    niche.Status = "Active";
+                    niche.CustomerId = customer.CustomerId;
+                    niche.DeceasedId = deceased.DeceasedId;
+                    _context.Niches.Update(niche);
+                    await _context.SaveChangesAsync();
+
+
+                    // Tìm đơn đặt chỗ và cập nhật trạng thái
+                    var reservation = await _context.NicheReservations.FirstOrDefaultAsync(r => r.ReservationId == request.ReservationId);
+                    if (reservation != null)
+                    {
+                        reservation.Status = "Signed";
+                        _context.NicheReservations.Update(reservation);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    await transaction.CommitAsync();
+
+                    return Ok(contract);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    var innerExceptionMessage = ex.InnerException?.Message;
+                    var detailedErrorMessage = $"Error: {ex.Message}, Inner Exception: {innerExceptionMessage}";
+                    return StatusCode(500, detailedErrorMessage);
+                }
+            }
+        }
+
+
+
+
 
     }
 }
