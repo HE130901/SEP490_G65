@@ -115,3 +115,17 @@ _context.Database.BeginTransactionAsync())
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
                         ServiceOrderCode = serviceOrderCode // Thêm mã ServiceOrderCode
+};
+                    _context.ServiceOrders.Add(serviceOrder);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var detail in request.ServiceOrderDetails)
+                    {
+                        var serviceOrderDetail = new ServiceOrderDetail
+                        {
+                            ServiceOrderId = serviceOrder.ServiceOrderId,
+                            ServiceId = detail.ServiceID,
+                            Quantity = detail.Quantity,
+                            Status = "Pending"
+                        };
+                        _context.ServiceOrderDetails.Add(serviceOrderDetail);
