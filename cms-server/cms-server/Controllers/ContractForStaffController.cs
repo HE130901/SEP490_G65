@@ -92,6 +92,12 @@ namespace cms_server.Controllers
                         SendEmail(customer.Email, subject, message);
                     }
 
+                    // Kiểm tra trùng lặp số giấy chứng tử
+                    bool isDuplicateDeathCertificate = await IsDuplicateDeathCertificateNumberAsync(request.DeathCertificateNumber);
+                    if (isDuplicateDeathCertificate)
+                    {
+                        return BadRequest("Đã có người mất đăng ký với số giấy chứng tử này!");
+                    }
 
     }
 }
