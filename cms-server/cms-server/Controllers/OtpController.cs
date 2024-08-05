@@ -24,3 +24,13 @@ public class OtpController : ControllerBase
             return StatusCode(500, new { error = "Failed to send OTP", details = ex.Message });
         }
     }
+[HttpPost("verify-otp")]
+    public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            var isValid = _otpService.VerifyOtp(request.PhoneNumber, request.Otp);
+            if (isValid)
+            {
+                return Ok(new { message = "OTP verified successfully" });
+            }
