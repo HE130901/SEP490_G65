@@ -480,3 +480,17 @@ public class RenewContractRequest
     public string NewEndDate { get; set; }
     public decimal TotalAmount { get; set; }
 }
+
+public class ContractRenewalDetailsDto
+{
+    public int ContractRenewalId { get; set; }
+    public string ContractRenewCode { get; set; }
+    public string Status { get; set; }
+    public DateOnly? CreatedDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public decimal? TotalAmount { get; set; }
+    public string Note { get; set; }
+    public string CustomerName { get; set; }
+    public string NicheAddress { get; set; }
+    public string ContractCode { get; set; }
+}
