@@ -172,3 +172,8 @@ public class UpdateCustomerDto
         public DateOnly? CitizenIdissuanceDate { get; set; }
         public string CitizenIdsupplier { get; set; }
     }
+
+public class ChangePasswordDto2
+    {
+        public string Password { get; set; }
+    }
