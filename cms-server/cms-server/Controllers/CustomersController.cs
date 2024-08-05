@@ -91,3 +91,23 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
+// PUT: api/Customers/5/ChangePassword
+        [HttpPut("{id}/ChangePassword")]
+        public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto2 changePasswordDto)
+        {
+            var customer = await _context.Customers.FindAsync(id);
+
+            if (customer == null)
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrEmpty(changePasswordDto.Password))
+            {
+                return BadRequest("Password cannot be empty.");
+            }
+
+            customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.Password);
+
+            _context.Entry(customer).State = EntityState.Modified;
