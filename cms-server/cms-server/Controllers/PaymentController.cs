@@ -82,3 +82,14 @@ if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
  // Log for debugging
                     Console.WriteLine($"Payment success: OrderId={orderId}, VNPAY TranId={vnpayTranId}, Amount={vnpAmount}");
 
+// Update your database with the order details
+
+                    return Ok(new { message = "Giao dịch thành công" });
+                }
+                else
+                {
+                    // Log for debugging
+                    Console.WriteLine($"Payment failed: {string.Join(", ", queryParameters.Select(kv => $"{kv.Key}={kv.Value}"))}");
+                    return BadRequest(new { message = "Giao dịch không thành công" });
+                }
+            }
