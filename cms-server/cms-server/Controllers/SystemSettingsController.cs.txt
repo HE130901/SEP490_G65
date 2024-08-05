@@ -27,3 +27,19 @@ namespace cms_server.Controllers
             var settings = _context.SystemSettings.ToList();
             return Ok(settings);
         }
+
+// GET: api/SystemSettings/byType/{settingType}
+        [HttpGet("byType/{settingType}")]
+        public ActionResult<IEnumerable<SystemSetting>> GetSettingsByType(string settingType)
+        {
+            var settings = _context.SystemSettings
+                .Where(s => s.SettingType == settingType)
+                .ToList();
+
+            if (settings == null || settings.Count == 0)
+            {
+                return NotFound(new { message = "No settings found for the specified type" });
+            }
+
+            return Ok(settings);
+        }
