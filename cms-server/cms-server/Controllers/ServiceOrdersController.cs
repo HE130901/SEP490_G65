@@ -218,4 +218,10 @@ public class ServiceOrderResponseDto
         public DateTime OrderDate { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
+public class UpdateServiceOrderRequest
+    {
+        public int ServiceOrderId { get; set; }
+        public DateTime OrderDate { get; set; }
+    }
+}
 
