@@ -54,6 +54,30 @@ namespace cms_server.Controllers
             return dto;
         }
 
+        // GET: /api/buildings/1/floors/1/areas/1/nichesForCustomer
+        [Authorize]
+        [HttpGet("{buildingId}/floors/{floorId}/areas/{areaId}/nichesForCustomer")]
+        public async Task<ActionResult<IEnumerable<NicheDto1>>> GetNichesForCustomer(int buildingId, int floorId, int areaId)
+        {
+            // Get the user ID from the token
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            // Get the niches in the area
+            var niches = await _context.Niches
+                .Where(n => n.AreaId == areaId && n.Area.FloorId == floorId && n.Area.Floor.BuildingId == buildingId)
+                .Select(n => new NicheDto1
+                {
+                    NicheId = n.NicheId,
+                    NicheName = n.NicheName,
+                    Status = n.Status,
+                    ReservedByUser = n.CustomerId == userId 
+                })
+                .ToListAsync();
+
+            return niches;
+        }
+
+
 
     }
 }
