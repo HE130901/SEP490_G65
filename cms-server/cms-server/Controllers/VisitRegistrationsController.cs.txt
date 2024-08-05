@@ -285,3 +285,39 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
+// PUT: api/VisitRegistrations/approve/5
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> ApproveVisitRegistration(int id)
+        {
+            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+
+            if (visitRegistration == null)
+            {
+                return NotFound();
+            }
+
+            // Update the status to "Approved"
+            visitRegistration.Status = "Approved";
+            visitRegistration.ApprovedBy = GetStaffIdFromToken();
+
+            _context.Entry(visitRegistration).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!VisitRegistrationExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
