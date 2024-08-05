@@ -419,3 +419,13 @@ catch (Exception ex)
        
 
     }
+
+public class CreateNicheReservationDto
+    {
+        public int NicheId { get; set; }
+        public string Name { get; set; }
+        public DateTime? ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+        public string PhoneNumber { get; set; }
+        public string? Note { get; set; }
+    }
