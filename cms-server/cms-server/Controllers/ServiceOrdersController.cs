@@ -165,4 +165,22 @@ _context.Database.BeginTransactionAsync())
             }
 
             serviceOrder.OrderDate = request.OrderDate;
+try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ServiceOrderExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
 
