@@ -124,5 +124,12 @@ namespace cms_server.Controllers
         public string AreaName { get; set; }
     }
 
+    public class NicheDto1
+    {
+        public int NicheId { get; set; }
+        public string NicheName { get; set; }
+        public string Status { get; set; }
+        public bool ReservedByUser { get; set; } 
+    }
 
 }
