@@ -50,3 +50,12 @@ int customerId = int.Parse(customerIdClaim.Value);
                 .ThenInclude(f => f.Building)
                 .Where(so => so.CustomerId == customerId)
                 .ToListAsync();
+ if (!serviceOrders.Any())
+            {
+                return NotFound();
+            }
+
+            var serviceOrderDtos = serviceOrders.Select(so => new ServiceOrderResponseDto
+            {
+                ServiceOrderId = so.ServiceOrderId,
+                NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
