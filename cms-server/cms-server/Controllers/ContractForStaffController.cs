@@ -378,6 +378,39 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
+        // GET: api/Contracts/contract-renewal/{renewalId}
+        [HttpGet("contract-renewal/{renewalId}")]
+        public async Task<IActionResult> GetContractRenewalById(int renewalId)
+        {
+            // Find the contract renewal by ID and include the associated contract, customer, and niche
+            var renewal = await _context.ContractRenews
+                .Include(cr => cr.Contract)
+                .ThenInclude(c => c.Customer)
+                .Include(cr => cr.Contract)
+                .ThenInclude(c => c.Niche)
+                .Select(cr => new ContractRenewalDetailsDto
+                {
+                    ContractRenewalId = cr.ContractRenewId,
+                    ContractRenewCode = cr.ContractRenewCode,
+                    Status = cr.Status,
+                    CreatedDate = cr.CreatedDate,
+                    EndDate = cr.EndDate,
+                    TotalAmount = cr.TotalAmount,
+                    Note = cr.Note,
+                    CustomerName = cr.Contract.Customer.FullName,
+                    NicheAddress = $"{cr.Contract.Niche.Area.Floor.Building.BuildingName} - {cr.Contract.Niche.Area.Floor.FloorName} - {cr.Contract.Niche.Area.AreaName} - {cr.Contract.Niche.NicheName}",
+                    ContractCode = cr.Contract.ContractCode
+                })
+                .FirstOrDefaultAsync(cr => cr.ContractRenewalId == renewalId);
+
+            if (renewal == null)
+            {
+                return NotFound("Contract renewal not found.");
+            }
+
+            return Ok(renewal);
+        }
+
 
 
     }
