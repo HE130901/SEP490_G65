@@ -29,3 +29,17 @@ namespace cms_server.Controllers
         {
             return await _context.Services.ToListAsync();
         }
+
+// GET: api/Services/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Service>> GetService(int id)
+        {
+            var service = await _context.Services.FindAsync(id);
+
+            if (service == null)
+            {
+                return NotFound();
+            }
+
+            return service;
+        }
