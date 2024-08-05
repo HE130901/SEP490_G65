@@ -429,3 +429,11 @@ public class CreateNicheReservationDto
         public string PhoneNumber { get; set; }
         public string? Note { get; set; }
     }
+
+// DTO for updating niche reservation
+    public class UpdateNicheReservationDto
+    {
+        public DateTime? ConfirmationDate { get; set; }
+        public string SignAddress { get; set; }
+        public string Note { get; set; }
+    }
