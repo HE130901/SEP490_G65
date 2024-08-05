@@ -150,4 +150,12 @@ _context.Database.BeginTransactionAsync())
             }
         }
 
+// PUT: api/ServiceOrders/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutServiceOrder(int id, UpdateServiceOrderRequest request)
+        {
+            if (id != request.ServiceOrderId)
+            {
+                return BadRequest();
+            }
 
