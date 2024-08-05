@@ -94,3 +94,154 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
 
             return Ok(serviceOrderResponses);
         }
+[HttpGet("{serviceOrderId}")]
+        public async Task<IActionResult> GetServiceOrderDetails(int serviceOrderId)
+        {
+            var serviceOrder = await _context.ServiceOrders
+                .Include(so => so.Customer)
+                .Include(so => so.Niche)
+                    .ThenInclude(n => n.Area)
+                    .ThenInclude(a => a.Floor)
+                    .ThenInclude(f => f.Building)
+                .Include(so => so.ServiceOrderDetails)
+                    .ThenInclude(sod => sod.Service)
+                .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
+
+            if (serviceOrder == null)
+            {
+                return NotFound();
+            }
+
+            var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
+
+            var response = new ServiceOrderDetailsResponse
+            {
+                ServiceOrderCode = serviceOrder.ServiceOrderCode,
+                CustomerFullName = serviceOrder.Customer.FullName,
+                OrderDate = serviceOrder.OrderDate,
+                CreatedDate = serviceOrder.CreatedDate,
+                Niche = new NicheInfo
+                {
+                    Building = serviceOrder.Niche.Area.Floor.Building.BuildingName,
+                    Floor = serviceOrder.Niche.Area.Floor.FloorName,
+                    Area = serviceOrder.Niche.Area.AreaName,
+                    NicheName = serviceOrder.Niche.NicheName
+                },
+                ServiceOrderDetails = (List<ServiceOrderDetail>)serviceOrder.ServiceOrderDetails,
+                TotalPrice = totalPrice
+            };
+
+            return Ok(response);
+        }
+
+        [HttpPut("update-completion-image")]
+        public async Task<IActionResult> UpdateCompletionImage([FromBody] UpdateCompletionImageRequest request)
+        {
+            var staffId = GetStaffIdFromToken();
+
+            var serviceOrderDetail = await _context.ServiceOrderDetails.FindAsync(request.ServiceOrderDetailID);
+
+            if (serviceOrderDetail == null)
+            {
+                return NotFound("Service order detail not found.");
+            }
+
+            var serviceOrder = await _context.ServiceOrders.FindAsync(serviceOrderDetail.ServiceOrderId);
+
+            if (serviceOrder == null)
+            {
+                return NotFound("Service order not found.");
+            }
+
+            serviceOrderDetail.CompletionImage = request.CompletionImage;
+            serviceOrderDetail.Status = "Completed";
+            serviceOrder.StaffId = staffId;
+
+            _context.ServiceOrderDetails.Update(serviceOrderDetail);
+            _context.ServiceOrders.Update(serviceOrder);
+            await _context.SaveChangesAsync();
+
+            // Create and save the notification
+            var notification = new Notification
+            {
+                CustomerId = serviceOrder.CustomerId,
+                StaffId = staffId,
+                ServiceOrderId = serviceOrder.ServiceOrderId,
+                NotificationDate = DateTime.Now,
+                Message = $"Your service order detail for {serviceOrderDetail.ServiceOrderDetailId} has been updated with a completion image."
+            };
+
+            //await _notificationService.SendNotificationAsync(notification);
+
+            return Ok(serviceOrderDetail);
+        }
+
+        [HttpPost("create-service-order")]
+        public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest request)
+        {
+            using (var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    var customer = await _context.Customers.FindAsync(request.CustomerID);
+                    if (customer == null)
+                    {
+                        return NotFound("Customer not found.");
+                    }
+
+                    var niche = await _context.Niches.FindAsync(request.NicheID);
+                    if (niche == null || niche.CustomerId != customer.CustomerId)
+                    {
+                        return BadRequest("Niche not found or does not belong to the customer.");
+                    }
+
+                    // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
+                    var currentDate = DateTime.Now.Date;
+                    var ordersTodayCount = await _context.ServiceOrders
+                        .CountAsync(so => so.CreatedDate != null && so.CreatedDate.Value.Date == currentDate);
+
+                    var serviceOrderCode = $"DV-{currentDate:yyyyMMdd}-{(ordersTodayCount + 1):D3}";
+
+                    var serviceOrder = new ServiceOrder
+                    {
+                        CustomerId = request.CustomerID,
+                        NicheId = request.NicheID,
+                        CreatedDate = DateTime.Now,
+                        OrderDate = request.OrderDate,
+                        ServiceOrderCode = serviceOrderCode 
+                    };
+
+                    _context.ServiceOrders.Add(serviceOrder);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var detail in request.ServiceOrderDetails)
+                    {
+                        var serviceOrderDetail = new ServiceOrderDetail
+                        {
+                            ServiceOrderId = serviceOrder.ServiceOrderId,
+                            ServiceId = detail.ServiceID,
+                            Quantity = detail.Quantity,
+                            Status = "Pending"
+                        };
+                        _context.ServiceOrderDetails.Add(serviceOrderDetail);
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
+
+                    return Ok(new
+                    {
+                        ServiceOrder = serviceOrder,
+                        TotalPrice = totalPrice
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, ex.Message);
+                }
+            }
+        }
+
