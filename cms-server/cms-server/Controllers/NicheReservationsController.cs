@@ -410,3 +410,12 @@ private bool NicheReservationExists(int id)
 
                 return Ok(approvedReservations);
             }
+catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+       
+
+    }
