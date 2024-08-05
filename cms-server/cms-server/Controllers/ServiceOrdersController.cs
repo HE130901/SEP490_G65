@@ -205,4 +205,11 @@ public class ServiceOrderResponseDto
         
         public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
     }
+ public class ServiceOrderDetailResponseDto
+    {
+        public string ServiceName { get; set; }
+        public int Quantity { get; set; }
+        public string? CompletionImage { get; set; }
+        public string? Status { get; set; }
+    }
 
