@@ -101,3 +101,17 @@ _context.Database.BeginTransactionAsync())
                     {
                         return BadRequest("Niche not found or does not belong to the customer.");
                     }
+ // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
+                    var currentDate = DateTime.Now.Date;
+                    var ordersTodayCount = await _context.ServiceOrders
+                        .CountAsync(so => so.CreatedDate != null && so.CreatedDate.Value.Date == currentDate);
+
+                    var serviceOrderCode = $"DV-{currentDate:yyyyMMdd}-{(ordersTodayCount + 1):D3}";
+
+                    var serviceOrder = new ServiceOrder
+                    {
+                        CustomerId = customerId,
+                        NicheId = request.NicheID,
+                        CreatedDate = DateTime.Now,
+                        OrderDate = request.OrderDate,
+                        ServiceOrderCode = serviceOrderCode // Thêm mã ServiceOrderCode
