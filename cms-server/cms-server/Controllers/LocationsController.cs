@@ -20,3 +20,9 @@ namespace cms_server.Controllers
             var buildings = await _locationService.GetBuildingsAsync();
             return Ok(buildings);
         }
+[HttpGet("floors/{buildingId}")]
+        public async Task<ActionResult<IEnumerable<Floor>>> GetFloorsByBuildingId(int buildingId)
+        {
+            var floors = await _locationService.GetFloorsByBuildingIdAsync(buildingId);
+            return Ok(floors);
+        }
