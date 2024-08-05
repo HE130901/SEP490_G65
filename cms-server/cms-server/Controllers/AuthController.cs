@@ -64,6 +64,46 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
+	// POST: /api/auth/get-current-user
+        [HttpGet("get-current-user")]
+        [Authorize]
+        public IActionResult GetCurrentUser()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            // return user info based on the role
+            if (int.TryParse(userId, out int parsedUserId))
+            {
+                var customer = _context.Customers.SingleOrDefault(c => c.CustomerId == parsedUserId);
+                if (customer != null)
+                {
+                    return Ok(new
+                    {
+                        customerId = customer.CustomerId,
+                        fullName = customer.FullName,
+                        citizenId = customer.CitizenId,
+                        email = customer.Email,
+                        phone = customer.Phone,
+                        address = customer.Address
+                    });
+                }
+
+                var staff = _context.Staff.SingleOrDefault(s => s.StaffId == parsedUserId);
+                if (staff != null)
+                {
+                    return Ok(new
+                    {
+                        staffId = staff.StaffId,
+                        fullName = staff.FullName,
+                        email = staff.Email,
+                        phone = staff.Phone,
+                        role = staff.Role
+                    });
+                }
+            }
+
+            return Unauthorized("Invalid user role.");
+        }
 
 
 
