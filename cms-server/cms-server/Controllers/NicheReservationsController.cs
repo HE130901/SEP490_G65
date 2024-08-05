@@ -161,3 +161,17 @@ try
             {
                 return BadRequest(new { error = "Ô chứa này đã được đặt" });
             }
+// Kiểm tra số điện thoại có thuộc về khách hàng hiện tại hay không
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
+
+            // Xác định số lượng đơn đặt chỗ tối đa được phép
+            int maxReservations = customer != null ? 10 : 3;
+
+            // Đếm số lượng đơn đặt chỗ hiện có với trạng thái "Pending"
+            var existingReservationsCount = await _context.NicheReservations
+                .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
+
+            if (existingReservationsCount >= maxReservations)
+            {
+                return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
+            }
