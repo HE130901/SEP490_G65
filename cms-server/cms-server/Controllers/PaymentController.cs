@@ -62,4 +62,16 @@ vnpay.AddRequestData("vnp_OrderType", "other");
                     vnpay.AddResponseData(param.Key, param.Value);
                 }
             }
+string vnpSecureHash = queryParameters["vnp_SecureHash"];
+            bool isValidSignature = vnpay.ValidateSignature(vnpSecureHash, _hashSecret);
+
+            // Log the raw data used for signature validation
+            Console.WriteLine("Raw data for signature validation: " + vnpay.GetResponseData());
+            Console.WriteLine("Generated secure hash: " + Utils.HmacSHA512(_hashSecret, vnpay.GetResponseData()));
+            Console.WriteLine("Received secure hash: " + vnpSecureHash);
+
+            if (isValidSignature)
+            {
+                string vnpResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
+                string vnpTransactionStatus = vnpay.GetResponseData("vnp_TransactionStatus");
 
