@@ -65,3 +65,19 @@ namespace cms_server.Controllers
 
             return nicheReservation;
         }
+
+// GET: api/NicheReservations/by-phone/{phoneNumber}
+        [HttpGet("by-phone/{phoneNumber}")]
+        public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservationsByPhoneNumber(string phoneNumber)
+        {
+            try
+            {
+                // Lấy thông tin đơn đặt chỗ theo số điện thoại
+                var nicheReservations = await _context.NicheReservations
+                    .Where(nr => nr.PhoneNumber == phoneNumber)
+                    .Include(nr => nr.Niche)
+                        .ThenInclude(n => n.Area)
+                            .ThenInclude(a => a.Floor)
+                                .ThenInclude(f => f.Building)
+                    .Select(nr => new NicheReservationDto
+                    {
