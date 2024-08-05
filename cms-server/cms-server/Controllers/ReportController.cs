@@ -99,3 +99,14 @@ var nichesByArea = _context.Niches
                     Available = g.Count(n => n.Status == "Available"),
                     Unavailable = g.Count(n => n.Status == "Unavailable")
                 }).ToList();
+
+var nichesByStatus = _context.Niches
+                .GroupBy(n => n.Status)
+                .Select(g => new StatusReport
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                }).ToList();
+
+            var totalServiceOrders = _context.ServiceOrders.Count();
+            var totalVisitRegistrations = _context.VisitRegistrations.Count();
