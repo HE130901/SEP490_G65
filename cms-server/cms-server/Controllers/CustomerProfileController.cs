@@ -63,6 +63,61 @@ namespace cms_server.Controllers
             return Ok(customer);
         }
 
+        // PUT: api/CustomerProfile
+        [HttpPut]
+        public async Task<IActionResult> UpdateCurrentCustomer(UpdateCustomerDto updateDto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return Unauthorized("User ID is missing.");
+            }
+
+            if (!int.TryParse(userId, out int customerId))
+            {
+                return BadRequest("Invalid User ID.");
+            }
+
+            var customer = await _context.Customers.FindAsync(customerId);
+
+            if (customer == null)
+            {
+                return NotFound("Customer not found.");
+            }
+
+            customer.Email = updateDto.Email;
+            customer.Phone = updateDto.Phone;
+            customer.Address = updateDto.Address;
+
+            _context.Entry(customer).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(customerId))
+                {
+                    return NotFound("Customer not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        private bool CustomerExists(int id)
+        {
+            return _context.Customers.Any(e => e.CustomerId == id);
+        }
+    }
+
+
 
     }
 }
