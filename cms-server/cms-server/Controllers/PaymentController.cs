@@ -49,3 +49,17 @@ vnpay.AddRequestData("vnp_OrderType", "other");
 
             return Ok(response);
         }
+[HttpGet("vnpay_return")]
+        public IActionResult VnPayReturn()
+        {
+            var queryParameters = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+            var vnpay = new VnPayLibrary();
+
+            foreach (var param in queryParameters)
+            {
+                if (!string.IsNullOrEmpty(param.Key) && param.Key.StartsWith("vnp_"))
+                {
+                    vnpay.AddResponseData(param.Key, param.Value);
+                }
+            }
+
