@@ -39,3 +39,14 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
             {
                 return Unauthorized("Customer ID not found in token");
             }
+int customerId = int.Parse(customerIdClaim.Value);
+
+            var serviceOrders = await _context.ServiceOrders
+                .Include(so => so.ServiceOrderDetails)
+                .ThenInclude(sod => sod.Service)
+                .Include(so => so.Niche)
+                .ThenInclude(n => n.Area)
+                .ThenInclude(a => a.Floor)
+                .ThenInclude(f => f.Building)
+                .Where(so => so.CustomerId == customerId)
+                .ToListAsync();
