@@ -82,3 +82,35 @@ namespace cms_server.Controllers
 
             return Ok(nicheDto);
         }
+
+[HttpPut("{nicheId}")]
+        public async Task<IActionResult> UpdateNiche(int nicheId, UpdateNicheDto updateNicheDto)
+        {
+            var niche = await _context.Niches.FindAsync(nicheId);
+
+            if (niche == null)
+            {
+                return NotFound();
+            }
+
+            niche.NicheDescription = updateNicheDto.NicheDescription;
+            niche.Status = updateNicheDto.Status;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!NicheExists(nicheId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
