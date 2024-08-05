@@ -188,4 +188,11 @@ try
             return _context.ServiceOrders.Any(e => e.ServiceOrderId == id);
         }
     }
+ public class ServiceOrderDto
+    {
+        public int CustomerId { get; set; }
+        public int NicheId { get; set; }
+        public DateTime OrderDate { get; set; }
+        public string? ServiceList { get; set; }
+    }
 
