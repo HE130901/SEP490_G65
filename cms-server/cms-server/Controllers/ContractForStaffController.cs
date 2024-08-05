@@ -29,5 +29,14 @@ namespace cms_server.Controllers
         {
             return await _context.Deceaseds.AnyAsync(d => d.DeathCertificateNumber == deathCertificateNumber);
         }
+
+        private string GenerateRandomPassword(int length = 12)
+        {
+            const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?_-";
+            var random = new Random();
+            return new string(Enumerable.Repeat(validChars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
     }
 }
