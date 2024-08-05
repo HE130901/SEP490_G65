@@ -1,0 +1,21 @@
+using cms_server.Configuration;
+using cms_server.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace cms_server.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class StaffNichesController : ControllerBase
+    {
+        private readonly CmsContext _context;
+
+        public StaffNichesController(CmsContext context)
+        {
+            _context = context;
+        }
