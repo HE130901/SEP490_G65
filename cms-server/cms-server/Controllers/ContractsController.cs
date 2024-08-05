@@ -238,6 +238,42 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        // GET: api/Contracts/{contractId}/renewals
+        [HttpGet("{contractId}/renewals")]
+        public async Task<ActionResult<IEnumerable<ContractRenewalDto>>> GetContractRenewals(int contractId)
+        {
+            // Get renewals for the specified contract
+            var renewals = await _context.ContractRenews
+                .Where(r => r.ContractId == contractId)
+                .Include(r => r.Contract) // Ensure that the related Contract is included
+                .Select(r => new ContractRenewalDto
+                {
+                    ContractId = r.ContractId ?? 0,
+                    ContractRenewalId = r.ContractRenewId,
+                    ContractCode = r.Contract != null ? r.Contract.ContractCode : "Không có thông tin",
+                    ContractRenewCode = r.ContractRenewCode,
+                    EndDate = r.EndDate ?? DateOnly.MinValue,
+                    CreatedDate = r.CreatedDate ?? DateOnly.MinValue,
+                    Status = r.Status,
+                    Amount = r.TotalAmount ?? 0,
+                    Note = r.Note
+                })
+                .ToListAsync();
+
+            if (renewals == null || !renewals.Any())
+            {
+                return NotFound("No renewals found for the specified contract.");
+            }
+
+            return Ok(renewals);
+        }
+
+        private bool ContractExists(int id)
+        {
+            return _context.Contracts.Any(e => e.ContractId == id);
+        }
+
+
 
 
 
