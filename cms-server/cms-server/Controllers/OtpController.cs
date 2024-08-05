@@ -58,3 +58,13 @@ catch (Exception ex)
             return StatusCode(500, new { error = "Failed to send test OTP", details = ex.Message });
         }
     }
+[HttpPost("test/verify-otp")]
+    public IActionResult VerifyTestOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            // Simulate verifying the default OTP "123456"
+            if (request.Otp == "123456")
+            {
+                return Ok(new { message = "Test OTP verified successfully" });
+            }
