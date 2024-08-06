@@ -156,7 +156,7 @@ const Sidebar = () => {
         >
           {open && (
             <Typography className="pl-8" variant="h6" noWrap>
-              An Bình Viên
+              Quản lý
             </Typography>
           )}
           <IconButton onClick={handleDrawerToggle} sx={{ color: "#fff" }}>
@@ -218,10 +218,10 @@ const Sidebar = () => {
         {open && (
           <>
             <Image
-              src="/images/FPT.svg"
+              src="/images/logoCMS.png"
               alt="logo"
               width={150}
-              height={50}
+              height={150}
               className="pb-4"
             />
             <Typography variant="caption" color="inherit" fontStyle="oblique">

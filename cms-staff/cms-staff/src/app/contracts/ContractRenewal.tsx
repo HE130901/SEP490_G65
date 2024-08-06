@@ -87,10 +87,16 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
 
   const handleDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
-    setDuration(value);
-    if (type) {
-      setNewEndDate(calculateNewEndDate(renewalDate, value, type));
-      setCost(calculateCost(type, parseInt(value, 10)));
+    if (parseInt(value, 10) >= 0) {
+      setDuration(value);
+      if (type) {
+        setNewEndDate(calculateNewEndDate(renewalDate, value, type));
+        setCost(calculateCost(type, parseInt(value, 10)));
+      }
+    } else {
+      setDuration("");
+      setNewEndDate("");
+      setCost(0);
     }
   };
 
