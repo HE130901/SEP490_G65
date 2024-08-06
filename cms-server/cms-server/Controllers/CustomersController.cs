@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-// GET: api/Customers
+        // GET: api/Customers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
         {
@@ -38,7 +38,7 @@ namespace cms_server.Controllers
                 .ToListAsync();
         }
 
-// GET: api/Customers/5
+        // GET: api/Customers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
@@ -52,7 +52,7 @@ namespace cms_server.Controllers
             return customer;
         }
 
-// PUT: api/Customers/5
+        // PUT: api/Customers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCustomer(int id, UpdateCustomerDto updateDto)
         {
@@ -92,7 +92,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-// PUT: api/Customers/5/ChangePassword
+        // PUT: api/Customers/5/ChangePassword
         [HttpPut("{id}/ChangePassword")]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordDto2 changePasswordDto)
         {
@@ -111,7 +111,8 @@ namespace cms_server.Controllers
             customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.Password);
 
             _context.Entry(customer).State = EntityState.Modified;
- try
+
+            try
             {
                 await _context.SaveChangesAsync();
             }
@@ -130,7 +131,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-// POST: api/Customers
+        // POST: api/Customers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
@@ -162,7 +163,7 @@ namespace cms_server.Controllers
         }
     }
 
-public class UpdateCustomerDto
+    public class UpdateCustomerDto
     {
         public string FullName { get; set; }
         public string Email { get; set; }
@@ -173,11 +174,12 @@ public class UpdateCustomerDto
         public string CitizenIdsupplier { get; set; }
     }
 
-public class ChangePasswordDto2
+    public class ChangePasswordDto2
     {
         public string Password { get; set; }
     }
-public class CustomerDto
+
+    public class CustomerDto
     {
         public int CustomerId { get; set; }
         public string FullName { get; set; }

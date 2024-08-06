@@ -1,4 +1,4 @@
-using cms_server.Configuration;
+﻿using cms_server.Configuration;
 using cms_server.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-// Get all niches within a specific area
+        // Get all niches within a specific area
         [HttpGet("area/{areaId}")]
         public async Task<ActionResult<IEnumerable<NicheDtoForStaff>>> GetNichesByArea(int areaId)
         {
@@ -49,7 +49,7 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
-[HttpGet("{nicheId}")]
+        [HttpGet("{nicheId}")]
         public async Task<ActionResult<NicheDtoForStaff>> GetNicheDetail(int nicheId)
         {
             var niche = await _context.Niches
@@ -83,7 +83,7 @@ namespace cms_server.Controllers
             return Ok(nicheDto);
         }
 
-[HttpPut("{nicheId}")]
+        [HttpPut("{nicheId}")]
         public async Task<IActionResult> UpdateNiche(int nicheId, UpdateNicheDto updateNicheDto)
         {
             var niche = await _context.Niches.FindAsync(nicheId);
@@ -115,7 +115,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-private bool NicheExists(int id)
+        private bool NicheExists(int id)
         {
             return _context.Niches.Any(e => e.NicheId == id);
         }
@@ -142,10 +142,11 @@ private bool NicheExists(int id)
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
         public string? Status { get; set; }
-}
+    }
     public class UpdateNicheDto
     {
         public string? NicheDescription { get; set; }
         public string Status { get; set; }
     }
 }
+

@@ -1,4 +1,4 @@
-using cms_server.Models;
+﻿using cms_server.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.DTOs;
@@ -99,7 +99,6 @@ namespace cms_server.Controllers
                         return BadRequest("Đã có người mất đăng ký với số giấy chứng tử này!");
                     }
 
-
                     // Tạo đối tượng Deceased
                     var deceased = new Deceased
                     {
@@ -146,7 +145,6 @@ namespace cms_server.Controllers
                     _context.Niches.Update(niche);
                     await _context.SaveChangesAsync();
 
-
                     // Tìm đơn đặt chỗ và cập nhật trạng thái
                     var reservation = await _context.NicheReservations.FirstOrDefaultAsync(r => r.ReservationId == request.ReservationId);
                     if (reservation != null)
@@ -169,6 +167,7 @@ namespace cms_server.Controllers
                 }
             }
         }
+
 
         // GET: api/ContractForStaff/all-contracts
         [HttpGet("all-contracts")]
@@ -264,6 +263,9 @@ namespace cms_server.Controllers
             return Ok(contractRenew);
         }
 
+
+
+
         private string GenerateRenewalCode(string contractCode, int renewalCount)
         {
             // Extract the date part and suffix from the contract code
@@ -313,6 +315,7 @@ namespace cms_server.Controllers
 
             return NoContent();
         }
+
 
         // GET: api/Contracts/buildings
         [HttpGet("buildings")]
@@ -434,6 +437,9 @@ namespace cms_server.Controllers
                 client.Disconnect(true);
             }
         }
+
+
+
     }
 
     public class CreateContractRequest
@@ -460,7 +466,8 @@ namespace cms_server.Controllers
         public int ReservationId { get; set; }
     }
 
-    public class ContractForStaffDto
+
+public class ContractForStaffDto
     {
         public int ContractId { get; set; }
         public int NicheId { get; set; }
@@ -480,7 +487,6 @@ public class RenewContractRequest
     public string NewEndDate { get; set; }
     public decimal TotalAmount { get; set; }
 }
-
 public class ContractRenewalDetailsDto
 {
     public int ContractRenewalId { get; set; }
@@ -494,3 +500,5 @@ public class ContractRenewalDetailsDto
     public string NicheAddress { get; set; }
     public string ContractCode { get; set; }
 }
+
+

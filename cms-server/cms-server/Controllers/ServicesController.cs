@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ namespace cms_server.Controllers
             return await _context.Services.ToListAsync();
         }
 
-// GET: api/Services/5
+        // GET: api/Services/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Service>> GetService(int id)
         {
@@ -44,7 +44,7 @@ namespace cms_server.Controllers
             return service;
         }
 
-// PUT: api/Services/5
+        // PUT: api/Services/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutService(int id, Service service)
@@ -75,7 +75,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-// POST: api/Services
+        // POST: api/Services
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Service>> PostService(Service service)
@@ -86,7 +86,7 @@ namespace cms_server.Controllers
             return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
         }
 
- // DELETE: api/Services/5
+        // DELETE: api/Services/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteService(int id)
         {

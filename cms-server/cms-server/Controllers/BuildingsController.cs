@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -131,7 +131,6 @@ namespace cms_server.Controllers
         public string Status { get; set; }
         public bool ReservedByUser { get; set; } 
     }
-
     public class NicheDto2
     {
         public int NicheId { get; set; }

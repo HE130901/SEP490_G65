@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +16,8 @@ namespace cms_server.Controllers
     public class ServiceOrdersController : ControllerBase
     {
         private readonly CmsContext _context;
-private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
+
+        private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
         {
             var totalPrice = await _context.ServiceOrderDetails
                 .Where(sod => sod.ServiceOrderId == serviceOrderId)
@@ -26,11 +27,15 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
 
             return totalPrice;
         }
- public ServiceOrdersController(CmsContext context)
+
+        public ServiceOrdersController(CmsContext context)
         {
             _context = context;
         }
- [HttpGet("customer")]
+
+      
+
+        [HttpGet("customer")]
         [Authorize]
         public async Task<ActionResult<IEnumerable<ServiceOrderResponseDto>>> GetServiceOrdersByCustomer()
         {
@@ -39,7 +44,8 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
             {
                 return Unauthorized("Customer ID not found in token");
             }
-int customerId = int.Parse(customerIdClaim.Value);
+
+            int customerId = int.Parse(customerIdClaim.Value);
 
             var serviceOrders = await _context.ServiceOrders
                 .Include(so => so.ServiceOrderDetails)
@@ -50,7 +56,8 @@ int customerId = int.Parse(customerIdClaim.Value);
                 .ThenInclude(f => f.Building)
                 .Where(so => so.CustomerId == customerId)
                 .ToListAsync();
- if (!serviceOrders.Any())
+
+            if (!serviceOrders.Any())
             {
                 return NotFound();
             }
@@ -59,7 +66,7 @@ int customerId = int.Parse(customerIdClaim.Value);
             {
                 ServiceOrderId = so.ServiceOrderId,
                 NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
- CreatedDate = so.CreatedDate,
+                CreatedDate = so.CreatedDate,
                 OrderDate = so.OrderDate,
                 ServiceOrderCode = so.ServiceOrderCode,
                 ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailResponseDto
@@ -73,7 +80,8 @@ int customerId = int.Parse(customerIdClaim.Value);
 
             return Ok(serviceOrderDtos);
         }
- [HttpPost("create-service-order")]
+
+        [HttpPost("create-service-order")]
         [Authorize]
         public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest1 request)
         {
@@ -85,8 +93,7 @@ int customerId = int.Parse(customerIdClaim.Value);
 
             int customerId = int.Parse(customerIdClaim.Value);
 
-            using (var transaction = await 
-_context.Database.BeginTransactionAsync())
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -101,7 +108,8 @@ _context.Database.BeginTransactionAsync())
                     {
                         return BadRequest("Niche not found or does not belong to the customer.");
                     }
- // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
+
+                    // Đếm số lượng đơn hàng trong ngày hiện tại để tạo mã ServiceOrderCode
                     var currentDate = DateTime.Now.Date;
                     var ordersTodayCount = await _context.ServiceOrders
                         .CountAsync(so => so.CreatedDate != null && so.CreatedDate.Value.Date == currentDate);
@@ -115,7 +123,7 @@ _context.Database.BeginTransactionAsync())
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
                         ServiceOrderCode = serviceOrderCode // Thêm mã ServiceOrderCode
-};
+                    };
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();
 
@@ -129,14 +137,15 @@ _context.Database.BeginTransactionAsync())
                             Status = "Pending"
                         };
                         _context.ServiceOrderDetails.Add(serviceOrderDetail);
- }
+                    }
                     await _context.SaveChangesAsync();
 
                     await transaction.CommitAsync();
 
                     // Calculate the total price
                     var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
- return Ok(new
+
+                    return Ok(new
                     {
                         ServiceOrder = serviceOrder,
                         TotalPrice = totalPrice
@@ -150,7 +159,10 @@ _context.Database.BeginTransactionAsync())
             }
         }
 
-// PUT: api/ServiceOrders/5
+
+
+
+        // PUT: api/ServiceOrders/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutServiceOrder(int id, UpdateServiceOrderRequest request)
         {
@@ -158,14 +170,16 @@ _context.Database.BeginTransactionAsync())
             {
                 return BadRequest();
             }
- var serviceOrder = await _context.ServiceOrders.FindAsync(id);
+
+            var serviceOrder = await _context.ServiceOrders.FindAsync(id);
             if (serviceOrder == null)
             {
                 return NotFound();
             }
 
             serviceOrder.OrderDate = request.OrderDate;
-try
+
+            try
             {
                 await _context.SaveChangesAsync();
             }
@@ -183,19 +197,23 @@ try
 
             return NoContent();
         }
- private bool ServiceOrderExists(int id)
+
+
+        private bool ServiceOrderExists(int id)
         {
             return _context.ServiceOrders.Any(e => e.ServiceOrderId == id);
         }
     }
- public class ServiceOrderDto
+
+    public class ServiceOrderDto
     {
         public int CustomerId { get; set; }
         public int NicheId { get; set; }
         public DateTime OrderDate { get; set; }
         public string? ServiceList { get; set; }
     }
-public class ServiceOrderResponseDto
+
+    public class ServiceOrderResponseDto
     {
         public int ServiceOrderId { get; set; }
         public string? NicheAddress { get; set; }
@@ -205,23 +223,25 @@ public class ServiceOrderResponseDto
         
         public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
     }
- public class ServiceOrderDetailResponseDto
+
+    public class ServiceOrderDetailResponseDto
     {
         public string ServiceName { get; set; }
         public int Quantity { get; set; }
         public string? CompletionImage { get; set; }
         public string? Status { get; set; }
     }
- public class CreateServiceOrderRequest1
+
+    public class CreateServiceOrderRequest1
     {
         public int NicheID { get; set; }
         public DateTime OrderDate { get; set; }
         public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
     }
-public class UpdateServiceOrderRequest
+
+    public class UpdateServiceOrderRequest
     {
         public int ServiceOrderId { get; set; }
         public DateTime OrderDate { get; set; }
     }
 }
-

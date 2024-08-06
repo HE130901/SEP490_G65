@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,7 +64,8 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid credentials.");
         }
 
-	// POST: /api/auth/get-current-user
+
+        // POST: /api/auth/get-current-user
         [HttpGet("get-current-user")]
         [Authorize]
         public IActionResult GetCurrentUser()
@@ -105,7 +106,7 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid user role.");
         }
 
-	// POST: /api/auth/request-password-reset
+        // POST: /api/auth/request-password-reset
         [HttpPost("request-password-reset")]
         public IActionResult RequestPasswordReset(RequestPasswordResetDto requestDto)
         {
@@ -174,6 +175,8 @@ namespace cms_server.Controllers
             return Unauthorized("Invalid user role.");
         }
 
+
+        
         private string GenerateJwtToken(string userId, string role, string phone, string address = null)
         {
             var claims = new List<Claim>
@@ -248,6 +251,7 @@ namespace cms_server.Controllers
     }
 }
 
+
 namespace cms_server.DTOs
 {
     public class RequestPasswordResetDto
@@ -260,12 +264,9 @@ namespace cms_server.DTOs
         public string Token { get; set; }
         public string NewPassword { get; set; }
     }
-
     public class ChangePasswordDto
     {
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }
     }
-
-
 }

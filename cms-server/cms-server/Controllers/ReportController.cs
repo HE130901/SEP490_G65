@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +16,9 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
-[HttpGet("contract-summary")]
+
+
+        [HttpGet("contract-summary")]
         public ActionResult<ContractSummaryReport> GetContractSummary()
         {
             var totalContracts = _context.Contracts.Count();
@@ -24,7 +26,8 @@ namespace cms_server.Controllers
             var inactiveContracts = _context.Contracts.Count(c => c.Status != "Active");
             var totalRevenue = _context.Contracts.Sum(c => c.TotalAmount ?? 0);
             var averageContractValue = totalContracts > 0 ? totalRevenue / totalContracts : 0;
-// Group by Status (or any other relevant field)
+
+            // Group by Status (or any other relevant field)
             var contractsByStatus = _context.Contracts
                 .GroupBy(c => c.Status)
                 .Select(g => new ContractStatusReport
@@ -34,7 +37,8 @@ namespace cms_server.Controllers
                     TotalAmount = Math.Round(g.Sum(c => c.TotalAmount ?? 0))
                 })
                 .ToList();
- var report = new ContractSummaryReport
+
+            var report = new ContractSummaryReport
             {
                 TotalContracts = totalContracts,
                 ActiveContracts = activeContracts,
@@ -46,7 +50,10 @@ namespace cms_server.Controllers
 
             return Ok(report);
         }
-[HttpGet("services-summary")]
+
+
+
+        [HttpGet("services-summary")]
         public ActionResult<ServiceOverviewDTO> GetServiceOverview()
         {
             var totalServices = _context.ServiceOrders.Count();
@@ -57,7 +64,8 @@ namespace cms_server.Controllers
             var servicesByCategory = _context.Services
                 .GroupBy(s => s.Category)
                 .ToDictionary(g => g.Key, g => g.Count());
-var revenueByCategory = _context.ServiceOrderDetails
+
+            var revenueByCategory = _context.ServiceOrderDetails
                 .GroupBy(sod => sod.Service.Category)
                 .ToDictionary(
                     g => g.Key,
@@ -67,7 +75,8 @@ var revenueByCategory = _context.ServiceOrderDetails
             var servicesByStatus = _context.ServiceOrderDetails
                 .GroupBy(sod => sod.Status)
                 .ToDictionary(g => g.Key, g => g.Count());
- var overview = new ServiceOverviewDTO
+
+            var overview = new ServiceOverviewDTO
             {
                 TotalServices = totalServices,
                 TotalRevenue = totalRevenue,
@@ -79,7 +88,8 @@ var revenueByCategory = _context.ServiceOrderDetails
 
             return Ok(overview);
         }
-[HttpGet("niche-summary")]
+
+        [HttpGet("niche-summary")]
         public ActionResult<NicheDetailsReport> GetNicheDetails()
         {
             var totalNiches = _context.Niches.Count();
@@ -87,7 +97,9 @@ var revenueByCategory = _context.ServiceOrderDetails
             var reservedNiches = _context.Niches.Count(n => n.Status == "Booked");
             var availableNiches = _context.Niches.Count(n => n.Status == "Available");
             var unavailableNiches = _context.Niches.Count(n => n.Status == "Unavailable");
-var nichesByArea = _context.Niches
+
+
+            var nichesByArea = _context.Niches
                 .GroupBy(n => n.AreaId)
                 .Select(g => new AreaReport
                 {
@@ -100,7 +112,7 @@ var nichesByArea = _context.Niches
                     Unavailable = g.Count(n => n.Status == "Unavailable")
                 }).ToList();
 
-var nichesByStatus = _context.Niches
+            var nichesByStatus = _context.Niches
                 .GroupBy(n => n.Status)
                 .Select(g => new StatusReport
                 {
@@ -110,7 +122,8 @@ var nichesByStatus = _context.Niches
 
             var totalServiceOrders = _context.ServiceOrders.Count();
             var totalVisitRegistrations = _context.VisitRegistrations.Count();
- var report = new NicheDetailsReport
+
+            var report = new NicheDetailsReport
             {
                 TotalNiches = totalNiches,
                 OccupiedNiches = occupiedNiches,
@@ -126,7 +139,8 @@ var nichesByStatus = _context.Niches
         }
     }
 }
-public class NicheDetailsReport
+
+    public class NicheDetailsReport
     {
         public int TotalNiches { get; set; }
         public int OccupiedNiches { get; set; }
@@ -139,7 +153,8 @@ public class NicheDetailsReport
         public int TotalServiceOrders { get; set; }
         public int TotalVisitRegistrations { get; set; }
     }
-public class AreaReport
+
+    public class AreaReport
     {
         public int AreaId { get; set; }
     public string AreaAddress { get; set; }
@@ -149,12 +164,15 @@ public class AreaReport
         public int Available { get; set; }
     public int Unavailable { get; set; }
 }
-public class StatusReport
+
+    public class StatusReport
     {
         public string Status { get; set; }
         public int Count { get; set; }
     }
-public class ContractSummaryReport
+
+
+    public class ContractSummaryReport
     {
         public int TotalContracts { get; set; }
         public int ActiveContracts { get; set; }
@@ -163,13 +181,16 @@ public class ContractSummaryReport
         public decimal AverageContractValue { get; set; }
         public List<ContractStatusReport> ContractsByStatus { get; set; } = new List<ContractStatusReport>();
     }
-public class ContractStatusReport
+
+    public class ContractStatusReport
     {
         public string Status { get; set; }
         public int Count { get; set; }
         public decimal TotalAmount { get; set; }
     }
- public class ServiceOverviewDTO
+
+
+    public class ServiceOverviewDTO
     {
         public int TotalServices { get; set; }
         public decimal? TotalRevenue { get; set; }
@@ -178,5 +199,6 @@ public class ContractStatusReport
         public Dictionary<string, decimal?> RevenueByCategory { get; set; }
         public Dictionary<string, int> ServicesByStatus { get; set; }
     }
+
 
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using cms_server.Models;
 using System.Linq;
@@ -21,14 +21,14 @@ namespace cms_server.Controllers
             _logger = logger;
         }
 
-[HttpGet]
+        [HttpGet]
         public ActionResult<IEnumerable<SystemSetting>> GetAllSettings()
         {
             var settings = _context.SystemSettings.ToList();
             return Ok(settings);
         }
 
-// GET: api/SystemSettings/byType/{settingType}
+        // GET: api/SystemSettings/byType/{settingType}
         [HttpGet("byType/{settingType}")]
         public ActionResult<IEnumerable<SystemSetting>> GetSettingsByType(string settingType)
         {
@@ -44,13 +44,13 @@ namespace cms_server.Controllers
             return Ok(settings);
         }
 
-// DTO class for the update request
+        // DTO class for the update request
         public class UpdateSettingNumberRequest
         {
             public decimal SettingNumber { get; set; }
         }
 
-[HttpPatch("{id}")]
+        [HttpPatch("{id}")]
         public ActionResult UpdateSettingNumber(int id, [FromBody] UpdateSettingNumberRequest request)
         {
             if (request == null || !ModelState.IsValid)

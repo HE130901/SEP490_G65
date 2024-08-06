@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Text;
@@ -22,14 +22,15 @@ namespace cms_server.Controllers
         // Local return URL
         //private readonly string _returnUrl = "http://localhost:3000/payment/vnpay_return";
 
- [HttpPost("create-payment")]
+        [HttpPost("create-payment")]
         public IActionResult CreatePayment([FromBody] PaymentRequestModel model)
         {
             string amount = (int.Parse(model.Amount) * 100).ToString();
             string orderId = model.OrderId;
             string createDate = DateTime.Now.ToString("yyyyMMddHHmmss");
             string expireDate = DateTime.Now.AddDays(1).ToString("yyyyMMddHHmmss");
-var vnpay = new VnPayLibrary();
+
+            var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_Version", "2.1.0");
             vnpay.AddRequestData("vnp_Command", "pay");
             vnpay.AddRequestData("vnp_TmnCode", _tmnCode);
@@ -37,19 +38,20 @@ var vnpay = new VnPayLibrary();
             vnpay.AddRequestData("vnp_CurrCode", "VND");
             vnpay.AddRequestData("vnp_TxnRef", orderId);
             vnpay.AddRequestData("vnp_OrderInfo", "Thanh toan don hang " + orderId);
-vnpay.AddRequestData("vnp_OrderType", "other");
+            vnpay.AddRequestData("vnp_OrderType", "other");
             vnpay.AddRequestData("vnp_ReturnUrl", _returnUrl);
             vnpay.AddRequestData("vnp_IpAddr", HttpContext.Connection.RemoteIpAddress?.ToString() ?? "::1");
             vnpay.AddRequestData("vnp_CreateDate", createDate);
             vnpay.AddRequestData("vnp_Locale", "vn");
             vnpay.AddRequestData("vnp_ExpireDate", expireDate);
 
- string paymentUrl = vnpay.CreateRequestUrl(_vnpUrl, _hashSecret);
+            string paymentUrl = vnpay.CreateRequestUrl(_vnpUrl, _hashSecret);
             var response = new PaymentResponseModel { PaymentUrl = paymentUrl };
 
             return Ok(response);
         }
-[HttpGet("vnpay_return")]
+
+        [HttpGet("vnpay_return")]
         public IActionResult VnPayReturn()
         {
             var queryParameters = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
@@ -62,7 +64,8 @@ vnpay.AddRequestData("vnp_OrderType", "other");
                     vnpay.AddResponseData(param.Key, param.Value);
                 }
             }
-string vnpSecureHash = queryParameters["vnp_SecureHash"];
+
+            string vnpSecureHash = queryParameters["vnp_SecureHash"];
             bool isValidSignature = vnpay.ValidateSignature(vnpSecureHash, _hashSecret);
 
             // Log the raw data used for signature validation
@@ -74,15 +77,17 @@ string vnpSecureHash = queryParameters["vnp_SecureHash"];
             {
                 string vnpResponseCode = vnpay.GetResponseData("vnp_ResponseCode");
                 string vnpTransactionStatus = vnpay.GetResponseData("vnp_TransactionStatus");
-if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
+
+                if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
                 {
                     long orderId = Convert.ToInt64(vnpay.GetResponseData("vnp_TxnRef"));
                     long vnpayTranId = Convert.ToInt64(vnpay.GetResponseData("vnp_TransactionNo"));
                     long vnpAmount = Convert.ToInt64(vnpay.GetResponseData("vnp_Amount")) / 100;
- // Log for debugging
+
+                    // Log for debugging
                     Console.WriteLine($"Payment success: OrderId={orderId}, VNPAY TranId={vnpayTranId}, Amount={vnpAmount}");
 
-// Update your database with the order details
+                    // Update your database with the order details
 
                     return Ok(new { message = "Giao dịch thành công" });
                 }
@@ -93,7 +98,7 @@ if (vnpResponseCode == "00" && vnpTransactionStatus == "00")
                     return BadRequest(new { message = "Giao dịch không thành công" });
                 }
             }
-else
+            else
             {
                 // Log for debugging
                 Console.WriteLine($"Invalid signature: {string.Join(", ", queryParameters.Select(kv => $"{kv.Key}={kv.Value}"))}");
@@ -101,12 +106,14 @@ else
             }
         }
     }
-public class PaymentRequestModel
+
+    public class PaymentRequestModel
     {
         public string Amount { get; set; }
         public string OrderId { get; set; }
     }
- public class PaymentResponseModel
+
+    public class PaymentResponseModel
     {
         public string PaymentUrl { get; set; }
     }

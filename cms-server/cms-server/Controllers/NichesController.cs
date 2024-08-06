@@ -1,4 +1,4 @@
-using cms_server.DTOs;
+﻿using cms_server.DTOs;
 using cms_server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +35,7 @@ namespace cms_server.Controllers
             return Ok(niches);
         }
 
-  [HttpGet("{nicheId}/details")]
+        [HttpGet("{nicheId}/details")]
         public async Task<ActionResult<NicheDetailDto>> GetNicheDetail(int nicheId)
         {
             try
@@ -48,8 +48,8 @@ namespace cms_server.Controllers
                 return NotFound();
             }
         }
-
-[HttpGet("{nicheId}/details-for-customer")]
+   
+        [HttpGet("{nicheId}/details-for-customer")]
         public async Task<ActionResult<NicheDetailDto3>> GetNicheDetail3(int nicheId)
         {
             try

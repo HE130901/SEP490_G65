@@ -1,4 +1,4 @@
-using cms_server.Configuration;
+﻿using cms_server.Configuration;
 using cms_server.Models;
 using cms_server.Services;
 using Microsoft.AspNetCore.Http;
@@ -14,13 +14,16 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
         //private readonly INotificationService _notificationService;
-// public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
+
+       // public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
         public ServiceOrderForStaffController(CmsContext context)
         {
             _context = context;
           //  _notificationService = notificationService;
         }
-private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
+
+
+        private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
         {
             var totalPrice = await _context.ServiceOrderDetails
                 .Where(sod => sod.ServiceOrderId == serviceOrderId)
@@ -44,7 +47,10 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
             }
             throw new UnauthorizedAccessException("Invalid token");
         }
-  private async Task<string> GetNicheAddress(int nicheId)
+
+  
+
+        private async Task<string> GetNicheAddress(int nicheId)
         {
             var niche = await _context.Niches
                 .Include(n => n.Area)
@@ -94,7 +100,8 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
 
             return Ok(serviceOrderResponses);
         }
-[HttpGet("{serviceOrderId}")]
+
+        [HttpGet("{serviceOrderId}")]
         public async Task<IActionResult> GetServiceOrderDetails(int serviceOrderId)
         {
             var serviceOrder = await _context.ServiceOrders
@@ -245,7 +252,8 @@ private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
             }
         }
 
-  [HttpPost("add-service-to-order")]
+
+        [HttpPost("add-service-to-order")]
         public async Task<IActionResult> AddServiceToOrder([FromBody] AddServiceToOrderRequest request)
         {
             var serviceOrder = await _context.ServiceOrders.FindAsync(request.ServiceOrderID);

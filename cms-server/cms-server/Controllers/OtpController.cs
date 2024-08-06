@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -11,7 +11,7 @@ public class OtpController : ControllerBase
         _otpService = otpService;
     }
 
- [HttpPost("send-otp")]
+    [HttpPost("send-otp")]
     public IActionResult SendOtp([FromBody] SendOtpRequest request)
     {
         try
@@ -24,7 +24,8 @@ public class OtpController : ControllerBase
             return StatusCode(500, new { error = "Failed to send OTP", details = ex.Message });
         }
     }
-[HttpPost("verify-otp")]
+
+    [HttpPost("verify-otp")]
     public IActionResult VerifyOtp([FromBody] VerifyOtpRequest request)
     {
         try
@@ -34,7 +35,7 @@ public class OtpController : ControllerBase
             {
                 return Ok(new { message = "OTP verified successfully" });
             }
-else
+            else
             {
                 return BadRequest(new { error = "Invalid OTP" });
             }
@@ -44,7 +45,8 @@ else
             return StatusCode(500, new { error = "Failed to verify OTP", details = ex.Message });
         }
     }
-// New endpoints for testing with default OTP "123456"
+
+    // New endpoints for testing with default OTP "123456"
     [HttpPost("test/send-otp")]
     public IActionResult SendTestOtp([FromBody] SendOtpRequest request)
     {
@@ -53,12 +55,13 @@ else
             // Simulate sending the default OTP "123456"
             return Ok(new { message = "Test OTP '123456' sent successfully" });
         }
-catch (Exception ex)
+        catch (Exception ex)
         {
             return StatusCode(500, new { error = "Failed to send test OTP", details = ex.Message });
         }
     }
-[HttpPost("test/verify-otp")]
+
+    [HttpPost("test/verify-otp")]
     public IActionResult VerifyTestOtp([FromBody] VerifyOtpRequest request)
     {
         try
@@ -68,7 +71,7 @@ catch (Exception ex)
             {
                 return Ok(new { message = "Test OTP verified successfully" });
             }
-else
+            else
             {
                 return BadRequest(new { error = "Invalid OTP" });
             }
@@ -79,13 +82,14 @@ else
         }
     }
 }
+
 public class SendOtpRequest
 {
     public string PhoneNumber { get; set; }
 }
+
 public class VerifyOtpRequest
 {
     public string PhoneNumber { get; set; }
     public string Otp { get; set; }
 }
-

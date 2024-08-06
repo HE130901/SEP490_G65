@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using Microsoft.Extensions.Logging;
@@ -77,7 +77,7 @@ namespace cms_server.Controllers
             }
         }
 
- // GET: api/VisitRegistrations/5
+        // GET: api/VisitRegistrations/5
         [HttpGet("{id}")]
         public async Task<ActionResult<VisitRegistrationDto>> GetVisitRegistration(int id)
         {
@@ -115,7 +115,7 @@ namespace cms_server.Controllers
             return Ok(visitRegistration);
         }
 
-// GET: api/VisitRegistrations/customer/5
+        // GET: api/VisitRegistrations/customer/5
         [HttpGet("customer/{customerId}")]
         public async Task<ActionResult<IEnumerable<VisitRegistrationDto>>> GetVisitRegistrationsByCustomer(int customerId)
         {
@@ -160,7 +160,7 @@ namespace cms_server.Controllers
             }
         }
 
-// PUT: api/VisitRegistrations/5
+        // PUT: api/VisitRegistrations/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutVisitRegistration(int id, VisitRegistrationDto visitRegistrationDto)
         {
@@ -199,7 +199,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-// POST: api/VisitRegistrations
+        // POST: api/VisitRegistrations
         [HttpPost]
         public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
         {
@@ -252,7 +252,8 @@ namespace cms_server.Controllers
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
 
-// DELETE: api/VisitRegistrations/5
+
+        // DELETE: api/VisitRegistrations/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisitRegistration(int id)
         {
@@ -286,7 +287,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-// PUT: api/VisitRegistrations/approve/5
+        // PUT: api/VisitRegistrations/approve/5
         [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveVisitRegistration(int id)
         {
@@ -322,7 +323,7 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-private int GetStaffIdFromToken()
+        private int GetStaffIdFromToken()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity != null)

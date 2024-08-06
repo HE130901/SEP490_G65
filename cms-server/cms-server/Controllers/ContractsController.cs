@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-	// GET: api/{customerId}/list
+        // GET: api/{customerId}/list
         [HttpGet("{customerId}/list")]
         public async Task<ActionResult<IEnumerable<ContractDto>>> GetContractsByCustomer(int customerId)
         {
@@ -116,6 +116,7 @@ namespace cms_server.Controllers
 
             return Ok(contractDetail);
         }
+
 
         // POST: api/Contracts/renew
         [HttpPost("renew")]
@@ -238,6 +239,8 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+
+
         // GET: api/Contracts/{contractId}/renewals
         [HttpGet("{contractId}/renewals")]
         public async Task<ActionResult<IEnumerable<ContractRenewalDto>>> GetContractRenewals(int contractId)
@@ -272,8 +275,12 @@ namespace cms_server.Controllers
         {
             return _context.Contracts.Any(e => e.ContractId == id);
         }
-    }
 
+
+
+
+
+    }
     public class ContractRenewalRequestDto
     {
         public int ContractId { get; set; }
@@ -281,7 +288,6 @@ namespace cms_server.Controllers
         public DateTime ConfirmationDate { get; set; }
         public string SignAddress { get; set; }
     }
-
     public class ContractCancellationRequestDto
     {
         public int ContractId { get; set; }
@@ -302,5 +308,7 @@ namespace cms_server.Controllers
         public decimal Amount { get; set; }
         public string Note { get; set; }
     }
+
+
 
 }
