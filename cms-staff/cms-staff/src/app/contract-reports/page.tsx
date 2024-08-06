@@ -1,8 +1,16 @@
 // src/pages/ContractSummaryPage.tsx
 "use client";
-import React, { useEffect, useState } from "react";
-import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { Bar, Pie } from "react-chartjs-2";
+import { useDashboardContext } from "@/context/DashboardContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,7 +21,6 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import axiosInstance from "@/utils/axiosInstance";
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,20 +32,6 @@ ChartJS.register(
   Legend,
   ArcElement
 );
-
-interface ReportData {
-  totalContracts: number;
-  activeContracts: number;
-  totalRevenue: number;
-  averageContractValue: number;
-  contractsByStatus: {
-    $values: {
-      status: string;
-      count: number;
-      totalAmount: number;
-    }[];
-  };
-}
 
 // Function to get the label and color for each status
 const getStatusLabel = (status: string) => {
@@ -62,29 +55,31 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-function ContractSummaryPage() {
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+const ContractSummaryPage: React.FC = () => {
+  const { contractReport } = useDashboardContext();
 
-  useEffect(() => {
-    axiosInstance
-      .get("/api/Report/contract-summary")
-      .then((response) => setReportData(response.data))
-      .catch((error) => console.error("Error fetching report data:", error));
-  }, []);
-
-  if (!reportData) {
-    return <Typography>Loading...</Typography>;
+  if (!contractReport) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   // Data for Bar Chart (Contract Status Counts)
   const contractStatusData = {
-    labels: reportData.contractsByStatus.$values.map(
+    labels: contractReport.contractsByStatus.$values.map(
       (status) => getStatusLabel(status.status).label
     ),
     datasets: [
       {
         label: "Số lượng hợp đồng",
-        data: reportData.contractsByStatus.$values.map(
+        data: contractReport.contractsByStatus.$values.map(
           (status) => status.count
         ),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
@@ -96,13 +91,13 @@ function ContractSummaryPage() {
 
   // Data for Pie Chart (Revenue Distribution by Status)
   const revenueData = {
-    labels: reportData.contractsByStatus.$values.map(
+    labels: contractReport.contractsByStatus.$values.map(
       (status) => getStatusLabel(status.status).label
     ),
     datasets: [
       {
         label: "Tổng số tiền",
-        data: reportData.contractsByStatus.$values.map(
+        data: contractReport.contractsByStatus.$values.map(
           (status) => status.totalAmount
         ),
         backgroundColor: [
@@ -141,7 +136,7 @@ function ContractSummaryPage() {
                 Tổng doanh thu
               </Typography>
               <Typography variant="h4">
-                {reportData.totalRevenue.toLocaleString()} VND
+                {contractReport.totalRevenue.toLocaleString()} VND
               </Typography>
             </CardContent>
           </Card>
@@ -153,7 +148,7 @@ function ContractSummaryPage() {
                 Giá trị hợp đồng trung bình
               </Typography>
               <Typography variant="h4">
-                {reportData.averageContractValue.toLocaleString()} VND
+                {contractReport.averageContractValue.toLocaleString()} VND
               </Typography>
             </CardContent>
           </Card>
@@ -164,7 +159,9 @@ function ContractSummaryPage() {
               <Typography variant="h6" color="textSecondary" gutterBottom>
                 Tổng số hợp đồng
               </Typography>
-              <Typography variant="h4">{reportData.totalContracts}</Typography>
+              <Typography variant="h4">
+                {contractReport.totalContracts}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -174,7 +171,9 @@ function ContractSummaryPage() {
               <Typography variant="h6" color="textSecondary" gutterBottom>
                 Hợp đồng đang hoạt động
               </Typography>
-              <Typography variant="h4">{reportData.activeContracts}</Typography>
+              <Typography variant="h4">
+                {contractReport.activeContracts}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -221,6 +220,6 @@ function ContractSummaryPage() {
       </Grid>
     </Box>
   );
-}
+};
 
 export default ContractSummaryPage;

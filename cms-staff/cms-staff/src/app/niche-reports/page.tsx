@@ -1,5 +1,6 @@
+// src/pages/NicheReportPage.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -14,10 +15,11 @@ import {
   TableRow,
   Paper,
   Pagination,
+  CircularProgress,
 } from "@mui/material";
 import { Pie } from "react-chartjs-2";
+import { useDashboardContext } from "@/context/DashboardContext";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import axiosInstance from "@/utils/axiosInstance";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -42,33 +44,22 @@ interface NicheReportData {
   nichesByArea: NicheArea[];
 }
 
-function NicheReportPage() {
-  const [reportData, setReportData] = useState<NicheReportData | null>(null);
+const NicheReportPage: React.FC = () => {
+  const { nicheReport } = useDashboardContext();
   const [page, setPage] = useState(1);
   const rowsPerPage = 8; // Set the number of rows per page
 
-  useEffect(() => {
-    axiosInstance
-      .get("/api/Report/niche-summary")
-      .then((response) => {
-        if (
-          response.data &&
-          response.data.nichesByArea &&
-          response.data.nichesByArea.$values
-        ) {
-          setReportData({
-            ...response.data,
-            nichesByArea: response.data.nichesByArea.$values,
-          });
-        } else {
-          console.error("Unexpected API response structure:", response);
-        }
-      })
-      .catch((error) => console.error("Error fetching report data:", error));
-  }, []);
-
-  if (!reportData) {
-    return <Typography>Loading...</Typography>;
+  if (!nicheReport) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
 
   const handlePageChange = (event: any, value: number) => {
@@ -76,7 +67,7 @@ function NicheReportPage() {
   };
 
   // Sort nichesByArea by areaId in ascending order
-  const sortedAreas = reportData.nichesByArea.sort(
+  const sortedAreas = nicheReport.nichesByArea.sort(
     (a, b) => a.areaId - b.areaId
   );
 
@@ -98,10 +89,10 @@ function NicheReportPage() {
       {
         label: "Số lượng Ô chứa",
         data: [
-          reportData.occupiedNiches,
-          reportData.reservedNiches,
-          reportData.availableNiches,
-          reportData.unavailableNiches,
+          nicheReport.occupiedNiches,
+          nicheReport.reservedNiches,
+          nicheReport.availableNiches,
+          nicheReport.unavailableNiches,
         ],
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
@@ -130,7 +121,7 @@ function NicheReportPage() {
           <Card>
             <CardContent>
               <Typography variant="h6">Tổng số Ô chứa</Typography>
-              <Typography variant="h4">{reportData.totalNiches}</Typography>
+              <Typography variant="h4">{nicheReport.totalNiches}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -138,7 +129,7 @@ function NicheReportPage() {
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Đang sử dụng</Typography>
-              <Typography variant="h4">{reportData.occupiedNiches}</Typography>
+              <Typography variant="h4">{nicheReport.occupiedNiches}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -146,7 +137,7 @@ function NicheReportPage() {
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Đã đặt trước</Typography>
-              <Typography variant="h4">{reportData.reservedNiches}</Typography>
+              <Typography variant="h4">{nicheReport.reservedNiches}</Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -154,7 +145,9 @@ function NicheReportPage() {
           <Card>
             <CardContent>
               <Typography variant="h6">Ô chứa Trống</Typography>
-              <Typography variant="h4">{reportData.availableNiches}</Typography>
+              <Typography variant="h4">
+                {nicheReport.availableNiches}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -163,7 +156,7 @@ function NicheReportPage() {
             <CardContent>
               <Typography variant="h6">Ô chứa Không khả dụng</Typography>
               <Typography variant="h4">
-                {reportData.unavailableNiches}
+                {nicheReport.unavailableNiches}
               </Typography>
             </CardContent>
           </Card>
@@ -226,7 +219,7 @@ function NicheReportPage() {
                 </Table>
               </TableContainer>
               <Pagination
-                count={Math.ceil(reportData.nichesByArea.length / rowsPerPage)}
+                count={Math.ceil(nicheReport.nichesByArea.length / rowsPerPage)}
                 page={page}
                 onChange={handlePageChange}
                 sx={{ mt: 2 }}
@@ -237,6 +230,6 @@ function NicheReportPage() {
       </Grid>
     </Box>
   );
-}
+};
 
 export default NicheReportPage;

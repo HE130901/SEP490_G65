@@ -26,6 +26,7 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddHttpClient<ImageUploadService>();
 builder.Services.AddSingleton<IOtpService, OtpService>();
 builder.Services.AddSingleton<EmailService>();
+builder.Services.AddScoped<OrderService>();
 
 // Register the background service
 builder.Services.AddHostedService<ContractStatusUpdateService>();

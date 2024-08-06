@@ -60,7 +60,7 @@ const Sidebar = () => {
       path: "/dashboard",
     },
     {
-      text: "Đơn đặt chỗ",
+      text: "Đơn đặt ô chứa",
       icon: <CalendarIcon className="h-6 w-6" />,
       path: "/niche-reservations",
     },

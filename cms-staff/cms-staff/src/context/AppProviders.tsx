@@ -10,6 +10,7 @@ import { ServiceProvider } from "./ServiceContext";
 import { NicheReservationProvider } from "./NicheReservationContext";
 import { VisitRegistrationProvider } from "./VisitRegistrationContext";
 import { ServiceOrderProvider } from "./ServiceOrderContext";
+import { DashboardProvider } from "./DashboardContext";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
@@ -20,7 +21,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <NicheProvider>
               <NicheReservationProvider>
                 <VisitRegistrationProvider>
-                  <ServiceOrderProvider>{children}</ServiceOrderProvider>
+                  <ServiceOrderProvider>
+                    <DashboardProvider>{children}</DashboardProvider>
+                  </ServiceOrderProvider>
                 </VisitRegistrationProvider>
               </NicheReservationProvider>
             </NicheProvider>

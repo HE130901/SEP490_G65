@@ -1,8 +1,16 @@
 // src/pages/ServiceSummaryPage.tsx
 "use client";
-import React, { useEffect, useState } from "react";
-import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { Bar, Pie } from "react-chartjs-2";
+import { useDashboardContext } from "@/context/DashboardContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,7 +21,6 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import axiosInstance from "@/utils/axiosInstance";
 
 // Register Chart.js components
 ChartJS.register(
@@ -26,45 +33,38 @@ ChartJS.register(
   ArcElement
 );
 
-interface ServiceOverviewDTO {
-  totalServices: number;
-  totalRevenue: number;
-  averageOrderValue: number;
-  servicesByCategory: Record<string, number>;
-  revenueByCategory: Record<string, number>;
-  servicesByStatus: Record<string, number>;
-}
+// Helper function to filter keys
+const filterKeys = (obj: Record<string, any>): Record<string, any> =>
+  Object.keys(obj).reduce((acc, key) => {
+    if (!key.startsWith("$")) {
+      acc[key] = obj[key];
+    }
+    return acc;
+  }, {} as Record<string, any>);
 
-function ServiceSummaryPage() {
-  const [reportData, setReportData] = useState<ServiceOverviewDTO | null>(null);
+const ServiceSummaryPage: React.FC = () => {
+  const { serviceReport } = useDashboardContext();
 
-  useEffect(() => {
-    axiosInstance
-      .get("/api/Report/services-summary")
-      .then((response) => setReportData(response.data))
-      .catch((error) => console.error("Error fetching report data:", error));
-  }, []);
-
-  if (!reportData) {
-    return <Typography>Loading...</Typography>;
+  if (!serviceReport) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
   }
-
-  // Filter out any keys starting with '$' (like $id)
-  const filterKeys = (obj: Record<string, any>) =>
-    Object.keys(obj).reduce((acc, key) => {
-      if (!key.startsWith("$")) {
-        acc[key] = obj[key];
-      }
-      return acc;
-    }, {} as Record<string, any>);
 
   // Data for Bar Chart (Services by Category)
   const servicesByCategoryData = {
-    labels: Object.keys(filterKeys(reportData.servicesByCategory)),
+    labels: Object.keys(filterKeys(serviceReport.servicesByCategory)),
     datasets: [
       {
         label: "Số lượng dịch vụ",
-        data: Object.values(filterKeys(reportData.servicesByCategory)),
+        data: Object.values(filterKeys(serviceReport.servicesByCategory)),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
@@ -74,11 +74,11 @@ function ServiceSummaryPage() {
 
   // Data for Pie Chart (Revenue by Category)
   const revenueByCategoryData = {
-    labels: Object.keys(filterKeys(reportData.revenueByCategory)),
+    labels: Object.keys(filterKeys(serviceReport.revenueByCategory)),
     datasets: [
       {
         label: "Doanh thu",
-        data: Object.values(filterKeys(reportData.revenueByCategory)),
+        data: Object.values(filterKeys(serviceReport.revenueByCategory)),
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
@@ -104,11 +104,11 @@ function ServiceSummaryPage() {
 
   // Data for Bar Chart (Services by Status)
   const servicesByStatusData = {
-    labels: Object.keys(filterKeys(reportData.servicesByStatus)),
+    labels: Object.keys(filterKeys(serviceReport.servicesByStatus)),
     datasets: [
       {
         label: "Số lượng dịch vụ",
-        data: Object.values(filterKeys(reportData.servicesByStatus)),
+        data: Object.values(filterKeys(serviceReport.servicesByStatus)),
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
@@ -129,7 +129,7 @@ function ServiceSummaryPage() {
                 Tổng doanh thu
               </Typography>
               <Typography variant="h4">
-                {reportData.totalRevenue.toLocaleString()} VND
+                {serviceReport.totalRevenue.toLocaleString()} VND
               </Typography>
             </CardContent>
           </Card>
@@ -141,7 +141,7 @@ function ServiceSummaryPage() {
                 Giá trị đơn hàng trung bình
               </Typography>
               <Typography variant="h4">
-                {reportData.averageOrderValue.toLocaleString()} VND
+                {serviceReport.averageOrderValue.toLocaleString()} VND
               </Typography>
             </CardContent>
           </Card>
@@ -152,7 +152,9 @@ function ServiceSummaryPage() {
               <Typography variant="h6" color="textSecondary" gutterBottom>
                 Tổng số đơn đặt dịch vụ
               </Typography>
-              <Typography variant="h4">{reportData.totalServices}</Typography>
+              <Typography variant="h4">
+                {serviceReport.totalServices}
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -220,6 +222,6 @@ function ServiceSummaryPage() {
       </Grid>
     </Box>
   );
-}
+};
 
 export default ServiceSummaryPage;
