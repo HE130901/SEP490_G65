@@ -155,9 +155,15 @@ const Sidebar = () => {
           width="100%"
         >
           {open && (
-            <Typography className="pl-8" variant="h6" noWrap>
-              Quản lý
-            </Typography>
+            <Box display="flex" alignItems="center">
+              <Image
+                src="/images/logo.png"
+                alt="logo"
+                width={150}
+                height={150}
+                className="rounded-md ml-8"
+              />
+            </Box>
           )}
           <IconButton onClick={handleDrawerToggle} sx={{ color: "#fff" }}>
             {open ? <ChevronLeftIcon /> : <MenuIcon />}
@@ -194,7 +200,12 @@ const Sidebar = () => {
                   {item.icon}
                 </ListItemIcon>
                 {open && (
-                  <ListItemText primary={item.text} sx={{ color: "#fff" }} />
+                  <ListItemText
+                    primary={item.text}
+                    sx={{
+                      color: "#fff",
+                    }}
+                  />
                 )}
               </ListItemButton>
             </Link>
@@ -212,7 +223,6 @@ const Sidebar = () => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          p: 2,
         }}
       >
         {open && (
@@ -222,12 +232,18 @@ const Sidebar = () => {
               alt="logo"
               width={150}
               height={150}
-              className="pb-4"
+              className=""
             />
             <Typography variant="caption" color="inherit" fontStyle="oblique">
               © SEP490-G65
             </Typography>
-            <Typography variant="caption" color="inherit" fontStyle="initial">
+            <Typography
+              variant="caption"
+              color="inherit"
+              fontStyle="initial"
+              fontWeight={700}
+              pb={2}
+            >
               Columbarium Management System
             </Typography>
           </>
