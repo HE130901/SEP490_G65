@@ -226,6 +226,9 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     name="note"
                     value={formData.note || "Không có ghi chú"}
                     onChange={handleChange}
+                    InputProps={{
+                      readOnly: true,
+                    }}
                   />
                 </Grid>
               </>
