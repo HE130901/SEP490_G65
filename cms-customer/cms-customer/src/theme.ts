@@ -1,10 +1,15 @@
 'use client';
 import { createTheme } from '@mui/material/styles';
 
+// Load the Open Sans font
+import '@fontsource/open-sans'; 
+
 const theme = createTheme({
   typography: {
-    // Remove any custom fontFamily to use MUI's default
-    fontFamily: 'Roboto, Arial, sans-serif',
+    // Use Open Sans font
+    fontFamily: 'Open Sans, Roboto, Arial, sans-serif',
+    
+//fontFamily: 'Roboto, Arial, sans-serif',
   },
   palette: {
     primary: {
@@ -14,3 +19,6 @@ const theme = createTheme({
 });
 
 export default theme;
+
+    
+
