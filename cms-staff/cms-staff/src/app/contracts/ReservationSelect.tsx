@@ -37,12 +37,21 @@ const ReservationSelect: React.FC<ReservationSelectProps> = ({
 
   return (
     <FormControl fullWidth sx={{ mt: 2 }}>
-      <InputLabel id="reservation-select-label">Chọn đơn đăng ký</InputLabel>
+      <InputLabel id="reservation-select-label">
+        {" "}
+        <span>
+          Chọn đơn đăng ký <span style={{ color: "red" }}>*</span>
+        </span>
+      </InputLabel>
       <Select
         labelId="reservation-select-label"
         value={selectedReservationCode}
         onChange={handleChange}
-        label="Chọn đơn đăng ký"
+        label={
+          <span>
+            Chọn đơn đăng ký <span style={{ color: "red" }}>*</span>
+          </span>
+        }
       >
         {reservations.map((reservation) => (
           <MenuItem

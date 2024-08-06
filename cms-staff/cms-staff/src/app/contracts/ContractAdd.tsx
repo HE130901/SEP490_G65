@@ -491,7 +491,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Tên khách hàng"
+                label={
+                  <span>
+                    Tên khách hàng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerFullName"
                 value={contractData.customerFullName}
                 onChange={handleChange}
@@ -503,7 +507,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Số điện thoại khách hàng"
+                label={
+                  <span>
+                    Số điện thoại khách hàng{" "}
+                    <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerPhoneNumber"
                 value={contractData.customerPhoneNumber}
                 onChange={handleChange}
@@ -515,7 +524,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Email khách hàng"
+                label={
+                  <span>
+                    Email khách hàng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerEmail"
                 value={contractData.customerEmail}
                 onChange={handleChange}
@@ -527,7 +540,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Địa chỉ khách hàng"
+                label={
+                  <span>
+                    Địa chỉ khách hàng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerAddress"
                 value={contractData.customerAddress}
                 onChange={handleChange}
@@ -539,7 +556,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Số CMND khách hàng"
+                label={
+                  <span>
+                    Số CMND khách hàng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerCitizenId"
                 value={contractData.customerCitizenId}
                 onChange={handleChange}
@@ -551,7 +572,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Ngày cấp CMND"
+                label={
+                  <span>
+                    Ngày cấp CMND <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 type="date"
                 name="customerCitizenIdIssueDate"
                 value={contractData.customerCitizenIdIssueDate}
@@ -564,7 +589,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Nơi cấp CMND"
+                label={
+                  <span>
+                    Nơi cấp CMND <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="customerCitizenIdSupplier"
                 value={contractData.customerCitizenIdSupplier}
                 onChange={handleChange}
@@ -581,7 +610,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Tên người quá cố"
+                label={
+                  <span>
+                    Tên người quá cố <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="deceasedFullName"
                 value={contractData.deceasedFullName}
                 onChange={handleChange}
@@ -593,7 +626,11 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Số CMND người quá cố"
+                label={
+                  <span>
+                    Số CMND người quá cố <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 name="deceasedCitizenId"
                 value={contractData.deceasedCitizenId}
                 onChange={handleChange}
@@ -605,7 +642,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Ngày sinh người quá cố"
+                label={
+                  <span>
+                    Ngày sinh người quá cố
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                }
                 type="date"
                 name="deceasedDateOfBirth"
                 value={contractData.deceasedDateOfBirth}
@@ -618,7 +660,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Ngày mất người quá cố"
+                label={
+                  <span>
+                    Ngày mất người quá cố
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                }
                 type="date"
                 name="deceasedDateOfDeath"
                 value={contractData.deceasedDateOfDeath}
@@ -631,7 +678,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Số chứng tử"
+                label={
+                  <span>
+                    Số giấy chứng tử
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                }
                 name="deathCertificateNumber"
                 value={contractData.deathCertificateNumber}
                 onChange={handleChange}
@@ -643,7 +695,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Nơi cấp chứng tử"
+                label={
+                  <span>
+                    Nơi cấp chứng tử
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                }
                 name="deathCertificateSupplier"
                 value={contractData.deathCertificateSupplier}
                 onChange={handleChange}
@@ -654,12 +711,22 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth error={!!errors.relationshipWithCustomer}>
-                <InputLabel>Mối quan hệ với khách hàng</InputLabel>
+                <InputLabel>
+                  <span>
+                    Mối quan hệ với khách hàng
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                </InputLabel>
                 <Select
                   name="relationshipWithCustomer"
                   value={contractData.relationshipWithCustomer}
                   onChange={handleChange}
-                  label="Mối quan hệ với khách hàng"
+                  label={
+                    <span>
+                      Mối quan hệ với khách hàng
+                      <span style={{ color: "red" }}> *</span>
+                    </span>
+                  }
                 >
                   <MenuItem value="Cụ">Cụ</MenuItem>
                   <MenuItem value="Ông/Bà">Ông/Bà</MenuItem>
@@ -683,7 +750,12 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
-                label="Ngày bắt đầu"
+                label={
+                  <span>
+                    Ngày bắt đầu hợp đồng
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                }
                 type="date"
                 name="startDate"
                 value={contractData.startDate}
@@ -696,11 +768,22 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
 
             <Grid item xs={12} md={6}>
               <FormControl fullWidth error={!!errors.type}>
-                <InputLabel>Loại hình gửi</InputLabel>
+                <InputLabel>
+                  {" "}
+                  <span>
+                    Loại hình gửi
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
+                </InputLabel>
                 <Select
                   value={selectedSetting}
                   onChange={handleTypeChange}
-                  label="Loại hình gửi"
+                  label={
+                    <span>
+                      Loại hình gửi
+                      <span style={{ color: "red" }}> *</span>
+                    </span>
+                  }
                 >
                   {settings.map((setting) => (
                     <MenuItem

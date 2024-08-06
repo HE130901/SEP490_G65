@@ -11,6 +11,7 @@ import {
   Grid,
   Box,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
@@ -71,7 +72,7 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
 
   return (
     <>
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>Thêm dịch vụ mới</DialogTitle>
         <DialogContent dividers>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -125,7 +126,7 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
                   )}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Controller
                   name="category"
                   control={control}
@@ -145,7 +146,7 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
                   )}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Controller
                   name="tag"
                   control={control}
@@ -168,26 +169,13 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
                 />
               </Grid>
               <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Hình ảnh dịch vụ
+                </Typography>
                 <Box display="flex" alignItems="center">
-                  <Controller
-                    name="servicePicture"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Ảnh"
-                        fullWidth
-                        variant="outlined"
-                        InputProps={{
-                          readOnly: true,
-                        }}
-                      />
-                    )}
-                  />
                   <Button
                     variant="contained"
                     onClick={() => setImageDialogOpen(true)}
-                    sx={{ ml: 2 }}
                   >
                     Chọn ảnh
                   </Button>
@@ -208,10 +196,14 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
           </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="secondary">
+          <Button onClick={onClose} variant="outlined">
             Hủy
           </Button>
-          <Button onClick={handleSubmit(onSubmit)} color="primary">
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            color="primary"
+            variant="contained"
+          >
             Thêm
           </Button>
         </DialogActions>

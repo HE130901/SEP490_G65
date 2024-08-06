@@ -1,28 +1,28 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Grid,
-  SelectChangeEvent,
-  Typography,
-  CircularProgress,
-} from "@mui/material";
 import NicheReservationAPI from "@/services/nicheReservationService";
-import { toast } from "react-toastify";
 import axiosInstance from "@/utils/axiosInstance";
+import { CheckCircle as ConfirmIcon } from "@mui/icons-material";
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Radio,
+  RadioGroup,
+  Select,
+  SelectChangeEvent,
+  TextField,
+} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import { z } from "zod";
 
 const predefinedAddresses = [
@@ -244,7 +244,11 @@ const AddBookingRequestDialog = ({
           <Grid item xs={6}>
             <TextField
               margin="dense"
-              label="Tên khách hàng *"
+              label={
+                <span>
+                  Tên khách hàng <span style={{ color: "red" }}>*</span>
+                </span>
+              }
               type="text"
               fullWidth
               variant="outlined"
@@ -259,7 +263,11 @@ const AddBookingRequestDialog = ({
           <Grid item xs={6}>
             <TextField
               margin="dense"
-              label="Số điện thoại *"
+              label={
+                <span>
+                  Số điện thoại <span style={{ color: "red" }}>*</span>
+                </span>
+              }
               type="text"
               fullWidth
               variant="outlined"
@@ -273,13 +281,21 @@ const AddBookingRequestDialog = ({
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth margin="dense" variant="outlined">
-              <InputLabel>Nhà</InputLabel>
+              <InputLabel>
+                <span>
+                  Nhà <span style={{ color: "red" }}>*</span>
+                </span>
+              </InputLabel>
               <Select
                 name="buildingId"
                 value={formData.buildingId}
                 onChange={handleBuildingChange}
                 onBlur={handleBlur}
-                label="Nhà"
+                label={
+                  <span>
+                    Nhà <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 error={!!formErrors.buildingId}
               >
                 {buildings.map((building) => (
@@ -298,13 +314,22 @@ const AddBookingRequestDialog = ({
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth margin="dense" variant="outlined">
-              <InputLabel>Tầng</InputLabel>
+              <InputLabel>
+                {" "}
+                <span>
+                  Tầng <span style={{ color: "red" }}>*</span>
+                </span>
+              </InputLabel>
               <Select
                 name="floorId"
                 value={formData.floorId}
                 onChange={handleFloorChange}
                 onBlur={handleBlur}
-                label="Tầng"
+                label={
+                  <span>
+                    Tầng <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 disabled={!formData.buildingId}
                 error={!!formErrors.floorId}
               >
@@ -324,13 +349,22 @@ const AddBookingRequestDialog = ({
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth margin="dense" variant="outlined">
-              <InputLabel>Khu</InputLabel>
+              <InputLabel>
+                {" "}
+                <span>
+                  Khu <span style={{ color: "red" }}>*</span>
+                </span>
+              </InputLabel>
               <Select
                 name="areaId"
                 value={formData.areaId}
                 onChange={handleAreaChange}
                 onBlur={handleBlur}
-                label="Khu"
+                label={
+                  <span>
+                    Khu <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 disabled={!formData.floorId}
                 error={!!formErrors.areaId}
               >
@@ -347,7 +381,12 @@ const AddBookingRequestDialog = ({
           </Grid>
           <Grid item xs={6}>
             <FormControl fullWidth margin="dense" variant="outlined">
-              <InputLabel>Ô chứa</InputLabel>
+              <InputLabel>
+                {" "}
+                <span>
+                  Ô chứa <span style={{ color: "red" }}>*</span>
+                </span>
+              </InputLabel>
               <Select
                 name="nicheId"
                 value={formData.nicheId}
@@ -358,7 +397,11 @@ const AddBookingRequestDialog = ({
                   }))
                 }
                 onBlur={handleBlur}
-                label="Ô chứa"
+                label={
+                  <span>
+                    Ô chứa <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
                 disabled={!formData.areaId}
                 error={!!formErrors.nicheId}
               >
@@ -378,7 +421,9 @@ const AddBookingRequestDialog = ({
           </Grid>
           <Grid item xs={12}>
             <FormControl component="fieldset" margin="dense">
-              <DialogTitle>Địa chỉ ký hợp đồng</DialogTitle>
+              <DialogTitle>
+                Địa chỉ ký hợp đồng <span style={{ color: "red" }}>*</span>
+              </DialogTitle>
               <RadioGroup
                 name="signAddress"
                 value={formData.signAddress}
@@ -398,7 +443,11 @@ const AddBookingRequestDialog = ({
           <Grid item xs={12}>
             <TextField
               margin="dense"
-              label="Ngày hẹn"
+              label={
+                <span>
+                  Ngày hẹn <span style={{ color: "red" }}>*</span>
+                </span>
+              }
               type="datetime-local"
               fullWidth
               variant="outlined"
@@ -432,7 +481,7 @@ const AddBookingRequestDialog = ({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
 
@@ -441,6 +490,7 @@ const AddBookingRequestDialog = ({
           color="primary"
           variant="contained"
           disabled={isSubmitting}
+          startIcon={<ConfirmIcon />}
         >
           Thêm mới
           {isSubmitting && (

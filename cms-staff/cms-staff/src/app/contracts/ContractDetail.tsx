@@ -91,7 +91,7 @@ export default function ContractDetailsDialog({
           <Typography variant="h6" gutterBottom>
             BÊN A: Công ty An Bình Viên
           </Typography>
-          <Typography>Đại diện bởi: {contractDetails.staffName}</Typography>
+          <Typography>Mã số thuế: MST-2024</Typography>
           <Typography>Điện thoại: 0999.999.999</Typography>
           <Typography>Địa chỉ: Hòa Lạc - Hà Nội</Typography>
 

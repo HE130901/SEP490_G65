@@ -141,12 +141,17 @@ const AddServiceOrderDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Thêm mới đơn đăng ký dùng dịch vụ</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         <Box mb={2}>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="contract-label">Hợp đồng</InputLabel>
+            <InputLabel id="contract-label">
+              {" "}
+              <span>
+                Hợp đồng <span style={{ color: "red" }}>*</span>
+              </span>
+            </InputLabel>
             <Select
               labelId="contract-label"
               name="contractId"
@@ -154,7 +159,11 @@ const AddServiceOrderDialog = ({
               onChange={(e: SelectChangeEvent<string>) =>
                 setFormData({ ...formData, contractId: e.target.value })
               }
-              label="Hợp đồng"
+              label={
+                <span>
+                  Hợp đồng <span style={{ color: "red" }}>*</span>
+                </span>
+              }
             >
               {contracts.map((contract) => (
                 <MenuItem key={contract.contractId} value={contract.contractId}>
@@ -167,7 +176,11 @@ const AddServiceOrderDialog = ({
         <TextField
           fullWidth
           margin="normal"
-          label="Ngày đặt hàng"
+          label={
+            <span>
+              Ngày đặt hàng <span style={{ color: "red" }}>*</span>
+            </span>
+          }
           name="orderDate"
           type="datetime-local"
           InputLabelProps={{
@@ -179,7 +192,12 @@ const AddServiceOrderDialog = ({
         {formData.serviceOrderDetails.map((detail, index) => (
           <Box key={index} display="flex" alignItems="center" mb={2}>
             <FormControl fullWidth margin="normal" style={{ marginRight: 8 }}>
-              <InputLabel id={`service-label-${index}`}>Dịch vụ</InputLabel>
+              <InputLabel id={`service-label-${index}`}>
+                {" "}
+                <span>
+                  Dịch vụ <span style={{ color: "red" }}>*</span>
+                </span>
+              </InputLabel>
               <Select
                 labelId={`service-label-${index}`}
                 name="serviceID"
@@ -187,7 +205,11 @@ const AddServiceOrderDialog = ({
                 onChange={(event: SelectChangeEvent<string>) =>
                   handleServiceDetailChange(index, event)
                 }
-                label="Dịch vụ"
+                label={
+                  <span>
+                    Dịch vụ <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
               >
                 {services.map((service) => (
                   <MenuItem key={service.serviceId} value={service.serviceId}>
@@ -199,7 +221,11 @@ const AddServiceOrderDialog = ({
             <TextField
               fullWidth
               margin="normal"
-              label="Số lượng"
+              label={
+                <span>
+                  Số lượng <span style={{ color: "red" }}>*</span>
+                </span>
+              }
               name="quantity"
               type="number"
               value={detail.quantity}
@@ -222,7 +248,7 @@ const AddServiceOrderDialog = ({
         </Button>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Hủy
         </Button>
         <Button

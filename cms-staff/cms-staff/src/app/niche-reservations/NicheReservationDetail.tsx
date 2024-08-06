@@ -39,6 +39,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
     setEditDialogOpen(false);
     onConfirmSuccess(); // Refresh the list after update
   };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "Canceled":
@@ -60,7 +61,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
     <>
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>Xem chi tiết đơn đăng ký đặt chỗ</DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           {bookingRequest && (
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -71,9 +72,11 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.reservationCode}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
-
               <Grid item xs={12}>
                 <TextField
                   margin="dense"
@@ -82,6 +85,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.nicheAddress}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -92,6 +98,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.signAddress}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -102,6 +111,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.name}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -112,6 +124,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.phoneNumber}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -122,6 +137,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={new Date(bookingRequest.createdDate).toLocaleString()}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -134,6 +152,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   value={new Date(
                     bookingRequest.confirmationDate
                   ).toLocaleString()}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -144,6 +165,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.nameConfirmedBy || "Chưa xác nhận"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -154,6 +178,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={getStatusLabel(bookingRequest.status)}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -164,6 +191,9 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.note || "Không có ghi chú"}
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
               </Grid>
             </Grid>
@@ -173,24 +203,26 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
           <Button onClick={onClose} color="primary" variant="outlined">
             Đóng
           </Button>
-          {bookingRequest && bookingRequest.status !== "Approved" && (
-            <Button
-              onClick={handleEditDialogOpen}
-              color="primary"
-              variant="contained"
-              startIcon={<EditIcon />}
-            >
-              Sửa
-            </Button>
-          )}
+
+          <Button
+            onClick={handleEditDialogOpen}
+            color="primary"
+            variant="contained"
+            startIcon={<EditIcon />}
+            disabled={!bookingRequest || bookingRequest.status !== "Pending"}
+          >
+            Sửa
+          </Button>
         </DialogActions>
       </Dialog>
-      <EditBookingRequestDialog
-        open={editDialogOpen}
-        bookingRequest={bookingRequest}
-        onClose={handleEditDialogClose}
-        onConfirmSuccess={onConfirmSuccess}
-      />
+      {bookingRequest && (
+        <EditBookingRequestDialog
+          open={editDialogOpen}
+          bookingRequest={bookingRequest}
+          onClose={handleEditDialogClose}
+          onConfirmSuccess={onConfirmSuccess}
+        />
+      )}
     </>
   );
 };

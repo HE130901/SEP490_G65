@@ -11,13 +11,14 @@ import {
   Grid,
   Box,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
-import { useToast } from "@/components/ui/use-toast";
 import { Service } from "./interfaces";
 import ImageUploadDialog from "./ImageUploadDialog";
 import Image from "next/image";
+import { toast } from "react-toastify";
 
 interface ServiceEditProps {
   service: Service | null;
@@ -41,9 +42,9 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
       category: "",
       tag: "",
       servicePicture: "",
+      status: "Available",
     },
   });
-  const { toast } = useToast();
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const servicePictureUrl = watch("servicePicture");
 
@@ -57,6 +58,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
         category: "",
         tag: "",
         servicePicture: "",
+        status: "Available",
       }
     );
   }, [service, reset]);
@@ -65,20 +67,12 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
     if (!service) return;
     try {
       await ServiceAPI.updateService(service.serviceId, data);
-      toast({
-        variant: "default",
-        title: "Thành công",
-        description: "Cập nhật dịch vụ thành công",
-      });
+      toast.success("Cập nhật dịch vụ thành công");
       onSave({ ...service, ...data });
       onClose();
     } catch (error) {
       console.error("Error updating service:", error);
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Cập nhật dịch vụ thất bại",
-      });
+      toast.error("Cập nhật dịch vụ thất bại");
     }
   };
 
@@ -91,7 +85,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
 
   return (
     <>
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>Sửa dịch vụ</DialogTitle>
         <DialogContent dividers>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -145,7 +139,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Controller
                   name="category"
                   control={control}
@@ -165,7 +159,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Controller
                   name="tag"
                   control={control}
@@ -189,47 +183,13 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                 />
               </Grid>
               <Grid item xs={12}>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      label="Trạng thái"
-                      fullWidth
-                      variant="outlined"
-                      select
-                      required
-                    >
-                      <MenuItem value="Available">Còn hàng</MenuItem>
-                      <MenuItem value="Unavailable">Hết hàng</MenuItem>
-                      <MenuItem value="Removed">Ngừng bán</MenuItem>
-                      <MenuItem value="Others">Khác</MenuItem>
-                    </TextField>
-                  )}
-                />
-              </Grid>
-              <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Hình ảnh dịch vụ
+                </Typography>
                 <Box display="flex" alignItems="center">
-                  <Controller
-                    name="servicePicture"
-                    control={control}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        label="Ảnh"
-                        fullWidth
-                        variant="outlined"
-                        InputProps={{
-                          readOnly: true,
-                        }}
-                      />
-                    )}
-                  />
                   <Button
                     variant="contained"
                     onClick={() => setImageDialogOpen(true)}
-                    sx={{ ml: 2 }}
                   >
                     Chọn ảnh
                   </Button>
@@ -250,10 +210,10 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
           </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="secondary">
+          <Button onClick={onClose} variant="outlined">
             Hủy
           </Button>
-          <Button onClick={handleSubmit(onSubmit)} color="primary">
+          <Button onClick={handleSubmit(onSubmit)} variant="contained">
             Lưu
           </Button>
         </DialogActions>

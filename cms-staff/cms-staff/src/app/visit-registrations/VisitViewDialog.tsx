@@ -15,6 +15,8 @@ import { toast } from "react-toastify";
 import { VisitDialogProps, VisitRegistrationDto } from "./interfaces";
 import dayjs from "dayjs";
 
+import EditIcon from "@mui/icons-material/Edit";
+
 const VisitViewDialog: React.FC<VisitDialogProps> = ({
   open,
   visit,
@@ -31,7 +33,11 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
   }, [visit]);
 
   function formatDateTime(dateTimeString: any) {
-    return dayjs(dateTimeString).format("HH:mm DD/MM/YYYY");
+    return dayjs(dateTimeString).format("YYYY-MM-DDTHH:mm"); // Format for TextField
+  }
+
+  function formatDisplayDateTime(dateTimeString: any) {
+    return dayjs(dateTimeString).format("HH:mm DD/MM/YYYY"); // Format for display
   }
 
   const getStatusLabel = (status: string) => {
@@ -76,7 +82,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         {isEditMode
           ? "Chỉnh sửa đơn đăng ký viếng thăm"
@@ -86,36 +92,70 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
         {formData && (
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Mã đơn:</strong> {formData.visitCode}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Tên khách hàng:</strong> {formData.customerName}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Nhân viên tiếp nhận:</strong> {formData.staffName}
-              </Typography>
+              <TextField
+                margin="dense"
+                label="Mã đơn"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formData.visitCode}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Địa chỉ:</strong> {formData.nicheAddress}
-              </Typography>
+              <TextField
+                margin="dense"
+                label="Tên khách hàng"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formData.customerName}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                margin="dense"
+                label="Địa chỉ"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formData.nicheAddress}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Ngày tạo:</strong>{" "}
-                {formatDateTime(formData.createdDate)}
-              </Typography>
+              <TextField
+                margin="dense"
+                label="Ngày tạo"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formatDisplayDateTime(formData.createdDate)}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <Typography variant="body1" gutterBottom>
-                <strong>Ngày viếng thăm:</strong>{" "}
-                {formatDateTime(formData.visitDate)}
-              </Typography>
+              <TextField
+                margin="dense"
+                label="Ngày viếng thăm"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={formatDisplayDateTime(formData.visitDate)}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
             {isEditMode ? (
               <>
@@ -127,7 +167,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     fullWidth
                     variant="outlined"
                     name="visitDate"
-                    value={formData.visitDate}
+                    value={formatDateTime(formData.visitDate)}
                     onChange={handleChange}
                     InputLabelProps={{
                       shrink: true,
@@ -154,7 +194,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     fullWidth
                     variant="outlined"
                     name="note"
-                    value={formData.note}
+                    value={formData.note || "Không có ghi chú"}
                     onChange={handleChange}
                   />
                 </Grid>
@@ -166,16 +206,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     <strong>Trạng thái:</strong>{" "}
                     <Chip
                       label={getStatusLabel(formData.status).label}
-                      color={
-                        getStatusLabel(formData.status).color as
-                          | "info"
-                          | "error"
-                          | "primary"
-                          | "secondary"
-                          | "success"
-                          | "warning"
-                          | "default"
-                      }
+                      color={getStatusLabel(formData.status).color as any}
                     />
                   </Typography>
                 </Grid>
@@ -186,9 +217,16 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Ghi chú:</strong> {formData.note}
-                  </Typography>
+                  <TextField
+                    margin="dense"
+                    label="Ghi chú"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    name="note"
+                    value={formData.note || "Không có ghi chú"}
+                    onChange={handleChange}
+                  />
                 </Grid>
               </>
             )}
@@ -207,9 +245,10 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
           <Button
             onClick={toggleEditMode}
             variant="contained"
-            disabled={formData?.status === "Canceled"}
+            disabled={formData?.status !== "Pending"}
+            startIcon={<EditIcon />}
           >
-            Chỉnh sửa
+            Sửa
           </Button>
         )}
       </DialogActions>

@@ -146,13 +146,22 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       <DialogTitle>Thêm đăng ký viếng thăm</DialogTitle>
       <DialogContent dividers>
         <FormControl fullWidth margin="normal" error={!!formErrors.customerId}>
-          <InputLabel id="contract-label">Hợp đồng</InputLabel>
+          <InputLabel id="contract-label">
+            {" "}
+            <span>
+              Hợp đồng <span style={{ color: "red" }}>*</span>
+            </span>
+          </InputLabel>
           <Select
             labelId="contract-label"
             name="customerId"
             value={formData.customerId}
             onChange={handleChange}
-            label="Hợp đồng"
+            label={
+              <span>
+                Hợp đồng <span style={{ color: "red" }}>*</span>
+              </span>
+            }
           >
             {contracts.map((contract) => (
               <MenuItem key={contract.contractId} value={contract.contractId}>
@@ -166,7 +175,11 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         </FormControl>
         <TextField
           margin="dense"
-          label="Ngày viếng thăm"
+          label={
+            <span>
+              Ngày viếng thăm <span style={{ color: "red" }}>*</span>
+            </span>
+          }
           type="datetime-local"
           fullWidth
           variant="outlined"
@@ -181,7 +194,11 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         />
         <TextField
           margin="dense"
-          label="Số lượng người đi cùng"
+          label={
+            <span>
+              Số lượng người đi cùng <span style={{ color: "red" }}>*</span>
+            </span>
+          }
           type="number"
           fullWidth
           variant="outlined"
@@ -193,7 +210,7 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         />
         <TextField
           margin="dense"
-          label="Ghi chú"
+          label="Ghi chú (nếu có)"
           type="text"
           fullWidth
           variant="outlined"
