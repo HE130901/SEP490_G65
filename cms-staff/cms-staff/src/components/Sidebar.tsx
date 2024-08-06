@@ -175,11 +175,11 @@ const Sidebar = () => {
                 onClick={handleMenuItemClick}
                 sx={{
                   "&.Mui-selected": {
-                    backgroundColor: "#2196f3",
+                    backgroundColor: "#EF6C00",
                     color: "#fff",
                   },
                   "&.Mui-selected:hover": {
-                    backgroundColor: "#1976d2",
+                    backgroundColor: "#EF6C00",
                   },
                   justifyContent: "center",
                   px: open ? 2.5 : 0,

@@ -6,6 +6,8 @@ import React from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+import { ThemeProvider } from "@mui/material";
+import theme from "@/theme";
 
 export const metadata: Metadata = {
   title: "Nhân viên",
@@ -20,20 +22,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastContainer />
-        <AppProviders>
-          <CssBaseline />
+        <ThemeProvider theme={theme}>
+          <ToastContainer />
+          <AppProviders>
+            <CssBaseline />
 
-          <Box sx={{ display: "flex" }}>
-            <Sidebar />
-            <Box
-              component="main"
-              sx={{ flexGrow: 1, p: 4, bgcolor: "transparent" }}
-            >
-              {children}
+            <Box sx={{ display: "flex" }}>
+              <Sidebar />
+              <Box
+                component="main"
+                sx={{ flexGrow: 1, p: 4, bgcolor: "transparent" }}
+              >
+                {children}
+              </Box>
             </Box>
-          </Box>
-        </AppProviders>
+          </AppProviders>
+        </ThemeProvider>
       </body>
     </html>
   );
