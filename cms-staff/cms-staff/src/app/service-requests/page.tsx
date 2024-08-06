@@ -109,6 +109,12 @@ const ServiceRequestPage = () => {
     fetchServiceOrders();
   }, [fetchServiceOrders]);
 
+  useEffect(() => {
+    fetchServiceOrders();
+    const interval = setInterval(fetchServiceOrders, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedServiceOrderId, setSelectedServiceOrderId] = useState<

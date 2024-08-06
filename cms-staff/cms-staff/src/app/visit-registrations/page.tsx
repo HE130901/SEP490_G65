@@ -139,6 +139,12 @@ const VisitRegistrationsList: React.FC = () => {
   }, [fetchVisitRegistrations]);
 
   useEffect(() => {
+    fetchVisitRegistrations();
+    const interval = setInterval(fetchVisitRegistrations, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     let filteredData = visitRegistrations;
 
     // Apply date range filter

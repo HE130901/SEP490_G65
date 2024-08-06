@@ -170,6 +170,12 @@ const NicheReservationPage = () => {
   }, []);
 
   useEffect(() => {
+    fetchReservations();
+    const interval = setInterval(fetchReservations, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     setFilteredRequests(reservations);
   }, [reservations]);
 
