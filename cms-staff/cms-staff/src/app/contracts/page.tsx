@@ -337,7 +337,7 @@ const ContractPage: React.FC = () => {
         <Box display="flex" justifyContent="center" alignItems="center">
           <Tooltip title="Xem chi tiết">
             <IconButton
-              color="primary"
+              color="info"
               onClick={() => handleViewContract(params.row.contractId)}
             >
               <VisibilityIcon />

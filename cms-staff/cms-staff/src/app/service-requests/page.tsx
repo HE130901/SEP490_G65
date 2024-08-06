@@ -289,7 +289,7 @@ const ServiceRequestPage = () => {
         <CenteredCell>
           <Tooltip title="Xem chi tiết đơn đặt dịch vụ">
             <IconButton
-              color="primary"
+              color="info"
               onClick={() =>
                 handleViewServiceRequest(params.row.serviceOrderId)
               }

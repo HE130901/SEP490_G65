@@ -217,10 +217,7 @@ const ServiceProductPage: React.FC = () => {
       renderCell: (params) => (
         <>
           <Tooltip title="Xem chi tiết">
-            <IconButton
-              color="primary"
-              onClick={() => handleViewItem(params.row)}
-            >
+            <IconButton color="info" onClick={() => handleViewItem(params.row)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>

@@ -355,7 +355,7 @@ const NicheReservationPage = () => {
         <CenteredCell>
           <Tooltip title="Xem chi tiết">
             <IconButton
-              color="primary"
+              color="info"
               onClick={() => handleViewBookingRequest(params.row.reservationId)}
             >
               <VisibilityIcon />

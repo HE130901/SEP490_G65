@@ -307,7 +307,7 @@ const VisitRegistrationsList: React.FC = () => {
       renderCell: (params) => (
         <CenteredCell>
           <Tooltip title="Xem chi tiết">
-            <IconButton color="primary" onClick={() => handleView(params.row)}>
+            <IconButton color="info" onClick={() => handleView(params.row)}>
               <VisibilityIcon />
             </IconButton>
           </Tooltip>

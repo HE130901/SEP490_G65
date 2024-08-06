@@ -158,7 +158,7 @@ const CustomerPage: React.FC = () => {
         <>
           <Tooltip title="Xem chi tiết">
             <IconButton
-              color="primary"
+              color="info"
               onClick={() => handleViewCustomer(params.row)}
             >
               <VisibilityIcon />

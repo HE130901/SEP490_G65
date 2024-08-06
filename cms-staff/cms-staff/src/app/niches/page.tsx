@@ -259,7 +259,7 @@ const NicheList: React.FC = () => {
         <>
           <Tooltip title="Xem chi tiết">
             <IconButton
-              color="primary"
+              color="info"
               onClick={() => handleViewNiche(params.row.nicheId)}
             >
               <Visibility />
