@@ -95,7 +95,7 @@ export default function Component() {
                   fontStyle={"italic"}
                   className="text-xl font-bold tracking-tighter text-gray-800"
                 >
-                  20 năm phát triển dịch vụ tang lễ
+                  20 năm phát triển dịch vụ
                 </Typography>
                 <Typography
                   variant="body1"
