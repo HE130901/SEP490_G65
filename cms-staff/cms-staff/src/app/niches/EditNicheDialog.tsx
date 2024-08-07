@@ -12,6 +12,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
@@ -19,7 +20,7 @@ import { toast } from "react-toastify";
 interface NicheDtoForStaff {
   nicheId: number;
   nicheName: string;
-  nicheDescription?: string;
+  description?: string;
   status?: string;
 }
 
@@ -31,7 +32,7 @@ const EditNicheDialog: React.FC<{
 }> = ({ open, onClose, nicheId, onSuccess }) => {
   const [niche, setNiche] = useState<NicheDtoForStaff | null>(null);
   const [loading, setLoading] = useState(false);
-  const [nicheDescription, setNicheDescription] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
@@ -42,8 +43,9 @@ const EditNicheDialog: React.FC<{
           const response = await axiosInstance.get(
             `/api/StaffNiches/${nicheId}`
           );
+          console.log("Fetched niche data:", response.data); // Debugging line
           setNiche(response.data);
-          setNicheDescription(response.data.nicheDescription ?? "");
+          setDescription(response.data.description ?? "");
           setStatus(response.data.status ?? "");
         } catch (error) {
           toast.error("Unable to fetch niche details");
@@ -60,7 +62,7 @@ const EditNicheDialog: React.FC<{
     if (nicheId !== null) {
       try {
         await axiosInstance.put(`/api/StaffNiches/${nicheId}`, {
-          nicheDescription,
+          description,
           status,
         });
         toast.success("Cập nhật thông tin thành công");
@@ -74,20 +76,18 @@ const EditNicheDialog: React.FC<{
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Sửa thông tin ô chứa</DialogTitle>
+      <DialogTitle>
+        Sửa thông tin ô chứa{" "}
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", width: "100%" }}
+        ></div>
+      </DialogTitle>
       <DialogContent dividers>
         {loading ? (
           <CircularProgress />
         ) : (
           niche && (
             <Box>
-              <TextField
-                fullWidth
-                label="Mô tả"
-                value={nicheDescription}
-                onChange={(e) => setNicheDescription(e.target.value)}
-                margin="normal"
-              />
               {status !== "Active" && status !== "Booked" && (
                 <FormControl fullWidth margin="normal">
                   <InputLabel>Trạng thái</InputLabel>
@@ -101,12 +101,25 @@ const EditNicheDialog: React.FC<{
                   </Select>
                 </FormControl>
               )}
+              <TextField
+                fullWidth
+                label="Mô tả"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                margin="normal"
+                inputProps={{ maxLength: 300 }}
+                multiline
+                rows={4}
+              />
+              <Typography variant="caption" display="block" align="right">
+                {description.length}/300 ký tự
+              </Typography>
             </Box>
           )
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
         </Button>
         <Button onClick={handleSave} color="primary" variant="contained">

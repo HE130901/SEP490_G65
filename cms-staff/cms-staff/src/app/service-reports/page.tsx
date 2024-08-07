@@ -204,7 +204,7 @@ const ServiceSummaryPage: React.FC = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Card elevation={3} sx={{ height: "100%" }}>
             <CardContent>
               <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -218,7 +218,7 @@ const ServiceSummaryPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Box>
   );

@@ -128,7 +128,7 @@ const NicheReportPage: React.FC = () => {
         <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Ô chứa Đang sử dụng</Typography>
+              <Typography variant="h6">Đang sử dụng</Typography>
               <Typography variant="h4">{nicheReport.occupiedNiches}</Typography>
             </CardContent>
           </Card>
@@ -136,7 +136,7 @@ const NicheReportPage: React.FC = () => {
         <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Ô chứa Đã đặt trước</Typography>
+              <Typography variant="h6">Đang được đặt</Typography>
               <Typography variant="h4">{nicheReport.reservedNiches}</Typography>
             </CardContent>
           </Card>
@@ -144,7 +144,7 @@ const NicheReportPage: React.FC = () => {
         <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Ô chứa Trống</Typography>
+              <Typography variant="h6">Còn trống</Typography>
               <Typography variant="h4">
                 {nicheReport.availableNiches}
               </Typography>
@@ -154,7 +154,7 @@ const NicheReportPage: React.FC = () => {
         <Grid item xs={12} md={12 / 5}>
           <Card>
             <CardContent>
-              <Typography variant="h6">Ô chứa Không khả dụng</Typography>
+              <Typography variant="h6">Không khả dụng</Typography>
               <Typography variant="h4">
                 {nicheReport.unavailableNiches}
               </Typography>

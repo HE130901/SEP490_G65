@@ -306,7 +306,7 @@ const NicheList: React.FC = () => {
           <FormControl
             margin="normal"
             size="small"
-            style={{ marginRight: 8, width: 100 }}
+            style={{ marginRight: 8, width: 110 }}
           >
             <InputLabel id="building-select-label">Tòa nhà</InputLabel>
             <Select
@@ -326,7 +326,7 @@ const NicheList: React.FC = () => {
           <FormControl
             margin="normal"
             size="small"
-            style={{ marginRight: 8, width: 100 }}
+            style={{ marginRight: 8, width: 110 }}
           >
             <InputLabel id="floor-select-label">Tầng</InputLabel>
             <Select
@@ -346,7 +346,7 @@ const NicheList: React.FC = () => {
           <FormControl
             margin="normal"
             size="small"
-            style={{ marginRight: 8, width: 100 }}
+            style={{ marginRight: 8, width: 110 }}
           >
             <InputLabel id="area-select-label">Khu</InputLabel>
             <Select

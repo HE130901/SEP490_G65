@@ -129,6 +129,7 @@ namespace cms_server.Controllers
                 OccupiedNiches = occupiedNiches,
                 ReservedNiches = reservedNiches,
                 AvailableNiches = availableNiches,
+                UnavailableNiches = unavailableNiches,  
                 NichesByArea = nichesByArea,
                 NichesByStatus = nichesByStatus,
                 TotalServiceOrders = totalServiceOrders,
@@ -146,9 +147,8 @@ namespace cms_server.Controllers
         public int OccupiedNiches { get; set; }
         public int ReservedNiches { get; set; }
         public int AvailableNiches { get; set; }
-
-    public int UnavailableNiches { get; set; }
-    public List<AreaReport> NichesByArea { get; set; } = new List<AreaReport>();
+        public int UnavailableNiches { get; set; }
+        public List<AreaReport> NichesByArea { get; set; } = new List<AreaReport>();
         public List<StatusReport> NichesByStatus { get; set; } = new List<StatusReport>();
         public int TotalServiceOrders { get; set; }
         public int TotalVisitRegistrations { get; set; }

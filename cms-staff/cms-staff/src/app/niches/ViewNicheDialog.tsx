@@ -39,6 +39,7 @@ interface NicheDtoForStaff {
   deceasedName?: string;
   nicheHistories: { $values: NicheHistoryDto[] };
   status: string;
+  description?: string;
 }
 
 function formatDate(dateString: any) {
@@ -119,6 +120,7 @@ const ViewNicheDialog: React.FC<{
               <Typography>
                 Tên người quá cố: {niche.deceasedName ?? "N/A"}
               </Typography>
+              <Typography>Mô tả: {niche.description ?? "N/A"}</Typography>
               <Typography>
                 Trạng thái ô chứa:{" "}
                 <Chip
