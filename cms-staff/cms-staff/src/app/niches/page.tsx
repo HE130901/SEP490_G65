@@ -243,30 +243,30 @@ const NicheList: React.FC = () => {
       width: 200,
       headerClassName: "super-app-theme--header",
     },
-    {
-      field: "description",
-      headerName: "Mô tả",
-      width: 230,
-      headerClassName: "super-app-theme--header",
-      renderCell: (params) => {
-        return (
-          <CenteredCell>
-            <Tooltip title={params.value as string}>
-              <Box
-                sx={{
-                  maxWidth: 200,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {params.value}
-              </Box>
-            </Tooltip>
-          </CenteredCell>
-        );
-      },
-    },
+    // {
+    //   field: "description",
+    //   headerName: "Mô tả",
+    //   width: 230,
+    //   headerClassName: "super-app-theme--header",
+    //   renderCell: (params) => {
+    //     return (
+    //       <CenteredCell>
+    //         <Tooltip title={params.value as string}>
+    //           <Box
+    //             sx={{
+    //               maxWidth: 200,
+    //               overflow: "hidden",
+    //               textOverflow: "ellipsis",
+    //               whiteSpace: "nowrap",
+    //             }}
+    //           >
+    //             {params.value}
+    //           </Box>
+    //         </Tooltip>
+    //       </CenteredCell>
+    //     );
+    //   },
+    // },
     {
       field: "status",
       headerName: "Trạng thái",
