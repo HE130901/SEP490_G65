@@ -1,20 +1,14 @@
 "use client";
 
-import * as React from "react";
-import { useEffect, useState, useCallback } from "react";
-import {
-  ColumnDef,
-  SortingState,
-  useReactTable,
-  getCoreRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  getFilteredRowModel,
-  flexRender,
-} from "@tanstack/react-table";
-import { ArrowUpDown, Edit, Trash, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,28 +17,34 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useStateContext } from "@/context/StateContext";
+import { IconButton } from "@mui/material";
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { remove as removeDiacritics } from "diacritics";
+import debounce from "lodash.debounce";
+import { ArrowUpDown, Edit, Eye, Trash } from "lucide-react";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import DetailViewDialog from "./DetailViewDialog";
 import EditModal from "./EditModal";
-import debounce from "lodash.debounce";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { remove as removeDiacritics } from "diacritics";
-import { IconButton } from "@mui/material";
 
 export type NicheReservation = {
   reservationId: number;

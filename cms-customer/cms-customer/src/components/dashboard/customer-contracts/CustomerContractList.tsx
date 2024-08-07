@@ -134,6 +134,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   const normalizeText = (text: string) => {
     return removeDiacritics(text.toLowerCase());
   };
+
   const debouncedSearch = useCallback(
     debounce((term: string) => {
       const normalizedTerm = normalizeText(term);
@@ -337,7 +338,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Còn lại
+          Ngày còn lại
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),

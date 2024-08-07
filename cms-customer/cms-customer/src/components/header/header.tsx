@@ -127,10 +127,6 @@ export function Header({}: {}) {
                       </Link>
                     </NavigationMenuLink>
                   </li>
-
-                  <ListItem href="/niche-reservation" title="Đặt ô chứa">
-                    Lựa chọn ô và lên lịch ký hợp đồng.
-                  </ListItem>
                   <ListItem href="/dashboard" title="Quản lý ô chứa">
                     Xem thông tin chi tiết về ô chứa của bạn.
                   </ListItem>
@@ -144,7 +140,7 @@ export function Header({}: {}) {
             <NavigationMenuItem>
               <Link href="/about" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Thông tin liên hệ
+                  Về chúng tôi
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
