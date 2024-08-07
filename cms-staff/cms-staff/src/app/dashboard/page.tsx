@@ -40,6 +40,13 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+  // Mapping order types to their respective paths
+  const orderTypePathMap: { [key: string]: string } = {
+    "Đơn đăng ký viếng": "/visit-registrations",
+    "Đơn đặt ô chứa": "/niche-reservations",
+    "Đơn đặt dịch vụ": "/service-requests",
+  };
+
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", mb: 3 }}>
@@ -48,37 +55,35 @@ const Dashboard: React.FC = () => {
       <Grid container spacing={3}>
         {/* Summary Cards */}
         {pendingOrdersSummary.map((order) => {
-          const orderTypeMap: { [key: string]: string } = {
-            VisitRegistration: "Đơn đăng ký viếng",
-            NicheReservation: "Đơn đặt ô chứa",
-            ServiceOrder: "Đơn đặt dịch vụ",
-          };
-          const displayText = orderTypeMap[order.type] || order.type;
+          const displayText = order.type;
+          const path = orderTypePathMap[order.type] || "#";
 
           return (
             <Grid item xs={12} md={4} key={order.type}>
-              <Card
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": {
-                    boxShadow: 6,
-                    transform: "scale(1.02)",
-                    transition: "transform 0.2s ease-in-out",
-                  },
-                  borderRadius: 2,
-                  textDecoration: "none", // Remove underline from link
-                  color: "inherit", // Inherit color to avoid default link color
-                }}
-              >
-                <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-                    {displayText}
-                  </Typography>
-                  <Typography variant="h4" sx={{ color: "primary.main" }}>
-                    {order.count} đơn
-                  </Typography>
-                </CardContent>
-              </Card>
+              <Link href={path} passHref>
+                <Card
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": {
+                      boxShadow: 6,
+                      transform: "scale(1.02)",
+                      transition: "transform 0.2s ease-in-out",
+                    },
+                    borderRadius: 2,
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+                      {displayText}
+                    </Typography>
+                    <Typography variant="h4" sx={{ color: "primary.main" }}>
+                      {order.count} đơn
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Link>
             </Grid>
           );
         })}
