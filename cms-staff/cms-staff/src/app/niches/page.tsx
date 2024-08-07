@@ -57,7 +57,7 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "visible",
+    overflow: "hidden",
     textOverflow: "unset",
     padding: theme.spacing(1),
     wordBreak: "break-word",
