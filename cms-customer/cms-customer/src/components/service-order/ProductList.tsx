@@ -47,9 +47,9 @@ export default function ProductList({ products }: ProductListProps) {
   const cartIconRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 8;
 
-  // Filter out products with status "Removed"
+  // Filter out products with status not "Available"
   const filteredProducts = useMemo(
-    () => products.filter((product) => product.status !== "Removed"),
+    () => products.filter((product) => product.status === "Available"),
     [products]
   );
 

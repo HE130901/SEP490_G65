@@ -41,7 +41,7 @@ export default function Footer() {
             </div>
           </div>
           <p className="text-sm text-black dark:text-gray-400">
-            &copy; 2024 An Bình Viên. SEP490_G65
+            &copy; SEP490-G65 CMS-2024
           </p>
         </div>
       </footer>
