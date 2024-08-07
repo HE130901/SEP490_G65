@@ -201,8 +201,8 @@ const RenewalDialog: React.FC<any> = ({ open, handleClose, contractId }) => {
             <span>Gia Hạn Hợp Đồng</span>
             <Button
               onClick={handleOpenListDialog}
-              color="secondary"
-              variant="outlined"
+              color="success"
+              variant="contained"
             >
               Lịch sử gia hạn
             </Button>

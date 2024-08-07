@@ -68,7 +68,6 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [newPassword, setNewPassword] = useState<string>("");
   const [validationErrors, setValidationErrors] = useState<
     Partial<Record<keyof Customer, string>>
   >({});
@@ -125,34 +124,39 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
     }
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPassword(e.target.value);
-  };
+  const handleResetPassword = async () => {
+    if (!customer) return;
 
-  const handleChangePassword = async () => {
-    if (!customer || !newPassword) {
-      toast.error("Vui lòng nhập mật khẩu mới");
-      return;
-    }
     try {
-      await axiosInstance.put(
-        `/api/Customers/${customer.customerId}/ChangePassword`,
-        {
-          password: newPassword,
-        }
-      );
-      toast.success("Mật khẩu đã được cập nhật");
-      setNewPassword(""); // Clear the password field
-      onClose();
+      await axiosInstance.post(`/api/Auth/request-password-reset`, {
+        email: customer.email,
+      });
+      toast.success("Mật khẩu mới đã được gửi tới email của khách hàng");
     } catch (error) {
-      toast.error("Lỗi khi cập nhật mật khẩu");
+      toast.error("Lỗi khi gửi yêu cầu đặt lại mật khẩu");
       console.error(error); // Debugging
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Sửa thông tin khách hàng</DialogTitle>
+      <DialogTitle
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span>Sửa thông tin khách hàng</span>
+        <Button
+          onClick={handleResetPassword}
+          color="success"
+          variant="contained"
+        >
+          Đặt lại mật khẩu
+        </Button>
+      </DialogTitle>
+
       <DialogContent dividers>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center">
@@ -305,38 +309,6 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
                 />
               </Grid>
             </Grid>
-            <DialogActions>
-              <Button
-                onClick={handleSaveInfo}
-                color="primary"
-                variant="contained"
-              >
-                Lưu thông tin
-              </Button>
-            </DialogActions>
-            <Divider />
-            <Typography variant="h6" gutterBottom mt={2}>
-              Đổi mật khẩu
-            </Typography>
-            <TextField
-              label="Mật khẩu mới"
-              type="password"
-              fullWidth
-              variant="outlined"
-              value={newPassword}
-              onChange={handlePasswordChange}
-              placeholder="Nhập mật khẩu mới"
-              margin="dense"
-            />
-            <DialogActions>
-              <Button
-                onClick={handleChangePassword}
-                color="primary"
-                variant="contained"
-              >
-                Đổi mật khẩu
-              </Button>
-            </DialogActions>
           </>
         ) : (
           <Typography>Không có thông tin khách hàng.</Typography>
@@ -345,6 +317,9 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
       <DialogActions>
         <Button onClick={onClose} color="primary" variant="outlined">
           Đóng
+        </Button>
+        <Button onClick={handleSaveInfo} color="primary" variant="contained">
+          Lưu
         </Button>
       </DialogActions>
     </Dialog>
