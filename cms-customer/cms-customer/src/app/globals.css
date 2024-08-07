@@ -143,9 +143,22 @@ button:active {
   }
 }
 
-.animate-bounce {
-  animation: bounce 1s;
+@keyframes moveLeftRight {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
+
+.moving-button {
+  animation: moveLeftRight 2s infinite;
+}
+
 
 /* Customize the scrollbar for WebKit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {

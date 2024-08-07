@@ -40,9 +40,14 @@ export default function Footer() {
               </div>
             </div>
           </div>
-          <p className="text-sm text-black dark:text-gray-400">
-            &copy; SEP490-G65 CMS-2024
-          </p>
+          <div className="flex flex-col items-center justify-center text-center">
+            <p className="text-sm text-black dark:text-gray-400 font-bold">
+              Columbarium Management System
+            </p>
+            <p className="text-sm text-black dark:text-gray-400 font-semibold italic">
+              &copy; SEP490-G65
+            </p>
+          </div>
         </div>
       </footer>
     </div>
