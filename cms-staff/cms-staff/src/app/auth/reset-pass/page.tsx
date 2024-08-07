@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import axios from "@/utils/axiosInstance";
+import Link from "next/link";
+import { useState } from "react";
 import styles from "./reset-pass.module.css";
 
 export default function Component() {

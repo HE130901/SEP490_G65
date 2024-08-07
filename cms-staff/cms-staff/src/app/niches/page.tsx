@@ -21,8 +21,9 @@ import axiosInstance from "@/utils/axiosInstance";
 import ViewNicheDialog from "./ViewNicheDialog";
 import EditNicheDialog from "./EditNicheDialog";
 import { styled } from "@mui/material/styles";
-import viVN from "@/utils/viVN";
+import { viVN } from "@/utils/viVN";
 import { useNiches } from "@/context/NicheContext";
+import CustomTablePagination from "@/components/ui/CustomTablePagination";
 
 const getStatusLabel = (status: string) => {
   switch (status) {
@@ -46,6 +47,7 @@ const CenteredCell = styled("div")({
   width: "100%",
   height: "100%",
 });
+
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -57,16 +59,35 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
-    textOverflow: "unset",
     padding: theme.spacing(1),
-    wordBreak: "break-word",
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
   },
 }));
 
@@ -446,7 +467,7 @@ const NicheList: React.FC = () => {
             rows={rows}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

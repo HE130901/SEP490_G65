@@ -1,36 +1,35 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext";
+import { viVN } from "@/utils/viVN";
+import {
+  Add as AddIcon,
+  CheckCircleOutlined as ApproveIcon,
+  CancelOutlined as RejectIcon,
+  Visibility as VisibilityIcon,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
-  IconButton,
-  Tooltip,
-  Paper,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
   Chip,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Tooltip,
 } from "@mui/material";
-import {
-  Visibility as VisibilityIcon,
-  CheckCircleOutlined as ApproveIcon,
-  CancelOutlined as RejectIcon,
-  Add as AddIcon,
-} from "@mui/icons-material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
-import { formatISO, parseISO, isWithinInterval } from "date-fns";
-import VisitViewDialog from "./VisitViewDialog";
-import VisitDeleteDialog from "./VisitDeleteDialog";
-import VisitApproveDialog from "./VisitApproveDialog";
-import VisitAddDialog from "./VisitAddDialog";
-import { useVisitRegistrationContext } from "@/context/VisitRegistrationContext";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { isWithinInterval, parseISO } from "date-fns";
+import React, { useEffect, useState } from "react";
 import { VisitRegistrationDto } from "./interfaces";
-import { toast } from "react-toastify";
-import viVN from "@/utils/viVN";
+import VisitAddDialog from "./VisitAddDialog";
+import VisitApproveDialog from "./VisitApproveDialog";
+import VisitDeleteDialog from "./VisitDeleteDialog";
+import VisitViewDialog from "./VisitViewDialog";
 
 // Helper functions
 const formatDateToDDMMYYYY = (dateString: string): string => {
@@ -57,7 +56,6 @@ const getCurrentMonthEndDate = (): string => {
   )}`;
 };
 
-// Styled components
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -68,13 +66,27 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
   },
   "& .MuiDataGrid-row": {
     maxHeight: "none !important",
@@ -493,7 +505,7 @@ const VisitRegistrationsList: React.FC = () => {
             rows={rows}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

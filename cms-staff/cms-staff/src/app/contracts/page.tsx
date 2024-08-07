@@ -1,7 +1,8 @@
 "use client";
 import ContractContext from "@/context/ContractContext";
 import contractService from "@/services/contractService";
-import viVN from "@/utils/viVN";
+import axiosInstance from "@/utils/axiosInstance";
+import { viVN } from "@/utils/viVN";
 import {
   Add as AddIcon,
   RestorePage as RestorePageIcon,
@@ -24,12 +25,11 @@ import {
 import { styled } from "@mui/material/styles";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import React, { useContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import AddContractForm from "./ContractAdd";
 import ConfirmDialog from "./ContractDelete";
 import ContractDetailDialog from "./ContractDetail";
 import RenewalDialog from "./ContractRenewal";
-import axiosInstance from "@/utils/axiosInstance";
-import { toast } from "react-toastify";
 
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
@@ -42,16 +42,26 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    whiteSpace: "normal",
-    overflow: "visible",
-    textOverflow: "unset",
     padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
   },
   "& .MuiDataGrid-row": {
     maxHeight: "none !important",
@@ -477,7 +487,7 @@ const ContractPage: React.FC = () => {
             }))}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

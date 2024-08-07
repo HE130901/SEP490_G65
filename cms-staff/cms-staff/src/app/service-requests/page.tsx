@@ -23,7 +23,8 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import AddServiceOrderDialog from "./AddServiceOrderDialog";
 import ViewServiceOrderDialog from "./ViewServiceOrderDialog";
 import { styled } from "@mui/material/styles";
-import viVN from "@/utils/viVN";
+
+import { viVN } from "@/utils/viVN";
 import { useServiceOrderContext } from "@/context/ServiceOrderContext";
 import { formatISO, parseISO, isWithinInterval } from "date-fns";
 
@@ -51,7 +52,6 @@ const getCurrentMonthEndDate = (): string => {
     "0"
   )}`;
 };
-
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -62,14 +62,27 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
-    textOverflow: "unset",
+    justifyContent: "center",
     padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
   },
   "& .MuiDataGrid-row": {
     maxHeight: "none !important",
@@ -429,7 +442,7 @@ const ServiceRequestPage = () => {
             rows={rows}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

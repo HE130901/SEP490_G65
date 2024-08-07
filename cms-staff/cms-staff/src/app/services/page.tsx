@@ -33,7 +33,8 @@ import ServiceAdd from "./ServiceAdd";
 import { formatVND } from "@/utils/formatCurrency";
 import { useServiceContext } from "@/context/ServiceContext";
 import { Service } from "@/context/interfaces";
-import viVN from "@/utils/viVN";
+
+import { viVN } from "@/utils/viVN";
 
 const getStatusLabel = (status: string) => {
   switch (status) {
@@ -51,7 +52,6 @@ const getStatusLabel = (status: string) => {
       return { label: status, color: "default" };
   }
 };
-
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -63,16 +63,35 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "visible",
-    textOverflow: "unset",
     padding: theme.spacing(1),
-    wordBreak: "break-word",
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
   },
 }));
 
@@ -344,7 +363,7 @@ const ServiceProductPage: React.FC = () => {
             }))}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

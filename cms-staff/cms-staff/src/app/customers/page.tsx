@@ -20,7 +20,8 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 import CustomerViewDialog from "./CustomerDetail";
 import CustomerEditDialog from "./CustomerEdit";
-import viVN from "@/utils/viVN";
+
+import { viVN } from "@/utils/viVN";
 import { SelectChangeEvent } from "@mui/material";
 import { useCustomers } from "@/context/CustomerContext";
 import { Customer } from "@/context/interfaces";
@@ -36,16 +37,35 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    overflow: "visible",
-    textOverflow: "unset",
     padding: theme.spacing(1),
-    wordBreak: "break-word",
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
+  },
+  "& .MuiDataGrid-row": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-renderingZone": {
+    maxHeight: "none !important",
+  },
+  "& .MuiDataGrid-row--lastVisible": {
+    maxHeight: "none !important",
   },
 }));
 
@@ -249,7 +269,7 @@ const CustomerPage: React.FC = () => {
             rows={rows}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {

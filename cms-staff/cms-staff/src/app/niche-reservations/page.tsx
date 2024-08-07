@@ -28,7 +28,8 @@ import AddBookingRequestDialog from "./NicheReservationAdd";
 import ViewBookingRequestDialog from "./NicheReservationDetail";
 import DeleteBookingRequestDialog from "./NicheReservationDelete";
 import ConfirmBookingRequestDialog from "./NicheReservationConfirm";
-import viVN from "@/utils/viVN";
+
+import { viVN } from "@/utils/viVN";
 import { useNicheReservationContext } from "@/context/NicheReservationContext";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import { formatISO, parseISO, isWithinInterval } from "date-fns";
@@ -58,8 +59,6 @@ const getCurrentMonthEndDate = (): string => {
     "0"
   )}`;
 };
-
-// Styled components
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -70,16 +69,27 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
-    whiteSpace: "normal",
-    overflow: "visible",
-    textOverflow: "unset",
+    justifyContent: "center",
     padding: theme.spacing(1),
+  },
+  "& .MuiDataGrid-columnHeaderTitle": {
+    fontWeight: "bold",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+  },
+  "& .MuiDataGrid-columnHeader": {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   "& .MuiDataGrid-columnHeaderTitleContainer": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: theme.spacing(1),
+    width: "100%",
   },
   "& .MuiDataGrid-row": {
     maxHeight: "none !important",
@@ -523,7 +533,7 @@ const NicheReservationPage = () => {
             rows={rows}
             columns={columns}
             autoHeight
-            localeText={viVN.components.MuiDataGrid.defaultProps.localeText}
+            localeText={viVN}
             pageSizeOptions={[10]}
             initialState={{
               pagination: {
