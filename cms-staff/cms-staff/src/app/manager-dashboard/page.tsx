@@ -10,18 +10,12 @@ import {
   CircularProgress,
   CardMedia,
 } from "@mui/material";
-import { useDashboardContext } from "@/context/DashboardContext";
+import { usePendingOrdersContext } from "@/context/PendingOrdersContext";
 
 const Dashboard: React.FC = () => {
-  const { nicheReport, serviceReport, contractReport, pendingOrdersSummary } =
-    useDashboardContext();
+  const { pendingOrdersSummary, loading } = usePendingOrdersContext();
 
-  if (
-    !nicheReport ||
-    !serviceReport ||
-    !contractReport ||
-    !pendingOrdersSummary
-  ) {
+  if (loading) {
     return (
       <Box
         display="flex"

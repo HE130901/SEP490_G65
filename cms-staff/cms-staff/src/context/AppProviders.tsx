@@ -11,25 +11,28 @@ import { NicheReservationProvider } from "./NicheReservationContext";
 import { VisitRegistrationProvider } from "./VisitRegistrationContext";
 import { ServiceOrderProvider } from "./ServiceOrderContext";
 import { DashboardProvider } from "./DashboardContext";
+import { PendingOrdersProvider } from "./PendingOrdersContext";
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <ContractProvider>
-        <CustomerProvider>
-          <ServiceProvider>
-            <NicheProvider>
-              <NicheReservationProvider>
-                <VisitRegistrationProvider>
-                  <ServiceOrderProvider>
-                    <DashboardProvider>{children}</DashboardProvider>
-                  </ServiceOrderProvider>
-                </VisitRegistrationProvider>
-              </NicheReservationProvider>
-            </NicheProvider>
-          </ServiceProvider>
-        </CustomerProvider>
-      </ContractProvider>
+      <PendingOrdersProvider>
+        <ContractProvider>
+          <CustomerProvider>
+            <ServiceProvider>
+              <NicheProvider>
+                <NicheReservationProvider>
+                  <VisitRegistrationProvider>
+                    <ServiceOrderProvider>
+                      <DashboardProvider>{children}</DashboardProvider>
+                    </ServiceOrderProvider>
+                  </VisitRegistrationProvider>
+                </NicheReservationProvider>
+              </NicheProvider>
+            </ServiceProvider>
+          </CustomerProvider>
+        </ContractProvider>
+      </PendingOrdersProvider>
     </AuthProvider>
   );
 }

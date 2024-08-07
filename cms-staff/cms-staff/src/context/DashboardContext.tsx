@@ -105,13 +105,6 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         "/api/Report/contract-summary"
       );
       setContractReport(contractResponse.data);
-
-      const ordersResponse = await axiosInstance.get("/api/Orders/pending");
-      if (ordersResponse.data && ordersResponse.data.$values) {
-        setPendingOrdersSummary(ordersResponse.data.$values);
-      } else {
-        console.error("Unexpected API response structure:", ordersResponse);
-      }
     } catch (error) {
       console.error("Error fetching report data:", error);
     }
