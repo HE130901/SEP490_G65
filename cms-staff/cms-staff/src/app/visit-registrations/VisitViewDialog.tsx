@@ -203,6 +203,12 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
               <>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body1" gutterBottom>
+                    <strong>Số lượng người đi cùng:</strong>{" "}
+                    {formData.accompanyingPeople}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body1" gutterBottom>
                     <strong>Trạng thái:</strong>{" "}
                     <Chip
                       label={getStatusLabel(formData.status).label}
@@ -210,12 +216,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     />
                   </Typography>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Số lượng người đi cùng:</strong>{" "}
-                    {formData.accompanyingPeople}
-                  </Typography>
-                </Grid>
+
                 <Grid item xs={12}>
                   <TextField
                     margin="dense"

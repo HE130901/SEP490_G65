@@ -9,11 +9,22 @@ import {
   TextField,
   Button,
   Grid,
+  Typography,
+  Chip,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
 import NicheReservationAPI from "@/services/nicheReservationService";
 import EditBookingRequestDialog from "./EditBookingRequestDialog";
+import dayjs from "dayjs";
+
+function formatDateTime(dateTimeString: any) {
+  return dayjs(dateTimeString).format("YYYY-MM-DDTHH:mm"); // Format for TextField
+}
+
+function formatDisplayDateTime(dateTimeString: any) {
+  return dayjs(dateTimeString).format("DD/MM/YYYY"); // Format for display
+}
 
 interface ViewBookingRequestDialogProps {
   open: boolean;
@@ -43,17 +54,19 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "Canceled":
-        return "Đã hủy";
-      case "Approved":
-        return "Đã duyệt";
+        return { label: "Đã hủy", color: "error" };
       case "Rejected":
-        return "Đã từ chối";
-      case "Signed":
-        return "Đã ký HĐ";
+        return { label: "Đã từ chối", color: "error" };
       case "Expired":
-        return "Đã hết hạn";
+        return { label: "Đã hết hạn", color: "error" };
+      case "Pending":
+        return { label: "Đang chờ duyệt", color: "warning" };
+      case "Approved":
+        return { label: "Đã duyệt", color: "success" };
+      case "Signed":
+        return { label: "Đã ký hợp đồng", color: "success" };
       default:
-        return "Chờ duyệt";
+        return { label: status, color: "default" };
     }
   };
 
@@ -136,7 +149,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={new Date(bookingRequest.createdDate).toLocaleString()}
+                  value={formatDisplayDateTime(bookingRequest.createdDate)}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -149,15 +162,13 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={new Date(
-                    bookingRequest.confirmationDate
-                  ).toLocaleString()}
+                  value={formatDisplayDateTime(bookingRequest.confirmationDate)}
                   InputProps={{
                     readOnly: true,
                   }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              {/* <Grid item xs={6}>
                 <TextField
                   margin="dense"
                   label="Tên nhân viên xác nhận"
@@ -169,19 +180,15 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                     readOnly: true,
                   }}
                 />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  margin="dense"
-                  label="Trạng thái"
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  value={getStatusLabel(bookingRequest.status)}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
+              </Grid> */}
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1" gutterBottom>
+                  <strong>Trạng thái:</strong>{" "}
+                  <Chip
+                    label={getStatusLabel(bookingRequest.status).label}
+                    color={getStatusLabel(bookingRequest.status).color as any}
+                  />
+                </Typography>
               </Grid>
               <Grid item xs={12}>
                 <TextField
