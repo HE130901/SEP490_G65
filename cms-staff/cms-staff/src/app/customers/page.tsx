@@ -89,8 +89,15 @@ const CustomerPage: React.FC = () => {
     setSearchColumn(event.target.value);
   };
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
   const filteredCustomers = customers.filter((customer) => {
-    const searchTermLower = searchTerm.toLowerCase();
+    const searchTermLower = removeAccents(searchTerm.toLowerCase());
     if (searchColumn === "all") {
       return (
         customer.fullName.toLowerCase().includes(searchTermLower) ||

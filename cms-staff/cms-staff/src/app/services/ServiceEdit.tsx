@@ -97,10 +97,14 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Tên dịch vụ"
+                      label={
+                        <span>
+                          Tên dịch vụ
+                          <span style={{ color: "red" }}> *</span>
+                        </span>
+                      }
                       fullWidth
                       variant="outlined"
-                      required
                     />
                   )}
                 />
@@ -112,12 +116,16 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Mô tả"
+                      label={
+                        <span>
+                          Mô tả
+                          <span style={{ color: "red" }}> *</span>
+                        </span>
+                      }
                       fullWidth
                       variant="outlined"
                       multiline
                       rows={4}
-                      required
                     />
                   )}
                 />
@@ -129,11 +137,15 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Giá (VNĐ)"
+                      label={
+                        <span>
+                          Giá (VND)
+                          <span style={{ color: "red" }}> *</span>
+                        </span>
+                      }
                       type="number"
                       fullWidth
                       variant="outlined"
-                      required
                       InputProps={{ inputProps: { min: 0 } }}
                     />
                   )}
@@ -146,11 +158,15 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Phân loại"
+                      label={
+                        <span>
+                          Phân loại
+                          <span style={{ color: "red" }}> *</span>
+                        </span>
+                      }
                       fullWidth
                       variant="outlined"
                       select
-                      required
                     >
                       <MenuItem value="Sản phẩm">Sản phẩm</MenuItem>
                       <MenuItem value="Dịch vụ">Dịch vụ</MenuItem>
@@ -166,11 +182,15 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   render={({ field }) => (
                     <TextField
                       {...field}
-                      label="Thẻ"
+                      label={
+                        <span>
+                          Thẻ
+                          <span style={{ color: "red" }}> *</span>
+                        </span>
+                      }
                       fullWidth
                       variant="outlined"
                       select
-                      required
                     >
                       <MenuItem value="Combo">Combo</MenuItem>
                       <MenuItem value="Hoa quả">Hoa quả</MenuItem>
@@ -184,7 +204,10 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Hình ảnh dịch vụ
+                  <span>
+                    Hình ảnh dịch vụ
+                    <span style={{ color: "red" }}> *</span>
+                  </span>
                 </Typography>
                 <Box display="flex" alignItems="center">
                   <Button

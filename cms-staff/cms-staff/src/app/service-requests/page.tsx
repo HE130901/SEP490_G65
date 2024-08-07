@@ -174,6 +174,14 @@ const ServiceRequestPage = () => {
     fetchServiceOrders();
   };
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
+
   const filteredServiceOrders = serviceOrders.filter((order) => {
     // Apply date range filter
     let dateFiltered = true;
@@ -196,14 +204,17 @@ const ServiceRequestPage = () => {
     // Apply text search filter
     let textFiltered = true;
     if (searchText) {
+      const normalizedSearchText = removeAccents(searchText.toLowerCase());
       textFiltered =
         searchColumn === "all"
           ? Object.values(order).some((value) =>
-              String(value).toLowerCase().includes(searchText.toLowerCase())
+              removeAccents(String(value).toLowerCase()).includes(
+                normalizedSearchText
+              )
             )
-          : String(order[searchColumn])
-              .toLowerCase()
-              .includes(searchText.toLowerCase());
+          : removeAccents(String(order[searchColumn]).toLowerCase()).includes(
+              normalizedSearchText
+            );
     }
 
     return dateFiltered && textFiltered;

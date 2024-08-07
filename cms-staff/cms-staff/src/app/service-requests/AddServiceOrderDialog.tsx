@@ -178,7 +178,7 @@ const AddServiceOrderDialog = ({
           margin="normal"
           label={
             <span>
-              Ngày đặt hàng <span style={{ color: "red" }}>*</span>
+              Ngày hẹn <span style={{ color: "red" }}>*</span>
             </span>
           }
           name="orderDate"

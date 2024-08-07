@@ -144,6 +144,14 @@ const VisitRegistrationsList: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
+
   useEffect(() => {
     let filteredData = visitRegistrations;
 
@@ -167,25 +175,46 @@ const VisitRegistrationsList: React.FC = () => {
 
     // Apply text search filter
     if (searchText) {
+      const normalizedSearchText = removeAccents(searchText.toLowerCase());
+
       filteredData = filteredData.filter((visit) => {
         if (searchColumn === "all") {
           return Object.values(visit).some((value) =>
-            String(value).toLowerCase().includes(searchText.toLowerCase())
+            removeAccents(String(value).toLowerCase()).includes(
+              normalizedSearchText
+            )
           );
         } else if (searchColumn === "status") {
-          return getStatusLabel(visit.status)
-            .label.toLowerCase()
-            .includes(searchText.toLowerCase());
+          return removeAccents(
+            getStatusLabel(visit.status).label.toLowerCase()
+          ).includes(normalizedSearchText);
         } else {
-          return String(visit[searchColumn])
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
+          return removeAccents(
+            String(visit[searchColumn]).toLowerCase()
+          ).includes(normalizedSearchText);
         }
       });
     }
 
     setFilteredVisitRegistrations(filteredData);
   }, [searchText, searchColumn, fromDate, toDate, visitRegistrations]);
+
+  //
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Expired":
+        return { label: "Đã quá hạn", color: "error" };
+      case "Canceled":
+        return { label: "Đã hủy", color: "error" };
+      case "Approved":
+        return { label: "Đã xác nhận", color: "success" };
+      case "Pending":
+        return { label: "Đang chờ duyệt", color: "warning" };
+
+      default:
+        return { label: status, color: "default" };
+    }
+  };
 
   const handleView = (visit: VisitRegistrationDto) => {
     setSelectedVisit(visit);

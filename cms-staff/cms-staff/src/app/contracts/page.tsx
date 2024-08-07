@@ -179,16 +179,27 @@ const ContractPage: React.FC = () => {
     fetchSettings();
   }, []);
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
   useEffect(() => {
     const filtered = contracts.filter((contract) => {
-      // Existing search filter logic
+      const normalizedSearchText = removeAccents(searchText.toLowerCase());
       if (searchColumn === "all") {
         return Object.values(contract).some((value) =>
-          String(value).toLowerCase().includes(searchText.toLowerCase())
+          removeAccents(String(value).toLowerCase()).includes(
+            normalizedSearchText
+          )
         );
       } else if (searchColumn === "status") {
         const status = getStatusLabel(contract.status).label;
-        return String(status).toLowerCase().includes(searchText.toLowerCase());
+        return removeAccents(String(status).toLowerCase()).includes(
+          normalizedSearchText
+        );
       } else if (searchColumn === "startDate" || searchColumn === "endDate") {
         if (!fromDate || !toDate) return true;
         const contractDate = new Date(contract[searchColumn]);
@@ -197,9 +208,9 @@ const ContractPage: React.FC = () => {
         return contractDate >= from && contractDate <= to;
       } else {
         const columnValue = contract[searchColumn as keyof typeof contract];
-        return String(columnValue)
-          .toLowerCase()
-          .includes(searchText.toLowerCase());
+        return removeAccents(String(columnValue).toLowerCase()).includes(
+          normalizedSearchText
+        );
       }
     });
     setFilteredContracts(filtered);

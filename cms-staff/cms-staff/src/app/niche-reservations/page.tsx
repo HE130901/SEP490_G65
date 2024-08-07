@@ -179,6 +179,14 @@ const NicheReservationPage = () => {
     setFilteredRequests(reservations);
   }, [reservations]);
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
+
   useEffect(() => {
     let filteredData = reservations;
 
@@ -198,19 +206,23 @@ const NicheReservationPage = () => {
 
     // Apply text search filter
     if (searchText) {
+      const normalizedSearchText = removeAccents(searchText.toLowerCase());
+
       filteredData = filteredData.filter((request) => {
         if (searchColumn === "all") {
           return Object.values(request).some((value) =>
-            String(value).toLowerCase().includes(searchText.toLowerCase())
+            removeAccents(String(value).toLowerCase()).includes(
+              normalizedSearchText
+            )
           );
         } else if (searchColumn === "status") {
-          return getStatusLabel(request.status)
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
+          return removeAccents(
+            getStatusLabel(request.status).toLowerCase()
+          ).includes(normalizedSearchText);
         } else {
-          return String(request[searchColumn as keyof typeof request])
-            .toLowerCase()
-            .includes(searchText.toLowerCase());
+          return removeAccents(
+            String(request[searchColumn as keyof typeof request]).toLowerCase()
+          ).includes(normalizedSearchText);
         }
       });
     }

@@ -105,35 +105,44 @@ const ServiceProductPage: React.FC = () => {
     setEditOpen(true);
   };
 
-  const handleDeleteItem = (service: Service) => {
-    setSelectedService(service);
-    setDeleteOpen(true);
-  };
-
   const handleSearchColumnChange = (event: SelectChangeEvent<string>) => {
     setSearchColumn(event.target.value);
   };
 
+  // Hàm chuyển đổi chuỗi tiếng Việt về dạng không dấu
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
+
   const filteredItems = services.filter((item) => {
-    const searchTermLower = searchTerm.toLowerCase();
+    const searchTermLower = removeAccents(searchTerm.toLowerCase());
+
+    const itemServiceName = removeAccents(item.serviceName.toLowerCase());
+    const itemCategory = removeAccents(item.category.toLowerCase());
+    const itemTag = removeAccents(item.tag.toLowerCase());
+
     if (searchColumn === "all") {
       return (
-        item.serviceName.toLowerCase().includes(searchTermLower) ||
+        itemServiceName.includes(searchTermLower) ||
         item.serviceId.toString().includes(searchTermLower) ||
         item.price.toString().includes(searchTermLower) ||
-        item.category.toLowerCase().includes(searchTermLower) ||
-        item.tag.toLowerCase().includes(searchTermLower)
+        itemCategory.includes(searchTermLower) ||
+        itemTag.includes(searchTermLower)
       );
     } else if (searchColumn === "serviceName") {
-      return item.serviceName.toLowerCase().includes(searchTermLower);
+      return itemServiceName.includes(searchTermLower);
     } else if (searchColumn === "serviceId") {
       return item.serviceId.toString().includes(searchTermLower);
     } else if (searchColumn === "price") {
       return item.price.toString().includes(searchTermLower);
     } else if (searchColumn === "category") {
-      return item.category.toLowerCase().includes(searchTermLower);
+      return itemCategory.includes(searchTermLower);
     } else if (searchColumn === "tag") {
-      return item.tag.toLowerCase().includes(searchTermLower);
+      return itemTag.includes(searchTermLower);
     }
     return true;
   });

@@ -171,30 +171,55 @@ const NicheList: React.FC = () => {
     setSearchColumn(event.target.value);
   };
 
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  };
+
   const filteredNiches = niches.filter((niche) => {
-    const searchTermLower = searchTerm.toLowerCase();
+    const searchTermLower = removeAccents(searchTerm.toLowerCase());
+
     if (searchColumn === "all") {
       return (
-        niche.nicheCode.toLowerCase().includes(searchTermLower) ||
-        niche.customerName?.toLowerCase().includes(searchTermLower) ||
-        niche.deceasedName?.toLowerCase().includes(searchTermLower) ||
-        getStatusLabel(niche.status ?? "")
-          .label.toLowerCase()
-          .includes(searchTermLower) ||
-        niche.description?.toLowerCase().includes(searchTermLower)
+        removeAccents(niche.nicheCode.toLowerCase()).includes(
+          searchTermLower
+        ) ||
+        removeAccents(niche.customerName?.toLowerCase() || "").includes(
+          searchTermLower
+        ) ||
+        removeAccents(niche.deceasedName?.toLowerCase() || "").includes(
+          searchTermLower
+        ) ||
+        removeAccents(
+          getStatusLabel(niche.status ?? "").label.toLowerCase()
+        ).includes(searchTermLower) ||
+        removeAccents(niche.description?.toLowerCase() || "").includes(
+          searchTermLower
+        )
       );
     } else if (searchColumn === "nicheCode") {
-      return niche.nicheCode.toLowerCase().includes(searchTermLower);
+      return removeAccents(niche.nicheCode.toLowerCase()).includes(
+        searchTermLower
+      );
     } else if (searchColumn === "customerName") {
-      return niche.customerName?.toLowerCase().includes(searchTermLower);
+      return removeAccents(niche.customerName?.toLowerCase() || "").includes(
+        searchTermLower
+      );
     } else if (searchColumn === "deceasedName") {
-      return niche.deceasedName?.toLowerCase().includes(searchTermLower);
+      return removeAccents(niche.deceasedName?.toLowerCase() || "").includes(
+        searchTermLower
+      );
     } else if (searchColumn === "status") {
-      return getStatusLabel(niche.status ?? "")
-        .label.toLowerCase()
-        .includes(searchTermLower);
+      return removeAccents(
+        getStatusLabel(niche.status ?? "").label.toLowerCase()
+      ).includes(searchTermLower);
     } else if (searchColumn === "description") {
-      return niche.description?.toLowerCase().includes(searchTermLower);
+      return removeAccents(niche.description?.toLowerCase() || "").includes(
+        searchTermLower
+      );
     }
     return true;
   });
