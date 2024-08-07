@@ -105,6 +105,7 @@ namespace cms_server.Services
             var nicheDetailDto3 = new NicheDetailDto3
             {
                 NicheId = niche.NicheId,
+                NicheCode = niche.NicheCode,
                 ContractId = contract.ContractId,
                 NicheAddress = $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}",
                 FullName = contract.Deceased?.FullName ?? "N/A",

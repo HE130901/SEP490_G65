@@ -37,6 +37,8 @@ const getStatusVariant = (status: string) => {
     case "PendingCancellation":
       return "default";
     case "Canceled":
+    case "Rejected":
+    case "Expired":
       return "destructive";
     default:
       return "secondary";
@@ -53,9 +55,12 @@ const getStatusText = (status: string) => {
       return "Đang chờ ";
     case "Canceled":
       return "Đã hủy";
+    case "Rejected":
+      return "Đã từ chối";
+    case "Expired":
+      return "Đã từ chối";
     case "Completed":
       return "Đã hoàn thành";
-
     case "PendingRenewal":
       return "Đang chờ gia hạn";
     case "PendingCancellation":
@@ -110,15 +115,15 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
           </Box>
 
           <Typography variant="body2" gutterBottom>
-            <strong>Mã ô chứa:</strong> {niche?.nicheId || "N/A"}
+            <strong>Mã ô chứa:</strong> {niche?.nicheCode || "N/A"}
           </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Địa chỉ ô chứa:</strong> {niche?.nicheAddress || "N/A"}
           </Typography>
-          <Typography variant="body2" gutterBottom>
+          {/* <Typography variant="body2" gutterBottom>
             <strong>Thông tin ô chứa:</strong>{" "}
             {niche?.nicheDescription || "N/A"}
-          </Typography>
+          </Typography> */}
           <Typography variant="body2" gutterBottom>
             <strong>Tên người đã khuất:</strong> {niche?.fullName || "N/A"}
           </Typography>
@@ -160,7 +165,6 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                   <TableRow>
                     <TableCell align="center">Ngày viếng</TableCell>
                     <TableCell align="center">Số người đi cùng</TableCell>
-                    <TableCell align="center">Ghi chú</TableCell>
                     <TableCell align="center">Trạng thái</TableCell>
                   </TableRow>
                 </TableHead>
@@ -174,7 +178,6 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                         <TableCell align="center">
                           {visit.accompanyingPeople}
                         </TableCell>
-                        <TableCell align="center">{visit.note}</TableCell>
                         <TableCell align="center">
                           <Badge variant={getStatusVariant(visit.status)}>
                             {getStatusText(visit.status) ||
@@ -217,7 +220,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                     <TableCell align="center">Tên dịch vụ</TableCell>
                     <TableCell align="center">Số lượng</TableCell>
                     <TableCell align="center">Trạng thái</TableCell>
-                    <TableCell align="center">Hình ảnh hoàn thành</TableCell>
+                    {/* <TableCell align="center">Hình ảnh hoàn thành</TableCell> */}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -241,7 +244,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                                   "Không có thông tin"}
                               </Badge>
                             </TableCell>
-                            <TableCell align="center">
+                            {/* <TableCell align="center">
                               {detail.completionImage && (
                                 <Image
                                   src={detail.completionImage}
@@ -251,7 +254,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
                                   className="w-24 h-24 rounded-lg object-cover object-center"
                                 />
                               )}
-                            </TableCell>
+                            </TableCell> */}
                           </TableRow>
                         )
                       )}
