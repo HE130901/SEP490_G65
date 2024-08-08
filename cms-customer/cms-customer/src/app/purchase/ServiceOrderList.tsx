@@ -44,11 +44,13 @@ import DetailViewDialog from "./DetailViewDialog";
 import debounce from "lodash.debounce";
 import { remove as removeDiacritics } from "diacritics";
 import { IconButton } from "@mui/material";
+import dayjs from "dayjs";
 
 export type ServiceOrderDetail = {
   serviceName: string;
   quantity: number;
   status: string;
+  price: number;
   completionImage?: string;
 };
 
@@ -56,6 +58,7 @@ export type ServiceOrder = {
   serviceOrderId: number;
   nicheAddress: string;
   createdDate: string;
+  deceasedName: string;
   orderDate: string;
   serviceOrderCode: string;
   serviceOrderDetails: {
@@ -75,6 +78,7 @@ const getStatusVariant = (status: string) => {
       return "default";
   }
 };
+
 const getStatusText = (status: string) => {
   switch (status) {
     case "Completed":
@@ -101,7 +105,6 @@ export default function ServiceOrderList({
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(orders);
   const [searchField, setSearchField] = useState("all");
-  // Thêm state cho pagination
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
 
   useEffect(() => {
@@ -140,7 +143,6 @@ export default function ServiceOrderList({
   };
 
   const handleSave = async (updatedRecord: ServiceOrder) => {
-    // Logic for updating the record
     setEditingRecord(null);
     fetchOrders();
   };
@@ -159,30 +161,6 @@ export default function ServiceOrderList({
         ),
         cell: (info) => info.getValue(),
       }),
-      columnHelper.accessor("createdDate", {
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Ngày tạo
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: (info) => new Date(info.getValue()).toLocaleString("vi-VN"),
-      }),
-      columnHelper.accessor("orderDate", {
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Ngày hẹn
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: (info) => new Date(info.getValue()).toLocaleString("vi-VN"),
-      }),
       columnHelper.accessor("nicheAddress", {
         header: ({ column }) => (
           <Button
@@ -195,12 +173,49 @@ export default function ServiceOrderList({
         ),
         cell: (info) => info.getValue(),
       }),
+      columnHelper.accessor("deceasedName", {
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Tên người mất
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("createdDate", {
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Ngày tạo
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: (info) => dayjs(info.getValue()).format("DD/MM/YYYY"),
+      }),
+      columnHelper.accessor("orderDate", {
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Ngày hẹn
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: (info) => dayjs(info.getValue()).format("DD/MM/YYYY"),
+      }),
+
       columnHelper.accessor("serviceOrderDetails.$values", {
         header: "Dịch vụ/Sản phẩm",
         cell: (info) => (
           <>
             {info.getValue().map((detail, i) => (
-              <div key={i}>
+              <div key={i} style={{ marginBottom: "4px" }}>
                 {detail.serviceName} x {detail.quantity}
               </div>
             ))}
@@ -212,7 +227,7 @@ export default function ServiceOrderList({
         cell: (info) => (
           <>
             {info.getValue().map((detail, i) => (
-              <div key={i}>
+              <div key={i} style={{ marginBottom: "4px" }}>
                 <Badge variant={getStatusVariant(detail.status)}>
                   {getStatusText(detail.status)}
                 </Badge>
@@ -341,6 +356,7 @@ export default function ServiceOrderList({
                 <SelectItem value="createdDate">Ngày tạo</SelectItem>
                 <SelectItem value="orderDate">Ngày hẹn</SelectItem>
                 <SelectItem value="status">Trạng thái</SelectItem>
+                <SelectItem value="deceasedName">Tên người mất</SelectItem>
               </SelectContent>
             </Select>
           </div>

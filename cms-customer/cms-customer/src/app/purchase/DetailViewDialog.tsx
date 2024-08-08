@@ -14,10 +14,13 @@ import {
   TableRow,
   Paper,
   TextField,
+  Divider,
 } from "@mui/material";
 import { ServiceOrder } from "./ServiceOrderList";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import dayjs from "dayjs";
+import ImageViewDialog from "./ImageViewDialog"; // Import the new ImageViewDialog component
 
 interface DetailViewDialogProps {
   record: ServiceOrder | null;
@@ -31,6 +34,8 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
   onSave,
 }) => {
   const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [isImageViewOpen, setIsImageViewOpen] = React.useState(false); // State for image view dialog
+  const [selectedImage, setSelectedImage] = React.useState<string>(""); // State for selected image
   const [orderDate, setOrderDate] = React.useState<string>(
     record ? record.orderDate : ""
   );
@@ -48,11 +53,12 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
     }
   };
 
-  if (!record) return null;
+  const handleImageClick = (imageSrc: string) => {
+    setSelectedImage(imageSrc);
+    setIsImageViewOpen(true);
+  };
 
-  const hasCompleteStatus = record.serviceOrderDetails.$values.some(
-    (detail) => detail.status === "Complete"
-  );
+  if (!record) return null;
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -89,6 +95,18 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
+  };
+
+  const totalAmount = record.serviceOrderDetails.$values.reduce(
+    (total, detail) => total + detail.price * detail.quantity,
+    0
+  );
+
   return (
     <Dialog open={!!record} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Chi tiết đơn đặt hàng</DialogTitle>
@@ -98,49 +116,80 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
         </DialogContentText>
         <DialogContentText>
           <strong>Ngày tạo:</strong>{" "}
-          {new Date(record.createdDate).toLocaleString()}
+          {dayjs(record.createdDate).format("DD/MM/YYYY")}
         </DialogContentText>
         <DialogContentText>
-          <strong>Ngày hẹn:</strong> {new Date(orderDate).toLocaleString()}
+          <strong>Ngày hẹn:</strong> {dayjs(orderDate).format("DD/MM/YYYY")}
+        </DialogContentText>
+        <DialogContentText>
+          <strong>Tên người mất:</strong> {record.deceasedName}
         </DialogContentText>
         <DialogContentText>
           <strong>Địa chỉ ô chứa:</strong> {record.nicheAddress}
         </DialogContentText>
+        <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
+
         <TableContainer component={Paper} sx={{ marginTop: 2 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Dịch vụ/Sản phẩm</TableCell>
-                <TableCell>Số lượng</TableCell>
-                <TableCell>Trạng thái</TableCell>
-                <TableCell>Hình ảnh xác nhận</TableCell>
+                <TableCell align="center">Dịch vụ/Sản phẩm</TableCell>
+                <TableCell align="center">Giá</TableCell>
+                <TableCell align="center">Số lượng</TableCell>
+                <TableCell align="center">Trạng thái</TableCell>
+                <TableCell align="center">Hình ảnh xác nhận</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {record.serviceOrderDetails.$values.map((detail, index) => (
                 <TableRow key={index}>
-                  <TableCell>{detail.serviceName}</TableCell>
-                  <TableCell>{detail.quantity}</TableCell>
-                  <TableCell>
+                  <TableCell align="center">{detail.serviceName}</TableCell>
+                  <TableCell align="center">
+                    {formatCurrency(detail.price)}
+                  </TableCell>
+                  <TableCell align="center">{detail.quantity}</TableCell>
+                  <TableCell align="center">
                     <Badge variant={getStatusVariant(detail.status)}>
                       {getStatusText(detail.status) || "Không có thông tin"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell align="center">
                     {detail.completionImage ? (
-                      <Image
-                        width={50}
-                        height={50}
-                        src={detail.completionImage}
-                        alt="Completion"
-                        className="rounded"
-                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          detail.completionImage &&
+                          handleImageClick(detail.completionImage)
+                        }
+                      >
+                        <Image
+                          width={50}
+                          height={50}
+                          src={detail.completionImage}
+                          alt="Completion"
+                          className="rounded"
+                        />
+                      </div>
                     ) : (
                       "N/A"
                     )}
                   </TableCell>
                 </TableRow>
               ))}
+              <TableRow>
+                <TableCell
+                  align="right"
+                  colSpan={5}
+                  sx={{ fontWeight: "bold", color: "red" }}
+                >
+                  Tổng tiền: {"    "}
+                  {formatCurrency(totalAmount)}
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
@@ -155,6 +204,11 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSave={handleEditSave}
+      />
+      <ImageViewDialog
+        open={isImageViewOpen}
+        imageSrc={selectedImage}
+        onClose={() => setIsImageViewOpen(false)}
       />
     </Dialog>
   );

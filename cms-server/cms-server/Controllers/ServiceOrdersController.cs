@@ -33,7 +33,26 @@ namespace cms_server.Controllers
             _context = context;
         }
 
-      
+        private string getDeceasedName(int? deceasedId)
+        {
+            var deceased = _context.Deceaseds.Find(deceasedId);
+            if (deceased == null)
+            {
+                return "Không xác định";
+            }
+            return deceased.FullName;
+        }
+        private decimal getServicePrice(int serviceId)
+        {
+            var service = _context.Services.Find(serviceId);
+            if (service == null)
+            {
+                return 0;
+            }
+            return (decimal)service.Price;
+        }
+
+
 
         [HttpGet("customer")]
         [Authorize]
@@ -65,6 +84,7 @@ namespace cms_server.Controllers
             var serviceOrderDtos = serviceOrders.Select(so => new ServiceOrderResponseDto
             {
                 ServiceOrderId = so.ServiceOrderId,
+                DeceasedName = getDeceasedName(so.Niche.DeceasedId),
                 NicheAddress = $"{so.Niche.Area.Floor.Building.BuildingName} - {so.Niche.Area.Floor.FloorName} - {so.Niche.Area.AreaName} - Ô {so.Niche.NicheName}",
                 CreatedDate = so.CreatedDate,
                 OrderDate = so.OrderDate,
@@ -73,6 +93,7 @@ namespace cms_server.Controllers
                 {
                     ServiceName = sod.Service.ServiceName,
                     Quantity = sod.Quantity,
+                    Price = getServicePrice(sod.ServiceId),
                     CompletionImage = sod.CompletionImage,
                     Status = sod.Status
                 }).ToList()
@@ -217,10 +238,10 @@ namespace cms_server.Controllers
     {
         public int ServiceOrderId { get; set; }
         public string? NicheAddress { get; set; }
+        public string? DeceasedName { get; set; }
         public string? ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public DateTime? OrderDate { get; set; }
-        
+        public DateTime? OrderDate { get; set; }        
         public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
     }
 
@@ -228,6 +249,7 @@ namespace cms_server.Controllers
     {
         public string ServiceName { get; set; }
         public int Quantity { get; set; }
+        public decimal Price { get; set; }
         public string? CompletionImage { get; set; }
         public string? Status { get; set; }
     }

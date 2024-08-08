@@ -106,6 +106,7 @@ namespace cms_server.Services
             {
                 NicheId = niche.NicheId,
                 NicheCode = niche.NicheCode,
+                ContractCode = contract.ContractCode,
                 ContractId = contract.ContractId,
                 NicheAddress = $"{niche.Area.Floor.Building.BuildingName} - {niche.Area.Floor.FloorName} - {niche.Area.AreaName} - Ô {niche.NicheName}",
                 FullName = contract.Deceased?.FullName ?? "N/A",

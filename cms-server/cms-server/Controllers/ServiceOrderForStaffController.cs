@@ -401,7 +401,6 @@ namespace cms_server.Controllers
         public int ServiceOrderId { get; set; }
         public string NicheAddress { get; set; }
         public string CustomerName { get; set; }
-
         public string ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }

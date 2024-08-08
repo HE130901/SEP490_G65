@@ -32,6 +32,7 @@
     public class NicheDetailDto3
     {
         public int NicheId { get; set; }
+        public string ContractCode { get; set; }
 
         public string NicheCode { get; set; }
         public int ContractId { get; set; }

@@ -96,7 +96,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
 
   return (
     <Dialog open={isVisible} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Chi tiết Ô chứa của bạn</DialogTitle>
+      <DialogTitle>Chi tiết ô chứa đang sở hữu</DialogTitle>
       <DialogContent dividers>
         <Box mb={2}>
           <Box
@@ -113,17 +113,16 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
               </Button>
             </Link>
           </Box>
-
+          <Typography variant="body2" gutterBottom>
+            <strong>Mã hợp đồng:</strong> {niche?.contractCode || "N/A"}
+          </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Mã ô chứa:</strong> {niche?.nicheCode || "N/A"}
           </Typography>
           <Typography variant="body2" gutterBottom>
             <strong>Địa chỉ ô chứa:</strong> {niche?.nicheAddress || "N/A"}
           </Typography>
-          {/* <Typography variant="body2" gutterBottom>
-            <strong>Thông tin ô chứa:</strong>{" "}
-            {niche?.nicheDescription || "N/A"}
-          </Typography> */}
+
           <Typography variant="body2" gutterBottom>
             <strong>Tên người đã khuất:</strong> {niche?.fullName || "N/A"}
           </Typography>
@@ -136,7 +135,7 @@ const MyNicheDetailDialog: React.FC<MyNicheDetailDialogProps> = ({
             {niche?.endDate ? formatDate(niche.endDate) : "N/A"}
           </Typography>
           <Typography variant="body2" gutterBottom>
-            <strong>Trạng thái hợp đồng:</strong>
+            <strong>Trạng thái hợp đồng: </strong>
             <Badge variant={getStatusVariant(niche?.status)}>
               {getStatusText(niche?.status) || "Không có thông tin"}
             </Badge>

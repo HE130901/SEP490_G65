@@ -426,12 +426,14 @@ const NicheReservationPage = () => {
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-              <span className="font-semibold text-white">Đã được đặt</span>
+              <span className="font-semibold text-white">Đang được đặt</span>
             </div>
             {user && (
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-sky-500 rounded-sm"></div>
-                <span className="font-semibold text-white">Ô chứa của bạn</span>
+                <span className="font-semibold text-white">
+                  Ô chứa đang sở hữu
+                </span>
               </div>
             )}
           </div>
