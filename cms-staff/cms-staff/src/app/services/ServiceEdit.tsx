@@ -12,6 +12,9 @@ import {
   Box,
   MenuItem,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
@@ -130,7 +133,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <Controller
                   name="price"
                   control={control}
@@ -148,6 +151,35 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
                       variant="outlined"
                       InputProps={{ inputProps: { min: 0 } }}
                     />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel id="status-label">
+                        Trạng thái
+                        <span style={{ color: "red" }}> *</span>
+                      </InputLabel>
+                      <Select
+                        {...field}
+                        labelId="status-label"
+                        label={
+                          <span>
+                            Trạng thái
+                            <span style={{ color: "red" }}> *</span>
+                          </span>
+                        }
+                      >
+                        <MenuItem value="Available">Sẵn sàng</MenuItem>
+                        <MenuItem value="Unavailable">Đã hết hàng</MenuItem>
+                        <MenuItem value="Removed">Đã ngừng bán</MenuItem>
+                        <MenuItem value="Others">Khác</MenuItem>
+                      </Select>
+                    </FormControl>
                   )}
                 />
               </Grid>
