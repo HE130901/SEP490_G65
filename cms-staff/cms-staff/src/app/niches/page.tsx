@@ -441,7 +441,6 @@ const NicheList: React.FC = () => {
               <MenuItem value="customerName">Tên khách hàng</MenuItem>
               <MenuItem value="deceasedName">Tên người đã mất</MenuItem>
               <MenuItem value="status">Trạng thái</MenuItem>
-              <MenuItem value="description">Mô tả</MenuItem>
             </Select>
           </FormControl>
           <TextField

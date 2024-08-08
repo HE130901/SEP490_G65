@@ -190,22 +190,37 @@ const UserProfileSetting: React.FC = () => {
     <Grid container style={{ minHeight: "100vh" }} spacing={2}>
       <Grid item xs={12} md={6}>
         <Paper elevation={3} style={{ padding: "2rem" }}>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" fontWeight={700} gutterBottom>
             Thông tin cá nhân
           </Typography>
           <form onSubmit={handleSubmitProfileUpdate}>
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Họ và Tên"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              variant="outlined"
-              required
-            />
-            <Grid container spacing={2}>
-              <Grid item md={4} sm={12}>
+            <Grid container spacing={1}>
+              <Grid item md={6} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Họ và Tên"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                  variant="outlined"
+                />
+              </Grid>
+              <Grid item md={6} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Số điện thoại"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  variant="outlined"
+                  error={!!errors.phone}
+                  helperText={errors.phone}
+                />
+              </Grid>
+
+              <Grid item md={6} sm={12}>
                 <TextField
                   margin="normal"
                   fullWidth
@@ -214,10 +229,9 @@ const UserProfileSetting: React.FC = () => {
                   value={formData.citizenId}
                   onChange={handleChange}
                   variant="outlined"
-                  required
                 />
               </Grid>
-              <Grid item md={4} sm={12}>
+              <Grid item md={6} sm={12}>
                 <TextField
                   margin="normal"
                   fullWidth
@@ -226,11 +240,10 @@ const UserProfileSetting: React.FC = () => {
                   value={formatDisplayDate(formData.citizenIdissuanceDate)}
                   onChange={handleDateChange}
                   variant="outlined"
-                  required
                   placeholder="dd/mm/yyyy"
                 />
               </Grid>
-              <Grid item md={4} sm={12}>
+              <Grid item md={12} sm={12}>
                 <TextField
                   margin="normal"
                   fullWidth
@@ -239,46 +252,37 @@ const UserProfileSetting: React.FC = () => {
                   value={formData.citizenIdsupplier}
                   onChange={handleChange}
                   variant="outlined"
-                  required
+                />
+              </Grid>
+
+              <Grid item md={12} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  variant="outlined"
+                  error={!!errors.email}
+                  helperText={errors.email}
+                />
+              </Grid>
+
+              <Grid item md={12} sm={12}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Địa chỉ"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  variant="outlined"
+                  error={!!errors.address}
+                  helperText={errors.address}
                 />
               </Grid>
             </Grid>
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              variant="outlined"
-              required
-              error={!!errors.email}
-              helperText={errors.email}
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Số điện thoại"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              variant="outlined"
-              required
-              error={!!errors.phone}
-              helperText={errors.phone}
-            />
-            <TextField
-              margin="normal"
-              fullWidth
-              label="Địa chỉ"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              variant="outlined"
-              required
-              error={!!errors.address}
-              helperText={errors.address}
-            />
             {isEditing && (
               <Box mt={2}>
                 <Button
@@ -309,7 +313,7 @@ const UserProfileSetting: React.FC = () => {
 
       <Grid item xs={12} md={6}>
         <Paper elevation={3} style={{ padding: "2rem" }}>
-          <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" fontWeight={700} gutterBottom>
             Đổi mật khẩu
           </Typography>
           <form onSubmit={handleSubmitPasswordChange}>
@@ -322,7 +326,6 @@ const UserProfileSetting: React.FC = () => {
               value={formData.oldPassword}
               onChange={handleChange}
               variant="outlined"
-              required
               error={!!errors.oldPassword}
               helperText={errors.oldPassword}
               InputProps={{
@@ -353,7 +356,6 @@ const UserProfileSetting: React.FC = () => {
               value={formData.newPassword}
               onChange={handleChange}
               variant="outlined"
-              required
               error={!!errors.newPassword}
               helperText={errors.newPassword}
               InputProps={{
@@ -384,7 +386,6 @@ const UserProfileSetting: React.FC = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               variant="outlined"
-              required
               error={!!errors.confirmPassword}
               helperText={errors.confirmPassword}
               InputProps={{

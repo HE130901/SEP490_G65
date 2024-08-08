@@ -120,8 +120,8 @@ export const viVN: GridLocaleText = {
   // Rows selected footer text
   footerRowSelected: (count) =>
     count !== 1
-      ? `${count.toLocaleString()} hàng được chọn`
-      : `${count.toLocaleString()} hàng được chọn`,
+      ? ` `
+      : ` `,
 
   // Total row amount footer text
   footerTotalRows: 'Tổng số hàng:',

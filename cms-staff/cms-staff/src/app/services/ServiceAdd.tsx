@@ -15,10 +15,11 @@ import {
 } from "@mui/material";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import ServiceAPI from "@/services/serviceService";
-import { useToast } from "@/components/ui/use-toast";
 import { Service } from "./interfaces";
 import ImageUploadDialog from "./ImageUploadDialog";
 import Image from "next/image";
+
+import { ToastContainer, toast } from "react-toastify";
 
 interface ServiceAddProps {
   open: boolean;
@@ -39,27 +40,18 @@ const ServiceAdd: React.FC<ServiceAddProps> = ({ open, onClose, onAdd }) => {
       status: "Available",
     },
   });
-  const { toast } = useToast();
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const servicePictureUrl = watch("servicePicture");
 
   const onSubmit: SubmitHandler<Service> = async (data) => {
     try {
       const response = await ServiceAPI.addService(data);
-      toast({
-        variant: "default",
-        title: "Thành công",
-        description: "Thêm mới dịch vụ thành công",
-      });
+      toast.success("Thêm mới dịch vụ thành công");
       onAdd(response.data);
       onClose();
       reset();
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Lỗi",
-        description: "Thêm mới dịch vụ thất bại",
-      });
+      toast.error("Thêm mới dịch vụ thất bại");
     }
   };
 

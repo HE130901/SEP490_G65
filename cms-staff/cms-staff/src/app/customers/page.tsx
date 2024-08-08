@@ -116,31 +116,46 @@ const CustomerPage: React.FC = () => {
       .replace(/đ/g, "d")
       .replace(/Đ/g, "D");
   };
+
   const filteredCustomers = customers.filter((customer) => {
     const searchTermLower = removeAccents(searchTerm.toLowerCase());
     if (searchColumn === "all") {
       return (
-        customer.fullName.toLowerCase().includes(searchTermLower) ||
+        removeAccents(customer.fullName.toLowerCase()).includes(
+          searchTermLower
+        ) ||
         customer.customerId.toString().includes(searchTerm) ||
-        customer.phone.toLowerCase().includes(searchTermLower) ||
-        customer.email.toLowerCase().includes(searchTermLower) ||
-        customer.address.toLowerCase().includes(searchTermLower) ||
-        customer.citizenId.toLowerCase().includes(searchTermLower)
+        removeAccents(customer.phone.toLowerCase()).includes(searchTermLower) ||
+        removeAccents(customer.email.toLowerCase()).includes(searchTermLower) ||
+        removeAccents(customer.address.toLowerCase()).includes(
+          searchTermLower
+        ) ||
+        removeAccents(customer.citizenId.toLowerCase()).includes(
+          searchTermLower
+        )
       );
     } else if (searchColumn === "fullName") {
-      return customer.fullName.toLowerCase().includes(searchTermLower);
+      return removeAccents(customer.fullName.toLowerCase()).includes(
+        searchTermLower
+      );
     } else if (searchColumn === "customerId") {
       return customer.customerId.toString().includes(searchTerm);
     } else if (searchColumn === "phone") {
-      return customer.phone.toLowerCase().includes(searchTermLower);
+      return removeAccents(customer.phone.toLowerCase()).includes(
+        searchTermLower
+      );
     } else if (searchColumn === "email") {
-      return customer.email.toLowerCase().includes(searchTermLower);
+      return removeAccents(customer.email.toLowerCase()).includes(
+        searchTermLower
+      );
     } else if (searchColumn === "address") {
-      return customer.address.toLowerCase().includes(searchTermLower);
+      return removeAccents(customer.address.toLowerCase()).includes(
+        searchTermLower
+      );
     } else if (searchColumn === "citizenId") {
-      return customer.citizenId
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      return removeAccents(customer.citizenId.toLowerCase()).includes(
+        searchTermLower
+      );
     }
     return true;
   });
@@ -241,7 +256,6 @@ const CustomerPage: React.FC = () => {
               <MenuItem value="customerId">Mã khách hàng</MenuItem>
               <MenuItem value="phone">Số điện thoại</MenuItem>
               <MenuItem value="email">Email</MenuItem>
-              <MenuItem value="address">Địa chỉ</MenuItem>
               <MenuItem value="citizenId">CCCD</MenuItem>
             </Select>
           </FormControl>

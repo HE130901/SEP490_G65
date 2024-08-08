@@ -52,6 +52,7 @@ const getCurrentMonthEndDate = (): string => {
     "0"
   )}`;
 };
+
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -62,8 +63,9 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-cell": {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
+    whiteSpace: "normal",
+    wordWrap: "break-word",
   },
   "& .MuiDataGrid-columnHeaderTitle": {
     fontWeight: "bold",
@@ -84,15 +86,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     justifyContent: "center",
     width: "100%",
   },
-  "& .MuiDataGrid-row": {
-    maxHeight: "none !important",
-  },
-  "& .MuiDataGrid-renderingZone": {
-    maxHeight: "none !important",
-  },
-  "& .MuiDataGrid-row--lastVisible": {
-    maxHeight: "none !important",
-  },
 }));
 
 const NoWrapTypography = styled(Typography)({
@@ -110,17 +103,7 @@ const CenteredCell = styled("div")({
 });
 
 const ServiceRequestPage = () => {
-  const {
-    serviceOrders,
-    fetchServiceOrders,
-    addServiceOrder,
-    updateServiceOrder,
-    deleteServiceOrder,
-  } = useServiceOrderContext();
-
-  useEffect(() => {
-    fetchServiceOrders();
-  }, [fetchServiceOrders]);
+  const { serviceOrders, fetchServiceOrders } = useServiceOrderContext();
 
   useEffect(() => {
     fetchServiceOrders();
@@ -154,9 +137,9 @@ const ServiceRequestPage = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "Pending":
-        return "Đang chờ";
+        return "Đang thực hiện";
       case "Completed":
-        return "Hoàn thành";
+        return "Đã hoàn thành";
       case "Canceled":
         return "Đã hủy";
       default:
@@ -250,7 +233,7 @@ const ServiceRequestPage = () => {
     {
       field: "createdDate",
       headerName: "Ngày tạo",
-      width: 100,
+      width: 160,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
@@ -259,7 +242,7 @@ const ServiceRequestPage = () => {
     {
       field: "orderDate",
       headerName: "Ngày hẹn",
-      width: 100,
+      width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
@@ -268,28 +251,27 @@ const ServiceRequestPage = () => {
     {
       field: "services",
       headerName: "Dịch vụ",
-      width: 260,
+      width: 220,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <NoWrapTypography variant="body2">
+        <Typography variant="body2" component="div">
           {Array.isArray(params.value)
             ? params.value.map((service: any, idx: number) => (
-                <span key={idx}>
+                <div key={idx}>
                   {service.serviceName} (x{service.quantity})
-                  {idx < params.value.length - 1 && ", "}
-                </span>
+                </div>
               ))
             : "Không có dịch vụ"}
-        </NoWrapTypography>
+        </Typography>
       ),
     },
     {
       field: "statuses",
       headerName: "Trạng thái",
-      width: 220,
+      width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <NoWrapTypography>
+        <Typography component="div">
           {Array.isArray(params.value)
             ? params.value.map((status: any, idx: number) => (
                 <Chip
@@ -297,11 +279,11 @@ const ServiceRequestPage = () => {
                   label={getStatusLabel(status.status)}
                   color={getStatusColor(status.status)}
                   size="small"
-                  style={{ marginRight: 4 }}
+                  style={{ marginRight: 4, marginBottom: 4 }}
                 />
               ))
             : "Không có trạng thái"}
-        </NoWrapTypography>
+        </Typography>
       ),
     },
     {
@@ -452,6 +434,7 @@ const ServiceRequestPage = () => {
                 columnVisibilityModel: {},
               },
             }}
+            getRowHeight={() => "auto"} // Dynamically adjust row height based on content
           />
         </Paper>
       </Box>

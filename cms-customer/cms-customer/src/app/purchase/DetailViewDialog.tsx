@@ -75,7 +75,7 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
       case "Approved":
         return "Đã duyệt";
       case "Pending":
-        return "Đang chờ duyệt";
+        return "Đang thực hiện";
       case "Canceled":
         return "Đã hủy";
       case "Expired":

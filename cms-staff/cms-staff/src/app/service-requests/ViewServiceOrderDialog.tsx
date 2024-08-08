@@ -28,6 +28,17 @@ import ServiceOrderAPI from "@/services/serviceOrderService";
 
 const CenteredTableCell = styled(TableCell)`
   text-align: center;
+  vertical-align: middle;
+`;
+
+const CenteredImageWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const CenteredImage = styled(Image)`
+  object-fit: cover;
 `;
 
 const ViewServiceOrderDialog = ({
@@ -43,10 +54,6 @@ const ViewServiceOrderDialog = ({
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [selectedServiceOrderDetailId, setSelectedServiceOrderDetailId] =
     useState<number | null>(null);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [serviceOrderDetailToDelete, setServiceOrderDetailToDelete] = useState<
-    number | null
-  >(null);
 
   useEffect(() => {
     const fetchServiceOrderDetails = async () => {
@@ -68,9 +75,9 @@ const ViewServiceOrderDialog = ({
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "Pending":
-        return "Đang chờ";
+        return "Đang thực hiện";
       case "Completed":
-        return "Hoàn thành";
+        return "Đã hoàn thành";
       case "Canceled":
         return "Đã hủy";
       default:
@@ -120,26 +127,6 @@ const ViewServiceOrderDialog = ({
         setServiceOrder(response.data);
       } catch (error) {
         toast.error("Không thể tải chi tiết đơn đặt dịch vụ");
-      }
-    }
-  };
-
-  const handleRemoveService = async (serviceOrderDetailId: number) => {
-    setServiceOrderDetailToDelete(serviceOrderDetailId);
-    setConfirmDialogOpen(true);
-  };
-
-  const confirmRemoveService = async () => {
-    if (serviceOrderDetailToDelete !== null) {
-      try {
-        await ServiceOrderAPI.removeServiceFromOrder(
-          serviceOrderDetailToDelete
-        );
-        toast.success("Đã xóa dịch vụ thành công");
-        fetchServiceOrderDetails();
-        setConfirmDialogOpen(false);
-      } catch (error) {
-        toast.error("Không thể xóa dịch vụ");
       }
     }
   };
@@ -211,12 +198,14 @@ const ViewServiceOrderDialog = ({
                           </CenteredTableCell>
                           <CenteredTableCell>
                             {detail.completionImage ? (
-                              <Image
-                                src={detail.completionImage}
-                                alt="Completion"
-                                height={50}
-                                width={50}
-                              />
+                              <CenteredImageWrapper>
+                                <CenteredImage
+                                  src={detail.completionImage}
+                                  alt="Completion"
+                                  height={70}
+                                  width={70}
+                                />
+                              </CenteredImageWrapper>
                             ) : (
                               "N/A"
                             )}
@@ -281,21 +270,6 @@ const ViewServiceOrderDialog = ({
           fetchServiceOrderDetails();
         }}
       />
-      <Dialog
-        open={confirmDialogOpen}
-        onClose={() => setConfirmDialogOpen(false)}
-      >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
-        <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xóa dịch vụ này?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDialogOpen(false)}>Hủy</Button>
-          <Button onClick={confirmRemoveService} color="error">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Dialog>
   );
 };
