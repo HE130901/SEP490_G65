@@ -47,6 +47,7 @@ import DetailViewDialog from "./DetailViewDialog";
 import EditModal from "./EditModal";
 
 export type NicheReservation = {
+  confirmedBy: any;
   reservationId: number;
   nicheId: number;
   nicheAddress: string;
@@ -574,7 +575,7 @@ export default function BookingRequestList({
       {currentModal === "view" && viewingRecord && (
         <DetailViewDialog
           open={true}
-          record={viewingRecord}
+          id={viewingRecord.reservationId}
           onClose={() => setCurrentModal(null)}
         />
       )}

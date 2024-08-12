@@ -17,9 +17,15 @@ import {
 } from "@mui/material";
 import { NicheReservation } from "./BookingRequestList";
 import { z } from "zod";
-import { addDays, format } from "date-fns";
-import { parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
+
+// Các địa chỉ ký xác định trước
+const predefinedAddresses = [
+  "Nhà tang lễ thành phố",
+  "Nghĩa trang Văn Điển",
+  "An Bình Viên - Hòa Lạc",
+] as const;
 
 type EditModalProps = {
   record: NicheReservation;
@@ -27,49 +33,52 @@ type EditModalProps = {
   onClose: () => void;
 };
 
-const predefinedAddresses = [
-  "Nhà tang lễ thành phố",
-  "Nghĩa trang Văn Điển",
-  "An Bình Viên - Hòa Lạc",
-] as const;
-
-const today = new Date();
-const maxDate = addDays(today, 3);
-
-const reservationSchema = z.object({
-  confirmationDate: z.string().refine(
-    (dateString) => {
-      const date = new Date(dateString);
-      return date >= today && date <= maxDate;
-    },
-    {
-      message: "Ngày xác nhận phải trong vòng 3 ngày tính từ ngày hiện tại.",
-    }
-  ),
-  signAddress: z.enum(predefinedAddresses),
-  note: z.string().optional(),
-});
-
 export default function EditModal({ record, onSave, onClose }: EditModalProps) {
+  // Tính toán ngày tối đa có thể chọn (3 ngày sau ngày tạo)
+  const maxDate = addDays(record.createdDate, 2);
+
+  // State để lưu trữ dữ liệu được cập nhật từ form
   const [updatedRecord, setUpdatedRecord] = useState<NicheReservation>({
     ...record,
     confirmationDate: format(
       parseISO(record.confirmationDate),
       "yyyy-MM-dd'T'HH:mm"
     ),
-    signAddress: record.signAddress || predefinedAddresses[0], // Set default value
+    signAddress: record.signAddress || predefinedAddresses[0], // Đặt giá trị mặc định nếu không có
   });
+
+  // State để lưu trữ lỗi từ form validation
   const [formErrors, setFormErrors] = useState<{
     confirmationDate?: string;
     signAddress?: string;
   }>({});
 
+  // Schema validation sử dụng zod
+  const reservationSchema = z.object({
+    confirmationDate: z.string().refine(
+      (dateString) => {
+        const date = new Date(dateString);
+        // Kiểm tra ngày xác nhận phải nằm trong khoảng từ ngày tạo đến 3 ngày sau đó
+        return date >= new Date(record.createdDate) && date <= maxDate;
+      },
+      {
+        message: "Ngày xác nhận phải trong vòng 3 ngày tính từ ngày tạo.",
+      }
+    ),
+    signAddress: z.enum(predefinedAddresses),
+    note: z.string().optional(),
+  });
+
+  // Hàm xử lý thay đổi trong các trường input
   const handleChange = (field: keyof NicheReservation, value: any) => {
     setUpdatedRecord({ ...updatedRecord, [field]: value });
   };
 
+  // Hàm xử lý khi submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Chuyển đổi ngày giờ thành định dạng ISO UTC để gửi lên backend
     const localDateTime = parseISO(updatedRecord.confirmationDate);
     const data = {
       ...updatedRecord,
@@ -88,15 +97,22 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
     console.log("Data to be sent to backend:", data);
 
     try {
+      // Kiểm tra dữ liệu nhập vào theo schema
       reservationSchema.parse(data);
-      await onSave(data); // Ensure onSave is async
-      onClose(); // Close dialog after successful save
+
+      // Gọi hàm onSave truyền từ component cha để lưu dữ liệu
+      await onSave(data);
+
+      // Đóng dialog sau khi lưu thành công
+      onClose();
     } catch (err) {
       if (err instanceof z.ZodError) {
+        // Xử lý lỗi và hiển thị thông báo lỗi cho người dùng
         const fieldErrors: {
           confirmationDate?: string;
           signAddress?: string;
         } = {};
+
         err.errors.forEach((error) => {
           if (error.path.includes("confirmationDate")) {
             fieldErrors.confirmationDate = error.message;
@@ -104,6 +120,7 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
             fieldErrors.signAddress = error.message;
           }
         });
+
         setFormErrors(fieldErrors);
         toast.error("Có lỗi xảy ra khi cập nhật thông tin.");
       } else {
@@ -119,6 +136,7 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
       </DialogTitle>
       <DialogContent dividers>
         <form onSubmit={handleSubmit}>
+          {/* Trường Ngày Xác Nhận */}
           <Box mb={2}>
             <TextField
               label="Ngày Xác Nhận"
@@ -133,11 +151,13 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
                 shrink: true,
               }}
               inputProps={{
-                min: format(today, "yyyy-MM-dd'T'HH:mm"),
+                min: format(record.createdDate, "yyyy-MM-dd'T'HH:mm"),
                 max: format(maxDate, "yyyy-MM-dd'T'HH:mm"),
               }}
             />
           </Box>
+
+          {/* Trường Địa Chỉ Ký */}
           <Box mb={2}>
             <Typography variant="subtitle1">Địa Chỉ Ký</Typography>
             <RadioGroup
@@ -157,6 +177,8 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
               <FormHelperText error>{formErrors.signAddress}</FormHelperText>
             )}
           </Box>
+
+          {/* Trường Ghi Chú */}
           <Box mb={2}>
             <TextField
               label="Ghi Chú"
@@ -168,16 +190,18 @@ export default function EditModal({ record, onSave, onClose }: EditModalProps) {
               onChange={(e) => handleChange("note", e.target.value)}
             />
           </Box>
-          <DialogActions>
-            <Button variant="outlined" onClick={onClose}>
-              Hủy
-            </Button>
-            <Button type="submit" variant="contained" color="primary">
-              Lưu
-            </Button>
-          </DialogActions>
         </form>
       </DialogContent>
+
+      {/* Các nút hành động */}
+      <DialogActions>
+        <Button variant="outlined" onClick={onClose}>
+          Hủy
+        </Button>
+        <Button type="submit" variant="contained" color="primary">
+          Lưu
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -291,7 +291,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">
+        <div className="text-left">
           {row.getValue("deceasedName") || "Không có thông tin"}
         </div>
       ),
@@ -343,7 +343,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("daysLeft")}</div>
+        <div className="text-center">{row.getValue("daysLeft")} ngày</div>
       ),
     },
     {

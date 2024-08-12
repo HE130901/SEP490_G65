@@ -9,7 +9,7 @@ import { useState } from "react";
 import styles from "./reset-pass.module.css";
 
 export default function Component() {
-  // State variables
+  // State variables for email, success message, and error message
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -21,16 +21,19 @@ export default function Component() {
     setError("");
 
     try {
+      // Send a POST request to request password reset
       const response = await axios.post("/api/auth/request-password-reset", {
         email,
       });
 
+      // Check if the response status is 200 (OK)
       if (response.status === 200) {
         setMessage(
           "Yêu cầu đặt lại mật khẩu đã được gửi thành công. Hãy kiểm tra email của bạn."
         );
       }
     } catch (err) {
+      // Handle different types of errors
       if ((err as any).response) {
         setError((err as any).response?.data?.message || "Đã xảy ra lỗi.");
       } else if ((err as any).request) {
@@ -43,7 +46,7 @@ export default function Component() {
   };
 
   return (
-    <div className={`relative flex items-center justify-center min-h-screen`}>
+    <div className="relative flex items-center justify-center min-h-screen">
       <div className={styles["bg-animation"]} />
       <div className="relative z-10 space-y-6 bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
         <div className="space-y-2 text-center">
@@ -58,7 +61,7 @@ export default function Component() {
             <Input
               id="email"
               type="email"
-              placeholder="email@example.com"
+              placeholder="email@abc.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

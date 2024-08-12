@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Button,
-  Typography,
+  TextField,
   Grid,
   Box,
 } from "@mui/material";
@@ -26,6 +26,7 @@ const getStatusVariant = (status: string) => {
     case "Pending":
       return "default";
     case "Canceled":
+    case "Expired":
       return "destructive";
     default:
       return "secondary";
@@ -40,10 +41,14 @@ const getStatusText = (status: string) => {
       return "Đang chờ duyệt";
     case "Canceled":
       return "Đã hủy";
+    case "Expired":
+      return "Đã hết hạn";
+
     default:
       return "Không xác định";
   }
 };
+
 const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
   record,
   onClose,
@@ -56,46 +61,82 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
       <DialogContent dividers>
         <Box mt={2}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Mã đơn:</strong> {record.visitCode}
-              </Typography>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Mã đơn"
+                variant="outlined"
+                value={record.visitCode}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Địa chỉ ô chứa"
+                variant="outlined"
+                value={record.nicheAddress}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Ngày Tạo"
+                variant="outlined"
+                value={new Date(record.createdDate).toLocaleString()}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Ngày Hẹn"
+                variant="outlined"
+                value={new Date(record.visitDate).toLocaleString()}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Số Người Đi Cùng"
+                variant="outlined"
+                value={record.accompanyingPeople}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Trạng thái đơn"
+                variant="outlined"
+                value={getStatusText(record.status) || "Không có thông tin"}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Địa chỉ ô chứa:</strong> {record.nicheAddress}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Ngày Tạo:</strong>{" "}
-                {new Date(record.createdDate).toLocaleString()}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Ngày Hẹn:</strong>{" "}
-                {new Date(record.visitDate).toLocaleString()}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Số Người Đi Cùng:</strong> {record.accompanyingPeople}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Trạng thái đơn: </strong>
-                <Badge variant={getStatusVariant(record.status)}>
-                  {getStatusText(record.status) || "Không có thông tin"}
-                </Badge>
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body1">
-                <strong>Ghi Chú: </strong> {record.note}
-              </Typography>
+              <TextField
+                fullWidth
+                label="Ghi Chú"
+                variant="outlined"
+                value={record.note}
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
             </Grid>
           </Grid>
         </Box>

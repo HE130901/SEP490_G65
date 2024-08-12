@@ -31,6 +31,7 @@ import ConfirmDialog from "./ContractDelete";
 import ContractDetailDialog from "./ContractDetail";
 import RenewalDialog from "./ContractRenewal";
 
+// Styled DataGrid component
 const CenteredTable = styled(DataGrid)(({ theme }) => ({
   "& .MuiDataGrid-root": {
     backgroundColor: theme.palette.background.paper,
@@ -40,6 +41,7 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
+    alignItems: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -72,6 +74,7 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
 }));
 
+// Utility function to format date to DD/MM/YYYY
 const formatDateToDDMMYYYY = (dateString: string): string => {
   if (!dateString) return "";
   const [year, month, day] = dateString.split("-");
@@ -98,6 +101,7 @@ const getCurrentMonthEndDate = (): string => {
   )}`;
 };
 
+// Function to get status label and color
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Canceled":
@@ -156,6 +160,7 @@ const ContractPage: React.FC = () => {
   const [fromDate, setFromDate] = useState(getCurrentMonthStartDate());
   const [toDate, setToDate] = useState(getCurrentMonthEndDate());
 
+  // Fetch contracts from the server
   const fetchContracts = async () => {
     setLoading(true);
     try {
@@ -168,6 +173,8 @@ const ContractPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Fetch settings from the server
   const fetchSettings = async () => {
     try {
       const response = await axiosInstance.get(
@@ -183,10 +190,12 @@ const ContractPage: React.FC = () => {
   useEffect(() => {
     fetchContracts();
   }, [setContracts]);
+
   useEffect(() => {
     fetchSettings();
   }, []);
 
+  // Remove accents from a string
   const removeAccents = (str: string) => {
     return str
       .normalize("NFD")
@@ -194,6 +203,8 @@ const ContractPage: React.FC = () => {
       .replace(/đ/g, "d")
       .replace(/Đ/g, "D");
   };
+
+  // Filter contracts based on search criteria
   useEffect(() => {
     const filtered = contracts.filter((contract) => {
       const normalizedSearchText = removeAccents(searchText.toLowerCase());
@@ -224,25 +235,30 @@ const ContractPage: React.FC = () => {
     setFilteredContracts(filtered);
   }, [searchText, searchColumn, contracts, fromDate, toDate, dateFilterType]);
 
+  // Handle opening the add contract dialog
   const handleAddOpen = () => {
     setOpenAddDialog(true);
   };
 
+  // Handle closing the add contract dialog
   const handleCloseAdd = () => {
     setOpenAddDialog(false);
     fetchContracts();
   };
 
+  // Handle viewing contract details
   const handleViewContract = (id: string) => {
     setSelectedContractId(id);
     setDetailOpen(true);
   };
 
+  // Handle renewing a contract
   const handleRenewContract = (id: string) => {
     setSelectedContractId(id);
     setRenewalOpen(true);
   };
 
+  // Handle terminating a contract
   const handleTerminateContract = (id: string) => {
     const contractToTerminate = contracts.find(
       (contract) => contract.contractId === id
@@ -254,6 +270,7 @@ const ContractPage: React.FC = () => {
     setConfirmDialogOpen(true);
   };
 
+  // Handle confirming contract termination
   const handleConfirmTerminate = async () => {
     if (selectedContractId) {
       await contractService.cancelContract(selectedContractId);
@@ -262,6 +279,7 @@ const ContractPage: React.FC = () => {
     setConfirmDialogOpen(false);
   };
 
+  // Calculate days left until contract end date
   const calculateDaysLeft = (endDate: string): number => {
     const end = new Date(endDate);
     const now = new Date();
@@ -270,6 +288,7 @@ const ContractPage: React.FC = () => {
     return Math.max(daysLeft, 0);
   };
 
+  // Styled cell component for centering content
   const CenteredCell = styled("div")({
     display: "flex",
     justifyContent: "center",
@@ -278,6 +297,7 @@ const ContractPage: React.FC = () => {
     height: "100%",
   });
 
+  // Define columns for the DataGrid
   const columns: GridColDef[] = [
     {
       field: "contractCode",
