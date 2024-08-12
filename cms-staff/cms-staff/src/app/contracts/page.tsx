@@ -40,8 +40,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -272,17 +270,21 @@ const ContractPage: React.FC = () => {
     return Math.max(daysLeft, 0);
   };
 
+  const CenteredCell = styled("div")({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  });
+
   const columns: GridColDef[] = [
     {
       field: "contractCode",
       headerName: "Mã Hợp đồng",
       headerClassName: "super-app-theme--header",
       width: 200,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          {params.value}
-        </Box>
-      ),
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "customerName",
@@ -296,9 +298,7 @@ const ContractPage: React.FC = () => {
       width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          {formatDateToDDMMYYYY(params.value)}
-        </Box>
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
     },
     {
@@ -307,9 +307,7 @@ const ContractPage: React.FC = () => {
       width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          {formatDateToDDMMYYYY(params.value)}
-        </Box>
+        <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
     },
     {
@@ -318,9 +316,7 @@ const ContractPage: React.FC = () => {
       width: 130,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          {calculateDaysLeft(params.row.endDate)}
-        </Box>
+        <CenteredCell>{calculateDaysLeft(params.row.endDate)}</CenteredCell>
       ),
     },
     {
@@ -331,21 +327,23 @@ const ContractPage: React.FC = () => {
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
-          <Box display="flex" justifyContent="center" alignItems="center">
-            <Chip
-              label={label}
-              color={
-                color as
-                  | "info"
-                  | "error"
-                  | "primary"
-                  | "secondary"
-                  | "success"
-                  | "warning"
-                  | "default"
-              }
-            />
-          </Box>
+          <CenteredCell>
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <Chip
+                label={label}
+                color={
+                  color as
+                    | "info"
+                    | "error"
+                    | "primary"
+                    | "secondary"
+                    | "success"
+                    | "warning"
+                    | "default"
+                }
+              />
+            </Box>
+          </CenteredCell>
         );
       },
     },
@@ -355,36 +353,38 @@ const ContractPage: React.FC = () => {
       width: 180,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Box display="flex" justifyContent="center" alignItems="center">
-          <Tooltip title="Xem chi tiết">
-            <IconButton
-              color="info"
-              onClick={() => handleViewContract(params.row.contractId)}
-            >
-              <VisibilityIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Gia hạn hợp đồng">
-            <IconButton
-              color="success"
-              onClick={() => handleRenewContract(params.row.contractId)}
-              // disabled={params.row.status === "Canceled"}
-            >
-              <RestorePageIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Thanh lý hợp đồng">
-            <span>
+        <CenteredCell>
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Tooltip title="Xem chi tiết">
               <IconButton
-                color="error"
-                onClick={() => handleTerminateContract(params.row.contractId)}
-                disabled={params.row.status === "Canceled"}
+                color="info"
+                onClick={() => handleViewContract(params.row.contractId)}
               >
-                <CancelOutlinedIcon />
+                <VisibilityIcon />
               </IconButton>
-            </span>
-          </Tooltip>
-        </Box>
+            </Tooltip>
+            <Tooltip title="Gia hạn hợp đồng">
+              <IconButton
+                color="success"
+                onClick={() => handleRenewContract(params.row.contractId)}
+                // disabled={params.row.status === "Canceled"}
+              >
+                <RestorePageIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Thanh lý hợp đồng">
+              <span>
+                <IconButton
+                  color="error"
+                  onClick={() => handleTerminateContract(params.row.contractId)}
+                  disabled={params.row.status === "Canceled"}
+                >
+                  <CancelOutlinedIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        </CenteredCell>
       ),
     },
   ];

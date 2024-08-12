@@ -35,8 +35,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -68,6 +66,13 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     maxHeight: "none !important",
   },
 }));
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
 
 const CustomerPage: React.FC = () => {
   const { customers, fetchCustomers } = useCustomers();
@@ -166,6 +171,8 @@ const CustomerPage: React.FC = () => {
       headerName: "Mã KH",
       width: 140,
       headerClassName: "super-app-theme--header",
+
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "fullName",
@@ -184,12 +191,16 @@ const CustomerPage: React.FC = () => {
       headerName: "SĐT",
       width: 200,
       headerClassName: "super-app-theme--header",
+
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "citizenId",
       headerName: "CCCD",
       width: 200,
       headerClassName: "super-app-theme--header",
+
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "actions",
@@ -197,7 +208,7 @@ const CustomerPage: React.FC = () => {
       width: 200,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <>
+        <CenteredCell>
           <Tooltip title="Xem chi tiết">
             <IconButton
               color="info"
@@ -214,7 +225,7 @@ const CustomerPage: React.FC = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-        </>
+        </CenteredCell>
       ),
     },
   ];

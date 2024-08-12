@@ -68,8 +68,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -326,20 +324,20 @@ const NicheReservationPage = () => {
     {
       field: "nicheCode",
       headerName: "Mã ô chứa",
-      width: 180,
+      width: 150,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "name",
       headerName: "Tên khách hàng",
-      width: 180,
+      width: 200,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "createdDate",
       headerName: "Ngày tạo",
-      width: 180,
+      width: 150,
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
@@ -349,7 +347,7 @@ const NicheReservationPage = () => {
     {
       field: "confirmationDate",
       headerName: "Ngày hẹn",
-      width: 200,
+      width: 150,
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
@@ -359,12 +357,14 @@ const NicheReservationPage = () => {
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 120,
+      width: 180,
       renderCell: (params) => (
-        <Chip
-          label={getStatusLabel(params.value)}
-          color={getStatusColor(params.value)}
-        />
+        <CenteredCell>
+          <Chip
+            label={getStatusLabel(params.value)}
+            color={getStatusColor(params.value)}
+          />
+        </CenteredCell>
       ),
 
       headerClassName: "super-app-theme--header",
@@ -372,7 +372,7 @@ const NicheReservationPage = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 180,
       renderCell: (params) => (
         <CenteredCell>
           <Tooltip title="Xem chi tiết">

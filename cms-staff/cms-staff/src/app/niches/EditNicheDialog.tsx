@@ -96,24 +96,11 @@ const EditNicheDialog: React.FC<{
                     onChange={(e) => setStatus(e.target.value as string)}
                     label="Trạng thái"
                   >
-                    <MenuItem value="Unavailable">Không khả dụng</MenuItem>
+                    <MenuItem value="Unavailable">Ngừng bán</MenuItem>
                     <MenuItem value="Available">Còn trống</MenuItem>
                   </Select>
                 </FormControl>
               )}
-              <TextField
-                fullWidth
-                label="Mô tả"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                margin="normal"
-                inputProps={{ maxLength: 300 }}
-                multiline
-                rows={4}
-              />
-              <Typography variant="caption" display="block" align="right">
-                {description.length}/300 ký tự
-              </Typography>
             </Box>
           )
         )}

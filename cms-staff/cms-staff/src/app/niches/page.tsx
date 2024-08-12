@@ -30,7 +30,7 @@ const getStatusLabel = (status: string) => {
     case "Active":
       return { label: "Đang hoạt động", color: "info" };
     case "Unavailable":
-      return { label: "Không khả dụng", color: "default" };
+      return { label: "Ngừng bán", color: "error" };
     case "Available":
       return { label: "Còn trống", color: "success" };
     case "Booked":
@@ -57,8 +57,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -245,12 +243,22 @@ const NicheList: React.FC = () => {
     return true;
   });
 
+  const CenteredCell = styled("div")({
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  });
+
   const columns: GridColDef[] = [
     {
       field: "nicheCode",
       headerName: "Mã ô chứa",
       width: 200,
       headerClassName: "super-app-theme--header",
+
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "customerName",
@@ -320,7 +328,7 @@ const NicheList: React.FC = () => {
       width: 160,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <>
+        <CenteredCell>
           <Tooltip title="Xem chi tiết">
             <IconButton
               color="info"
@@ -333,11 +341,14 @@ const NicheList: React.FC = () => {
             <IconButton
               color="secondary"
               onClick={() => handleEditNiche(params.row.nicheId)}
+              disabled={
+                params.row.status === "Booked" || params.row.status === "Active"
+              }
             >
               <Edit />
             </IconButton>
           </Tooltip>
-        </>
+        </CenteredCell>
       ),
     },
   ];

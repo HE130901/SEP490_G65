@@ -9,22 +9,28 @@ import {
   TextField,
   Button,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   FormHelperText,
   CircularProgress,
+  Autocomplete,
 } from "@mui/material";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import { z } from "zod";
 import ServiceOrderAPI from "@/services/serviceOrderService";
-import { set } from "react-hook-form";
 
 interface VisitAddDialogProps {
   open: boolean;
   onClose: () => void;
+}
+
+interface Contract {
+  contractId: number;
+  contractCode: string;
+  customerName: string;
+  nicheCode: string;
+  customerId: number;
+  nicheId: number;
+  status: string;
 }
 
 const formSchema = z.object({
@@ -44,15 +50,18 @@ const formSchema = z.object({
 
 const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [contracts, setContracts] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [formData, setFormData] = useState({
     customerId: 0,
     nicheId: 0,
-    visitDate: new Date().toISOString().slice(0, 16), // Default to current date and time
+    visitDate: new Date().toISOString().slice(0, 16),
     accompanyingPeople: 0,
     note: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(
+    null
+  );
 
   useEffect(() => {
     if (open) {
@@ -60,22 +69,12 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
         try {
           const response = await ServiceOrderAPI.getAllContracts();
           const allContractsData = response.data.$values || response.data;
-          // Lọc ra các hợp đồng có trạng thái không phải "Expired" hoặc "Canceled"
           const validContracts = allContractsData.filter(
-            (contract: { status: string }) =>
+            (contract: Contract) =>
               contract.status !== "Expired" && contract.status !== "Canceled"
           );
 
           setContracts(validContracts);
-
-          if (validContracts.length > 0) {
-            const firstContract = validContracts[0];
-            setFormData((prevData) => ({
-              ...prevData,
-              customerId: firstContract.customerId,
-              nicheId: firstContract.nicheId,
-            }));
-          }
         } catch (error) {
           toast.error("Không thể tải danh sách hợp đồng");
         }
@@ -84,17 +83,39 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
       fetchContracts();
     }
   }, [open]);
+
   const handleChange = (
-    event:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | SelectChangeEvent<number>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = event.target as HTMLInputElement;
+    const { name, value } = event.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: name === "accompanyingPeople" ? +value : value,
     }));
     validateField(name as keyof typeof formSchema.shape, value);
+  };
+
+  const handleContractChange = (event: any, newValue: Contract | null) => {
+    setSelectedContract(newValue);
+    if (newValue) {
+      setFormData((prevData) => ({
+        ...prevData,
+        customerId: newValue.customerId,
+        nicheId: newValue.nicheId,
+      }));
+      validateField("customerId", newValue.customerId);
+      validateField("nicheId", newValue.nicheId);
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        customerId: 0,
+        nicheId: 0,
+      }));
+      setFormErrors((prevErrors) => ({
+        ...prevErrors,
+        customerId: "Vui lòng chọn hợp đồng",
+      }));
+    }
   };
 
   const validateField = (
@@ -145,34 +166,28 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Thêm đăng ký viếng thăm</DialogTitle>
       <DialogContent dividers>
-        <FormControl fullWidth margin="normal" error={!!formErrors.customerId}>
-          <InputLabel id="contract-label">
-            {" "}
-            <span>
-              Hợp đồng <span style={{ color: "red" }}>*</span>
-            </span>
-          </InputLabel>
-          <Select
-            labelId="contract-label"
-            name="customerId"
-            value={formData.customerId}
-            onChange={handleChange}
-            label={
-              <span>
-                Hợp đồng <span style={{ color: "red" }}>*</span>
-              </span>
-            }
-          >
-            {contracts.map((contract) => (
-              <MenuItem key={contract.contractId} value={contract.contractId}>
-                {`${contract.contractCode} (${contract.customerName} | ${contract.nicheAddress})`}
-              </MenuItem>
-            ))}
-          </Select>
-          {formErrors.customerId && (
-            <FormHelperText>{formErrors.customerId}</FormHelperText>
+        <Autocomplete
+          options={contracts}
+          getOptionLabel={(option) =>
+            `${option.contractCode} (${option.customerName} | ${option.nicheCode})`
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={
+                <span>
+                  Hợp đồng <span style={{ color: "red" }}>*</span>
+                </span>
+              }
+              margin="normal"
+              error={!!formErrors.customerId}
+              helperText={formErrors.customerId}
+            />
           )}
-        </FormControl>
+          value={selectedContract}
+          onChange={handleContractChange}
+          fullWidth
+        />
         <TextField
           margin="dense"
           label={

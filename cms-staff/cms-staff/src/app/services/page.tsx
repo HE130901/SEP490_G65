@@ -60,8 +60,6 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
   },
   "& .MuiDataGrid-cell": {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
     padding: theme.spacing(1),
   },
   "& .MuiDataGrid-columnHeaderTitle": {
@@ -93,6 +91,14 @@ const CenteredTable = styled(DataGrid)(({ theme }) => ({
     maxHeight: "none !important",
   },
 }));
+
+const CenteredCell = styled("div")({
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  width: "100%",
+  height: "100%",
+});
 
 const ServiceProductPage: React.FC = () => {
   const { services, addService, updateService, deleteService, fetchServices } =
@@ -171,6 +177,8 @@ const ServiceProductPage: React.FC = () => {
       headerName: "ID",
       width: 90,
       headerClassName: "super-app-theme--header",
+
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "serviceName",
@@ -184,9 +192,7 @@ const ServiceProductPage: React.FC = () => {
       width: 170,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Box display="flex" alignItems="center">
-          {formatVND(params.value as number)}
-        </Box>
+        <CenteredCell>{formatVND(params.value as number)}</CenteredCell>
       ),
     },
     {
@@ -194,12 +200,14 @@ const ServiceProductPage: React.FC = () => {
       headerName: "Phân loại",
       width: 130,
       headerClassName: "super-app-theme--header",
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "tag",
       headerName: "Thẻ",
       width: 130,
       headerClassName: "super-app-theme--header",
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "servicePicture",
@@ -207,7 +215,12 @@ const ServiceProductPage: React.FC = () => {
       width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <Avatar src={params.row.servicePicture} alt={params.row.serviceName} />
+        <CenteredCell>
+          <Avatar
+            src={params.row.servicePicture}
+            alt={params.row.serviceName}
+          />
+        </CenteredCell>
       ),
     },
     {
@@ -218,7 +231,7 @@ const ServiceProductPage: React.FC = () => {
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
         return (
-          <Box display="flex" justifyContent="center" alignItems="center">
+          <CenteredCell>
             <Chip
               label={label}
               color={
@@ -232,7 +245,7 @@ const ServiceProductPage: React.FC = () => {
                   | "default"
               }
             />
-          </Box>
+          </CenteredCell>
         );
       },
     },
@@ -242,7 +255,7 @@ const ServiceProductPage: React.FC = () => {
       width: 150,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
-        <>
+        <CenteredCell>
           <Tooltip title="Xem chi tiết">
             <IconButton color="info" onClick={() => handleViewItem(params.row)}>
               <VisibilityIcon />
@@ -264,7 +277,7 @@ const ServiceProductPage: React.FC = () => {
               <DeleteIcon />
             </IconButton>
           </Tooltip> */}
-        </>
+        </CenteredCell>
       ),
     },
   ];
