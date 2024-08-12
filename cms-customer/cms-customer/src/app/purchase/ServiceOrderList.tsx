@@ -183,8 +183,9 @@ export default function ServiceOrderList({
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
-        cell: (info) => info.getValue(),
+        cell: (info) => <div className="text-left">{info.getValue()}</div>,
       }),
+
       columnHelper.accessor("createdDate", {
         header: ({ column }) => (
           <Button
@@ -213,15 +214,16 @@ export default function ServiceOrderList({
       columnHelper.accessor("serviceOrderDetails.$values", {
         header: "Dịch vụ/Sản phẩm",
         cell: (info) => (
-          <>
+          <div className="text-left">
             {info.getValue().map((detail, i) => (
               <div key={i} style={{ marginBottom: "4px" }}>
                 {detail.serviceName} x {detail.quantity}
               </div>
             ))}
-          </>
+          </div>
         ),
       }),
+
       columnHelper.accessor("serviceOrderDetails.$values", {
         header: "Trạng thái",
         cell: (info) => (
@@ -311,6 +313,7 @@ export default function ServiceOrderList({
       const filtered = orders.filter((order: ServiceOrder) => {
         if (searchField === "all") {
           return (
+            normalizeText(order.deceasedName).includes(normalizedTerm) ||
             normalizeText(order.serviceOrderCode).includes(normalizedTerm) ||
             normalizeText(order.nicheAddress).includes(normalizedTerm) ||
             normalizeText(order.createdDate).includes(normalizedTerm) ||
