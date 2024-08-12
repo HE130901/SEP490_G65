@@ -345,7 +345,8 @@ export default function VisitRegistrationList({
                   color="warning"
                   disabled={
                     row.original.status === "Canceled" ||
-                    row.original.status === "Approved"
+                    row.original.status === "Approved" ||
+                    row.original.status === "Expired"
                   }
                 >
                   <Edit className="w-4 h-4" />
@@ -366,7 +367,8 @@ export default function VisitRegistrationList({
                   color="error"
                   disabled={
                     row.original.status === "Canceled" ||
-                    row.original.status === "Approved"
+                    row.original.status === "Approved" ||
+                    row.original.status === "Expired"
                   }
                 >
                   <Trash className="w-4 h-4" />
