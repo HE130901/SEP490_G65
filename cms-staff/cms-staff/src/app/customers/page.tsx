@@ -174,7 +174,7 @@ const CustomerPage: React.FC = () => {
       width: 140,
       headerClassName: "super-app-theme--header",
 
-      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
+      renderCell: (params) => <CenteredCell>KH{params.value}</CenteredCell>,
     },
     {
       field: "fullName",

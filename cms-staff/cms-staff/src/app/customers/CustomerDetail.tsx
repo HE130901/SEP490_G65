@@ -80,7 +80,7 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
           <Typography color="error">{error}</Typography>
         ) : customer ? (
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={12}>
               <TextField
                 label={<span>Tên khách hàng</span>}
                 type="text"
@@ -90,15 +90,7 @@ const CustomerViewDialog: React.FC<CustomerViewDialogProps> = ({
                 value={customer?.fullName}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="Mã Khách hàng"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={customer?.customerId}
-              />
-            </Grid>
+
             <Grid item xs={12} md={6}>
               <TextField
                 label={<span>Số điện thoại</span>}

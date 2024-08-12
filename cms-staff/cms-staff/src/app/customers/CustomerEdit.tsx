@@ -170,7 +170,7 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
               Thông tin khách hàng
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={12}>
                 <TextField
                   label={
                     <span>
@@ -188,16 +188,7 @@ const CustomerEditDialog: React.FC<CustomerEditDialogProps> = ({
                   helperText={validationErrors.fullName}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Mã Khách hàng"
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  value={customer.customerId}
-                  disabled
-                />
-              </Grid>
+
               <Grid item xs={12} md={6}>
                 <TextField
                   label={
