@@ -288,35 +288,53 @@ namespace cms_server.Controllers
         [HttpPost("cancel-contract")]
         public async Task<IActionResult> CancelContract(int contractId)
         {
-            // Find the contract by ID
-            var contract = await _context.Contracts
-                .FirstOrDefaultAsync(c => c.ContractId == contractId);
-
-            if (contract == null)
+            // Sử dụng transaction để đảm bảo tính toàn vẹn của dữ liệu
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                return NotFound("Contract not found.");
+                try
+                {
+                    // Tìm hợp đồng theo ID
+                    var contract = await _context.Contracts
+                        .FirstOrDefaultAsync(c => c.ContractId == contractId);
+
+                    if (contract == null)
+                    {
+                        return NotFound("Contract not found.");
+                    }
+
+                    // Cập nhật trạng thái hợp đồng thành "Canceled"
+                    contract.Status = "Canceled";
+                    contract.Note = $"Thanh lý hợp đồng {contract.ContractCode} vào ngày {DateTime.Now:dd/MM/yyyy}";
+                    _context.Contracts.Update(contract);
+
+                    // Tìm ô chứa liên quan và cập nhật trạng thái của nó
+                    var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == contract.NicheId);
+                    if (niche != null)
+                    {
+                        niche.Status = "Available";
+                        niche.CustomerId = null; // Xóa thông tin khách hàng liên kết
+                        niche.DeceasedId = null; // Xóa thông tin người đã mất liên kết
+                        _context.Niches.Update(niche);
+                    }
+
+                    // Lưu các thay đổi vào cơ sở dữ liệu
+                    await _context.SaveChangesAsync();
+
+                    // Commit transaction
+                    await transaction.CommitAsync();
+
+                    return NoContent();
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction nếu có lỗi xảy ra
+                    await transaction.RollbackAsync();
+                    var errorMessage = $"Error cancelling contract: {ex.Message}";
+                    return StatusCode(500, new { error = errorMessage });
+                }
             }
-
-            // Update the contract status to "Canceled"
-            contract.Status = "Canceled";
-            contract.Note = "Thanh lý hợp đồng " + contract.ContractCode + " vào ngày " + DateOnly.FromDateTime(DateTime.Now);
-            _context.Contracts.Update(contract);
-
-            // Find the associated niche and set its status to "Available"
-            var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == contract.NicheId);
-            if (niche != null)
-            {
-                niche.Status = "Available";
-                niche.CustomerId = null; // Reset the CustomerId
-                niche.DeceasedId = null; // Reset the DeceasedId
-                _context.Niches.Update(niche);
-            }
-
-            // Save the changes
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
+
 
 
         // GET: api/Contracts/buildings
@@ -488,12 +506,6 @@ namespace cms_server.Controllers
 
             SendEmail(customer.Email, subject, messageBody);
         }
-
-
-
-
-
-
 
     }
 }

@@ -157,78 +157,100 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<NicheReservation>> PostNicheReservation(CreateNicheReservationDto createDto)
         {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-            var utcNow = DateTime.UtcNow;
-            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
-            var currentDate = localNow.Date;
-
-            // Tìm và kiểm tra trạng thái của niche
-            var niche = await _context.Niches.FindAsync(createDto.NicheId);
-            if (niche == null || niche.Status != "Available")
+            // Sử dụng một transaction để đảm bảo tính toàn vẹn của dữ liệu
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                return BadRequest(new { error = "Ô chứa này đã được đặt" });
-            }
-
-            // Kiểm tra số điện thoại có thuộc về khách hàng hiện tại hay không
-            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
-
-            // Xác định số lượng đơn đặt chỗ tối đa được phép
-            int maxReservations = customer != null ? 10 : 3;
-
-            // Đếm số lượng đơn đặt chỗ hiện có với trạng thái "Pending"
-            var existingReservationsCount = await _context.NicheReservations
-                .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
-
-            if (existingReservationsCount >= maxReservations)
-            {
-                return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
-            }
-
-
-            // Đếm số lượng đơn đặt chỗ đã được thực hiện trong ngày để tạo mã đặt chỗ
-            var reservationsTodayCount = await _context.NicheReservations
-                .CountAsync(nr => nr.CreatedDate != null && nr.CreatedDate.Value.Date == currentDate);
-
-            var reservationCode = $"DC-{currentDate:yyyyMMdd}-{(reservationsTodayCount + 1):D3}";
-
-            // Lấy thông tin StaffId từ token (nếu có)
-            var staffIdClaim = User.FindFirst("StaffId");
-            int? confirmedBy = null;
-            string status = "Pending";
-
-            if (staffIdClaim != null && !string.IsNullOrEmpty(staffIdClaim.Value))
-            {
-                if (int.TryParse(staffIdClaim.Value, out int staffId))
+                try
                 {
-                    confirmedBy = staffId;
-                    status = "Approved";
+                    // Lấy thông tin về thời gian
+                    var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                    var utcNow = DateTime.UtcNow;
+                    var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+                    var currentDate = localNow.Date;
+
+                    // Tìm và kiểm tra trạng thái của ô chứa (niche) dựa trên ID được cung cấp
+                    var niche = await _context.Niches.FindAsync(createDto.NicheId);
+
+                    // Nếu ô chứa không tồn tại hoặc không có trạng thái "Available", trả về lỗi
+                    if (niche == null || niche.Status != "Available")
+                    {
+                        return BadRequest(new { error = "Ô chứa này đã được đặt" });
+                    }
+
+                    // Kiểm tra xem số điện thoại có thuộc về khách hàng hiện tại trong cơ sở dữ liệu không
+                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == createDto.PhoneNumber);
+
+                    // Xác định số lượng đơn đặt chỗ tối đa mà khách hàng được phép dựa trên việc khách hàng đã tồn tại hay chưa
+                    int maxReservations = customer != null ? 10 : 3;
+
+                    // Đếm số lượng đơn đặt chỗ hiện có với trạng thái "Pending" cho cùng số điện thoại
+                    var existingReservationsCount = await _context.NicheReservations
+                        .CountAsync(nr => nr.PhoneNumber == createDto.PhoneNumber && nr.Status == "Pending");
+
+                    // Nếu số đơn đặt chỗ đã đạt đến giới hạn, trả về lỗi
+                    if (existingReservationsCount >= maxReservations)
+                    {
+                        return BadRequest(new { error = $"Số điện thoại này chỉ được đặt tối đa {maxReservations} ô chứa" });
+                    }
+
+                    // Đếm số lượng đơn đặt chỗ đã được thực hiện trong ngày để tạo mã đặt chỗ duy nhất
+                    var reservationsTodayCount = await _context.NicheReservations
+                        .CountAsync(nr => nr.CreatedDate != null && nr.CreatedDate.Value.Date == currentDate);
+
+                    // Tạo mã đặt chỗ với định dạng "DC-yyyyMMdd-xxx" (xxx là số thứ tự trong ngày)
+                    var reservationCode = $"DC-{currentDate:yyyyMMdd}-{(reservationsTodayCount + 1):D3}";
+
+                    // Lấy thông tin StaffId từ token nếu có (dành cho trường hợp đơn đặt chỗ được nhân viên xác nhận)
+                    var staffIdClaim = User.FindFirst("StaffId");
+                    int? confirmedBy = null;
+                    string status = "Pending";
+
+                    // Nếu có StaffId trong token và nó hợp lệ, cập nhật thông tin xác nhận và trạng thái đơn đặt chỗ
+                    if (staffIdClaim != null && !string.IsNullOrEmpty(staffIdClaim.Value))
+                    {
+                        if (int.TryParse(staffIdClaim.Value, out int staffId))
+                        {
+                            confirmedBy = staffId;
+                            status = "Approved";
+                        }
+                    }
+
+                    // Tạo đối tượng NicheReservation mới và gán các giá trị từ DTO
+                    var nicheReservation = new NicheReservation
+                    {
+                        NicheId = createDto.NicheId,
+                        Name = createDto.Name,
+                        ConfirmationDate = createDto.ConfirmationDate,
+                        SignAddress = createDto.SignAddress,
+                        PhoneNumber = createDto.PhoneNumber,
+                        Note = createDto.Note,
+                        CreatedDate = localNow,
+                        Status = status,
+                        ReservationCode = reservationCode,
+                        ConfirmedBy = confirmedBy
+                    };
+
+                    // Thêm đơn đặt chỗ mới vào context
+                    _context.NicheReservations.Add(nicheReservation);
+
+                    // Cập nhật trạng thái của ô chứa thành "Booked"
+                    niche.Status = "Booked";
+                    _context.Entry(niche).State = EntityState.Modified;
+
+                    // Lưu các thay đổi vào cơ sở dữ liệu và commit transaction để hoàn tất
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // Trả về kết quả thành công với thông tin của đơn đặt chỗ mới được tạo
+                    return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
+                }
+                catch (Exception ex)
+                {
+                    // Nếu có lỗi xảy ra, rollback transaction và trả về lỗi
+                    await transaction.RollbackAsync();
+                    return BadRequest(new { error = "Đã xảy ra lỗi khi đặt chỗ" });
                 }
             }
-
-            // Tạo mới đơn đặt chỗ
-            var nicheReservation = new NicheReservation
-            {
-                NicheId = createDto.NicheId,
-                Name = createDto.Name,
-                ConfirmationDate = createDto.ConfirmationDate,
-                SignAddress = createDto.SignAddress,
-                PhoneNumber = createDto.PhoneNumber,
-                Note = createDto.Note,
-                CreatedDate = localNow,
-                Status = status,
-                ReservationCode = reservationCode,
-                ConfirmedBy = confirmedBy
-            };
-
-            _context.NicheReservations.Add(nicheReservation);
-
-            // Cập nhật trạng thái của niche thành "Booked"
-            niche.Status = "Booked";
-            _context.Entry(niche).State = EntityState.Modified;
-
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
         }
 
 
@@ -236,37 +258,56 @@ namespace cms_server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteNicheReservation(int id)
         {
-            // Lấy thông tin đơn đặt chỗ theo ID
-            var nicheReservation = await _context.NicheReservations.FindAsync(id);
-            if (nicheReservation == null)
+            using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-                return NotFound();
-            }
-            if (nicheReservation.Status == "Approved")
-            {
-                return BadRequest(new { error = "Không thể xóa đơn đã được duyệt" });
-            }
-
-            var originalStatus = nicheReservation.Status;
-
-            // Cập nhật trạng thái của đơn đặt chỗ
-            nicheReservation.Status = "Canceled";
-            _context.Entry(nicheReservation).State = EntityState.Modified;
-
-            // Chỉ cập nhật trạng thái của niche nếu trạng thái ban đầu không phải là "PendingContractRenewal" hoặc "PendingContractCancellation"
-            if (originalStatus != "PendingContractRenewal" && originalStatus != "PendingContractCancellation")
-            {
-                var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
-                if (niche != null)
+                try
                 {
-                    niche.Status = "Available";
-                    _context.Entry(niche).State = EntityState.Modified;
+                    // Lấy thông tin đơn đặt chỗ theo ID
+                    var nicheReservation = await _context.NicheReservations.FindAsync(id);
+                    if (nicheReservation == null)
+                    {
+                        return NotFound(new { error = "Không tìm thấy đơn đặt chỗ" });
+                    }
+
+                    // Không thể xóa đơn đặt chỗ đã được duyệt
+                    if (nicheReservation.Status == "Approved")
+                    {
+                        return BadRequest(new { error = "Không thể xóa đơn đã được duyệt" });
+                    }
+
+                    var originalStatus = nicheReservation.Status;
+
+                    // Cập nhật trạng thái của đơn đặt chỗ thành "Canceled"
+                    nicheReservation.Status = "Canceled";
+                    _context.Entry(nicheReservation).State = EntityState.Modified;
+
+                    // Nếu trạng thái ban đầu không phải là "PendingContractRenewal" hoặc "PendingContractCancellation", cập nhật trạng thái ô chứa
+                    if (originalStatus != "PendingContractRenewal" && originalStatus != "PendingContractCancellation")
+                    {
+                        var niche = await _context.Niches.FindAsync(nicheReservation.NicheId);
+                        if (niche != null)
+                        {
+                            // Cập nhật trạng thái ô chứa thành "Available"
+                            niche.Status = "Available";
+                            _context.Entry(niche).State = EntityState.Modified;
+                        }
+                    }
+
+                    // Lưu các thay đổi vào cơ sở dữ liệu và commit transaction
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return NoContent();
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaction nếu có lỗi xảy ra
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, new { error = "Đã xảy ra lỗi khi hủy đơn đặt chỗ" });
                 }
             }
-
-            await _context.SaveChangesAsync();
-            return NoContent();
         }
+
 
         // GET: api/NicheReservations/details/5
         [HttpGet("details/{id}")]
