@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using cms_server.Configuration;
+using System.Text;
 
 namespace cms_server.Controllers
 {
@@ -20,7 +21,6 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
-
       
 
         // GET: api/Services
@@ -45,7 +45,6 @@ namespace cms_server.Controllers
         }
 
         // PUT: api/Services/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutService(int id, Service service)
         {
@@ -54,10 +53,47 @@ namespace cms_server.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(service).State = EntityState.Modified;
+            // Tìm dịch vụ hiện tại trong cơ sở dữ liệu
+            var existingService = await _context.Services.FindAsync(id);
+            if (existingService == null)
+            {
+                return NotFound();
+            }
+
+            // Chuẩn hóa tên dịch vụ và mô tả để đảm bảo sự nhất quán trong so sánh
+            var normalizedServiceName = service.ServiceName.Normalize(NormalizationForm.FormC);
+            var normalizedDescription = service.Description.Normalize(NormalizationForm.FormC);
+
+            // Kiểm tra xem có dịch vụ nào khác với cùng tên và mô tả (ngoại trừ dịch vụ hiện tại) không
+            var duplicateService = await _context.Services
+                .Where(s => s.ServiceId != id &&
+                            s.ServiceName.Normalize(NormalizationForm.FormC) == normalizedServiceName &&
+                            s.Description.Normalize(NormalizationForm.FormC) == normalizedDescription)
+                .FirstOrDefaultAsync();
+
+            if (duplicateService != null)
+            {
+                return BadRequest("Dịch vụ với tên và mô tả này đã tồn tại.");
+            }
+
+            // Cập nhật thông tin dịch vụ
+            _context.Entry(existingService).CurrentValues.SetValues(service);
 
             try
             {
+                // Lưu các thay đổi vào cơ sở dữ liệu
+                await _context.SaveChangesAsync();
+
+                // Cập nhật giá trong các đơn đặt dịch vụ đang chờ xử lý
+                var pendingOrderDetails = await _context.ServiceOrderDetails
+                    .Where(sod => sod.ServiceId == id && sod.Status == "Pending")
+                    .ToListAsync();
+
+                foreach (var detail in pendingOrderDetails)
+                {
+                    detail.Service.Price = service.Price; // Cập nhật giá mới
+                }
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -75,16 +111,34 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+
+
+
         // POST: api/Services
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Service>> PostService(Service service)
         {
+            // Chuẩn hóa tên dịch vụ và mô tả để đảm bảo sự nhất quán trong so sánh
+            var normalizedServiceName = service.ServiceName.Normalize(NormalizationForm.FormC);
+            var normalizedDescription = service.Description.Normalize(NormalizationForm.FormC);
+
+            // Kiểm tra xem dịch vụ với tên và mô tả trùng lặp đã tồn tại hay chưa
+            var existingService = await _context.Services
+                .FirstOrDefaultAsync(s =>
+                    s.ServiceName.Normalize(NormalizationForm.FormC) == normalizedServiceName &&
+                    s.Description.Normalize(NormalizationForm.FormC) == normalizedDescription);
+
+            if (existingService != null)
+            {
+                return BadRequest("Dịch vụ với tên và mô tả này đã tồn tại.");
+            }
+
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
         }
+
 
         // DELETE: api/Services/5
         [HttpDelete("{id}")]

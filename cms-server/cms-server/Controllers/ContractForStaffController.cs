@@ -38,6 +38,7 @@ namespace cms_server.Controllers
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
+        // POST: api/ContractForStaff/create-contract
         [HttpPost("create-contract")]
         [Authorize]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
@@ -142,6 +143,20 @@ namespace cms_server.Controllers
                     _context.Niches.Update(niche);
                     await _context.SaveChangesAsync();
 
+                    // Tạo mới một bản ghi lịch sử cho ô chứa
+                    var nicheHistory = new NicheHistory
+                    {
+                        NicheId = niche.NicheId,
+                        CustomerId = customer.CustomerId,
+                        DeceasedId = deceased.DeceasedId,
+                        ContractId = contract.ContractId,
+                        StartDate = contract.StartDate,
+                        EndDate = contract.EndDate,
+                        Status = "Active"
+                    };
+                    _context.NicheHistories.Add(nicheHistory);
+                    await _context.SaveChangesAsync();
+
                     // Tìm đơn đặt chỗ và cập nhật trạng thái
                     var reservation = await _context.NicheReservations.FirstOrDefaultAsync(r => r.ReservationId == request.ReservationId);
                     if (reservation != null)
@@ -167,6 +182,7 @@ namespace cms_server.Controllers
                 }
             }
         }
+
 
 
 
