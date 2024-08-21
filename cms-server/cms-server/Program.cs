@@ -32,7 +32,6 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddHostedService<ContractStatusUpdateService>();
 builder.Services.AddHostedService<NicheReservationStatusUpdateService>();
 builder.Services.AddHostedService<VisitReservationStatusUpdateService>();
-builder.Services.AddHostedService<MonthlyReportService>();
 
 
 // Swagger API testing

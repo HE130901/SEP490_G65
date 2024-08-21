@@ -5,6 +5,7 @@ using System.Text;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 using VNPAY_CS_ASPX;
+using cms_server.DTOs;
 
 namespace cms_server.Controllers
 {
@@ -107,14 +108,5 @@ namespace cms_server.Controllers
         }
     }
 
-    public class PaymentRequestModel
-    {
-        public string Amount { get; set; }
-        public string OrderId { get; set; }
-    }
 
-    public class PaymentResponseModel
-    {
-        public string PaymentUrl { get; set; }
-    }
 }

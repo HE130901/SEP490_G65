@@ -121,32 +121,5 @@ namespace cms_server.Controllers
         }
     }
 
-    public class NicheDtoForStaff
-    {
-        public int NicheId { get; set; }
-        public string NicheName { get; set; }
-        public string? CustomerName { get; set; }
-        public string? NicheCode { get; set; }
-
-        public string? DeceasedName { get; set; }
-        public List<NicheHistoryDto> NicheHistories { get; set; } = new List<NicheHistoryDto>();
-        public string? Status { get; set; }
-        public string? Description { get; set; }
-
-    }
-
-    public class NicheHistoryDto
-    {
-        public int ContractId { get; set; }
-        public string ContractCode { get; set; }
-        public DateOnly StartDate { get; set; }
-        public DateOnly? EndDate { get; set; }
-        public string? Status { get; set; }
-    }
-    public class UpdateNicheDto
-    {
-        public string? NicheDescription { get; set; }
-        public string Status { get; set; }
-    }
 }
 

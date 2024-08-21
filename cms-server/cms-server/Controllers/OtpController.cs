@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using cms_server.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -83,13 +84,3 @@ public class OtpController : ControllerBase
     }
 }
 
-public class SendOtpRequest
-{
-    public string PhoneNumber { get; set; }
-}
-
-public class VerifyOtpRequest
-{
-    public string PhoneNumber { get; set; }
-    public string Otp { get; set; }
-}

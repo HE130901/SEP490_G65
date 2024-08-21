@@ -496,64 +496,8 @@ namespace cms_server.Controllers
 
 
     }
-
-    public class CreateContractRequest
-    {
-        public string CustomerFullName { get; set; }
-        public string? CustomerPhoneNumber { get; set; }
-        public string CustomerEmail { get; set; }
-        public string? CustomerAddress { get; set; }
-        public string? CustomerCitizenId { get; set; }
-        public DateOnly? CustomerCitizenIdIssueDate { get; set; }
-        public string? CustomerCitizenIdSupplier { get; set; }
-        public string DeceasedFullName { get; set; }
-        public string? DeceasedCitizenId { get; set; }
-        public DateOnly? DeceasedDateOfBirth { get; set; }
-        public DateOnly? DeceasedDateOfDeath { get; set; }
-        public string? DeathCertificateNumber { get; set; }
-        public string? DeathCertificateSupplier { get; set; }
-        public string? RelationshipWithCustomer { get; set; }
-        public int? NicheID { get; set; }
-        public DateOnly StartDate { get; set; }
-        public DateOnly EndDate { get; set; }
-        public string Note { get; set; }
-        public decimal? TotalAmount { get; set; }
-        public int ReservationId { get; set; }
-    }
-
-
-public class ContractForStaffDto
-    {
-        public int ContractId { get; set; }
-        public int NicheId { get; set; }
-        public int CustomerId { get; set; }
-        public string NicheAddress { get; set; }
-        public string CustomerName { get; set; }
-        public DateOnly StartDate { get; set; }
-        public DateOnly? EndDate { get; set; }
-        public string Status { get; set; }
-        public string ContractCode { get; set; }
-        public string NicheCode { get; set; }
-
-    }
 }
-public class RenewContractRequest
-{
-    public string NewEndDate { get; set; }
-    public decimal TotalAmount { get; set; }
-}
-public class ContractRenewalDetailsDto
-{
-    public int ContractRenewalId { get; set; }
-    public string ContractRenewCode { get; set; }
-    public string Status { get; set; }
-    public DateOnly? CreatedDate { get; set; }
-    public DateOnly? EndDate { get; set; }
-    public decimal? TotalAmount { get; set; }
-    public string Note { get; set; }
-    public string CustomerName { get; set; }
-    public string NicheAddress { get; set; }
-    public string ContractCode { get; set; }
-}
+
+    
 
 

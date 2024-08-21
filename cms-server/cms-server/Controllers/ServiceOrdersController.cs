@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using Microsoft.AspNetCore.Authorization;
 using cms_server.Configuration;
+using cms_server.DTOs;
 
 namespace cms_server.Controllers
 {
@@ -226,44 +227,4 @@ namespace cms_server.Controllers
         }
     }
 
-    public class ServiceOrderDto
-    {
-        public int CustomerId { get; set; }
-        public int NicheId { get; set; }
-        public DateTime OrderDate { get; set; }
-        public string? ServiceList { get; set; }
-    }
-
-    public class ServiceOrderResponseDto
-    {
-        public int ServiceOrderId { get; set; }
-        public string? NicheAddress { get; set; }
-        public string? DeceasedName { get; set; }
-        public string? ServiceOrderCode { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public DateTime? OrderDate { get; set; }        
-        public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
-    }
-
-    public class ServiceOrderDetailResponseDto
-    {
-        public string ServiceName { get; set; }
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public string? CompletionImage { get; set; }
-        public string? Status { get; set; }
-    }
-
-    public class CreateServiceOrderRequest1
-    {
-        public int NicheID { get; set; }
-        public DateTime OrderDate { get; set; }
-        public List<ServiceOrderDetailRequest> ServiceOrderDetails { get; set; }
-    }
-
-    public class UpdateServiceOrderRequest
-    {
-        public int ServiceOrderId { get; set; }
-        public DateTime OrderDate { get; set; }
-    }
 }

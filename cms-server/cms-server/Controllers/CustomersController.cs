@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using cms_server.Models;
 using cms_server.Configuration;
+using cms_server.DTOs;
 
 namespace cms_server.Controllers
 {
@@ -163,29 +164,5 @@ namespace cms_server.Controllers
         }
     }
 
-    public class UpdateCustomerDto
-    {
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public string Address { get; set; }
-        public string CitizenId { get; set; }
-        public DateOnly? CitizenIdissuanceDate { get; set; }
-        public string CitizenIdsupplier { get; set; }
-    }
-
-    public class ChangePasswordDto2
-    {
-        public string Password { get; set; }
-    }
-
-    public class CustomerDto
-    {
-        public int CustomerId { get; set; }
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public string Address { get; set; }
-        public string CitizenId { get; set; }
-    }
+    
 }
