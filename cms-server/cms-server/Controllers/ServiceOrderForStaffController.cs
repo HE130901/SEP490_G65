@@ -4,7 +4,12 @@ using cms_server.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MimeKit.Text;
+using MimeKit;
 using System.Security.Claims;
+using TimeZoneConverter;
+using Castle.Core.Resource;
+using MailKit.Net.Smtp;
 
 namespace cms_server.Controllers
 {
@@ -13,15 +18,40 @@ namespace cms_server.Controllers
     public class ServiceOrderForStaffController : ControllerBase
     {
         private readonly CmsContext _context;
-        //private readonly INotificationService _notificationService;
 
-       // public ServiceOrderForStaffController(CmsContext context, INotificationService notificationService)
-        public ServiceOrderForStaffController(CmsContext context)
+        private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+
+        private readonly IConfiguration _configuration;
+
+        private void SendEmail(string recipientEmail, string subject, string message)
         {
-            _context = context;
-          //  _notificationService = notificationService;
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress(
+                _configuration["SmtpSettings:SenderName"],
+                _configuration["SmtpSettings:SenderEmail"]));
+            emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
+            emailMessage.Subject = subject;
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = message };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(
+                    _configuration["SmtpSettings:Server"],
+                    int.Parse(_configuration["SmtpSettings:Port"]),
+                    MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(
+                    _configuration["SmtpSettings:Username"],
+                    _configuration["SmtpSettings:Password"]);
+                client.Send(emailMessage);
+                client.Disconnect(true);
+            }
         }
 
+        public ServiceOrderForStaffController(CmsContext context, IConfiguration configuration)
+        {
+            _context = context;
+            _configuration = configuration;
+        }
 
         private async Task<decimal> CalculateServiceOrderTotalAsync(int serviceOrderId)
         {
@@ -146,20 +176,29 @@ namespace cms_server.Controllers
         {
             var staffId = GetStaffIdFromToken();
 
-            var serviceOrderDetail = await _context.ServiceOrderDetails.FindAsync(request.ServiceOrderDetailID);
+            var serviceOrderDetail = await _context.ServiceOrderDetails
+                .Include(sod => sod.ServiceOrder)
+                .ThenInclude(so => so.Customer)
+                .FirstOrDefaultAsync(sod => sod.ServiceOrderDetailId == request.ServiceOrderDetailID);
 
             if (serviceOrderDetail == null)
             {
                 return NotFound("Service order detail not found.");
             }
 
-            var serviceOrder = await _context.ServiceOrders.FindAsync(serviceOrderDetail.ServiceOrderId);
-
+            var serviceOrder = serviceOrderDetail.ServiceOrder;
             if (serviceOrder == null)
             {
                 return NotFound("Service order not found.");
             }
 
+            var customer = serviceOrder.Customer;
+            if (customer == null)
+            {
+                return NotFound("Customer not found.");
+            }
+
+            // Update service order detail
             serviceOrderDetail.CompletionImage = request.CompletionImage;
             serviceOrderDetail.Status = "Completed";
             serviceOrder.StaffId = staffId;
@@ -168,24 +207,47 @@ namespace cms_server.Controllers
             _context.ServiceOrders.Update(serviceOrder);
             await _context.SaveChangesAsync();
 
-            // Create and save the notification
-            var notification = new Notification
-            {
-                CustomerId = serviceOrder.CustomerId,
-                StaffId = staffId,
-                ServiceOrderId = serviceOrder.ServiceOrderId,
-                NotificationDate = DateTime.Now,
-                Message = $"Your service order detail for {serviceOrderDetail.ServiceOrderDetailId} has been updated with a completion image."
-            };
+            // Prepare email content
+            var nicheAddress = await GetNicheAddress(serviceOrder.NicheId);
+            var totalPrice = await CalculateServiceOrderTotalAsync(serviceOrder.ServiceOrderId);
 
-            //await _notificationService.SendNotificationAsync(notification);
+            var subject = "Xác nhận hoàn thành dịch vụ - Hệ thống quản lý An Bình Viên";
+            var message = $@"
+                            <p>Kính gửi <strong>{customer.FullName}</strong>,</p>
+                            <p>Đơn đặt dịch vụ của bạn với mã đơn <strong>{serviceOrder.ServiceOrderCode}</strong> đã được hoàn thành.</p>
+                            <p><strong>Thông tin đơn hàng:</strong></p>
+                            <ul>
+                                <li><strong>Khách hàng:</strong> {customer.FullName}</li>
+                                <li><strong>Ngày tạo:</strong> {serviceOrder.CreatedDate?.ToString("HH:mm dd/MM/yyyy")}</li>
+                                <li><strong>Ngày hẹn:</strong> {serviceOrder.OrderDate?.ToString("HH:mm dd/MM/yyyy")}</li>
+                                <li><strong>Vị trí Ô chứa:</strong> {nicheAddress}</li>
+                                <li><strong>Tổng số tiền:</strong> {totalPrice}₫</li>
+                            </ul>
+                            <p><strong>Chi tiết dịch vụ:</strong></p>
+                            <ul>
+                                {string.Join("", serviceOrder.ServiceOrderDetails.Select(detail => $@"
+                                    <li>
+                                        <strong>Dịch vụ:</strong> {detail.Service?.ServiceName ?? "N/A"} - <strong>Số lượng:</strong> {detail.Quantity}
+                                        {(string.IsNullOrEmpty(detail.CompletionImage) ? "" : $"<br/><img src=\"{detail.CompletionImage}\" alt=\"Completion Image\" style=\"max-width: 100%; height: auto;\"/>")}
+                                    </li>"))}
+                            </ul>
+                            <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng</p>";
+
+            SendEmail(customer.Email, subject, message);
 
             return Ok(serviceOrderDetail);
         }
 
+
+
+
         [HttpPost("create-service-order")]
         public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest request)
         {
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -213,7 +275,7 @@ namespace cms_server.Controllers
                     {
                         CustomerId = request.CustomerID,
                         NicheId = request.NicheID,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = localNow,
                         OrderDate = request.OrderDate,
                         ServiceOrderCode = serviceOrderCode 
                     };
@@ -252,70 +314,6 @@ namespace cms_server.Controllers
             }
         }
 
-
-        [HttpPost("add-service-to-order")]
-        public async Task<IActionResult> AddServiceToOrder([FromBody] AddServiceToOrderRequest request)
-        {
-            var serviceOrder = await _context.ServiceOrders.FindAsync(request.ServiceOrderID);
-            if (serviceOrder == null)
-            {
-                return NotFound("Service order not found.");
-            }
-
-            foreach (var detail in request.ServiceOrderDetails)
-            {
-                var serviceOrderDetail = new ServiceOrderDetail
-                {
-                    ServiceOrderId = request.ServiceOrderID,
-                    ServiceId = detail.ServiceID,
-                    Quantity = detail.Quantity,
-                    Status = "Pending"
-                };
-                _context.ServiceOrderDetails.Add(serviceOrderDetail);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
-        [HttpDelete("remove-service-from-order/{serviceOrderDetailId}")]
-        public async Task<IActionResult> RemoveServiceFromOrder(int serviceOrderDetailId)
-        {
-            var serviceOrderDetail = await _context.ServiceOrderDetails.FindAsync(serviceOrderDetailId);
-            if (serviceOrderDetail == null)
-            {
-                return NotFound("Service order detail not found.");
-            }
-
-            _context.ServiceOrderDetails.Remove(serviceOrderDetail);
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
-        [HttpPut("cancel-service-order/{serviceOrderId}")]
-        public async Task<IActionResult> CancelServiceOrder(int serviceOrderId)
-        {
-            var serviceOrder = await _context.ServiceOrders
-                .Include(so => so.ServiceOrderDetails)
-                .FirstOrDefaultAsync(so => so.ServiceOrderId == serviceOrderId);
-
-            if (serviceOrder == null)
-            {
-                return NotFound("Service order not found.");
-            }
-
-            foreach (var serviceOrderDetail in serviceOrder.ServiceOrderDetails)
-            {
-                serviceOrderDetail.Status = "Canceled";
-                _context.ServiceOrderDetails.Update(serviceOrderDetail);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(serviceOrder);
-        }
     }
 
     // DTO and Request classes

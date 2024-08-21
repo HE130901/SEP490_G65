@@ -26,6 +26,7 @@ import AddCircleIcon from "@mui/icons-material/AddCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import Link from "next/link";
+import { z } from "zod";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -158,7 +159,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
       maxWidth="xs"
     >
       <DialogTitle>Giỏ Hàng Của Bạn</DialogTitle>
-      <DialogContent>
+      <DialogContent dividers>
         {items.length > 0 ? (
           <div>
             <ul className="space-y-4">
@@ -240,7 +241,7 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                     </TextField>
                     <TextField
                       label="Ngày hẹn"
-                      type="datetime-local"
+                      type="date"
                       fullWidth
                       value={orderDate}
                       onChange={handleDateChange}
@@ -250,6 +251,14 @@ const CartModal = ({ isOpen, setIsOpen }: CartModalProps) => {
                       margin="normal"
                       error={!!dateError}
                       helperText={dateError}
+                      inputProps={{
+                        min: new Date().toISOString().split("T")[0],
+                        max: new Date(
+                          new Date().setDate(new Date().getDate() + 30)
+                        )
+                          .toISOString()
+                          .split("T")[0],
+                      }}
                     />
                   </>
                 )

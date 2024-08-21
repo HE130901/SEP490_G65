@@ -14,7 +14,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "react-toastify";
 import { VisitDialogProps, VisitRegistrationDto } from "./interfaces";
 import dayjs from "dayjs";
-
 import EditIcon from "@mui/icons-material/Edit";
 
 const VisitViewDialog: React.FC<VisitDialogProps> = ({
@@ -49,7 +48,7 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
       case "Pending":
         return { label: "Đang chờ", color: "warning" };
       case "Approved":
-        return { label: "Đã duyệt", color: "success" };
+        return { label: "Đã xác nhận", color: "success" };
       default:
         return { label: status, color: "default" };
     }
@@ -91,73 +90,76 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
       <DialogContent dividers>
         {formData && (
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                margin="dense"
-                label="Mã đơn"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formData.visitCode}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                margin="dense"
-                label="Tên khách hàng"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formData.customerName}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                margin="dense"
-                label="Địa chỉ"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formData.nicheAddress}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Ngày tạo"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formatDisplayDateTime(formData.createdDate)}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                label="Ngày viếng thăm"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formatDisplayDateTime(formData.visitDate)}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Grid>
-            {isEditMode ? (
+            {!isEditMode && (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="dense"
+                    label="Mã đơn"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={formData.visitCode}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="dense"
+                    label="Tên khách hàng"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={formData.customerName}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    margin="dense"
+                    label="Địa chỉ"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={formData.nicheAddress}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="dense"
+                    label="Ngày tạo"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={formatDisplayDateTime(formData.createdDate)}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    margin="dense"
+                    label="Ngày viếng thăm"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={formatDisplayDateTime(formData.visitDate)}
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                </Grid>
+              </>
+            )}
+            {isEditMode && (
               <>
                 <Grid item xs={12} sm={6}>
                   <TextField
@@ -199,7 +201,8 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                   />
                 </Grid>
               </>
-            ) : (
+            )}
+            {!isEditMode && (
               <>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body1" gutterBottom>
@@ -216,7 +219,6 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     />
                   </Typography>
                 </Grid>
-
                 <Grid item xs={12}>
                   <TextField
                     margin="dense"
@@ -226,7 +228,6 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
                     variant="outlined"
                     name="note"
                     value={formData.note || "Không có ghi chú"}
-                    onChange={handleChange}
                     InputProps={{
                       readOnly: true,
                     }}
@@ -249,7 +250,9 @@ const VisitViewDialog: React.FC<VisitDialogProps> = ({
           <Button
             onClick={toggleEditMode}
             variant="contained"
-            disabled={formData?.status !== "Pending"}
+            disabled={
+              formData?.status !== "Pending" && formData?.status !== "Approved"
+            }
             startIcon={<EditIcon />}
           >
             Sửa

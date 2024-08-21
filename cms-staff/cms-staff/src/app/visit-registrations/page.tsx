@@ -517,6 +517,9 @@ const VisitRegistrationsList: React.FC = () => {
                   accompanyingPeople: false,
                 },
               },
+              sorting: {
+                sortModel: [{ field: "visitCode", sort: "desc" }],
+              },
             }}
           />
         </Paper>

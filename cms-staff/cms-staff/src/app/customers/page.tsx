@@ -170,11 +170,11 @@ const CustomerPage: React.FC = () => {
   const columns: GridColDef[] = [
     {
       field: "customerId",
-      headerName: "Mã KH",
+      headerName: "ID",
       width: 140,
       headerClassName: "super-app-theme--header",
 
-      renderCell: (params) => <CenteredCell>KH{params.value}</CenteredCell>,
+      renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "fullName",
@@ -266,7 +266,7 @@ const CustomerPage: React.FC = () => {
             >
               <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="fullName">Tên khách hàng</MenuItem>
-              <MenuItem value="customerId">Mã khách hàng</MenuItem>
+              <MenuItem value="customerId">ID</MenuItem>
               <MenuItem value="phone">Số điện thoại</MenuItem>
               <MenuItem value="email">Email</MenuItem>
               <MenuItem value="citizenId">CCCD</MenuItem>

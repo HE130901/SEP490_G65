@@ -8,8 +8,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  FormControl,
-  FormHelperText,
   CircularProgress,
   Autocomplete,
 } from "@mui/material";
@@ -39,8 +37,10 @@ const formSchema = z.object({
   visitDate: z.string().refine((date) => {
     const selectedDate = new Date(date);
     const now = new Date();
-    return selectedDate >= now;
-  }, "Ngày viếng thăm phải là ngày hiện tại trở đi"),
+    const maxDate = new Date();
+    maxDate.setDate(now.getDate() + 30);
+    return selectedDate >= now && selectedDate <= maxDate;
+  }, "Ngày viếng thăm phải trong vòng 30 ngày từ hôm nay"),
   accompanyingPeople: z
     .number()
     .min(0, "Số lượng người đi cùng không hợp lệ")
@@ -162,6 +162,11 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
     }
   };
 
+  const today = new Date().toISOString().slice(0, 16);
+  const maxDate = new Date(new Date().setDate(new Date().getDate() + 30))
+    .toISOString()
+    .slice(0, 16);
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Thêm đăng ký viếng thăm</DialogTitle>
@@ -205,6 +210,10 @@ const VisitAddDialog: React.FC<VisitAddDialogProps> = ({ open, onClose }) => {
           helperText={formErrors.visitDate}
           InputLabelProps={{
             shrink: true,
+          }}
+          inputProps={{
+            min: today,
+            max: maxDate,
           }}
         />
         <TextField

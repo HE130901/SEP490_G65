@@ -9,6 +9,9 @@ using cms_server.Models;
 using System.Security.Claims;
 using TimeZoneConverter;
 using cms_server.Configuration;
+using MimeKit.Text;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace cms_server.Controllers
 {
@@ -19,7 +22,6 @@ namespace cms_server.Controllers
         private readonly CmsContext _context;
         private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
 
-      
         public NicheReservationsController(CmsContext context)
         {
             _context = context;
@@ -332,7 +334,7 @@ namespace cms_server.Controllers
             nicheReservation.Note = dto.Note;
             nicheReservation.SignAddress = dto.SignAddress;
             nicheReservation.ConfirmedBy = int.Parse(userId); // Extracted from token
-            nicheReservation.Status = "Approved";
+            // nicheReservation.Status = "Approved";
 
             try
             {
@@ -428,9 +430,7 @@ namespace cms_server.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-        }
-
-       
+        }      
 
     }
 

@@ -173,6 +173,18 @@ const AddServiceOrderDialog = ({
     }
   };
 
+  const getCurrentDateTimeInLocalTimezone = () => {
+    const now = new Date();
+    const offsetInMinutes = now.getTimezoneOffset();
+    const localDate = new Date(now.getTime() - offsetInMinutes * 60 * 1000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
+  const today = getCurrentDateTimeInLocalTimezone();
+  const maxDate = new Date(new Date().setDate(new Date().getDate() + 30))
+    .toISOString()
+    .slice(0, 16);
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Thêm mới đơn đăng ký dùng dịch vụ</DialogTitle>
@@ -221,7 +233,11 @@ const AddServiceOrderDialog = ({
           InputLabelProps={{
             shrink: true,
           }}
-          value={formData.orderDate}
+          inputProps={{
+            min: today,
+            max: maxDate,
+          }}
+          value={formData.orderDate || today}
           onChange={handleChange}
         />
         {formData.serviceOrderDetails.map((detail, index) => (

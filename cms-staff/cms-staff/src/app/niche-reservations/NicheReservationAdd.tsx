@@ -44,9 +44,11 @@ const formSchema = z.object({
   confirmationDate: z.string().refine((date) => {
     const selectedDate = new Date(date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return selectedDate >= today;
-  }, "Ngày hẹn phải là ngày hiện tại trở đi"),
+    const threeDaysLater = new Date(today);
+    threeDaysLater.setDate(today.getDate() + 2);
+
+    return selectedDate >= today && selectedDate <= threeDaysLater;
+  }, "Ngày hẹn phải trong vòng 3 ngày kể từ hôm nay"),
   signAddress: z.string().nonempty(),
   note: z.string().max(300, "Ghi chú không được vượt quá 300 ký tự").optional(),
 });
@@ -235,6 +237,11 @@ const AddBookingRequestDialog = ({
       setIsSubmitting(false);
     }
   };
+
+  const today = new Date().toISOString().substring(0, 16);
+  const maxDate = new Date(new Date().setDate(new Date().getDate() + 2))
+    .toISOString()
+    .substring(0, 16);
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -460,6 +467,10 @@ const AddBookingRequestDialog = ({
               InputLabelProps={{
                 shrink: true,
               }}
+              inputProps={{
+                min: today,
+                max: maxDate,
+              }}
             />
           </Grid>
           <Grid item xs={12}>
@@ -490,7 +501,6 @@ const AddBookingRequestDialog = ({
           color="primary"
           variant="contained"
           disabled={isSubmitting}
-          startIcon={<ConfirmIcon />}
         >
           Thêm mới
           {isSubmitting && (

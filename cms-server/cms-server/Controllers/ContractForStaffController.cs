@@ -38,7 +38,6 @@ namespace cms_server.Controllers
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        // POST: api/ContractForStaff/create-contract
         [HttpPost("create-contract")]
         [Authorize]
         public async Task<IActionResult> CreateContract(CreateContractRequest request)
@@ -67,8 +66,13 @@ namespace cms_server.Controllers
                     var customer = await _context.Customers
                         .FirstOrDefaultAsync(c => c.CitizenId == request.CustomerCitizenId);
 
+                    string newPassword = null;
+
                     if (customer == null)
                     {
+                        // Tạo mật khẩu mới cho khách hàng
+                        newPassword = GenerateRandomPassword();
+
                         // Tạo khách hàng mới nếu không tồn tại
                         customer = new Customer
                         {
@@ -79,17 +83,10 @@ namespace cms_server.Controllers
                             CitizenId = request.CustomerCitizenId,
                             CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
                             CitizenIdsupplier = request.CustomerCitizenIdSupplier,
-                            // Mật khẩu mặc định abcdabcd
-                            PasswordHash = "$2a$11$nUOFWiAMFi4zIAbIkYAbcuhFx3JYvT4ELKpBE6kh7IN5S9/wsfk4q"
-                            //PasswordHash = BCrypt.Net.BCrypt.HashPassword(GenerateRandomPassword())
-                    };
+                            PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword)
+                        };
                         _context.Customers.Add(customer);
                         await _context.SaveChangesAsync();
-
-                        // Gửi email thông báo cho khách hàng mới
-                        var subject = "Chào mừng bạn đến với dịch vụ của An Bình Viên!";
-                        var message = $"Kính gửi {customer.FullName},<br/><br/>Cảm ơn quý khách hàng đã đăng ký dịch vụ của chúng tôi. Tài khoản của bạn là: {customer.Email} - mật khẩu đăng nhập: abcdabcd <br/> Quý khách hàng vui lòng thay đổi mật khẩu sau khi đăng nhập thành công.<br/><br/>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng";
-                        SendEmail(customer.Email, subject, message);
                     }
 
                     // Kiểm tra trùng lặp số giấy chứng tử
@@ -156,6 +153,9 @@ namespace cms_server.Controllers
 
                     await transaction.CommitAsync();
 
+                    // Gửi email thông báo hợp đồng đã tạo thành công
+                    SendContractCreationEmail(customer, contract, niche, deceased, newPassword);
+
                     return Ok(contract);
                 }
                 catch (Exception ex)
@@ -167,6 +167,8 @@ namespace cms_server.Controllers
                 }
             }
         }
+
+
 
 
         // GET: api/ContractForStaff/all-contracts
@@ -414,7 +416,7 @@ namespace cms_server.Controllers
             return Ok(renewal);
         }
 
-        private void SendEmail(string recipientEmail, string subject, string message)
+        private void SendEmail(string recipientEmail, string subject, string messageBody)
         {
             var emailMessage = new MimeMessage();
             emailMessage.From.Add(new MailboxAddress(
@@ -422,7 +424,7 @@ namespace cms_server.Controllers
                 _configuration["SmtpSettings:SenderEmail"]));
             emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
             emailMessage.Subject = subject;
-            emailMessage.Body = new TextPart(TextFormat.Html) { Text = message };
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = messageBody };
 
             using (var client = new SmtpClient())
             {
@@ -437,6 +439,59 @@ namespace cms_server.Controllers
                 client.Disconnect(true);
             }
         }
+
+        private void SendContractCreationEmail(Customer customer, Contract contract, Niche niche, Deceased deceased, string generatedPassword)
+        {
+            if (customer == null)
+            {
+                throw new ArgumentNullException(nameof(customer), "Customer object is null");
+            }
+            if (contract == null)
+            {
+                throw new ArgumentNullException(nameof(contract), "Contract object is null");
+            }
+            if (niche == null)
+            {
+                throw new ArgumentNullException(nameof(niche), "Niche object is null");
+            }
+            if (deceased == null)
+            {
+                throw new ArgumentNullException(nameof(deceased), "Deceased object is null");
+            }
+
+            var subject = "Xác nhận Hợp đồng - Dịch vụ An Bình Viên";
+            var messageBody = $@"
+        <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+            <h2 style='color: #333;'>Kính gửi {customer.FullName},</h2>
+            <p>Chúng tôi xin chân thành cảm ơn quý khách đã tin tưởng và sử dụng dịch vụ của An Bình Viên. Chúng tôi xin thông báo hợp đồng của quý khách đã được tạo thành công với các thông tin như sau:</p>
+
+            <h3 style='color: #555;'>Thông tin Hợp đồng</h3>
+            <ul>
+                <li><strong>Mã hợp đồng:</strong> {contract.ContractCode}</li>
+                <li><strong>Ngày bắt đầu:</strong> {contract.StartDate:dd/MM/yyyy}</li>
+                <li><strong>Ngày kết thúc:</strong> {contract.EndDate:dd/MM/yyyy}</li>
+            </ul>
+
+            <h3 style='color: #555;'>Thông tin tài khoản</h3>
+            <ul>
+                 <li><strong>Tài khoản:</strong> {customer.Email}</li>
+                 <li><strong>Mật khẩu:</strong> {generatedPassword}</li>    
+            </ul>
+
+            <p>Quý khách hàng truy cập https://cms-customer.vercel.app/auth/login để quản lý tài khoản.</p>
+            <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+
+            <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+            <hr style='border-top: 1px solid #ccc;' />
+            <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+        </div>";
+
+            SendEmail(customer.Email, subject, messageBody);
+        }
+
+
+
+
 
 
 

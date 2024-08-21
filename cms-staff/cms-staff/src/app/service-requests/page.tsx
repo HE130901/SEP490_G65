@@ -433,6 +433,9 @@ const ServiceRequestPage = () => {
               columns: {
                 columnVisibilityModel: {},
               },
+              sorting: {
+                sortModel: [{ field: "serviceOrderCode", sort: "desc" }],
+              },
             }}
             getRowHeight={() => "auto"} // Dynamically adjust row height based on content
           />

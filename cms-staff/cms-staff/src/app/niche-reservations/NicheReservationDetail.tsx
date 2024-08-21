@@ -18,10 +18,6 @@ import NicheReservationAPI from "@/services/nicheReservationService";
 import EditBookingRequestDialog from "./EditBookingRequestDialog";
 import dayjs from "dayjs";
 
-function formatDateTime(dateTimeString: any) {
-  return dayjs(dateTimeString).format("YYYY-MM-DDTHH:mm"); // Format for TextField
-}
-
 function formatDisplayDateTime(dateTimeString: any) {
   return dayjs(dateTimeString).format("DD/MM/YYYY"); // Format for display
 }
@@ -216,7 +212,13 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
             color="primary"
             variant="contained"
             startIcon={<EditIcon />}
-            disabled={!bookingRequest || bookingRequest.status !== "Pending"}
+            disabled={
+              !bookingRequest ||
+              bookingRequest.status == "Canceled" ||
+              bookingRequest.status == "Rejected" ||
+              bookingRequest.status == "Expired" ||
+              bookingRequest.status == "Signed"
+            }
           >
             Sửa
           </Button>
