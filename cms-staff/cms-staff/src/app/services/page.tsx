@@ -176,7 +176,6 @@ const ServiceProductPage: React.FC = () => {
   const columns: GridColDef[] = [
     {
       field: "serviceId",
-      headerName: "ID",
       width: 90,
       headerClassName: "super-app-theme--header",
 
@@ -345,7 +344,6 @@ const ServiceProductPage: React.FC = () => {
             >
               <MenuItem value="all">Tất cả</MenuItem>
               <MenuItem value="serviceName">Tên</MenuItem>
-              <MenuItem value="serviceId">ID</MenuItem>
               <MenuItem value="price">Giá</MenuItem>
               <MenuItem value="category">Phân loại</MenuItem>
               <MenuItem value="tag">Thẻ</MenuItem>
