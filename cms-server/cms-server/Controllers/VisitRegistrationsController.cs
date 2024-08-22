@@ -9,6 +9,9 @@ using System.Security.Claims;
 using TimeZoneConverter;
 using cms_server.Configuration;
 using cms_server.DTOs;
+using MimeKit.Text;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace cms_server.Controllers
 {
@@ -19,6 +22,8 @@ namespace cms_server.Controllers
         private readonly CmsContext _context;
         private readonly ILogger<VisitRegistrationsController> _logger;
         private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+
+        private readonly IConfiguration _configuration;
 
         private DateTime ConvertToTimeZone(DateTime utcDateTime)
         {
@@ -31,10 +36,11 @@ namespace cms_server.Controllers
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             return TimeZoneInfo.ConvertTimeToUtc(dateTime, timeZoneInfo);
         }
-        public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger)
+        public VisitRegistrationsController(CmsContext context, ILogger<VisitRegistrationsController> logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
         }
 
 
@@ -196,7 +202,6 @@ namespace cms_server.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
 
@@ -258,20 +263,30 @@ namespace cms_server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteVisitRegistration(int id)
         {
-            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+            var visitRegistration = await _context.VisitRegistrations
+                .Include(vr => vr.Customer)  // Include customer to use their email
+                .Include(vr => vr.Niche)
+                .ThenInclude(n => n.Area)
+                .ThenInclude(a => a.Floor)
+                .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(vr => vr.VisitId == id);
+
             if (visitRegistration == null)
             {
                 _logger.LogWarning("VisitRegistration not found: {Id}", id); // Log warning
                 return NotFound();
             }
 
-            // Update the status to "Canceled" instead of deleting the record
+            // Update the status to "Canceled"
             visitRegistration.Status = "Canceled";
             _context.Entry(visitRegistration).State = EntityState.Modified;
 
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Send email notification
+                SendRejectionEmail(visitRegistration.Customer, visitRegistration);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -288,11 +303,37 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
+        private void SendRejectionEmail(Customer customer, VisitRegistration visitRegistration)
+        {
+            var subject = "Thông báo từ chối Đơn đăng ký thăm viếng - Dịch vụ An Bình Viên";
+            var messageBody = $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2 style='color: #333;'>Kính gửi {customer.FullName},</h2>
+                <p>Chúng tôi rất tiếc phải thông báo rằng đơn đăng ký thăm viếng của quý khách đã bị từ chối với mã đơn đăng ký <strong>{visitRegistration.VisitCode}</strong>.</p>
+
+                <p>Quý khách vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com để biết thêm chi tiết.</p>
+
+                <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                <hr style='border-top: 1px solid #ccc;' />
+                <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+            </div>";
+
+            SendEmail(customer.Email, subject, messageBody);
+        }
+
+
+
         // PUT: api/VisitRegistrations/approve/5
         [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveVisitRegistration(int id)
         {
-            var visitRegistration = await _context.VisitRegistrations.FindAsync(id);
+            var visitRegistration = await _context.VisitRegistrations
+                .Include(vr => vr.Customer)  // Include customer to use their email
+                .Include(vr => vr.Niche)
+                .ThenInclude(n => n.Area)
+                .ThenInclude(a => a.Floor)
+                .ThenInclude(f => f.Building)
+                .FirstOrDefaultAsync(vr => vr.VisitId == id);
 
             if (visitRegistration == null)
             {
@@ -308,6 +349,9 @@ namespace cms_server.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Send email notification
+                SendApprovalEmail(visitRegistration.Customer, visitRegistration);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -320,9 +364,34 @@ namespace cms_server.Controllers
                     throw;
                 }
             }
-
             return NoContent();
         }
+
+        private void SendApprovalEmail(Customer customer, VisitRegistration visitRegistration)
+        {
+            var subject = "Thông báo phê duyệt Đơn đăng ký thăm viếng - Dịch vụ An Bình Viên";
+            var messageBody = $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2 style='color: #333;'>Kính gửi {customer.FullName},</h2>
+                <p>Chúng tôi xin thông báo rằng đơn đăng ký thăm viếng của quý khách đã được phê duyệt thành công với các thông tin như sau:</p>
+
+                <h3 style='color: #555;'>Thông tin Đơn đăng ký</h3>
+                <ul>
+                    <li><strong>Mã đơn đăng ký:</strong> {visitRegistration.VisitCode}</li>
+                    <li><strong>Ngày thăm viếng:</strong> {visitRegistration.VisitDate:dd/MM/yyyy}</li>
+                    <li><strong>Địa chỉ Ô chứa:</strong> {visitRegistration.Niche.Area.Floor.Building.BuildingName} - {visitRegistration.Niche.Area.Floor.FloorName} - {visitRegistration.Niche.Area.AreaName} - Ô {visitRegistration.Niche.NicheName}</li>
+                </ul>
+
+                <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+
+                <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                <hr style='border-top: 1px solid #ccc;' />
+                <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+            </div>";
+
+            SendEmail(customer.Email, subject, messageBody);
+        }
+
 
         private int GetStaffIdFromToken()
         {
@@ -342,5 +411,29 @@ namespace cms_server.Controllers
         {
             return _context.VisitRegistrations.Any(e => e.VisitId == id);
         }
+        private void SendEmail(string recipientEmail, string subject, string messageBody)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress(
+                _configuration["SmtpSettings:SenderName"],
+                _configuration["SmtpSettings:SenderEmail"]));
+            emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
+            emailMessage.Subject = subject;
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = messageBody };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(
+                    _configuration["SmtpSettings:Server"],
+                    int.Parse(_configuration["SmtpSettings:Port"]),
+                    MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(
+                    _configuration["SmtpSettings:Username"],
+                    _configuration["SmtpSettings:Password"]);
+                client.Send(emailMessage);
+                client.Disconnect(true);
+            }
+        }
+
     }
 }

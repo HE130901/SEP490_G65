@@ -103,13 +103,13 @@ namespace cms_server.Controllers
                 .Include(so => so.Customer)
                 .ToListAsync();
 
-            var serviceOrderResponses = new List<ServiceOrderResponseDto1>();
+            var serviceOrderResponses = new List<ServiceOrderResponseForStaffDto>();
 
             foreach (var serviceOrder in serviceOrders)
             {
                 var nicheAddress = await GetNicheAddress(serviceOrder.NicheId);
 
-                var response = new ServiceOrderResponseDto1
+                var response = new ServiceOrderResponseForStaffDto
                 {
                     ServiceOrderId = serviceOrder.ServiceOrderId,
                     NicheAddress = nicheAddress,
@@ -158,6 +158,8 @@ namespace cms_server.Controllers
                 CustomerFullName = serviceOrder.Customer.FullName,
                 OrderDate = serviceOrder.OrderDate,
                 CreatedDate = serviceOrder.CreatedDate,
+                CompletedBy = serviceOrder.Staff?.FullName,
+                CompletedDate = serviceOrder.CompletedDate,
                 Niche = new NicheInfo
                 {
                     Building = serviceOrder.Niche.Area.Floor.Building.BuildingName,
@@ -199,10 +201,28 @@ namespace cms_server.Controllers
                 return NotFound("Customer not found.");
             }
 
+            // Lấy thông tin về thời gian hiện tại theo múi giờ
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var utcNow = DateTime.UtcNow;
+            var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
+
             // Update service order detail
             serviceOrderDetail.CompletionImage = request.CompletionImage;
             serviceOrderDetail.Status = "Completed";
-            serviceOrder.StaffId = staffId;
+
+            // Check if `CompletedDate` is already set, if not, set it now.
+            if (serviceOrder.CompletedDate == null)
+            {
+                serviceOrder.StaffId = staffId;
+                serviceOrder.CompletedDate = localNow;
+            }
+
+            // Handle the case where the `StaffId` is not found
+            var staff = await _context.Staff.FirstOrDefaultAsync(s => s.StaffId == staffId);
+            if (staff == null)
+            {
+                serviceOrder.StaffId = null;
+            }
 
             _context.ServiceOrderDetails.Update(serviceOrderDetail);
             _context.ServiceOrders.Update(serviceOrder);
@@ -214,30 +234,33 @@ namespace cms_server.Controllers
 
             var subject = "Xác nhận hoàn thành dịch vụ - Hệ thống quản lý An Bình Viên";
             var message = $@"
-                            <p>Kính gửi <strong>{customer.FullName}</strong>,</p>
-                            <p>Đơn đặt dịch vụ của bạn với mã đơn <strong>{serviceOrder.ServiceOrderCode}</strong> đã được hoàn thành.</p>
-                            <p><strong>Thông tin đơn hàng:</strong></p>
-                            <ul>
-                                <li><strong>Khách hàng:</strong> {customer.FullName}</li>
-                                <li><strong>Ngày tạo:</strong> {serviceOrder.CreatedDate?.ToString("HH:mm dd/MM/yyyy")}</li>
-                                <li><strong>Ngày hẹn:</strong> {serviceOrder.OrderDate?.ToString("HH:mm dd/MM/yyyy")}</li>
-                                <li><strong>Vị trí Ô chứa:</strong> {nicheAddress}</li>
-                                <li><strong>Tổng số tiền:</strong> {totalPrice}₫</li>
-                            </ul>
-                            <p><strong>Chi tiết dịch vụ:</strong></p>
-                            <ul>
-                                {string.Join("", serviceOrder.ServiceOrderDetails.Select(detail => $@"
-                                    <li>
-                                        <strong>Dịch vụ:</strong> {detail.Service?.ServiceName ?? "N/A"} - <strong>Số lượng:</strong> {detail.Quantity}
-                                        {(string.IsNullOrEmpty(detail.CompletionImage) ? "" : $"<br/><img src=\"{detail.CompletionImage}\" alt=\"Completion Image\" style=\"max-width: 100%; height: auto;\"/>")}
-                                    </li>"))}
-                            </ul>
-                            <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng</p>";
+            <p>Kính gửi <strong>{customer.FullName}</strong>,</p>
+            <p>Đơn đặt dịch vụ của bạn với mã đơn <strong>{serviceOrder.ServiceOrderCode}</strong> đã được hoàn thành.</p>
+            <p><strong>Thông tin đơn hàng:</strong></p>
+            <ul>
+                <li><strong>Khách hàng:</strong> {customer.FullName}</li>
+                <li><strong>Ngày tạo:</strong> {serviceOrder.CreatedDate?.ToString("HH:mm dd/MM/yyyy")}</li>
+                <li><strong>Ngày hẹn:</strong> {serviceOrder.OrderDate?.ToString("HH:mm dd/MM/yyyy")}</li>
+                <li><strong>Ngày hoàn thành:</strong> {serviceOrder.CompletedDate?.ToString("HH:mm dd/MM/yyyy")}</li> 
+                <li><strong>Hoàn thành bởi:</strong> {(staff != null ? staff.FullName : "Không xác định")}</li> 
+                <li><strong>Vị trí Ô chứa:</strong> {nicheAddress}</li>
+                <li><strong>Tổng số tiền:</strong> {totalPrice}₫</li>
+            </ul>
+            <p><strong>Hình ảnh xác nhận:</strong></p>
+            <ul>
+                {string.Join("", serviceOrder.ServiceOrderDetails.Select(detail => $@"
+                    <li>
+                        {(string.IsNullOrEmpty(detail.CompletionImage) ? "" : $"<br/><img src=\"{detail.CompletionImage}\" alt=\"Completion Image\" style=\"max-width: 100%; height: auto;\"/>")}
+                    </li>"))}
+            </ul>
+            <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng</p>";
 
             SendEmail(customer.Email, subject, message);
 
             return Ok(serviceOrderDetail);
         }
+
+
 
 
 
@@ -314,7 +337,6 @@ namespace cms_server.Controllers
                 }
             }
         }
-
     }
 
     

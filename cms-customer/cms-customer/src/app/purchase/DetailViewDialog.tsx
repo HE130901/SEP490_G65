@@ -107,6 +107,11 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
     0
   );
 
+  // Check if all service order details are completed
+  const isOrderCompleted = record.serviceOrderDetails.$values.every(
+    (detail) => detail.status === "Completed"
+  );
+
   return (
     <Dialog open={!!record} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle>Chi tiết đơn đặt hàng</DialogTitle>
@@ -116,10 +121,11 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
         </DialogContentText>
         <DialogContentText>
           <strong>Ngày tạo:</strong>{" "}
-          {dayjs(record.createdDate).format("DD/MM/YYYY")}
+          {dayjs(record.createdDate).format("hh:mm DD/MM/YYYY")}
         </DialogContentText>
         <DialogContentText>
-          <strong>Ngày hẹn:</strong> {dayjs(orderDate).format("DD/MM/YYYY")}
+          <strong>Ngày hẹn:</strong>{" "}
+          {dayjs(orderDate).format("hh:mm DD/MM/YYYY")}
         </DialogContentText>
         <DialogContentText>
           <strong>Tên người mất:</strong> {record.deceasedName}
@@ -127,6 +133,20 @@ const DetailViewDialog: React.FC<DetailViewDialogProps> = ({
         <DialogContentText>
           <strong>Địa chỉ ô chứa:</strong> {record.nicheAddress}
         </DialogContentText>
+
+        {/* Conditional rendering based on order completion status */}
+        {isOrderCompleted && (
+          <>
+            <DialogContentText>
+              <strong>Hoàn thành bởi:</strong> {record.completedBy || "N/A"}
+            </DialogContentText>
+            <DialogContentText>
+              <strong>Hoàn thành lúc:</strong>{" "}
+              {dayjs(record.completedDate).format("hh:mm DD/MM/YYYY") || "N/A"}
+            </DialogContentText>
+          </>
+        )}
+
         <Divider sx={{ marginTop: 2, marginBottom: 2 }} />
 
         <TableContainer component={Paper} sx={{ marginTop: 2 }}>

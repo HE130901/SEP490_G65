@@ -36,10 +36,6 @@ public partial class CmsContext : DbContext
 
     public virtual DbSet<NicheReservation> NicheReservations { get; set; }
 
-    public virtual DbSet<Notification> Notifications { get; set; }
-
-    public virtual DbSet<Report> Reports { get; set; }
-
     public virtual DbSet<Service> Services { get; set; }
 
     public virtual DbSet<ServiceOrder> ServiceOrders { get; set; }
@@ -67,7 +63,6 @@ public partial class CmsContext : DbContext
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Area>(entity =>
@@ -288,53 +283,6 @@ public partial class CmsContext : DbContext
                 .HasConstraintName("FK__NicheRese__Niche__08B54D69");
         });
 
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__20CF2E328BF916AA");
-
-            entity.ToTable("Notification");
-
-            entity.Property(e => e.NotificationId).HasColumnName("NotificationID");
-            entity.Property(e => e.ContractId).HasColumnName("ContractID");
-            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
-            entity.Property(e => e.NotificationDate).HasColumnType("datetime");
-            entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
-            entity.Property(e => e.StaffId).HasColumnName("StaffID");
-            entity.Property(e => e.VisitId).HasColumnName("VisitID");
-
-            entity.HasOne(d => d.Contract).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.ContractId)
-                .HasConstraintName("FK__Notificat__Contr__0A9D95DB");
-
-            entity.HasOne(d => d.Customer).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Notificat__Custo__0B91BA14");
-
-            entity.HasOne(d => d.ServiceOrder).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.ServiceOrderId)
-                .HasConstraintName("FK__Notificat__Servi__0C85DE4D");
-
-            entity.HasOne(d => d.Staff).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.StaffId)
-                .HasConstraintName("FK__Notificat__Staff__0D7A0286");
-
-            entity.HasOne(d => d.Visit).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.VisitId)
-                .HasConstraintName("FK__Notificat__Visit__0E6E26BF");
-        });
-
-        modelBuilder.Entity<Report>(entity =>
-        {
-            entity.HasKey(e => e.ReportId).HasName("PK__Report__D5BD48E5F7059A3E");
-
-            entity.ToTable("Report");
-
-            entity.Property(e => e.ReportId).HasColumnName("ReportID");
-            entity.Property(e => e.GeneratedDate).HasColumnType("datetime");
-            entity.Property(e => e.ReportCode).HasMaxLength(50);
-            entity.Property(e => e.ReportType).HasMaxLength(255);
-        });
-
         modelBuilder.Entity<Service>(entity =>
         {
             entity.HasKey(e => e.ServiceId).HasName("PK__Service__C51BB0EA252B22BB");
@@ -354,6 +302,7 @@ public partial class CmsContext : DbContext
             entity.ToTable("ServiceOrder");
 
             entity.Property(e => e.ServiceOrderId).HasColumnName("ServiceOrderID");
+            entity.Property(e => e.CompletedDate).HasColumnType("datetime");
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
             entity.Property(e => e.NicheId).HasColumnName("NicheID");

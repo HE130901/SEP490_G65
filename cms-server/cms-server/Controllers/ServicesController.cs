@@ -127,17 +127,15 @@ namespace cms_server.Controllers
                 .FirstOrDefaultAsync(s =>
                     s.ServiceName.Normalize(NormalizationForm.FormC) == normalizedServiceName &&
                     s.Description.Normalize(NormalizationForm.FormC) == normalizedDescription);
-
             if (existingService != null)
             {
                 return BadRequest("Dịch vụ với tên và mô tả này đã tồn tại.");
             }
-
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
         }
+
 
 
         // DELETE: api/Services/5

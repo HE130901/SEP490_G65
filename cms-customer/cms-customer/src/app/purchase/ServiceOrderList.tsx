@@ -61,6 +61,8 @@ export type ServiceOrder = {
   deceasedName: string;
   orderDate: string;
   serviceOrderCode: string;
+  completedDate: string;
+  completedBy: string;
   serviceOrderDetails: {
     $values: ServiceOrderDetail[];
   };
@@ -133,7 +135,7 @@ export default function ServiceOrderList({
       setEditingRecord(record);
     } else {
       toast.warning(
-        "Chỉ có thể chỉnh sửa đơn đặt hàng có trạng thái 'Pending'."
+        "Chỉ có thể chỉnh sửa đơn đặt hàng có trạng thái 'Đang chờ'."
       );
     }
   };

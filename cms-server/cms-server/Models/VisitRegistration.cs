@@ -30,6 +30,4 @@ public partial class VisitRegistration
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Niche Niche { get; set; } = null!;
-
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

@@ -37,7 +37,5 @@ public partial class Contract
 
     public virtual ICollection<NicheHistory> NicheHistories { get; set; } = new List<NicheHistory>();
 
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
-
     public virtual Staff Staff { get; set; } = null!;
 }

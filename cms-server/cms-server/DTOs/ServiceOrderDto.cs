@@ -18,9 +18,9 @@ namespace cms_server.DTOs
         public DateTime? OrderDate { get; set; }
         public NicheInfo Niche { get; set; }
         public decimal TotalPrice { get; set; }
+        public string? CompletedBy { get; set; }
+        public DateTime? CompletedDate { get; set; }
         public List<ServiceOrderDetail> ServiceOrderDetails { get; set; }
-        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
-        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
     public class NicheInfo
@@ -65,8 +65,6 @@ namespace cms_server.DTOs
         public decimal TotalPrice { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
-        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
-        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
     public class ServiceOrderDetailDto
@@ -80,7 +78,7 @@ namespace cms_server.DTOs
         public string? CompletionImage { get; set; }
     }
 
-    public class ServiceOrderResponseDto1
+    public class ServiceOrderResponseForStaffDto
     {
         public int ServiceOrderId { get; set; }
         public string NicheAddress { get; set; }
@@ -89,8 +87,6 @@ namespace cms_server.DTOs
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
         public List<ServiceOrderDetailDto> ServiceOrderDetails { get; set; }
-        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
-        public string FormattedOrderDate => OrderDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
 
@@ -110,6 +106,8 @@ namespace cms_server.DTOs
         public string? ServiceOrderCode { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? OrderDate { get; set; }
+        public string? CompletedBy { get; set; }
+        public DateTime? CompletedDate { get; set; }
         public List<ServiceOrderDetailResponseDto> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetailResponseDto>();
     }
 
@@ -122,7 +120,7 @@ namespace cms_server.DTOs
         public string? Status { get; set; }
     }
 
-    public class CreateServiceOrderRequest1
+    public class CreateServiceOrderForStaff
     {
         public int NicheID { get; set; }
         public DateTime OrderDate { get; set; }

@@ -21,8 +21,6 @@ public partial class Staff
 
     public virtual ICollection<NicheReservation> NicheReservations { get; set; } = new List<NicheReservation>();
 
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
-
     public virtual ICollection<ServiceOrder> ServiceOrders { get; set; } = new List<ServiceOrder>();
 
     public virtual ICollection<VisitRegistration> VisitRegistrations { get; set; } = new List<VisitRegistration>();

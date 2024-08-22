@@ -26,9 +26,9 @@ namespace cms_server.Tests
             // Arrange
             var floor = new Floor
             {
-                FloorName = "Test Floor",
+                FloorName = "Test 2",
                 BuildingId = 1,
-                FloorDescription = "A test floor",
+                FloorDescription = "A test floor ",
                 FloorPicture = "test.jpg",
                 FloorCode = "F001"
             };
@@ -53,6 +53,8 @@ namespace cms_server.Tests
             Assert.AreEqual(1, _context.Areas.Count());
             Assert.AreEqual("Test Area", _context.Areas.First().AreaName);
         }
+
+
 
         [Test]
         public void CreateArea_InvalidData_ShouldFail()

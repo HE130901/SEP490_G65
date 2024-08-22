@@ -43,6 +43,21 @@ namespace cms_server.Controllers
             }
             return deceased.FullName;
         }
+
+        private string getStaffName(int? staffId)
+        {
+            var staff = _context.Staff.Find(staffId);
+            if (staff == null)
+            {
+                return "Không xác định";
+            }
+            return staff.FullName;
+        }
+
+
+
+
+
         private decimal getServicePrice(int serviceId)
         {
             var service = _context.Services.Find(serviceId);
@@ -90,6 +105,8 @@ namespace cms_server.Controllers
                 CreatedDate = so.CreatedDate,
                 OrderDate = so.OrderDate,
                 ServiceOrderCode = so.ServiceOrderCode,
+                CompletedBy = getStaffName(so.StaffId),
+                CompletedDate = so.CompletedDate,
                 ServiceOrderDetails = so.ServiceOrderDetails.Select(sod => new ServiceOrderDetailResponseDto
                 {
                     ServiceName = sod.Service.ServiceName,
@@ -105,7 +122,7 @@ namespace cms_server.Controllers
 
         [HttpPost("create-service-order")]
         [Authorize]
-        public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest1 request)
+        public async Task<IActionResult> CreateServiceOrder([FromBody] CreateServiceOrderRequest request)
         {
             var customerIdClaim = User.Claims.FirstOrDefault(c => c.Type == "CustomerId");
             if (customerIdClaim == null)
@@ -144,7 +161,7 @@ namespace cms_server.Controllers
                         NicheId = request.NicheID,
                         CreatedDate = DateTime.Now,
                         OrderDate = request.OrderDate,
-                        ServiceOrderCode = serviceOrderCode // Thêm mã ServiceOrderCode
+                        ServiceOrderCode = serviceOrderCode 
                     };
                     _context.ServiceOrders.Add(serviceOrder);
                     await _context.SaveChangesAsync();

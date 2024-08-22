@@ -84,6 +84,8 @@ namespace cms_server.Controllers
                             CitizenId = request.CustomerCitizenId,
                             CitizenIdissuanceDate = request.CustomerCitizenIdIssueDate,
                             CitizenIdsupplier = request.CustomerCitizenIdSupplier,
+
+                            //Mã hóa MK lưu vào DB bằng thư viện BCrypt
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword)
                         };
                         _context.Customers.Add(customer);
@@ -250,9 +252,10 @@ namespace cms_server.Controllers
                 return BadRequest("Invalid date format.");
             }
 
-            // Find the contract by ID and include the associated contract renews
             var contract = await _context.Contracts
                 .Include(c => c.ContractRenews)
+                .Include(c => c.Customer)  // Include customer to use their email
+                .Include(c => c.Niche)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
             if (contract == null)
@@ -262,6 +265,7 @@ namespace cms_server.Controllers
             contract.Status = "Extended";
             _context.Contracts.Update(contract);
             await _context.SaveChangesAsync();
+
             int renewalCount = contract.ContractRenews.Count + 1;
             string renewalCode = GenerateRenewalCode(contract.ContractCode, renewalCount);
 
@@ -278,8 +282,36 @@ namespace cms_server.Controllers
             _context.ContractRenews.Add(contractRenew);
             await _context.SaveChangesAsync();
 
+            // Send email notification
+            SendContractRenewalEmail(contract.Customer, contractRenew, contract);
+
             return Ok(contractRenew);
         }
+
+        private void SendContractRenewalEmail(Customer customer, ContractRenew contractRenew, Contract contract)
+        {
+            var subject = "Xác nhận Gia hạn Hợp đồng - Dịch vụ An Bình Viên";
+            var messageBody = $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2 style='color: #333;'>Kính gửi {customer.FullName},</h2>
+                <p>Chúng tôi xin thông báo rằng hợp đồng của quý khách đã được gia hạn thành công với các thông tin như sau:</p>
+
+                <h3 style='color: #555;'>Thông tin Gia hạn</h3>
+                <ul>
+                    <li><strong>Mã gia hạn:</strong> {contractRenew.ContractRenewCode}</li>
+                    <li><strong>Ngày kết thúc mới:</strong> {contractRenew.EndDate:dd/MM/yyyy}</li>
+                </ul>
+
+                <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+
+                <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                <hr style='border-top: 1px solid #ccc;' />
+                <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+            </div>";
+
+            SendEmail(customer.Email, subject, messageBody);
+        }
+
 
 
 
@@ -304,13 +336,12 @@ namespace cms_server.Controllers
         [HttpPost("cancel-contract")]
         public async Task<IActionResult> CancelContract(int contractId)
         {
-            // Sử dụng transaction để đảm bảo tính toàn vẹn của dữ liệu
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
-                    // Tìm hợp đồng theo ID
                     var contract = await _context.Contracts
+                        .Include(c => c.Customer)  // Include customer to use their email
                         .FirstOrDefaultAsync(c => c.ContractId == contractId);
 
                     if (contract == null)
@@ -318,38 +349,60 @@ namespace cms_server.Controllers
                         return NotFound("Contract not found.");
                     }
 
-                    // Cập nhật trạng thái hợp đồng thành "Canceled"
                     contract.Status = "Canceled";
                     contract.Note = $"Thanh lý hợp đồng {contract.ContractCode} vào ngày {DateTime.Now:dd/MM/yyyy}";
                     _context.Contracts.Update(contract);
 
-                    // Tìm ô chứa liên quan và cập nhật trạng thái của nó
                     var niche = await _context.Niches.FirstOrDefaultAsync(n => n.NicheId == contract.NicheId);
                     if (niche != null)
                     {
                         niche.Status = "Available";
-                        niche.CustomerId = null; // Xóa thông tin khách hàng liên kết
-                        niche.DeceasedId = null; // Xóa thông tin người đã mất liên kết
+                        niche.CustomerId = null;
+                        niche.DeceasedId = null;
                         _context.Niches.Update(niche);
                     }
 
-                    // Lưu các thay đổi vào cơ sở dữ liệu
                     await _context.SaveChangesAsync();
-
-                    // Commit transaction
                     await transaction.CommitAsync();
+
+                    // Send email notification
+                    SendContractCancellationEmail(contract.Customer, contract);
 
                     return NoContent();
                 }
                 catch (Exception ex)
                 {
-                    // Rollback transaction nếu có lỗi xảy ra
                     await transaction.RollbackAsync();
                     var errorMessage = $"Error cancelling contract: {ex.Message}";
                     return StatusCode(500, new { error = errorMessage });
                 }
             }
         }
+
+        private void SendContractCancellationEmail(Customer customer, Contract contract)
+        {
+            var subject = "Xác nhận Hủy Hợp đồng - Dịch vụ An Bình Viên";
+            var messageBody = $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2 style='color: #333;'>Kính gửi {customer.FullName},</h2>
+                <p>Chúng tôi xin thông báo rằng hợp đồng của quý khách đã được hủy thành công với các thông tin như sau:</p>
+
+                <h3 style='color: #555;'>Thông tin Hợp đồng</h3>
+                <ul>
+                    <li><strong>Mã hợp đồng:</strong> {contract.ContractCode}</li>
+                    <li><strong>Ngày thanh lý:</strong> {DateTime.Now:dd/MM/yyyy}</li>
+                </ul>
+
+                <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+
+                <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                <hr style='border-top: 1px solid #ccc;' />
+                <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+            </div>";
+
+            SendEmail(customer.Email, subject, messageBody);
+        }
+
 
 
 

@@ -19,11 +19,11 @@ public partial class ServiceOrder
 
     public DateTime? CreatedDate { get; set; }
 
+    public DateTime? CompletedDate { get; set; }
+
     public virtual Customer Customer { get; set; } = null!;
 
     public virtual Niche Niche { get; set; } = null!;
-
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<ServiceOrderDetail> ServiceOrderDetails { get; set; } = new List<ServiceOrderDetail>();
 

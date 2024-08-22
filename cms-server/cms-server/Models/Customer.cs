@@ -29,8 +29,6 @@ public partial class Customer
 
     public virtual ICollection<NicheHistory> NicheHistories { get; set; } = new List<NicheHistory>();
 
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
-
     public virtual ICollection<ServiceOrder> ServiceOrders { get; set; } = new List<ServiceOrder>();
 
     public virtual ICollection<VisitRegistration> VisitRegistrations { get; set; } = new List<VisitRegistration>();
