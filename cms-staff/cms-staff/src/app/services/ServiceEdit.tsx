@@ -48,6 +48,7 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
       status: "Available",
     },
   });
+
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
   const servicePictureUrl = watch("servicePicture");
 
@@ -69,13 +70,18 @@ const ServiceEdit: React.FC<ServiceEditProps> = ({
   const onSubmit: SubmitHandler<Service> = async (data) => {
     if (!service) return;
     try {
+      console.log("Updating service with data:", data); // Log the data before sending
       await ServiceAPI.updateService(service.serviceId, data);
       toast.success("Cập nhật dịch vụ thành công");
       onSave({ ...service, ...data });
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating service:", error);
-      toast.error("Cập nhật dịch vụ thất bại");
+      // Log more detailed error information if available
+      if (error.response && error.response.data) {
+        console.error("Error details:", error.response.data);
+      }
+      toast.error(error.response?.data?.message || "Cập nhật dịch vụ thất bại");
     }
   };
 

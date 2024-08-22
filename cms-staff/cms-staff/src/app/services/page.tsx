@@ -28,7 +28,6 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { styled } from "@mui/material/styles";
 import ServiceDetail from "./ServiceDetail";
 import ServiceEdit from "./ServiceEdit";
-import ServiceDelete from "./ServiceDelete";
 import ServiceAdd from "./ServiceAdd";
 import { formatVND } from "@/utils/formatCurrency";
 import { useServiceContext } from "@/context/ServiceContext";
@@ -176,6 +175,7 @@ const ServiceProductPage: React.FC = () => {
   const columns: GridColDef[] = [
     {
       field: "serviceId",
+      headerName: "ID",
       width: 90,
       headerClassName: "super-app-theme--header",
 
@@ -399,15 +399,7 @@ const ServiceProductPage: React.FC = () => {
           handleCloseEdit();
         }}
       />
-      <ServiceDelete
-        service={selectedService}
-        onClose={handleCloseDelete}
-        open={deleteOpen}
-        onDelete={(serviceId) => {
-          deleteService(serviceId);
-          handleCloseDelete();
-        }}
-      />
+
       <ServiceAdd
         open={addOpen}
         onClose={handleCloseAdd}

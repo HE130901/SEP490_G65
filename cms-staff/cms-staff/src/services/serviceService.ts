@@ -8,9 +8,7 @@ const ServiceAPI = {
   updateService(serviceId: any, data: any) {
     return axiosInstance.put(`/api/Services/${serviceId}`, data);
   },
-  deleteService(serviceId: any) {
-    return axiosInstance.delete(`/api/Services/${serviceId}`);
-  },
+
   addService(data: any) {
     return axiosInstance.post("/api/Services", data);
   },
