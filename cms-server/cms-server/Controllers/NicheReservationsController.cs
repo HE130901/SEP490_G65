@@ -351,22 +351,20 @@ namespace cms_server.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
         {
+            //check nếu người đăng nhập là nhân viên hay không
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (userId == null)
             {
                 return Unauthorized("User ID not found in token.");
             }
-
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-
             if (role == null)
             {
                 return Unauthorized("User role not found in token.");
             }
 
+            //check tồn tại của đơn đặt ô chứa
             var nicheReservation = await _context.NicheReservations.FindAsync(id);
-
             if (nicheReservation == null)
             {
                 return NotFound("Reservation not found");
@@ -394,6 +392,7 @@ namespace cms_server.Controllers
         [HttpPut("confirm/{id}")]
         public async Task<IActionResult> ConfirmNicheReservation(int id)
         {
+            //check tồn tại của đơn đặt ô chứa
             var nicheReservation = await _context.NicheReservations.FindAsync(id);
             if (nicheReservation == null)
             {
@@ -405,17 +404,18 @@ namespace cms_server.Controllers
                 return BadRequest(new { error = "Reservation is already approved" });
             }
 
+            //check nếu người đăng nhập là nhân viên hay không
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest(new { error = "User ID not found" });
-            }
-
+            }        
             if (!int.TryParse(userIdString, out int userId))
             {
                 return BadRequest(new { error = "Invalid user ID" });
             }
 
+            //cập nhật thông tin
             nicheReservation.Status = "Approved";
             nicheReservation.ConfirmedBy = userId;
             _context.Entry(nicheReservation).State = EntityState.Modified;
@@ -437,45 +437,7 @@ namespace cms_server.Controllers
         }
 
 
-        // GET: api/NicheReservations/approved
-        [HttpGet("approved")]
-        public async Task<ActionResult<IEnumerable<NicheReservationApprovedDto>>> GetApprovedNicheReservations()
-        {
-            try
-            {
-                // Lấy thông tin đơn đặt chỗ đã được duyệt
-                var approvedReservations = await _context.NicheReservations
-                    .Where(r => r.Status == "Approved")
-                    .Select(r => new NicheReservationApprovedDto
-                    {
-                        ReservationId = r.ReservationId,
-                        ReservationCode = r.ReservationCode,
-                        Status = r.Status,
-                        CustomerName = r.Name,
-                        CustomerPhone = r.PhoneNumber,
-                        SignAddress = r.SignAddress,
-                        NicheId = r.NicheId,
-                        NicheCode = r.Niche.NicheCode,
-                        NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - Ô {r.Niche.NicheName}",
-                        Note = r.Note
-
-                    })
-                    .ToListAsync();
-
-                if (!approvedReservations.Any())
-                {
-                    return NotFound(new { error = "No approved reservations found" });
-                }
-
-                return Ok(approvedReservations);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }      
-
-    }
+        
 
 
 

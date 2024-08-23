@@ -247,21 +247,24 @@ namespace cms_server.Controllers
         [HttpPost("renew-contract")]
         public async Task<IActionResult> RenewContract(int contractId, [FromBody] RenewContractRequest request)
         {
-            if (!DateOnly.TryParse(request.NewEndDate, out var parsedEndDate))
-            {
-                return BadRequest("Invalid date format.");
-            }
-
+            //truy vấn contract
             var contract = await _context.Contracts
                 .Include(c => c.ContractRenews)
                 .Include(c => c.Customer)  // Include customer to use their email
                 .Include(c => c.Niche)
                 .FirstOrDefaultAsync(c => c.ContractId == contractId);
+            //Validate date
+            if (!DateOnly.TryParse(request.NewEndDate, out var parsedEndDate))
+            {
+                return BadRequest("Invalid date format.");
+            }
 
             if (contract == null)
             {
                 return NotFound("Contract not found.");
             }
+
+            //cập nhật thông tin và trạng thái       
             contract.Status = "Extended";
             _context.Contracts.Update(contract);
             await _context.SaveChangesAsync();
