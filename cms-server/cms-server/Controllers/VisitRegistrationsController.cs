@@ -50,6 +50,7 @@ namespace cms_server.Controllers
         {
             try
             {
+
                 var visitRegistrations = await _context.VisitRegistrations
                     .Include(vr => vr.Customer)
                     .Include(vr => vr.Niche)
@@ -88,6 +89,7 @@ namespace cms_server.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<VisitRegistrationDto>> GetVisitRegistration(int id)
         {
+
             var visitRegistration = await _context.VisitRegistrations
                 .Include(vr => vr.Customer)
                 .Include(vr => vr.Niche)
@@ -206,6 +208,7 @@ namespace cms_server.Controllers
         }
 
         // POST: api/VisitRegistrations
+        // Có sử dụng endpoint lấy danh sách hợp đồng để truyền vào một ố thông tin của khách hàng
         [HttpPost]
         public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
         {
@@ -215,18 +218,7 @@ namespace cms_server.Controllers
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
             var currentDate = localNow.Date;
 
-            // Lấy thông tin StaffId từ token
-            var staffIdClaim = User.FindFirst("StaffId");
-            int? approvedBy = null;
-            string status = "Pending";
-
-            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
-            {
-                approvedBy = staffId;
-                status = "Approved";
-            }
-
-            // Tạo mã đăng ký thăm viếng
+            // Tạo mã đăng ký thăm viếng theo định dạng DT-yyyyMMdd-xxx
             var registrationsTodayCount = await _context.VisitRegistrations
                 .CountAsync(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate);
             var createdDate = registrationsTodayCount > 0
@@ -237,6 +229,19 @@ namespace cms_server.Controllers
                 : currentDate;
             var registrationCode = $"DT-{createdDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
 
+
+            // Lấy thông tin StaffId từ token để tự động xác nhận đơn nếu là Staff
+            var staffIdClaim = User.FindFirst("StaffId");
+            int? approvedBy = null;
+            string status = "Pending";
+
+            if (staffIdClaim != null && int.TryParse(staffIdClaim.Value, out int staffId))
+            {
+                approvedBy = staffId;
+                status = "Approved";
+            }
+
+           
             // Tạo VisitRegistration mới
             var visitRegistration = new VisitRegistration
             {

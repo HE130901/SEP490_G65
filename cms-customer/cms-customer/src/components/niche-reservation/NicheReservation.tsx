@@ -87,6 +87,32 @@ const NicheReservationPage = () => {
   ]);
 
   useEffect(() => {
+    // Chỉ thiết lập interval khi đã có đủ thông tin về tòa nhà, tầng và khu vực
+    if (selectedBuilding && selectedFloor && selectedArea) {
+      const intervalId = setInterval(() => {
+        const fetchNichesFunction = user ? fetchNichesForCustomer : fetchNiches;
+        fetchNichesFunction(
+          selectedBuilding.buildingId,
+          selectedFloor.floorId,
+          selectedArea.areaId
+        ).then((data: any) => {
+          console.log("Auto fetched niches every 20 seconds:", data);
+        });
+      }, 20000); // 20 giây
+
+      // Cleanup interval khi component unmount hoặc khi điều kiện thay đổi
+      return () => clearInterval(intervalId);
+    }
+  }, [
+    selectedBuilding,
+    selectedFloor,
+    selectedArea,
+    fetchNiches,
+    fetchNichesForCustomer,
+    user,
+  ]);
+
+  useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width <= 800) {

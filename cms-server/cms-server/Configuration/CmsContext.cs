@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace cms_server.Configuration;
 
+
 public partial class CmsContext : DbContext
 {
     public CmsContext()
@@ -268,6 +269,7 @@ public partial class CmsContext : DbContext
             entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
             entity.Property(e => e.ConfirmationDate).HasColumnType("datetime");
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.NicheId).HasColumnName("NicheID");
             entity.Property(e => e.PhoneNumber).HasMaxLength(50);
             entity.Property(e => e.ReservationCode).HasMaxLength(50);

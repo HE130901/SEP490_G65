@@ -22,10 +22,153 @@ namespace cms_server.Controllers
     {
         private readonly CmsContext _context;
         private readonly string timeZoneId = TZConvert.WindowsToIana("SE Asia Standard Time");
+        private readonly IConfiguration _configuration;
 
-        public NicheReservationsController(CmsContext context)
+        public NicheReservationsController(CmsContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+        }
+
+        private bool NicheReservationExists(int id)
+        {
+            return _context.NicheReservations.Any(e => e.ReservationId == id);
+        }
+
+        private void SendEmail(string recipientEmail, string subject, string messageBody)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress(
+                _configuration["SmtpSettings:SenderName"],
+                _configuration["SmtpSettings:SenderEmail"]));
+            emailMessage.To.Add(new MailboxAddress(recipientEmail, recipientEmail));
+            emailMessage.Subject = subject;
+            emailMessage.Body = new TextPart(TextFormat.Html) { Text = messageBody };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(
+                    _configuration["SmtpSettings:Server"],
+                    int.Parse(_configuration["SmtpSettings:Port"]),
+                    MailKit.Security.SecureSocketOptions.StartTls);
+                client.Authenticate(
+                    _configuration["SmtpSettings:Username"],
+                    _configuration["SmtpSettings:Password"]);
+                client.Send(emailMessage);
+                client.Disconnect(true);
+            }
+        }
+
+        private void SendReservationConfirmationEmail(string customerEmail, NicheReservation nicheReservation, Niche niche)
+        {
+            try
+            {
+                // Kiểm tra các đối tượng đầu vào để đảm bảo không có đối tượng nào là null
+                if (string.IsNullOrEmpty(customerEmail))
+                {
+                    throw new ArgumentNullException(nameof(customerEmail), "Customer email is null or empty");
+                }
+                if (nicheReservation == null)
+                {
+                    throw new ArgumentNullException(nameof(nicheReservation), "NicheReservation object is null");
+                }
+                if (niche == null)
+                {
+                    throw new ArgumentNullException(nameof(niche), "Niche object is null");
+                }
+
+                // Chuẩn bị thông tin email
+                var subject = "Xác nhận Đơn Đăng Ký Đặt Chỗ - Dịch vụ An Bình Viên";
+                var messageBody = $@"
+                <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2 style='color: #333;'>Kính gửi {nicheReservation.Name},</h2>
+                    <p>Chúng tôi xin chân thành cảm ơn quý khách đã tin tưởng và sử dụng dịch vụ của An Bình Viên. Chúng tôi xin thông báo đơn đăng ký đặt chỗ của quý khách đã được tạo thành công </p>
+                   
+
+                    <h3 style='color: #555;'>Thông tin Đơn Đăng Ký</h3>
+                    <ul>
+                        <li><strong>Mã đặt chỗ:</strong> {nicheReservation.ReservationCode}</li>
+                        <li><strong>Ngày đăng ký:</strong> {nicheReservation.CreatedDate:dd/MM/yyyy}</li>
+                        <li><strong>Số điện thoại:</strong> {nicheReservation.PhoneNumber}</li>
+                        <li><strong>Email:</strong> {customerEmail}</li>
+                    </ul>
+
+                    <p>Quý khách vui lòng chờ phản hồi từ hệ thống trong vòng 48h</p>
+                    <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+                    <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                    <hr style='border-top: 1px solid #ccc;' />
+                    <p style='color: #888;'>Email này được gửi từ hệ thống của An Bình Viên. Xin vui lòng không trả lời trực tiếp email này.</p>
+                </div>";
+
+                // Gửi email sử dụng hàm SendEmail
+                SendEmail(customerEmail, subject, messageBody);
+
+                // Ghi log thành công
+                Console.WriteLine("Email confirmation sent successfully to " + customerEmail);
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi và ghi log
+                Console.WriteLine($"An error occurred while sending reservation confirmation email: {ex.Message}");
+                throw new Exception("Failed to send reservation confirmation email.", ex);
+            }
+        }
+
+        private void SendCancellationEmail(string customerEmail, NicheReservation nicheReservation, Niche niche)
+        {
+            try
+            {
+                var subject = "Hủy Đơn Đăng Ký Đặt Chỗ - Dịch vụ An Bình Viên";
+                var messageBody = $@"
+                <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2 style='color: #333;'>Kính gửi {nicheReservation.Name},</h2>
+                    <p>Chúng tôi rất tiếc phải thông báo rằng đơn đăng ký đặt chỗ của quý khách đã bị hủy.</p>
+                    <h3 style='color: #555;'>Thông tin Đơn Đăng Ký</h3>
+                    <ul>
+                        <li><strong>Mã đặt chỗ:</strong> {nicheReservation.ReservationCode}</li>
+                        <li><strong>Ngày đăng ký:</strong> {nicheReservation.CreatedDate:dd/MM/yyyy}</li>
+                    </ul>
+                    <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+                    <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                </div>";
+
+                // Gửi email sử dụng hàm SendEmail
+                SendEmail(customerEmail, subject, messageBody);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while sending cancellation email: {ex.Message}");
+            }
+        }
+
+        private void SendApprovalEmail(string customerEmail, NicheReservation nicheReservation, Niche niche)
+        {
+            try
+            {
+                var subject = "Duyệt Đơn Đăng Ký Đặt Chỗ - Dịch vụ An Bình Viên";
+                var messageBody = $@"
+                <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2 style='color: #333;'>Kính gửi {nicheReservation.Name},</h2>
+                    <p>Chúng tôi xin thông báo rằng đơn đăng ký đặt chỗ của quý khách đã được duyệt thành công.</p>
+                    <p>Quý khách vui lòng đến đúng thời gian và địa điểm đã hẹn.</p>
+
+                    <h3 style='color: #555;'>Thông tin Đơn Đăng Ký</h3>
+                    <ul>
+                        <li><strong>Mã đặt chỗ:</strong> {nicheReservation.ReservationCode}</li>
+                        <li><strong>Ngày hẹn:</strong> {nicheReservation.ConfirmationDate:dd/MM/yyyy}</li>
+                        <li><strong>Địa điểm hẹn:</strong> {nicheReservation.SignAddress}</li>
+                    </ul>
+                    <p>Nếu có bất kỳ thắc mắc nào, quý khách hàng vui lòng liên hệ với chúng tôi qua số điện thoại (+84)999-999-999 hoặc Email info@abv.com.</p>
+                    <p>Trân trọng,<br/>Đội ngũ hỗ trợ khách hàng An Bình Viên</p>
+                </div>";
+
+                // Gửi email sử dụng hàm SendEmail
+                SendEmail(customerEmail, subject, messageBody);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while sending approval email: {ex.Message}");
+            }
         }
 
         // GET: api/NicheReservations
@@ -71,6 +214,43 @@ namespace cms_server.Controllers
             return nicheReservation;
         }
 
+        // GET: api/NicheReservations/details/5
+        [HttpGet("details/{id}")]
+        public async Task<ActionResult<NicheReservationDetailDto>> GetNicheReservationDetail(int id)
+        {
+            // Lấy thông tin chi tiết đơn đặt chỗ theo ID
+            var reservation = await _context.NicheReservations
+                .Include(r => r.Niche)
+                    .ThenInclude(n => n.Area)
+                        .ThenInclude(a => a.Floor)
+                            .ThenInclude(f => f.Building)
+                .Include(r => r.ConfirmedByNavigation)
+                .FirstOrDefaultAsync(r => r.ReservationId == id);
+
+            if (reservation == null)
+            {
+                return NotFound();
+            }
+
+            var reservationDetail = new NicheReservationDetailDto
+            {
+                ReservationId = reservation.ReservationId,
+                ReservationCode = reservation.ReservationCode,
+                Name = reservation.Name,
+                PhoneNumber = reservation.PhoneNumber,
+                NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-{reservation.Niche.NicheName}",
+                NicheId = reservation.NicheId,
+                CreatedDate = reservation.CreatedDate,
+                ConfirmationDate = reservation.ConfirmationDate,
+                Status = reservation.Status,
+                Note = reservation.Note,
+                SignAddress = reservation.SignAddress,
+                NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName
+            };
+
+            return Ok(reservationDetail);
+        }
+
         // GET: api/NicheReservations/by-phone/{phoneNumber}
         [HttpGet("by-phone/{phoneNumber}")]
         public async Task<ActionResult<IEnumerable<NicheReservationDto>>> GetNicheReservationsByPhoneNumber(string phoneNumber)
@@ -111,8 +291,42 @@ namespace cms_server.Controllers
             }
         }
 
-      
+        // GET: api/NicheReservations/approved
+        [HttpGet("approved")]
+        public async Task<ActionResult<IEnumerable<NicheReservationApprovedDto>>> GetApprovedNicheReservations()
+        {
+            try
+            {
+                // Lấy thông tin đơn đặt chỗ đã được duyệt
+                var approvedReservations = await _context.NicheReservations
+                    .Where(r => r.Status == "Approved")
+                    .Select(r => new NicheReservationApprovedDto
+                    {
+                        ReservationId = r.ReservationId,
+                        ReservationCode = r.ReservationCode,
+                        Status = r.Status,
+                        CustomerName = r.Name,
+                        CustomerPhone = r.PhoneNumber,
+                        SignAddress = r.SignAddress,
+                        NicheId = r.NicheId,
+                        NicheCode = r.Niche.NicheCode,
+                        NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - Ô {r.Niche.NicheName}",
+                        Note = r.Note
+                    })
+                    .ToListAsync();
 
+                if (!approvedReservations.Any())
+                {
+                    return NotFound(new { error = "No approved reservations found" });
+                }
+
+                return Ok(approvedReservations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
 
         // POST: api/NicheReservations
         [HttpPost]
@@ -188,6 +402,7 @@ namespace cms_server.Controllers
                         CreatedDate = localNow,
                         Status = status,
                         ReservationCode = reservationCode,
+                        Email = createDto.Email,
                         ConfirmedBy = confirmedBy
                     };
 
@@ -202,6 +417,9 @@ namespace cms_server.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    // Gửi email xác nhận đơn đặt chỗ cho khách hàng
+                    SendReservationConfirmationEmail(nicheReservation.Email, nicheReservation, niche);
+
                     // Trả về kết quả thành công với thông tin của đơn đặt chỗ mới được tạo
                     return CreatedAtAction("GetNicheReservation", new { id = nicheReservation.ReservationId }, nicheReservation);
                 }
@@ -213,7 +431,6 @@ namespace cms_server.Controllers
                 }
             }
         }
-
 
         // DELETE: api/NicheReservations/5
         [HttpDelete("{id}")]
@@ -258,6 +475,10 @@ namespace cms_server.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    //Gửi email thông báo hủy đơn đặt chỗ
+                    SendCancellationEmail(nicheReservation.Email, nicheReservation, nicheReservation.Niche);
+
+                    // Trả về kết quả thành công
                     return NoContent();
                 }
                 catch (Exception ex)
@@ -267,44 +488,6 @@ namespace cms_server.Controllers
                     return StatusCode(500, new { error = "Đã xảy ra lỗi khi hủy đơn đặt chỗ" });
                 }
             }
-        }
-
-
-        // GET: api/NicheReservations/details/5
-        [HttpGet("details/{id}")]
-        public async Task<ActionResult<NicheReservationDetailDto>> GetNicheReservationDetail(int id)
-        {
-            // Lấy thông tin chi tiết đơn đặt chỗ theo ID
-            var reservation = await _context.NicheReservations
-                .Include(r => r.Niche)
-                    .ThenInclude(n => n.Area)
-                        .ThenInclude(a => a.Floor)
-                            .ThenInclude(f => f.Building)
-                .Include(r => r.ConfirmedByNavigation)
-                .FirstOrDefaultAsync(r => r.ReservationId == id);
-
-            if (reservation == null)
-            {
-                return NotFound();
-            }
-
-            var reservationDetail = new NicheReservationDetailDto
-            {
-                ReservationId = reservation.ReservationId,
-                ReservationCode = reservation.ReservationCode,
-                Name = reservation.Name,
-                PhoneNumber = reservation.PhoneNumber,
-                NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-{reservation.Niche.NicheName}",
-                NicheId = reservation.NicheId,
-                CreatedDate = reservation.CreatedDate,
-                ConfirmationDate = reservation.ConfirmationDate,
-                Status = reservation.Status,
-                Note = reservation.Note,
-                SignAddress = reservation.SignAddress,
-                NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName
-            };
-
-            return Ok(reservationDetail);
         }
 
         // PUT: api/NicheReservations/5
@@ -350,7 +533,6 @@ namespace cms_server.Controllers
             return NoContent();
         }
 
-
         // PUT: api/NicheReservations/update/5
         // Endpoint cập nhật thông tin đơn đặt chỗ dành cho nhân viên.
         [HttpPut("update/{id}")]
@@ -379,7 +561,7 @@ namespace cms_server.Controllers
             nicheReservation.ConfirmationDate = dto.ConfirmationDate;
             nicheReservation.Note = dto.Note;
             nicheReservation.SignAddress = dto.SignAddress;
-            nicheReservation.ConfirmedBy = int.Parse(userId); // Extracted from token
+            nicheReservation.ConfirmedBy = int.Parse(userId); 
             // nicheReservation.Status = "Approved";
 
             try
@@ -421,8 +603,7 @@ namespace cms_server.Controllers
             }
 
             //Gửi thông báo qua email
-            // (Chưa code)
-
+            SendApprovalEmail(nicheReservation.Email, nicheReservation, nicheReservation.Niche);
 
             //Cập nhật trạng thái đơn đặt chỗ thành "Approved"
             nicheReservation.Status = "Approved";
@@ -437,11 +618,7 @@ namespace cms_server.Controllers
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
-        }
+        }              
 
-        private bool NicheReservationExists(int id)
-        {
-            return _context.NicheReservations.Any(e => e.ReservationId == id);
-        }
     }
 }

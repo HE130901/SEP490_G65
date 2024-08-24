@@ -138,11 +138,8 @@ namespace cms_server.Controllers
         {
             _context.Customers.Add(customer);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction("GetCustomer", new { id = customer.CustomerId }, customer);
-        }
-
-        
+        }        
 
         private bool CustomerExists(int id)
         {

@@ -26,6 +26,10 @@ export const schema = z.object({
     .string()
     .min(1, "Số điện thoại của bạn là bắt buộc")
     .regex(/^(0|\+84)[1-9][0-9]{8}$/, "Số điện thoại không hợp lệ"),
+  email: z
+    .string()
+    .min(1, "Email của bạn là bắt buộc")
+    .email("Email không hợp lệ"),
   contractDate: z.string().refine(
     (val) => {
       const contractDate = new Date(val + "T23:59:00");

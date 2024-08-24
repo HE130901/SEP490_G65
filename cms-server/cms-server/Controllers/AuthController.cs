@@ -110,39 +110,49 @@ namespace cms_server.Controllers
         [HttpPost("request-password-reset")]
         public IActionResult RequestPasswordReset(RequestPasswordResetDto requestDto)
         {
+            // Tìm khách hàng hoặc nhân viên theo email
             var customer = _context.Customers.SingleOrDefault(c => c.Email == requestDto.Email);
 
-            // send email with reset password link
+            // Check là nhân viên
             if (customer == null)
             {
                 var staff = _context.Staff.SingleOrDefault(s => s.Email == requestDto.Email);
                 if (staff == null)
                 {
+                    //Nếu không tìm thấy email
                     return NotFound("Email not found.");
                 }
+
+                // Tạo mật khẩu mới và lưu vào cơ sở dữ liệu
                 var newPassword = GenerateRandomPassword();
                 staff.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 _context.SaveChanges();
 
+                // Gửi email chứa mật khẩu mới
                 var message = $"Mật khẩu mới của bạn là: {newPassword}";
-
                 SendEmail(staff.Email, "Đặt lại mật khẩu", message);
 
+                // Trả về thông báo
                 return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
             }
+            // Check là khách hàng
             else
             {
+                // Tạo mật khẩu mới và lưu vào cơ sở dữ liệu
                 var newPassword = GenerateRandomPassword();
                 customer.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 _context.SaveChanges();
 
+                // Gửi email chứa mật khẩu mới
                 var message = $"Mật khẩu mới của bạn là: {newPassword}";
-
                 SendEmail(customer.Email, "Đặt lại mật khẩu", message);
 
+                //trả về thông báo
                 return Ok("Mật khẩu mới đã được gửi tới email của bạn.");
             }
         }
+
+
 
         // POST: /api/auth/change-password
         [HttpPost("change-password")]

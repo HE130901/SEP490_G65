@@ -9,6 +9,8 @@
         public string SignAddress { get; set; }
         public string PhoneNumber { get; set; }
         public string? Note { get; set; }
+        public string? Email { get; set; }
+
     }
 
     // DTO for updating niche reservation

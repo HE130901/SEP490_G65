@@ -39,10 +39,10 @@ const Step1Content = ({
       {!user && (
         <>
           <Typography variant="h6" gutterBottom>
-            Thông tin cá nhân
+            <strong>Thông tin cá nhân</strong>
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <Controller
                 name="name"
                 control={control}
@@ -51,7 +51,7 @@ const Step1Content = ({
                     {...field}
                     label={
                       <span>
-                        Tên của bạn <span style={{ color: "red" }}>*</span>
+                        Họ và tên <span style={{ color: "red" }}>*</span>
                       </span>
                     }
                     fullWidth
@@ -81,7 +81,7 @@ const Step1Content = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <Controller
                 name="phoneNumber"
                 control={control}
@@ -121,11 +121,49 @@ const Step1Content = ({
                 )}
               />
             </Grid>
+            <Grid item xs={12} md={4}>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label={
+                      <span>
+                        Email <span style={{ color: "red" }}>*</span>
+                      </span>
+                    }
+                    fullWidth
+                    margin="normal"
+                    error={!!errors.email}
+                    helperText={
+                      errors.email ? errors.email.message?.toString() : ""
+                    }
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        color: "#0e0101",
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "#0e0101",
+                      },
+                      "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "#0e0101",
+                        },
+                      "&:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "#0e0101",
+                        },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
           </Grid>
         </>
       )}
       <Typography variant="h6" gutterBottom pt={2}>
-        Lịch hẹn ký hợp đồng
+        <strong>Thông tin đặt lịch hẹn</strong>
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>

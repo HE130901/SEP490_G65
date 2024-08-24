@@ -60,6 +60,7 @@ const CombinedDialog = ({
     defaultValues: {
       type: "Gửi theo tháng",
       duration: 1,
+      email: user ? user.email : "",
       name: user ? user.fullName : "",
       phoneNumber: user ? user.phone : "",
       contractDate: new Date().toISOString().slice(0, 10),
@@ -75,6 +76,7 @@ const CombinedDialog = ({
         type: "Gửi theo tháng",
         duration: 1,
         name: user ? user.fullName : "",
+        email: user ? user.email : "",
         phoneNumber: user ? user.phone : "",
         contractDate: new Date().toISOString().slice(0, 10),
         signAddress: "",
@@ -164,6 +166,7 @@ const CombinedDialog = ({
       confirmationDate: contractDate,
       signAddress: data.signAddress,
       phoneNumber: user ? user.phone : data.phoneNumber,
+      email: user ? user.email : data.email,
       note: data.note,
       isCustomer: !!user,
     };
@@ -185,21 +188,22 @@ const CombinedDialog = ({
 
   return (
     <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle className="text-center pb-4">
-        Đăng ký đặt chỗ
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label, index) => (
-            <Step key={label}>
-              <StepButton
-                onClick={() => setActiveStep(index)}
-                disabled={isSubmitting}
-              >
-                {label}
-              </StepButton>
-            </Step>
-          ))}
-        </Stepper>
+      <DialogTitle className="text-center pb-4 font-bold">
+        <strong>Đăng ký đặt chỗ</strong>
       </DialogTitle>
+      <Stepper activeStep={activeStep} alternativeLabel>
+        {steps.map((label, index) => (
+          <Step key={label}>
+            <StepButton
+              onClick={() => setActiveStep(index)}
+              disabled={isSubmitting}
+            >
+              {label}
+            </StepButton>
+          </Step>
+        ))}
+      </Stepper>
+
       <DialogContent className="bg-gradient-to-b from-white to-stone-300">
         <form onSubmit={handleSubmit(onSubmit)}>
           {activeStep === 0 && (
