@@ -111,47 +111,7 @@ namespace cms_server.Controllers
             }
         }
 
-        // PUT: api/NicheReservations/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
-        {
-            // Lấy thông tin đơn đặt chỗ theo ID
-            var existingReservation = await _context.NicheReservations.FindAsync(id);
-            if (existingReservation == null)
-            {
-                return NotFound(new { error = "Reservation not found" });
-            }
-
-            if (existingReservation.Status == "Approved")
-            {
-                return BadRequest(new { error = "Cannot update an approved reservation" });
-            }
-
-            // Sửa thông tin đơn đặt chỗ
-            existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
-            existingReservation.Note = updateDto.Note;
-            existingReservation.SignAddress = updateDto.SignAddress;
-
-            _context.Entry(existingReservation).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!NicheReservationExists(id))
-                {
-                    return NotFound(new { error = "Reservation not found during save" });
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
+      
 
 
         // POST: api/NicheReservations
@@ -347,7 +307,52 @@ namespace cms_server.Controllers
             return Ok(reservationDetail);
         }
 
+        // PUT: api/NicheReservations/5
+        // Endpoint cập nhật thông tin đơn đặt chỗ dành cho khách hàng.
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutNicheReservation(int id, [FromBody] UpdateNicheReservationDto updateDto)
+        {
+            // Lấy thông tin đơn đặt chỗ theo ID
+            var existingReservation = await _context.NicheReservations.FindAsync(id);
+            if (existingReservation == null)
+            {
+                return NotFound(new { error = "Reservation not found" });
+            }
+
+            if (existingReservation.Status == "Approved")
+            {
+                return BadRequest(new { error = "Cannot update an approved reservation" });
+            }
+
+            // Sửa thông tin đơn đặt chỗ
+            existingReservation.ConfirmationDate = updateDto.ConfirmationDate;
+            existingReservation.Note = updateDto.Note;
+            existingReservation.SignAddress = updateDto.SignAddress;
+
+            _context.Entry(existingReservation).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!NicheReservationExists(id))
+                {
+                    return NotFound(new { error = "Reservation not found during save" });
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
         // PUT: api/NicheReservations/update/5
+        // Endpoint cập nhật thông tin đơn đặt chỗ dành cho nhân viên.
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNicheReservation(int id, [FromBody] UpdateNicheReservationDto dto)
         {
@@ -392,7 +397,7 @@ namespace cms_server.Controllers
         [HttpPut("confirm/{id}")]
         public async Task<IActionResult> ConfirmNicheReservation(int id)
         {
-            //check tồn tại của đơn đặt ô chứa
+            //Tìm kiếm và kiểm tra đơn đặt chỗ theo ID
             var nicheReservation = await _context.NicheReservations.FindAsync(id);
             if (nicheReservation == null)
             {
@@ -404,22 +409,25 @@ namespace cms_server.Controllers
                 return BadRequest(new { error = "Reservation is already approved" });
             }
 
-            //check nếu người đăng nhập là nhân viên hay không
+            //Check nếu người đăng nhập là nhân viên hay không
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdString))
             {
                 return BadRequest(new { error = "User ID not found" });
-            }        
+            }
             if (!int.TryParse(userIdString, out int userId))
             {
                 return BadRequest(new { error = "Invalid user ID" });
             }
 
-            //cập nhật thông tin
+            //Gửi thông báo qua email
+            // (Chưa code)
+
+
+            //Cập nhật trạng thái đơn đặt chỗ thành "Approved"
             nicheReservation.Status = "Approved";
             nicheReservation.ConfirmedBy = userId;
             _context.Entry(nicheReservation).State = EntityState.Modified;
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -435,10 +443,5 @@ namespace cms_server.Controllers
         {
             return _context.NicheReservations.Any(e => e.ReservationId == id);
         }
-
-
-        
-
-
-
+    }
 }

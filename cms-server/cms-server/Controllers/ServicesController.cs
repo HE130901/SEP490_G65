@@ -22,9 +22,11 @@ namespace cms_server.Controllers
         {
             _context = context;
         }
-      
+
 
         // GET: api/Services
+        // Lấy danh sách tất cả các dịch vụ
+        // với chức năng thêm mới đơn đặt dịch vụ thì lấy danh sách tất cả các dịch vụ có trạng thái avalibale trong hệ thống
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Service>>> GetServices()
         {
@@ -32,6 +34,7 @@ namespace cms_server.Controllers
         }
 
         // GET: api/Services/5
+        // get thu 2 lay chi tiet
         [HttpGet("{id}")]
         public async Task<ActionResult<Service>> GetService(int id)
         {
@@ -46,6 +49,7 @@ namespace cms_server.Controllers
         }
 
         // PUT: api/Services/5
+        // Chỉnh sửa thông tin của dịch vụ
         [HttpPut("{id}")]
         public async Task<IActionResult> PutService(int id, ServiceUpdateDto serviceDto)
         {
@@ -54,14 +58,16 @@ namespace cms_server.Controllers
                 return BadRequest();
             }
 
-            // Tìm dịch vụ hiện tại trong cơ sở dữ liệu
+            // Tìm dịch vụ theo id, thông qua Entity Framework
             var existingService = await _context.Services.FindAsync(id);
+
+            // Check dịch vụ tồn tại
             if (existingService == null)
             {
                 return NotFound();
             }
 
-            // Cập nhật thông tin dịch vụ
+            // Cập nhật thông tin của dịch vụ với các giá trị mới từ DTO
             existingService.ServiceName = serviceDto.ServiceName;
             existingService.Description = serviceDto.Description;
             existingService.Price = serviceDto.Price;
@@ -70,13 +76,14 @@ namespace cms_server.Controllers
             existingService.Tag = serviceDto.Tag;
             existingService.Status = serviceDto.Status;
 
+            // Lưu thay đổi vào cơ sở dữ liệu bằng Entity Framework
             try
             {
-                // Lưu các thay đổi vào cơ sở dữ liệu
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
+
                 if (!ServiceExists(id))
                 {
                     return NotFound();
@@ -87,29 +94,16 @@ namespace cms_server.Controllers
                 }
             }
 
+            // Thông báo thành công
             return NoContent();
         }
 
-
-
-
-
-
         // POST: api/Services
+        // endpoint tao moi dich vu (post service)
         [HttpPost]
         public async Task<ActionResult<Service>> PostService(Service service)
         {
-            // Chuẩn hóa tên dịch vụ 
-            var normalizedServiceName = service.ServiceName.Normalize(NormalizationForm.FormC);
-
-            // Kiểm tra xem dịch vụ với tên đã tồn tại hay chưa
-            var existingService = await _context.Services
-                .FirstOrDefaultAsync(s =>
-                    s.ServiceName.Normalize(NormalizationForm.FormC) == normalizedServiceName);
-            if (existingService != null)
-            {
-                return BadRequest("Dịch vụ với tên này đã tồn tại.");
-            }
+            //Thêm dịch vụ mới vào cơ sở dữ liệu
             _context.Services.Add(service);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetService", new { id = service.ServiceId }, service);
@@ -121,22 +115,27 @@ namespace cms_server.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteService(int id)
         {
+            // Tìm dịch vụ theo id, thông qua Entity Framework
             var service = await _context.Services.FindAsync(id);
+
+            // Kiểm tra nếu không tìm thấy dịch vụ
             if (service == null)
             {
                 return NotFound();
             }
 
-           
+            // Cập nhật trạng thái của dịch vụ thành "Unavailable" thay vì xóa hoàn toàn
             service.Status = "Unavailable";
-            _context.Entry(service).State = EntityState.Modified;
 
+            // Lưu các thay đổi vào cơ sở dữ liệu bằng Entity Framework
+            _context.Entry(service).State = EntityState.Modified;
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
+
                 if (!ServiceExists(id))
                 {
                     return NotFound();
@@ -147,8 +146,10 @@ namespace cms_server.Controllers
                 }
             }
 
+            // Trả về thông báo thành công
             return NoContent();
         }
+
 
         private bool ServiceExists(int id)
         {

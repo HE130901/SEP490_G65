@@ -19,6 +19,7 @@ import {
   Paper,
   Tooltip,
   CircularProgress,
+  Divider,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import Image from "next/image";
@@ -139,13 +140,15 @@ const ViewServiceOrderDialog = ({
           <Box>
             <Box mb={2}>
               <Typography variant="h6">
-                Thông tin: Mã đơn hàng {serviceOrder.serviceOrderCode}{" "}
+                <strong>Mã đơn hàng: {serviceOrder.serviceOrderCode} </strong>
               </Typography>
               <Typography>
-                Tên khách hàng: {serviceOrder.customerFullName}{" "}
+                <strong>Tên khách hàng: </strong>
+                {serviceOrder.customerFullName}{" "}
               </Typography>
               <Typography>
-                Địa chỉ ô chứa: {"Tòa nhà "} {serviceOrder.niche.building}
+                <strong>Địa chỉ ô chứa:</strong> {"Tòa nhà "}{" "}
+                {serviceOrder.niche.building}
                 {" - "}
                 {serviceOrder.niche.floor} {" - "} {serviceOrder.niche.area}{" "}
                 {" - Ô chứa số "}
@@ -159,9 +162,13 @@ const ViewServiceOrderDialog = ({
                 Thời gian đặt:{" "}
                 {new Date(serviceOrder.orderDate).toLocaleString()}
               </Typography>
+              <Typography>
+                Thời gian hoàn thành:{" "}
+                {new Date(serviceOrder.completedDate).toLocaleString()}
+              </Typography>
             </Box>
+            <Divider />
             <Box mb={2}>
-              <Typography variant="h6">Chi tiết dịch vụ</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>

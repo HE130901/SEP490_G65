@@ -2,7 +2,7 @@
 import { createTheme } from '@mui/material/styles';
 
 // Load the Open Sans font
-import '@fontsource/open-sans'; // npm install @fontsource/open-sans
+import '@fontsource/open-sans'; 
 
 const theme = createTheme({
   typography: {

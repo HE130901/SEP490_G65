@@ -209,6 +209,7 @@ namespace cms_server.Controllers
         [HttpPost]
         public async Task<ActionResult<VisitRegistration>> PostVisitRegistration(VisitRegistrationDto visitRegistrationDto)
         {
+            //Lấy thông tin thời gian
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
             var utcNow = DateTime.UtcNow;
             var localNow = TimeZoneInfo.ConvertTimeFromUtc(utcNow, timeZoneInfo);
@@ -225,21 +226,18 @@ namespace cms_server.Controllers
                 status = "Approved";
             }
 
-            // Giả sử rằng VisitRegistration luôn có CreatedDate hợp lệ
+            // Tạo mã đăng ký thăm viếng
             var registrationsTodayCount = await _context.VisitRegistrations
                 .CountAsync(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate);
-
-            // Lấy ngày từ CreatedDate của bản ghi hiện tại để sử dụng trong RegistrationCode
             var createdDate = registrationsTodayCount > 0
                 ? _context.VisitRegistrations
                     .Where(vr => vr.CreatedDate != null && vr.CreatedDate.Value.Date == currentDate)
                     .Select(vr => vr.CreatedDate.Value.Date)
                     .FirstOrDefault()
                 : currentDate;
-
             var registrationCode = $"DT-{createdDate:yyyyMMdd}-{(registrationsTodayCount + 1):D3}";
 
-
+            // Tạo VisitRegistration mới
             var visitRegistration = new VisitRegistration
             {
                 CustomerId = visitRegistrationDto.CustomerId,
@@ -253,8 +251,11 @@ namespace cms_server.Controllers
                 VisitCode = registrationCode
             };
 
+            // Thêm VisitRegistration vào cơ sở dữ liệu
             _context.VisitRegistrations.Add(visitRegistration);
             await _context.SaveChangesAsync();
+
+            // Trả về thông báo thành công
             return CreatedAtAction(nameof(GetVisitRegistration), new { id = visitRegistration.VisitId }, visitRegistration);
         }
 
