@@ -155,17 +155,19 @@ const ViewServiceOrderDialog = ({
                 {serviceOrder.niche.nicheName}
               </Typography>
               <Typography>
-                Thời gian tạo:{" "}
+                <strong>Thời gian tạo: </strong>
                 {new Date(serviceOrder.createdDate).toLocaleString()}
               </Typography>
               <Typography>
-                Thời gian đặt:{" "}
+                <strong>Thời gian đặt: </strong>
                 {new Date(serviceOrder.orderDate).toLocaleString()}
               </Typography>
-              <Typography>
-                Thời gian hoàn thành:{" "}
-                {new Date(serviceOrder.completedDate).toLocaleString()}
-              </Typography>
+              {serviceOrder.completedDate && (
+                <Typography>
+                  <strong>Thời gian hoàn thành: </strong>
+                  {new Date(serviceOrder.completedDate).toLocaleString()}
+                </Typography>
+              )}
             </Box>
             <Divider />
             <Box mb={2}>

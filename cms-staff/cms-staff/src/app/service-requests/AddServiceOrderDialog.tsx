@@ -36,6 +36,7 @@ interface Contract {
 interface Service {
   serviceId: string;
   serviceName: string;
+  status: string;
 }
 
 interface ServiceOrderDetail {
@@ -87,7 +88,12 @@ const AddServiceOrderDialog = ({
     const fetchServices = async () => {
       try {
         const response = await ServiceOrderAPI.getAllServices();
-        setServices(response.data.$values || response.data);
+        const fetchedServices = response.data.$values || response.data;
+        const activeServices = fetchedServices.filter(
+          (service: Service) => service.status == "Available"
+        );
+
+        setServices(activeServices);
       } catch (error) {
         toast.error("Không thể tải danh sách dịch vụ");
       }

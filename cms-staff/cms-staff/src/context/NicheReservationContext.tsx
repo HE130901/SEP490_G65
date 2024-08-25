@@ -13,6 +13,7 @@ interface NicheReservation {
   createdDate: string;
   confirmationDate: string;
   status: string;
+  email: string;
 }
 
 interface NicheReservationContextProps {

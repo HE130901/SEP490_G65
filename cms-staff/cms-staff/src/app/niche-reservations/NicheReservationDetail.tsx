@@ -73,7 +73,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
         <DialogContent dividers>
           {bookingRequest && (
             <Grid container spacing={2}>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <TextField
                   margin="dense"
                   label="Mã đơn"
@@ -86,7 +86,7 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={6}>
                 <TextField
                   margin="dense"
                   label="Địa chỉ ô chứa"
@@ -99,20 +99,8 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   }}
                 />
               </Grid>
+
               <Grid item xs={12}>
-                <TextField
-                  margin="dense"
-                  label="Địa chỉ ký hợp đồng"
-                  type="text"
-                  fullWidth
-                  variant="outlined"
-                  value={bookingRequest.signAddress}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={6}>
                 <TextField
                   margin="dense"
                   label="Tên khách hàng"
@@ -133,6 +121,19 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   fullWidth
                   variant="outlined"
                   value={bookingRequest.phoneNumber}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  margin="dense"
+                  label="Email"
+                  type="text"
+                  fullWidth
+                  variant="outlined"
+                  value={bookingRequest.email || "N/A"}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -164,19 +165,19 @@ const ViewBookingRequestDialog: React.FC<ViewBookingRequestDialogProps> = ({
                   }}
                 />
               </Grid>
-              {/* <Grid item xs={6}>
+              <Grid item xs={12}>
                 <TextField
                   margin="dense"
-                  label="Tên nhân viên xác nhận"
+                  label="Địa chỉ ký hợp đồng"
                   type="text"
                   fullWidth
                   variant="outlined"
-                  value={bookingRequest.nameConfirmedBy || "Chưa xác nhận"}
+                  value={bookingRequest.signAddress}
                   InputProps={{
                     readOnly: true,
                   }}
                 />
-              </Grid> */}
+              </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography variant="body1" gutterBottom>
                   <strong>Trạng thái:</strong>{" "}

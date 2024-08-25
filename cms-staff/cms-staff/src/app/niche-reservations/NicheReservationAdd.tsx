@@ -69,8 +69,9 @@ const AddBookingRequestDialog = ({
     areaId: "",
     nicheId: "",
     name: "",
-    confirmationDate: new Date().toISOString().substring(0, 16), // Format to "yyyy-MM-ddThh:mm"
-    signAddress: predefinedAddresses[0], // Default to the first address
+    email: "",
+    confirmationDate: new Date().toISOString().substring(0, 16),
+    signAddress: predefinedAddresses[0],
     phoneNumber: "",
     note: "",
   });
@@ -248,7 +249,7 @@ const AddBookingRequestDialog = ({
       <DialogTitle>Thêm mới đơn đăng ký đặt chỗ</DialogTitle>
       <DialogContent dividers>
         <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <TextField
               margin="dense"
               label={
@@ -284,6 +285,25 @@ const AddBookingRequestDialog = ({
               onBlur={handleBlur}
               error={!!formErrors.phoneNumber}
               helperText={formErrors.phoneNumber}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              margin="dense"
+              label={
+                <span>
+                  Email <span style={{ color: "red" }}>*</span>
+                </span>
+              }
+              type="text"
+              fullWidth
+              variant="outlined"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={!!formErrors.email}
+              helperText={formErrors.email}
             />
           </Grid>
           <Grid item xs={6}>

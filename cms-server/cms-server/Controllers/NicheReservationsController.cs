@@ -215,6 +215,7 @@ namespace cms_server.Controllers
         }
 
         // GET: api/NicheReservations/details/5
+        // endpoint dành cho nhân viên
         [HttpGet("details/{id}")]
         public async Task<ActionResult<NicheReservationDetailDto>> GetNicheReservationDetail(int id)
         {
@@ -238,14 +239,15 @@ namespace cms_server.Controllers
                 ReservationCode = reservation.ReservationCode,
                 Name = reservation.Name,
                 PhoneNumber = reservation.PhoneNumber,
-                NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-{reservation.Niche.NicheName}",
+                NicheAddress = $"{reservation.Niche.Area.Floor.Building.BuildingName}-{reservation.Niche.Area.Floor.FloorName}-{reservation.Niche.Area.AreaName}-Ô {reservation.Niche.NicheName}",
                 NicheId = reservation.NicheId,
                 CreatedDate = reservation.CreatedDate,
                 ConfirmationDate = reservation.ConfirmationDate,
                 Status = reservation.Status,
                 Note = reservation.Note,
                 SignAddress = reservation.SignAddress,
-                NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName
+                NameConfirmedBy = reservation.ConfirmedByNavigation?.FullName,
+                Email = reservation.Email
             };
 
             return Ok(reservationDetail);
@@ -311,7 +313,8 @@ namespace cms_server.Controllers
                         NicheId = r.NicheId,
                         NicheCode = r.Niche.NicheCode,
                         NicheAddress = $"{r.Niche.Area.Floor.Building.BuildingName} - {r.Niche.Area.Floor.FloorName} - {r.Niche.Area.AreaName} - Ô {r.Niche.NicheName}",
-                        Note = r.Note
+                        Note = r.Note,
+                        CustomerEmail = r.Email
                     })
                     .ToListAsync();
 

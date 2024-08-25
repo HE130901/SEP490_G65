@@ -34,15 +34,13 @@
         public DateTime? ConfirmationDate { get; set; }
         public string Status { get; set; }
         public string Note { get; set; }
-        public string FormattedCreatedDate => CreatedDate?.ToString("HH:mm dd/MM/yyyy");
-        public string FormattedConfirmationDate => ConfirmationDate?.ToString("HH:mm dd/MM/yyyy");
     }
 
     public class NicheReservationDetailDto
     {
         public int ReservationId { get; set; }
         public string ReservationCode { get; set; }
-
+        public string? Email { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string NicheAddress { get; set; }
@@ -74,6 +72,10 @@
         public string CustomerPhone { get; set; }
         public string NicheCode { get; set; }
         public string NicheAddress { get; set; }
+
+        public string? CustomerEmail { get; set; }
+
+
 
         public string SignAddress { get; set; }
         public string Note { get; set; }

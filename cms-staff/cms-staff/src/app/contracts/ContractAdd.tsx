@@ -282,7 +282,7 @@ const ContractAdd: React.FC<{ open: boolean; onClose: () => void }> = ({
         ...prevState,
         customerFullName: reservation.customerName || "",
         customerPhoneNumber: reservation.customerPhone || "",
-        customerEmail: "",
+        customerEmail: reservation.customerEmail || "",
         customerAddress: "",
         customerCitizenId: "",
         customerCitizenIdIssueDate: "",
