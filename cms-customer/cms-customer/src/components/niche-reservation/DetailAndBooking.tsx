@@ -183,9 +183,6 @@ const CombinedDialog = ({
     }
   };
 
-  const type = watch("type");
-  const duration = watch("duration", 1);
-
   return (
     <Dialog open={isVisible} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle className="text-center pb-4 font-bold">

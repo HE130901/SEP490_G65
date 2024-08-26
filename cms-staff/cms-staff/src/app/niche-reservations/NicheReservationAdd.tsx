@@ -51,6 +51,10 @@ const formSchema = z.object({
   }, "Ngày hẹn phải trong vòng 3 ngày kể từ hôm nay"),
   signAddress: z.string().nonempty(),
   note: z.string().max(300, "Ghi chú không được vượt quá 300 ký tự").optional(),
+  email: z
+    .string()
+    .nonempty("Email không được để trống")
+    .email("Email không hợp lệ"),
 });
 
 const AddBookingRequestDialog = ({
