@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Controller } from "react-hook-form";
+
 const Step2Content = ({
   control,
   errors,
@@ -18,20 +19,11 @@ const Step2Content = ({
   getValues,
 }: any) => {
   const [showOtpInput, setShowOtpInput] = useState(false);
-  let phoneNumber = getValues("phoneNumber");
+  const phoneNumber = getValues("phoneNumber");
   const name = getValues("name");
 
   const handleSendOtp = () => {
-    // Kiểm tra nếu số điện thoại không bắt đầu với +84 thì thêm vào
-    if (!phoneNumber.startsWith("+84")) {
-      if (phoneNumber.startsWith("0")) {
-        phoneNumber = "+84" + phoneNumber.slice(1); // Bỏ số 0 đầu tiên và thêm +84
-      } else {
-        phoneNumber = "+84" + phoneNumber; // Thêm +84 trực tiếp
-      }
-    }
-
-    // Gọi hàm sendOtp với số điện thoại đã chuẩn hóa
+    // Gọi hàm sendOtp với số điện thoại đã nhập
     sendOtp(phoneNumber);
     setShowOtpInput(true);
   };
