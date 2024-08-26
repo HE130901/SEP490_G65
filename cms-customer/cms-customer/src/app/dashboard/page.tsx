@@ -146,19 +146,19 @@ function Dashboard() {
                   value="contracts"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
                 >
-                  Hợp đồng của tôi
+                  Quản lý Hợp đồng
                 </TabsTrigger>
                 <TabsTrigger
                   value="visitRegistrations"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
                 >
-                  Đơn đăng ký viếng
+                  Đơn thăm viếng
                 </TabsTrigger>
                 <TabsTrigger
                   value="bookingRequests"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
                 >
-                  Đơn đăng ký đặt chỗ
+                  Đơn đặt ô chứa
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="visitRegistrations" className="w-full">

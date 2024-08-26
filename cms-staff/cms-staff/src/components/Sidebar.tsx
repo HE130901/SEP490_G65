@@ -65,7 +65,7 @@ const Sidebar = () => {
       path: "/niche-reservations",
     },
     {
-      text: "Đơn đăng ký viếng",
+      text: "Đơn thăm viếng",
       icon: <ClipboardListIcon className="h-6 w-6" />,
       path: "/visit-registrations",
     },

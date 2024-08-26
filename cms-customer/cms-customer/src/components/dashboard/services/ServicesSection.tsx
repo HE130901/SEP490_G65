@@ -16,7 +16,7 @@ export default function ServicesList({ containers }: { containers: any }) {
       priority: true,
     },
     {
-      title: "Đặt lịch viếng",
+      title: "Đặt lịch thăm viếng",
       imageSrc: "/images/visit.jpg",
       href: "#",
       onClick: () => setIsVisitDialogOpen(true),
