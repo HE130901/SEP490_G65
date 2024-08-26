@@ -280,7 +280,11 @@ const ContractPage: React.FC = () => {
   };
 
   // Calculate days left until contract end date
-  const calculateDaysLeft = (endDate: string): number => {
+  const calculateDaysLeft = (endDate: string, status: string): any => {
+    if (status === "Canceled") {
+      return null;
+    }
+
     const end = new Date(endDate);
     const now = new Date();
     const timeDiff = end.getTime() - now.getTime();
@@ -303,19 +307,19 @@ const ContractPage: React.FC = () => {
       field: "contractCode",
       headerName: "Mã Hợp đồng",
       headerClassName: "super-app-theme--header",
-      width: 200,
+      width: 230,
       renderCell: (params) => <CenteredCell>{params.value}</CenteredCell>,
     },
     {
       field: "customerName",
       headerName: "Tên Khách hàng",
-      width: 230,
+      width: 200,
       headerClassName: "super-app-theme--header",
     },
     {
       field: "startDate",
       headerName: "Ngày bắt đầu",
-      width: 150,
+      width: 190,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
@@ -324,25 +328,27 @@ const ContractPage: React.FC = () => {
     {
       field: "endDate",
       headerName: "Ngày kết thúc",
-      width: 150,
+      width: 190,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>{formatDateToDDMMYYYY(params.value)}</CenteredCell>
       ),
     },
-    {
-      field: "daysLeft",
-      headerName: "Còn lại (ngày)",
-      width: 130,
-      headerClassName: "super-app-theme--header",
-      renderCell: (params) => (
-        <CenteredCell>{calculateDaysLeft(params.row.endDate)}</CenteredCell>
-      ),
-    },
+    // {
+    //   field: "daysLeft",
+    //   headerName: "Còn lại (ngày)",
+    //   width: 130,
+    //   headerClassName: "super-app-theme--header",
+    //   renderCell: (params) => (
+    //     <CenteredCell>
+    //       {calculateDaysLeft(params.row.endDate, params.row.status)}
+    //     </CenteredCell>
+    //   ),
+    // },
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 150,
+      width: 190,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => {
         const { label, color } = getStatusLabel(params.value);
@@ -370,7 +376,7 @@ const ContractPage: React.FC = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 180,
+      width: 190,
       headerClassName: "super-app-theme--header",
       renderCell: (params) => (
         <CenteredCell>
