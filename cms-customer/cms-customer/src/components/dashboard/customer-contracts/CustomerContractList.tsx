@@ -332,18 +332,21 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
       ),
     },
     {
-      accessorKey: "daysLeft",
+      accessorKey: "endDate",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Ngày còn lại
+          Hết hạn HĐ
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("daysLeft")} ngày</div>
+        <div className="text-center">
+          {" "}
+          {formatDate(row.getValue("endDate"))}
+        </div>
       ),
     },
     {
@@ -475,7 +478,7 @@ const CustomerContractList: React.FC<CustomerContractListProps> = ({
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold text-center">Hợp đồng của tôi</h2>
+        <h2 className="text-2xl font-bold text-center">Hợp đồng</h2>
         <div className="flex items-center ml-auto space-x-4">
           <div className="w-36">
             <Select value={searchField} onValueChange={handleSelectChange}>

@@ -146,7 +146,7 @@ function Dashboard() {
                   value="contracts"
                   className="px-4 py-2 w-full sm:w-auto rounded-t-md hover:bg-gray-200 transition-all duration-200"
                 >
-                  Quản lý Hợp đồng
+                  Quản lý hợp đồng
                 </TabsTrigger>
                 <TabsTrigger
                   value="visitRegistrations"

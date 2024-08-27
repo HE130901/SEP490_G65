@@ -427,7 +427,9 @@ export default function VisitRegistrationList({
   return (
     <div className="w-full bg-white p-4 rounded-lg shadow-lg">
       <div className="flex items-center py-4">
-        <h2 className="text-2xl font-bold text-center">Đơn đăng ký viếng</h2>
+        <h2 className="text-2xl font-bold text-center">
+          Đơn đăng ký thăm viếng
+        </h2>
         <div className="flex items-center ml-auto space-x-4">
           <div className="w-36">
             <Select value={searchField} onValueChange={handleSelectChange}>

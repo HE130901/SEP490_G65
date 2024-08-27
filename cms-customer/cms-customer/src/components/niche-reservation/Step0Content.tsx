@@ -98,15 +98,18 @@ const Step0Content = ({ selectedNiche, control, errors }: any) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12}>
+      <Grid container item xs={12} justifyContent="center" textAlign="center">
         <Typography variant="h6" gutterBottom>
-          {selectedNiche.buildingName}
-          {" -"} {selectedNiche.floorName}
-          {" -"} {selectedNiche.areaName}
-          {" - Ô "} {selectedNiche.nicheName}
+          <strong>
+            {selectedNiche.buildingName}
+            {" -"} {selectedNiche.floorName}
+            {" -"} {selectedNiche.areaName}
+            {" - Ô "} {selectedNiche.nicheName}
+          </strong>
         </Typography>
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ my: 2, width: "100%" }} />
       </Grid>
+
       <Grid item xs={12} sm={6}>
         <div className="carousel-container">
           <Slider {...settingsCarousel}>
@@ -168,7 +171,13 @@ const Step0Content = ({ selectedNiche, control, errors }: any) => {
       </Grid>
       <Grid item xs={12}>
         <Divider sx={{ my: 2 }} />
-        <Typography variant="h6" fontWeight={700} sx={{ mt: 2 }}>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{ mt: 2 }}
+          justifyContent="center"
+          textAlign="center"
+        >
           Dự toán chi phí lưu trữ
         </Typography>
         <Grid container spacing={2} mt={1}>

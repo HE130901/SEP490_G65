@@ -26,9 +26,10 @@ const revealVariants = {
 export default function Component() {
   const images = [
     "/images/bg5.jpg",
+
     "/images/image.png",
-    "/images/visit13.jpg",
     "/images/tower.webp",
+    "/images/map.png",
   ];
 
   return (

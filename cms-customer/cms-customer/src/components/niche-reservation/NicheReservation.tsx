@@ -441,10 +441,17 @@ const NicheReservationPage = () => {
                 )
               : renderRows()}
           </div>
+
           <div className="mt-4 flex justify-center space-x-4">
+            {user && (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-sky-500 rounded-sm"></div>
+                <span className="font-semibold text-white">Đang sở hữu</span>
+              </div>
+            )}
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-black rounded-sm"></div>
-              <span className="font-semibold text-white">Đã được sử dụng</span>
+              <span className="font-semibold text-white">Không khả dụng</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-white border rounded-sm"></div>
@@ -452,16 +459,8 @@ const NicheReservationPage = () => {
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-4 h-4 bg-orange-400 rounded-sm"></div>
-              <span className="font-semibold text-white">Đang được đặt</span>
+              <span className="font-semibold text-white">Đã được đặt</span>
             </div>
-            {user && (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-sky-500 rounded-sm"></div>
-                <span className="font-semibold text-white">
-                  Ô chứa đang sở hữu
-                </span>
-              </div>
-            )}
           </div>
 
           <Suspense fallback={<div>Loading...</div>}>
